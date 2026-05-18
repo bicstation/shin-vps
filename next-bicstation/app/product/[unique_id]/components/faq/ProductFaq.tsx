@@ -1,4 +1,7 @@
-// next-bicstation/app/product/[unique_id]/components/faq/ProductFaq.tsx
+// ============================================================================
+// FILE:
+// /home/maya/shin-vps/next-bicstation/app/product/[unique_id]/components/faq/ProductFaq.tsx
+// ============================================================================
 
 'use client'
 
@@ -8,122 +11,53 @@ import { useState }
 import styles
   from './faq.module.css'
 
+type FAQItem = {
+
+  question: string
+
+  answer: string
+}
+
 type Props = {
-  product: any
+
+  faqs?: FAQItem[]
 }
 
-/* =========================================
-🔥 HELPERS
-========================================= */
-
-function buildFaqs(
-  product: any
-) {
-
-  const text = JSON.stringify(
-    product
-  ).toLowerCase()
-
-  const faqs = []
-
-  /* ======================================
-  🎮 gaming
-  ====================================== */
-
-  if (
-    text.includes('rtx')
-    || text.includes('gaming')
-  ) {
-
-    faqs.push({
-      question:
-        'FPSゲームは快適にプレイできますか？',
-      answer:
-        '高fps gaming を意識した構成で、重量級タイトルでも快適に動作しやすい性能です。',
-    })
-
-  }
-
-  /* ======================================
-  🤖 AI
-  ====================================== */
-
-  if (
-    text.includes('rtx')
-    || text.includes('ai')
-  ) {
-
-    faqs.push({
-      question:
-        'AI画像生成にも使えますか？',
-      answer:
-        'Stable DiffusionなどGPU活用型AI用途にも対応しやすい構成です。',
-    })
-
-  }
-
-  /* ======================================
-  🎬 creator
-  ====================================== */
-
-  faqs.push({
-    question:
-      '動画編集用途にも向いていますか？',
-    answer:
-      'Premiere ProやDaVinci Resolveなど、クリエイティブ用途でも快適に使いやすい性能です。',
-  })
-
-  /* ======================================
-  🧠 long term
-  ====================================== */
-
-  faqs.push({
-    question:
-      '長く使いやすい構成ですか？',
-    answer:
-      'メモリ容量やGPU性能に余裕があり、数年単位でも快適に使いやすい構成です。',
-  })
-
-  /* ======================================
-  ⚡ beginner
-  ====================================== */
-
-  faqs.push({
-    question:
-      '初心者にもおすすめできますか？',
-    answer:
-      '用途バランスが良く、初めて高性能PCを選ぶ人にも扱いやすい構成です。',
-  })
-
-  return faqs.slice(0, 5)
-
-}
-
-/* =========================================
+/* ============================================================================
 🔥 COMPONENT
-========================================= */
+============================================================================ */
 
 export default function ProductFaq({
-  product,
+  faqs = [],
 }: Props) {
 
-  const faqs =
-    buildFaqs(
-      product
-    )
+  // ==========================================================================
+  // STATE
+  // ==========================================================================
 
   const [
-    activeIndex,
-    setActiveIndex,
+    openIndex,
+    setOpenIndex,
   ] = useState<number | null>(
     0
   )
 
+  // ==========================================================================
+  // EMPTY
+  // ==========================================================================
+
   if (
-    !faqs.length
+    !Array.isArray(faqs)
+    || faqs.length === 0
   ) {
+
     return null
+
   }
+
+  // ==========================================================================
+  // RENDER
+  // ==========================================================================
 
   return (
 
@@ -133,9 +67,9 @@ export default function ProductFaq({
       }
     >
 
-      {/* ==================================
+      {/* ================================================================
       HEADER
-      ================================== */}
+      ================================================================ */}
 
       <div
         className={
@@ -148,7 +82,9 @@ export default function ProductFaq({
             styles.faqLabel
           }
         >
+
           FAQ
+
         </div>
 
         <h2
@@ -156,7 +92,9 @@ export default function ProductFaq({
             styles.faqTitle
           }
         >
+
           よくある質問
+
         </h2>
 
         <p
@@ -164,16 +102,18 @@ export default function ProductFaq({
             styles.faqDescription
           }
         >
-          gaming・AI・creator用途など、
-          実際に気になりやすいポイントを
-          整理しています。
+
+          AI用途・ゲーム・動画編集など、
+          実際の利用シーンで
+          よくある質問を整理しています。
+
         </p>
 
       </div>
 
-      {/* ==================================
+      {/* ================================================================
       FAQ LIST
-      ================================== */}
+      ================================================================ */}
 
       <div
         className={
@@ -181,120 +121,97 @@ export default function ProductFaq({
         }
       >
 
-        {faqs.map(
-          (
-            faq,
-            index
-          ) => {
+        {
+          faqs.map(
+            (
+              faq,
+              index
+            ) => {
 
-            const isActive =
-              activeIndex === index
+              const isOpen =
+                openIndex === index
 
-            return (
+              return (
 
-              <div
-                key={
-                  faq.question
-                }
-
-                className={
-                  styles.faqItem
-                }
-              >
-
-                {/* ==========================
-                BUTTON
-                ========================== */}
-
-                <button
-                  type="button"
+                <div
+                  key={index}
 
                   className={
-                    styles.faqButton
+                    styles.faqItem
                   }
-
-                  onClick={() => {
-
-                    setActiveIndex(
-                      isActive
-                        ? null
-                        : index
-                    )
-
-                  }}
                 >
 
-                  <div
+                  {/* ====================================================
+                  QUESTION
+                  ==================================================== */}
+
+                  <button
+                    type="button"
+
+                    onClick={() => {
+
+                      setOpenIndex(
+                        isOpen
+                          ? null
+                          : index
+                      )
+
+                    }}
+
                     className={
                       styles.faqQuestion
                     }
                   >
-                    {faq.question}
-                  </div>
 
-                  <div
-                    className={
-                      styles.faqIcon
-                    }
-                  >
-                    {isActive
-                      ? '−'
-                      : '+'}
-                  </div>
+                    <span>
 
-                </button>
+                      {faq.question}
 
-                {/* ==========================
-                ANSWER
-                ========================== */}
+                    </span>
 
-                {isActive && (
-
-                  <div
-                    className={
-                      styles.faqAnswerWrap
-                    }
-                  >
-
-                    <p
+                    <span
                       className={
-                        styles.faqAnswer
+                        styles.faqIcon
                       }
                     >
-                      {faq.answer}
-                    </p>
 
-                  </div>
+                      {
+                        isOpen
+                          ? '−'
+                          : '+'
+                      }
 
-                )}
+                    </span>
 
-              </div>
+                  </button>
 
-            )
+                  {/* ====================================================
+                  ANSWER
+                  ==================================================== */}
 
-          }
-        )}
+                  {
+                    isOpen && (
 
-      </div>
+                      <div
+                        className={
+                          styles.faqAnswer
+                        }
+                      >
 
-      {/* ==================================
-      FOOTER
-      ================================== */}
+                        {faq.answer}
 
-      <div
-        className={
-          styles.faqFooter
+                      </div>
+
+                    )
+                  }
+
+                </div>
+
+              )
+
+            }
+          )
         }
-      >
-
-        <div
-          className={
-            styles.faqFooterText
-          }
-        >
-          ✔ semantic recommendation をもとに、
-          実利用ベースで整理しています。
-        </div>
 
       </div>
 

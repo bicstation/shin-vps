@@ -779,3 +779,136 @@ semantic decision renderer
   }
 
 }
+
+
+/* ============================================================================
+🔥 AI CONTENT
+============================================================================ */
+
+.aiContentSection {
+
+display: flex;
+
+flex-direction: column;
+
+gap: 20px;
+
+margin-top: 28px;
+}
+
+/* ============================================================================
+🔥 AI CONTENT LABEL
+============================================================================ */
+
+.aiContentLabel {
+
+color:
+#7dd3fc;
+
+font-size: 11px;
+
+font-weight: 800;
+
+letter-spacing: .08em;
+
+text-transform: uppercase;
+}
+
+/* ============================================================================
+🔥 AI CONTENT GRID
+============================================================================ */
+
+.aiContentGrid {
+
+display: grid;
+
+grid-template-columns:
+repeat(
+auto-fit,
+minmax(260px, 1fr)
+);
+
+gap: 18px;
+}
+
+/* ============================================================================
+🔥 AI CONTENT CARD
+============================================================================ */
+
+.aiContentCard {
+
+padding: 22px;
+
+border-radius: 24px;
+
+background:
+rgba(255,255,255,.03);
+
+border:
+1px solid rgba(255,255,255,.06);
+
+color:
+#cbd5e1;
+
+font-size: 14px;
+
+line-height: 1.9;
+
+transition:
+transform .18s ease,
+border-color .18s ease,
+background .18s ease;
+}
+
+.aiContentCard:hover {
+
+transform:
+translateY(-2px);
+
+border-color:
+rgba(125,211,252,.18);
+
+background:
+rgba(255,255,255,.05);
+}
+
+/* ============================================================================
+🔥 RAW SUMMARY
+============================================================================ */
+
+.aiSummaryRaw {
+
+color:
+#cbd5e1;
+
+font-size: 15px;
+
+line-height: 2;
+}
+
+/* ============================================================================
+🔥 MOBILE
+============================================================================ */
+
+@media (max-width: 768px) {
+
+.aiContentGrid {
+
+
+grid-template-columns:
+  1fr;
+
+
+}
+
+.aiContentCard {
+
+
+padding: 18px;
+
+font-size: 13px;
+
+
+}
+
+}

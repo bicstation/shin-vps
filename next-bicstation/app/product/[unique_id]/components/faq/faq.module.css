@@ -1,25 +1,25 @@
-/* /home/maya/shin-vps/next-bicstation/app/product/[unique_id]/components/faq/faq.module.css */
+/* ============================================================================
+🔥 SHIN CORE LINX
+FAQ Runtime Styles
+FILE:
+next-bicstation/app/product/[unique_id]/components/faq/faq.module.css
+============================================================================ */
 
-/* =========================================
-🔥 PRODUCT FAQ
-trust + anxiety reduction layer
-========================================= */
-
-/* =========================================
-🔥 FAQ SECTION
-========================================= */
+/* ============================================================================
+🔥 ROOT
+============================================================================ */
 
 .faqSection {
+
   display: flex;
+
   flex-direction: column;
 
-  gap: 28px;
+  gap: 32px;
 
-  padding:
-    30px;
+  padding: 32px;
 
-  border-radius:
-    30px;
+  border-radius: 32px;
 
   background:
     linear-gradient(
@@ -29,328 +29,225 @@ trust + anxiety reduction layer
     );
 
   border:
-    1px solid rgba(148,163,184,.08);
+    1px solid rgba(255,255,255,.06);
 
   box-shadow:
     0 18px 48px rgba(0,0,0,.22);
 }
 
-/* =========================================
+/* ============================================================================
 🔥 HEADER
-========================================= */
+============================================================================ */
 
 .faqHeader {
+
   display: flex;
+
   flex-direction: column;
 
   gap: 12px;
 }
 
-/* =========================================
-🔥 LABEL
-========================================= */
-
 .faqLabel {
-  display: inline-flex;
-
-  width: fit-content;
-
-  min-height:
-    30px;
-
-  align-items: center;
-  justify-content: center;
-
-  padding:
-    0 14px;
-
-  border-radius:
-    999px;
-
-  background:
-    rgba(249,115,22,.08);
-
-  border:
-    1px solid rgba(249,115,22,.18);
 
   color:
-    #fdba74;
+    #7dd3fc;
 
-  font-size:
-    11px;
+  font-size: 11px;
 
-  font-weight:
-    800;
+  font-weight: 800;
 
-  letter-spacing:
-    .08em;
+  letter-spacing: .08em;
 
-  text-transform:
-    uppercase;
+  text-transform: uppercase;
 }
 
-/* =========================================
-🔥 TITLE
-========================================= */
-
 .faqTitle {
+
   margin: 0;
 
   color:
     #ffffff;
 
   font-size:
-    clamp(28px, 4vw, 44px);
+    clamp(28px, 4vw, 42px);
 
-  font-weight:
-    900;
+  font-weight: 900;
 
-  line-height:
-    1.14;
-
-  letter-spacing:
-    -.04em;
+  line-height: 1.1;
 }
 
-/* =========================================
-🔥 DESCRIPTION
-========================================= */
-
 .faqDescription {
-  max-width:
-    760px;
+
+  max-width: 760px;
 
   color:
     #94a3b8;
 
-  font-size:
-    15px;
+  font-size: 15px;
 
-  line-height:
-    1.9;
+  line-height: 1.9;
 }
 
-/* =========================================
-🔥 FAQ LIST
-========================================= */
+/* ============================================================================
+🔥 LIST
+============================================================================ */
 
 .faqList {
+
   display: flex;
+
   flex-direction: column;
 
-  gap: 16px;
+  gap: 18px;
 }
 
-/* =========================================
-🔥 FAQ ITEM
-========================================= */
+/* ============================================================================
+🔥 ITEM
+============================================================================ */
 
 .faqItem {
+
   overflow: hidden;
 
-  border-radius:
-    24px;
+  border-radius: 22px;
 
   background:
-    linear-gradient(
-      180deg,
-      rgba(249,115,22,.05),
-      rgba(15,23,42,.96)
-    );
+    rgba(255,255,255,.03);
 
   border:
-    1px solid rgba(249,115,22,.10);
+    1px solid rgba(255,255,255,.06);
 
   transition:
-    border-color .18s ease;
+    border-color .18s ease,
+    transform .18s ease;
 }
 
 .faqItem:hover {
+
   border-color:
-    rgba(249,115,22,.24);
+    rgba(125,211,252,.22);
+
+  transform:
+    translateY(-1px);
 }
 
-/* =========================================
-🔥 FAQ BUTTON
-========================================= */
+/* ============================================================================
+🔥 QUESTION
+============================================================================ */
 
-.faqButton {
+.faqQuestion {
+
   width: 100%;
 
   display: flex;
 
   align-items: center;
+
   justify-content: space-between;
 
   gap: 20px;
 
-  padding:
-    24px;
+  padding: 22px 24px;
 
-  background:
-    transparent;
+  background: transparent;
 
-  border:
-    none;
+  border: none;
 
-  cursor:
-    pointer;
+  cursor: pointer;
 
-  text-align:
-    left;
-}
+  text-align: left;
 
-/* =========================================
-🔥 QUESTION
-========================================= */
-
-.faqQuestion {
   color:
     #ffffff;
 
-  font-size:
-    17px;
+  font-size: 16px;
 
-  font-weight:
-    800;
+  font-weight: 800;
 
-  line-height:
-    1.6;
+  line-height: 1.8;
 }
 
-/* =========================================
+/* ============================================================================
 🔥 ICON
-========================================= */
+============================================================================ */
 
 .faqIcon {
-  display: flex;
+
+  flex-shrink: 0;
+
+  display: inline-flex;
 
   align-items: center;
+
   justify-content: center;
 
-  min-width:
-    38px;
+  width: 34px;
 
-  height:
-    38px;
+  height: 34px;
 
-  border-radius:
-    999px;
+  border-radius: 999px;
 
   background:
-    rgba(249,115,22,.10);
+    rgba(255,255,255,.06);
 
   color:
-    #fdba74;
+    #7dd3fc;
 
-  font-size:
-    20px;
+  font-size: 20px;
 
-  font-weight:
-    700;
+  font-weight: 900;
 }
 
-/* =========================================
+/* ============================================================================
 🔥 ANSWER
-========================================= */
-
-.faqAnswerWrap {
-  padding:
-    0 24px 24px;
-}
+============================================================================ */
 
 .faqAnswer {
-  margin: 0;
+
+  padding:
+    0 24px 24px;
 
   color:
     #cbd5e1;
 
-  font-size:
-    14px;
+  font-size: 15px;
 
-  line-height:
-    1.9;
+  line-height: 2;
 }
 
-/* =========================================
-🔥 FOOTER
-========================================= */
-
-.faqFooter {
-  display: flex;
-
-  align-items: center;
-}
-
-.faqFooterText {
-  color:
-    #94a3b8;
-
-  font-size:
-    14px;
-
-  font-weight:
-    700;
-
-  line-height:
-    1.8;
-}
-
-/* =========================================
+/* ============================================================================
 🔥 MOBILE
-========================================= */
+============================================================================ */
 
 @media (max-width: 640px) {
 
   .faqSection {
 
-    padding:
-      22px;
+    gap: 24px;
 
-    border-radius:
-      24px;
+    padding: 24px;
 
-    gap:
-      24px;
-
-  }
-
-  .faqTitle {
-
-    font-size:
-      clamp(26px, 8vw, 38px);
-
-  }
-
-  .faqDescription {
-
-    font-size:
-      14px;
-
-    line-height:
-      1.8;
-
-  }
-
-  .faqButton {
-
-    padding:
-      20px;
-
+    border-radius: 24px;
   }
 
   .faqQuestion {
 
-    font-size:
-      15px;
+    padding: 18px 18px;
 
+    font-size: 15px;
+
+    line-height: 1.7;
   }
 
-  .faqAnswerWrap {
+  .faqAnswer {
 
     padding:
-      0 20px 20px;
+      0 18px 18px;
 
+    font-size: 14px;
+
+    line-height: 1.9;
   }
 
 }

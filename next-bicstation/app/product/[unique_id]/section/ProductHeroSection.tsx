@@ -1,4 +1,7 @@
-import ProductHero
+import ProductBreadcrumb
+  from '../components/common/ProductBreadcrumb'
+
+  import ProductHero
   from '../components/hero/ProductHero'
 
 import ProductHeroCapability
@@ -22,6 +25,12 @@ ProductHeroSection({
   return (
 
     <>
+
+      <ProductBreadcrumb
+        breadcrumbs={
+          product?.breadcrumbs
+        }
+      />
 
       <ProductHero
         product={product}

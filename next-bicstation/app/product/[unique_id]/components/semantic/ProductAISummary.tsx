@@ -3,11 +3,22 @@
 // /home/maya/shin-dev/shin-vps/next-bicstation/app/product/[unique_id]/components/semantic/ProductAISummary.tsx
 // ============================================================================
 
+'use client'
+
+/* ============================================================================
+🔥 Styles
+============================================================================ */
+
 import styles
-  from './semantic.module.css'
+from './semantic.module.css'
+
+/* ============================================================================
+🔥 Props
+============================================================================ */
 
 type Props = {
-  product: any
+
+product: any
 }
 
 /* ============================================================================
@@ -15,73 +26,189 @@ type Props = {
 ============================================================================ */
 
 function parseSummary(
-  summary: string
+summary: string
 ) {
 
-  if (!summary) {
-    return {
-      points: [],
-      target: '',
-    }
-  }
+if (!summary) {
 
-  // ==========================================================================
-  // Cleanup
-  // ==========================================================================
 
-  const cleaned =
-    summary
+return {
 
-      .replace(
-        /\[SUMMARY_DATA\]/g,
-        ''
-      )
+  points: [],
 
-      .replace(
-        /\[\/SUMMARY_DATA\]/g,
-        ''
-      )
+  target: '',
 
-      .trim()
+  raw: '',
+}
 
-  // ==========================================================================
-  // Extract
-  // ==========================================================================
 
-  const pointRegex =
-    /POINT\d+:(.*?)(?=POINT\d+:|TARGET:|$)/gs
+}
 
-  const targetRegex =
-    /TARGET:(.*)$/s
+// ==========================================================================
+// Cleanup
+// ==========================================================================
 
-  const points =
-    Array.from(
-      cleaned.matchAll(
-        pointRegex
-      )
-    )
+const cleaned =
 
-      .map(
-        (match) =>
-          match[1]?.trim()
-      )
 
-      .filter(Boolean)
+summary
 
-  const targetMatch =
-    cleaned.match(
-      targetRegex
-    )
+  .replace(
+    /\[SUMMARY_DATA\]/g,
+    ''
+  )
 
-  const target =
-    targetMatch?.[1]
-      ?.trim()
-      || ''
+  .replace(
+    /\[\/SUMMARY_DATA\]/g,
+    ''
+  )
 
-  return {
-    points,
-    target,
-  }
+  .trim()
+
+
+// ==========================================================================
+// Extract
+// ==========================================================================
+
+const pointRegex =
+
+
+/POINT\d+:(.*?)(?=POINT\d+:|TARGET:|$)/gs
+
+
+const targetRegex =
+
+
+/TARGET:(.*)$/s
+
+
+const points =
+
+
+Array.from(
+  cleaned.matchAll(
+    pointRegex
+  )
+)
+
+  .map(
+    (match) =>
+      match[1]?.trim()
+  )
+
+  .filter(Boolean)
+
+
+const targetMatch =
+
+
+cleaned.match(
+  targetRegex
+)
+
+
+const target =
+
+
+targetMatch?.[1]
+  ?.trim()
+  || ''
+
+
+// ==========================================================================
+// RAW TEXT
+// ==========================================================================
+
+const raw =
+
+
+cleaned
+
+  .replace(
+    /POINT\d+:/g,
+    ''
+  )
+
+  .replace(
+    /TARGET:/g,
+    ''
+  )
+
+  .trim()
+
+
+// ==========================================================================
+// Return
+// ==========================================================================
+
+return {
+
+
+points,
+
+target,
+
+raw,
+
+
+}
+
+}
+
+/* ============================================================================
+🔥 AI CONTENT PARSER
+============================================================================ */
+
+function parseAIContent(
+aiContent: string
+) {
+
+if (!aiContent) {
+
+
+return []
+
+
+}
+
+// ==========================================================================
+// Split
+// ==========================================================================
+
+const blocks =
+
+
+aiContent
+
+  .split('\n')
+
+  .map(
+    (
+      line
+    ) => line.trim()
+  )
+
+  .filter(Boolean)
+
+
+// ==========================================================================
+// Cleanup
+// ==========================================================================
+
+return blocks
+
+
+.filter(
+  (
+    line
+  ) => (
+
+    line.length > 12
+  )
+)
+
+.slice(0, 8)
+
 
 }
 
@@ -90,140 +217,290 @@ function parseSummary(
 ============================================================================ */
 
 export default function ProductAISummary({
-  product,
+product,
 }: Props) {
 
-  // ==========================================================================
-  // Empty
-  // ==========================================================================
+// ==========================================================================
+// Runtime
+// ==========================================================================
 
-  if (!product?.ai_summary) {
-    return null
+const aiSummary =
+
+
+product?.ai_summary
+|| ''
+
+
+const aiContent =
+
+
+product?.ai_content
+|| ''
+
+
+// ==========================================================================
+// Empty
+// ==========================================================================
+
+if (
+!aiSummary
+&&
+!aiContent
+) {
+
+
+return null
+
+
+}
+
+// ==========================================================================
+// Parse Summary
+// ==========================================================================
+
+const {
+
+
+points,
+
+target,
+
+raw,
+
+
+} = parseSummary(
+aiSummary
+)
+
+// ==========================================================================
+// Parse AI Content
+// ==========================================================================
+
+const contentBlocks =
+
+
+parseAIContent(
+  aiContent
+)
+
+
+// ==========================================================================
+// Render
+// ==========================================================================
+
+return (
+
+
+<section
+  className={
+    styles.aiSummary
   }
+>
 
-  // ==========================================================================
-  // Parse
-  // ==========================================================================
+  {/* ================================================================
+  HEADER
+  ================================================================ */}
 
-  const {
-    points,
-    target,
-  } = parseSummary(
-    product.ai_summary
-  )
+  <div
+    className={
+      styles.aiSummaryHeader
+    }
+  >
 
-  // ==========================================================================
-  // Render
-  // ==========================================================================
-
-  return (
-
-    <section
-      className={styles.aiSummary}
+    <div
+      className={
+        styles.aiSummaryLabel
+      }
     >
 
-      {/* ================================================================
-      HEADER
-      ================================================================ */}
+      AI INSIGHT
 
-      <div
-        className={styles.aiSummaryHeader}
+    </div>
+
+    <h2
+      className={
+        styles.aiSummaryTitle
+      }
+    >
+
+      AIによる製品分析
+
+    </h2>
+
+  </div>
+
+  {/* ================================================================
+  SUMMARY POINTS
+  ================================================================ */}
+
+  {
+    points.length > 0 && (
+
+      <ul
+        className={
+          styles.aiSummaryList
+        }
       >
 
-        <div
-          className={styles.aiSummaryLabel}
-        >
+        {
+          points.map(
+            (
+              point,
+              index
+            ) => (
 
-          AI SUMMARY
+              <li
+                key={index}
 
-        </div>
+                className={
+                  styles.aiSummaryItem
+                }
+              >
 
-        <h2
-          className={styles.aiSummaryTitle}
-        >
+                {point}
 
-          このPCの特徴
+              </li>
 
-        </h2>
+            )
+          )
+        }
+
+      </ul>
+
+    )
+  }
+
+  {/* ================================================================
+  RAW SUMMARY FALLBACK
+  ================================================================ */}
+
+  {
+    (
+      points.length === 0
+      &&
+      raw
+    ) && (
+
+      <div
+        className={
+          styles.aiSummaryRaw
+        }
+      >
+
+        {raw}
 
       </div>
 
-      {/* ================================================================
-      POINTS
-      ================================================================ */}
+    )
+  }
 
-      {
-        points.length > 0 && (
+  {/* ================================================================
+  TARGET
+  ================================================================ */}
 
-          <ul
-            className={styles.aiSummaryList}
-          >
+  {
+    target && (
 
-            {
-              points.map(
-                (
-                  point,
-                  index
-                ) => (
+      <div
+        className={
+          styles.aiSummaryTarget
+        }
+      >
 
-                  <li
-                    key={index}
+        <span
+          className={
+            styles.aiSummaryTargetLabel
+          }
+        >
 
-                    className={
-                      styles.aiSummaryItem
-                    }
-                  >
+          おすすめ用途
 
-                    {point}
+        </span>
 
-                  </li>
+        <span
+          className={
+            styles.aiSummaryTargetText
+          }
+        >
 
-                )
+          {target}
+
+        </span>
+
+      </div>
+
+    )
+  }
+
+  {/* ================================================================
+  AI CONTENT
+  ================================================================ */}
+
+  {
+    contentBlocks.length > 0 && (
+
+      <div
+        className={
+          styles.aiContentSection
+        }
+      >
+
+        {/* ==========================================================
+        TITLE
+        ========================================================== */}
+
+        <div
+          className={
+            styles.aiContentLabel
+          }
+        >
+
+          AI RUNTIME ANALYSIS
+
+        </div>
+
+        {/* ==========================================================
+        CONTENT
+        ========================================================== */}
+
+        <div
+          className={
+            styles.aiContentGrid
+          }
+        >
+
+          {
+            contentBlocks.map(
+              (
+                block,
+                index
+              ) => (
+
+                <div
+                  key={index}
+
+                  className={
+                    styles.aiContentCard
+                  }
+                >
+
+                  {block}
+
+                </div>
+
               )
-            }
+            )
+          }
 
-          </ul>
+        </div>
 
-        )
-      }
+      </div>
 
-      {/* ================================================================
-      TARGET
-      ================================================================ */}
+    )
+  }
 
-      {
-        target && (
+</section>
 
-          <div
-            className={styles.aiSummaryTarget}
-          >
 
-            <span
-              className={
-                styles.aiSummaryTargetLabel
-              }
-            >
-
-              おすすめ用途
-
-            </span>
-
-            <span
-              className={
-                styles.aiSummaryTargetText
-              }
-            >
-
-              {target}
-
-            </span>
-
-          </div>
-
-        )
-      }
-
-    </section>
-
-  )
+)
 }

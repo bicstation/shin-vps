@@ -102,6 +102,8 @@ fetchPCDetail(
     return null
   }
 
+  console.log(endpoint)
+
   // ======================================
   // Normalize
   // ======================================

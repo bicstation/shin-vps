@@ -1,420 +1,710 @@
-/* /home/maya/shin-vps/next-bicstation/app/product/[unique_id]/components/recommendation/recommendation.module.css *//* =========================================
-🔥 PRODUCT RECOMMENDATION
-recommendation continuation layer
-========================================= */
+/* ============================================================================
+🔥 FILE
+/home/maya/shin-vps/next-bicstation/app/product/[unique_id]/components/recommendation/recommendation.module.css
+============================================================================ */
 
-/* =========================================
-🔥 COMMON SECTION
-========================================= */
+/* ============================================================================
+🔥 SECTION
+============================================================================ */
 
+.relatedSection,
 .similarUsageSection,
 .nextIntentSection {
-  display: flex;
-  flex-direction: column;
 
-  gap: 28px;
+display: flex;
 
-  padding:
-    30px;
+flex-direction: column;
 
-  border-radius:
-    30px;
+gap: 32px;
 
-  background:
-    linear-gradient(
-      180deg,
-      rgba(15,23,42,.94),
-      rgba(2,6,23,1)
-    );
+padding: 36px;
 
-  border:
-    1px solid rgba(148,163,184,.08);
+border-radius: 32px;
 
-  box-shadow:
-    0 18px 48px rgba(0,0,0,.22);
+background:
+linear-gradient(
+180deg,
+rgba(15,23,42,.94),
+rgba(2,6,23,1)
+);
+
+border:
+1px solid rgba(255,255,255,.06);
 }
 
-/* =========================================
-🔥 COMMON HEADER
-========================================= */
+/* ============================================================================
+🔥 HEADER
+============================================================================ */
 
+.relatedHeader,
 .similarUsageHeader,
 .nextIntentHeader {
-  display: flex;
-  flex-direction: column;
 
-  gap: 12px;
+display: flex;
+
+flex-direction: column;
+
+gap: 16px;
 }
 
-/* =========================================
-🔥 LABELS
-========================================= */
+/* ============================================================================
+🔥 LABEL
+============================================================================ */
 
+.relatedLabel,
 .similarUsageLabel,
 .nextIntentLabel {
-  display: inline-flex;
 
-  width: fit-content;
+color:
+#7dd3fc;
 
-  min-height:
-    30px;
+font-size: 11px;
 
-  align-items: center;
-  justify-content: center;
+font-weight: 800;
 
-  padding:
-    0 14px;
+letter-spacing: .08em;
 
-  border-radius:
-    999px;
-
-  font-size:
-    11px;
-
-  font-weight:
-    800;
-
-  letter-spacing:
-    .08em;
-
-  text-transform:
-    uppercase;
+text-transform: uppercase;
 }
 
-.similarUsageLabel {
-  background:
-    rgba(249,115,22,.08);
+/* ============================================================================
+🔥 TITLE
+============================================================================ */
 
-  border:
-    1px solid rgba(249,115,22,.18);
-
-  color:
-    #fdba74;
-}
-
-.nextIntentLabel {
-  background:
-    rgba(56,189,248,.08);
-
-  border:
-    1px solid rgba(56,189,248,.18);
-
-  color:
-    #7dd3fc;
-}
-
-/* =========================================
-🔥 TITLES
-========================================= */
-
+.relatedTitle,
 .similarUsageTitle,
 .nextIntentTitle {
-  margin: 0;
 
-  color:
-    #ffffff;
+margin: 0;
 
-  font-size:
-    clamp(28px, 4vw, 44px);
+color:
+#ffffff;
 
-  font-weight:
-    900;
+font-size:
+clamp(28px, 4vw, 42px);
 
-  line-height:
-    1.14;
+font-weight: 900;
 
-  letter-spacing:
-    -.04em;
+line-height: 1.1;
 }
 
-/* =========================================
+/* ============================================================================
 🔥 DESCRIPTION
-========================================= */
+============================================================================ */
 
+.relatedDescription,
 .similarUsageDescription,
 .nextIntentDescription {
-  max-width:
-    760px;
 
-  color:
-    #94a3b8;
+max-width: 760px;
 
-  font-size:
-    15px;
+color:
+#94a3b8;
 
-  line-height:
-    1.9;
+font-size: 15px;
+
+line-height: 1.9;
 }
 
-/* =========================================
+/* ============================================================================
 🔥 GRID
-========================================= */
+============================================================================ */
 
+.relatedNarratives,
 .similarUsageGrid,
 .nextIntentGrid {
-  display: grid;
 
-  grid-template-columns:
-    repeat(
-      auto-fit,
-      minmax(240px, 1fr)
-    );
+display: grid;
 
-  gap: 18px;
+grid-template-columns:
+repeat(
+auto-fit,
+minmax(220px, 1fr)
+);
+
+gap: 18px;
 }
 
-/* =========================================
-🔥 SIMILAR USAGE CARD
-========================================= */
+/* ============================================================================
+🔥 NARRATIVE CARD
+============================================================================ */
 
-.similarUsageCard {
-  display: flex;
-
-  align-items: flex-start;
-
-  gap: 16px;
-
-  min-height:
-    180px;
-
-  padding:
-    24px;
-
-  border-radius:
-    24px;
-
-  text-decoration:
-    none;
-
-  background:
-    linear-gradient(
-      180deg,
-      rgba(249,115,22,.06),
-      rgba(15,23,42,.96)
-    );
-
-  border:
-    1px solid rgba(249,115,22,.10);
-
-  transition:
-    transform .18s ease,
-    border-color .18s ease,
-    background .18s ease;
-}
-
-.similarUsageCard:hover {
-  transform:
-    translateY(-3px);
-
-  border-color:
-    rgba(249,115,22,.24);
-
-  background:
-    linear-gradient(
-      180deg,
-      rgba(249,115,22,.10),
-      rgba(15,23,42,.98)
-    );
-}
-
-/* =========================================
-🔥 NEXT INTENT CARD
-========================================= */
-
+.relatedNarrativeCard,
+.similarUsageCard,
 .nextIntentCard {
-  display: flex;
 
-  align-items: flex-start;
+display: flex;
 
-  gap: 16px;
+align-items: center;
 
-  min-height:
-    180px;
+min-height: 130px;
 
-  padding:
-    24px;
+padding: 24px;
 
-  border-radius:
-    24px;
+border-radius: 26px;
 
-  text-decoration:
-    none;
+background:
+rgba(255,255,255,.03);
 
-  background:
-    linear-gradient(
-      180deg,
-      rgba(56,189,248,.05),
-      rgba(15,23,42,.96)
-    );
+border:
+1px solid rgba(255,255,255,.06);
 
-  border:
-    1px solid rgba(56,189,248,.10);
+color:
+#ffffff;
 
-  transition:
-    transform .18s ease,
-    border-color .18s ease,
-    background .18s ease;
+font-size: 15px;
+
+font-weight: 700;
+
+line-height: 1.9;
+
+transition:
+transform .18s ease,
+border-color .18s ease,
+background .18s ease;
 }
 
+.relatedNarrativeCard:hover,
+.similarUsageCard:hover,
 .nextIntentCard:hover {
-  transform:
-    translateY(-3px);
 
-  border-color:
-    rgba(56,189,248,.24);
+transform:
+translateY(-2px);
 
-  background:
-    linear-gradient(
-      180deg,
-      rgba(56,189,248,.10),
-      rgba(15,23,42,.98)
-    );
+border-color:
+rgba(125,211,252,.18);
+
+background:
+rgba(255,255,255,.05);
 }
 
-/* =========================================
-🔥 COMMON CONTENT
-========================================= */
+/* ============================================================================
+🔥 RELATION REASONS
+============================================================================ */
 
-.similarUsageContent,
-.nextIntentContent {
-  display: flex;
-  flex-direction: column;
+.relationReasons {
 
-  gap: 10px;
+display: flex;
+
+flex-wrap: wrap;
+
+gap: 10px;
+
+margin-top: 16px;
 }
 
-/* =========================================
-🔥 ICONS
-========================================= */
+/* ============================================================================
+🔥 RELATION REASON
+============================================================================ */
 
-.similarUsageIcon,
-.nextIntentIcon {
-  font-size:
-    28px;
+.relationReason {
 
-  line-height:
-    1;
+display: inline-flex;
+
+align-items: center;
+
+justify-content: center;
+
+min-height: 36px;
+
+padding: 0 14px;
+
+border-radius: 999px;
+
+background:
+rgba(34,197,94,.10);
+
+border:
+1px solid rgba(34,197,94,.16);
+
+color:
+#86efac;
+
+font-size: 11px;
+
+font-weight: 800;
+
+line-height: 1.2;
+
+letter-spacing: .02em;
 }
 
-/* =========================================
-🔥 CARD TITLES
-========================================= */
+/* ============================================================================
+🔥 EXPLORATION CARD
+============================================================================ */
 
-.similarUsageCardTitle,
-.nextIntentCardTitle {
-  color:
-    #ffffff;
+.explorationCard {
 
-  font-size:
-    18px;
+display: flex;
 
-  font-weight:
-    800;
+flex-direction: column;
 
-  line-height:
-    1.4;
+gap: 20px;
+
+height: 100%;
+
+padding: 20px;
+
+border-radius: 28px;
+
+background:
+linear-gradient(
+180deg,
+rgba(15,23,42,.96),
+rgba(2,6,23,1)
+);
+
+border:
+1px solid rgba(255,255,255,.06);
+
+text-decoration: none;
+
+overflow: hidden;
+
+transition:
+transform .2s ease,
+border-color .2s ease,
+box-shadow .2s ease;
 }
 
-/* =========================================
-🔥 CARD DESCRIPTION
-========================================= */
+.explorationCard:hover {
 
-.similarUsageCardDescription,
-.nextIntentCardDescription {
-  margin: 0;
+transform:
+translateY(-4px);
 
-  color:
-    #cbd5e1;
+border-color:
+rgba(125,211,252,.24);
 
-  font-size:
-    14px;
-
-  line-height:
-    1.8;
+box-shadow:
+0 24px 48px rgba(0,0,0,.34);
 }
 
-/* =========================================
-🔥 FOOTERS
-========================================= */
+/* ============================================================================
+🔥 IMAGE AREA
+============================================================================ */
 
-.similarUsageFooter,
-.nextIntentFooter {
-  display: flex;
+.explorationImageArea {
 
-  align-items: center;
+display: flex;
+
+align-items: center;
+
+justify-content: center;
+
+min-height: 220px;
+
+padding: 18px;
+
+border-radius: 24px;
+
+background:
+rgba(255,255,255,.03);
+
+overflow: hidden;
 }
 
-.similarUsageFooterText,
-.nextIntentFooterText {
-  color:
-    #94a3b8;
+/* ============================================================================
+🔥 IMAGE
+============================================================================ */
 
-  font-size:
-    14px;
+.explorationImage {
 
-  font-weight:
-    700;
+width: 100%;
 
-  line-height:
-    1.8;
+height: auto;
+
+max-height: 220px;
+
+object-fit: contain;
+
+transition:
+transform .2s ease;
 }
 
-/* =========================================
+.explorationCard:hover
+.explorationImage {
+
+transform:
+scale(1.03);
+}
+
+/* ============================================================================
+🔥 BODY
+============================================================================ */
+
+.explorationBody {
+
+display: flex;
+
+flex-direction: column;
+
+gap: 16px;
+}
+
+/* ============================================================================
+🔥 MAKER
+============================================================================ */
+
+.explorationMaker {
+
+color:
+#7dd3fc;
+
+font-size: 11px;
+
+font-weight: 800;
+
+letter-spacing: .08em;
+
+text-transform: uppercase;
+}
+
+/* ============================================================================
+🔥 TITLE
+============================================================================ */
+
+.explorationTitle {
+
+margin: 0;
+
+color:
+#ffffff;
+
+font-size: 18px;
+
+font-weight: 900;
+
+line-height: 1.6;
+}
+
+/* ============================================================================
+🔥 REASON
+============================================================================ */
+
+.explorationReason {
+
+margin: 0;
+
+color:
+#cbd5e1;
+
+font-size: 14px;
+
+line-height: 1.9;
+}
+
+/* ============================================================================
+🔥 CHIPS
+============================================================================ */
+
+.explorationChips {
+
+display: flex;
+
+flex-wrap: wrap;
+
+gap: 10px;
+}
+
+/* ============================================================================
+🔥 CHIP
+============================================================================ */
+
+.explorationChip {
+
+display: inline-flex;
+
+align-items: center;
+
+justify-content: center;
+
+min-height: 34px;
+
+padding: 0 14px;
+
+border-radius: 999px;
+
+background:
+rgba(59,130,246,.10);
+
+border:
+1px solid rgba(59,130,246,.18);
+
+color:
+#93c5fd;
+
+font-size: 11px;
+
+font-weight: 800;
+}
+
+/* ============================================================================
+🔥 CONFIDENCE
+============================================================================ */
+
+.explorationConfidence {
+
+color:
+#facc15;
+
+font-size: 12px;
+
+font-weight: 800;
+
+letter-spacing: .04em;
+
+text-transform: uppercase;
+}
+
+/* ============================================================================
+🔥 FOOTER
+============================================================================ */
+
+.explorationFooter {
+
+margin-top: auto;
+
+padding-top: 12px;
+}
+
+/* ============================================================================
+🔥 PRICE
+============================================================================ */
+
+.explorationPrice {
+
+color:
+#fb923c;
+
+font-size: 28px;
+
+font-weight: 900;
+
+line-height: 1;
+}
+
+/* ============================================================================
+🔥 RELATED PRODUCTS
+============================================================================ */
+
+.relatedProductsSection {
+
+display: flex;
+
+flex-direction: column;
+
+gap: 28px;
+}
+
+/* ============================================================================
+🔥 RELATED PRODUCTS HEADER
+============================================================================ */
+
+.relatedProductsHeader {
+
+display: flex;
+
+flex-direction: column;
+
+gap: 14px;
+}
+
+/* ============================================================================
+🔥 RELATED PRODUCTS LABEL
+============================================================================ */
+
+.relatedProductsLabel {
+
+color:
+#7dd3fc;
+
+font-size: 11px;
+
+font-weight: 800;
+
+letter-spacing: .08em;
+
+text-transform: uppercase;
+}
+
+/* ============================================================================
+🔥 RELATED PRODUCTS TITLE
+============================================================================ */
+
+.relatedProductsTitle {
+
+margin: 0;
+
+color:
+#ffffff;
+
+font-size:
+clamp(28px, 4vw, 42px);
+
+font-weight: 900;
+
+line-height: 1.1;
+}
+
+/* ============================================================================
+🔥 RELATED PRODUCTS DESCRIPTION
+============================================================================ */
+
+.relatedProductsDescription {
+
+max-width: 760px;
+
+color:
+#94a3b8;
+
+font-size: 15px;
+
+line-height: 1.9;
+}
+
+/* ============================================================================
+🔥 HORIZONTAL SLIDER
+============================================================================ */
+
+.relatedProductsSlider {
+
+display: grid;
+
+grid-auto-flow: column;
+
+grid-auto-columns:
+minmax(320px, 360px);
+
+gap: 24px;
+
+overflow-x: auto;
+
+padding-bottom: 12px;
+
+scroll-snap-type: x mandatory;
+}
+
+/* ============================================================================
+🔥 SLIDER ITEM
+============================================================================ */
+
+.relatedProductsItem {
+
+display: flex;
+
+flex-direction: column;
+
+gap: 18px;
+
+scroll-snap-align: start;
+}
+
+/* ============================================================================
+🔥 SCROLLBAR
+============================================================================ */
+
+.relatedProductsSlider::-webkit-scrollbar {
+
+height: 10px;
+}
+
+.relatedProductsSlider::-webkit-scrollbar-track {
+
+background:
+rgba(255,255,255,.04);
+
+border-radius: 999px;
+}
+
+.relatedProductsSlider::-webkit-scrollbar-thumb {
+
+background:
+rgba(125,211,252,.22);
+
+border-radius: 999px;
+}
+
+/* ============================================================================
 🔥 MOBILE
-========================================= */
+============================================================================ */
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
 
-  .similarUsageSection,
-  .nextIntentSection {
+.relatedSection,
+.similarUsageSection,
+.nextIntentSection {
 
-    padding:
-      22px;
 
-    border-radius:
-      24px;
+padding: 24px;
 
-    gap:
-      24px;
+border-radius: 28px;
 
-  }
 
-  .similarUsageGrid,
-  .nextIntentGrid {
+}
 
-    grid-template-columns:
-      1fr;
+.relatedNarrativeCard,
+.similarUsageCard,
+.nextIntentCard {
 
-  }
 
-  .similarUsageCard,
-  .nextIntentCard {
+min-height: auto;
 
-    min-height:
-      auto;
+padding: 18px;
 
-    padding:
-      20px;
+font-size: 14px;
 
-  }
 
-  .similarUsageTitle,
-  .nextIntentTitle {
+}
 
-    font-size:
-      clamp(26px, 8vw, 38px);
+.explorationCard {
 
-  }
 
-  .similarUsageDescription,
-  .nextIntentDescription {
+padding: 18px;
 
-    font-size:
-      14px;
+border-radius: 24px;
 
-    line-height:
-      1.8;
 
-  }
+}
+
+.explorationImageArea {
+
+
+min-height: 180px;
+
+
+}
+
+.explorationTitle {
+
+
+font-size: 16px;
+
+
+}
+
+.explorationReason {
+
+
+font-size: 13px;
+
+
+}
+
+.explorationPrice {
+
+
+font-size: 24px;
+
+
+}
+
+.relatedProductsSlider {
+
+
+grid-auto-columns:
+  minmax(280px, 88vw);
+
+
+}
 
 }
