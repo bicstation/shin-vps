@@ -570,3 +570,212 @@ semantic decision renderer
   }
 
 }
+
+/* ============================================================================
+🔥 AI SUMMARY
+============================================================================ */
+
+.aiSummary {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 28px;
+
+  padding: 32px;
+
+  border-radius: 28px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(15,23,42,.92),
+      rgba(2,6,23,1)
+    );
+
+  border:
+    1px solid rgba(255,255,255,.06);
+}
+
+/* ============================================================================
+🔥 HEADER
+============================================================================ */
+
+.aiSummaryHeader {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 10px;
+}
+
+.aiSummaryLabel {
+
+  color:
+    #7dd3fc;
+
+  font-size: 11px;
+
+  font-weight: 800;
+
+  letter-spacing: .08em;
+
+  text-transform: uppercase;
+}
+
+.aiSummaryTitle {
+
+  margin: 0;
+
+  color:
+    #ffffff;
+
+  font-size:
+    clamp(28px, 4vw, 42px);
+
+  font-weight: 900;
+
+  line-height: 1.1;
+}
+
+/* ============================================================================
+🔥 LIST
+============================================================================ */
+
+.aiSummaryList {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 16px;
+
+  margin: 0;
+
+  padding: 0;
+
+  list-style: none;
+}
+
+.aiSummaryItem {
+
+  position: relative;
+
+  padding:
+    18px 20px 18px 54px;
+
+  border-radius: 20px;
+
+  background:
+    rgba(255,255,255,.03);
+
+  border:
+    1px solid rgba(255,255,255,.06);
+
+  color:
+    #e2e8f0;
+
+  font-size: 15px;
+
+  line-height: 1.9;
+}
+
+.aiSummaryItem::before {
+
+  content: '✓';
+
+  position: absolute;
+
+  left: 20px;
+
+  top: 18px;
+
+  color:
+    #4ade80;
+
+  font-size: 18px;
+
+  font-weight: 900;
+}
+
+/* ============================================================================
+🔥 TARGET
+============================================================================ */
+
+.aiSummaryTarget {
+
+  display: flex;
+
+  flex-wrap: wrap;
+
+  align-items: center;
+
+  gap: 14px;
+
+  padding-top: 8px;
+}
+
+.aiSummaryTargetLabel {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  min-height: 38px;
+
+  padding: 0 14px;
+
+  border-radius: 999px;
+
+  background:
+    rgba(249,115,22,.14);
+
+  border:
+    1px solid rgba(249,115,22,.24);
+
+  color:
+    #fdba74;
+
+  font-size: 12px;
+
+  font-weight: 800;
+}
+
+.aiSummaryTargetText {
+
+  color:
+    #ffffff;
+
+  font-size: 15px;
+
+  font-weight: 700;
+
+  line-height: 1.8;
+}
+
+/* ============================================================================
+🔥 MOBILE
+============================================================================ */
+
+@media (max-width: 640px) {
+
+  .aiSummary {
+
+    padding: 24px;
+
+    border-radius: 24px;
+  }
+
+  .aiSummaryItem {
+
+    padding:
+      16px 18px 16px 48px;
+
+    font-size: 14px;
+  }
+
+}

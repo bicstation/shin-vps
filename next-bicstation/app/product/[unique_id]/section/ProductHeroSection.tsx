@@ -7,6 +7,9 @@ import ProductHeroCapability
 import ProductHeroTrust
   from '../components/hero/ProductHeroTrust'
 
+import ProductAISummary
+  from '../components/semantic/ProductAISummary'
+
 type Props = {
   product: any
 }
@@ -21,6 +24,10 @@ ProductHeroSection({
     <>
 
       <ProductHero
+        product={product}
+      />
+
+      <ProductAISummary
         product={product}
       />
 

@@ -1,9 +1,11 @@
-// next-bicstation/app/product/[unique_id]/components/hero/ProductHero.tsx
+// ============================================================================
+// FILE:
+// /home/maya/shin-dev/shin-vps/next-bicstation/app/product/[unique_id]/components/hero/ProductHero.tsx
+// ============================================================================
 
-/* eslint-disable @next/next/no-img-element */
+'use client'
 
-import Link
-  from 'next/link'
+import Link from 'next/link'
 
 import styles
   from './hero.module.css'
@@ -12,136 +14,57 @@ type Props = {
   product: any
 }
 
-/* =========================================
-🔥 HELPERS
-========================================= */
-
-function buildIntentTags(
-  product: any
-) {
-
-  const tags: string[] = []
-
-  const text = JSON.stringify(
-    product
-  ).toLowerCase()
-
-  // ======================================
-  // AI
-  // ======================================
-
-  if (
-    text.includes('rtx')
-    || text.includes('ai')
-  ) {
-
-    tags.push(
-      '🤖 AI生成向け'
-    )
-
-  }
-
-  // ======================================
-  // GAMING
-  // ======================================
-
-  if (
-    text.includes('gaming')
-    || text.includes('geforce')
-  ) {
-
-    tags.push(
-      '🎮 gaming向け'
-    )
-
-  }
-
-  // ======================================
-  // CREATOR
-  // ======================================
-
-  if (
-    text.includes('creator')
-    || text.includes('premiere')
-  ) {
-
-    tags.push(
-      '🎬 動画編集向け'
-    )
-
-  }
-
-  // ======================================
-  // COST
-  // ======================================
-
-  if (
-    product?.price
-    && Number(product.price)
-      < 250000
-  ) {
-
-    tags.push(
-      '💰 コスパ重視'
-    )
-
-  }
-
-  return tags.slice(0, 3)
-
-}
-
-/* =========================================
-🔥 COMPONENT
-========================================= */
-
 export default function ProductHero({
   product,
 }: Props) {
 
-  // ======================================
-  // BASIC
-  // ======================================
+  // ==========================================================================
+  // VALUES
+  // ==========================================================================
+
+  const title =
+    product?.name
+    || 'PRODUCT'
 
   const image =
     product?.image_url
-    || product?.thumbnail_url
-    || '/no-image.webp'
 
-  const name =
-    product?.name
-    || 'PC Product'
+  const maker =
+    product?.maker_name
+    || product?.maker
+    || 'UNKNOWN'
 
   const price =
     product?.price
-      ? Number(
-          product.price
-        ).toLocaleString()
-      : null
 
-  // ======================================
-  // COMPARE
-  // ======================================
+  // ==========================================================================
+  // SEMANTIC CHIPS
+  // ==========================================================================
 
-  const compareSpecs = [
+  const groupedAttributes =
+    product?.grouped_attributes
+    || {}
 
-    product?.gpu_name,
-    product?.cpu_name,
-    product?.memory,
-    product?.storage,
+  const semanticChips = [
 
-  ]
-    .filter(Boolean)
-    .slice(0, 4)
+    ...(groupedAttributes?.usage || []),
+    ...(groupedAttributes?.gpu || []),
+    ...(groupedAttributes?.cpu || []),
 
-  // ======================================
-  // INTENT
-  // ======================================
+  ].slice(0, 8)
 
-  const intentTags =
-    buildIntentTags(
-      product
-    )
+  // ==========================================================================
+  // CLEAN SUMMARY
+  // ==========================================================================
+
+  const summary =
+    product?.ai_summary
+      ?.replace(/\[SUMMARY_DATA\]/g, '')
+      ?.trim()
+
+  // ==========================================================================
+  // RENDER
+  // ==========================================================================
 
   return (
 
@@ -151,9 +74,9 @@ export default function ProductHero({
       }
     >
 
-      {/* ==================================
+      {/* ================================================================
       TOP
-      ================================== */}
+      ================================================================ */}
 
       <div
         className={
@@ -161,39 +84,72 @@ export default function ProductHero({
         }
       >
 
-        {/* ==============================
-        INTENT TAGS
-        ============================== */}
-
         <div
           className={
             styles.productHeroTags
           }
         >
 
-          {intentTags.map(
-            (tag) => (
+          <div
+            className={
+              styles.productHeroTag
+            }
+          >
 
-              <div
-                key={tag}
+            {maker}
 
-                className={
-                  styles.productHeroTag
-                }
-              >
-                {tag}
-              </div>
+          </div>
 
-            )
-          )}
+          {
+            semanticChips
+              .slice(0, 2)
+              .map(
+                (
+                  chip: any,
+                  index: number
+                ) => (
+
+                  <div
+                    key={index}
+
+                    className={
+                      styles.productHeroTag
+                    }
+                  >
+
+                    {
+                      chip?.label
+                      || chip?.name
+                      || chip
+                    }
+
+                  </div>
+
+                )
+              )
+          }
 
         </div>
 
+         {/* ========================================================
+          TITLE
+          ======================================================== */}
+
+          <h1
+            className={
+              styles.productHeroTitle
+            }
+          >
+
+            {title}
+
+          </h1>
+
       </div>
 
-      {/* ==================================
+      {/* ================================================================
       MAIN
-      ================================== */}
+      ================================================================ */}
 
       <div
         className={
@@ -201,9 +157,9 @@ export default function ProductHero({
         }
       >
 
-        {/* ==============================
+        {/* ============================================================
         IMAGE
-        ============================== */}
+        ============================================================ */}
 
         <div
           className={
@@ -211,21 +167,26 @@ export default function ProductHero({
           }
         >
 
-          <img
-            src={image}
+          {
+            image && (
 
-            alt={name}
+              <img
+                src={image}
+                alt={title}
 
-            className={
-              styles.productHeroImage
-            }
-          />
+                className={
+                  styles.productHeroImage
+                }
+              />
+
+            )
+          }
 
         </div>
 
-        {/* ==============================
+        {/* ============================================================
         CONTENT
-        ============================== */}
+        ============================================================ */}
 
         <div
           className={
@@ -233,220 +194,166 @@ export default function ProductHero({
           }
         >
 
-          {/* ============================
+          {/* ========================================================
           LABEL
-          ============================ */}
+          ======================================================== */}
 
           <div
             className={
               styles.productHeroLabel
             }
           >
-            SEMANTIC RECOMMENDATION
+
+            SEMANTIC PRODUCT RUNTIME
+
           </div>
 
-          {/* ============================
-          TITLE
-          ============================ */}
-
-          <h1
-            className={
-              styles.productHeroTitle
-            }
-          >
-            {name}
-          </h1>
-
-          {/* ============================
+          {/* ========================================================
           DESCRIPTION
-          ============================ */}
+          ======================================================== */}
 
-          <p
-            className={
-              styles.productHeroDescription
-            }
-          >
-            gaming・AI生成・動画編集など、
-            幅広い用途に対応できる
-            高性能PC構成です。
-          </p>
+          {/* {
+            summary && (
 
-          {/* ============================
-          CAPABILITY
-          ============================ */}
+              <div
+                className={
+                  styles.productHeroDescription
+                }
+              >
 
-          <div
-            className={
-              styles.productHeroCapabilities
-            }
-          >
+                {summary}
 
-            <div
-              className={
-                styles.productHeroCapability
-              }
-            >
-              ✓ 高fps gaming対応
-            </div>
+              </div>
 
-            <div
-              className={
-                styles.productHeroCapability
-              }
-            >
-              ✓ AI画像生成対応
-            </div>
+            )
+          } */}
 
-            <div
-              className={
-                styles.productHeroCapability
-              }
-            >
-              ✓ 動画編集OK
-            </div>
+          {/* ========================================================
+          CAPABILITIES
+          ======================================================== */}
 
-          </div>
+          {
+            semanticChips.length > 0 && (
 
-          {/* ============================
-          COMPACT COMPARE
-          ============================ */}
+              <div
+                className={
+                  styles.productHeroCapabilities
+                }
+              >
 
-          <div
-            className={
-              styles.productHeroSpecs
-            }
-          >
+                {
+                  semanticChips.map(
+                    (
+                      chip: any,
+                      index: number
+                    ) => (
 
-            {compareSpecs.map(
-              (spec) => (
+                      <div
+                        key={index}
 
-                <div
-                  key={spec}
+                        className={
+                          styles.productHeroCapability
+                        }
+                      >
 
-                  className={
-                    styles.productHeroSpec
-                  }
-                >
-                  {spec}
-                </div>
+                        ✓ {
+                          chip?.label
+                          || chip?.name
+                          || chip
+                        }
 
-              )
-            )}
+                      </div>
 
-          </div>
+                    )
+                  )
+                }
 
-          {/* ============================
-          TRUST
-          ============================ */}
+              </div>
 
-          <div
-            className={
-              styles.productHeroTrust
-            }
-          >
+            )
+          }
 
-            <div
-              className={
-                styles.productHeroTrustItem
-              }
-            >
-              ✔ 初心者向け
-            </div>
+        </div>
 
-            <div
-              className={
-                styles.productHeroTrustItem
-              }
-            >
-              ✔ 長く使いやすい
-            </div>
+      </div>
 
-            <div
-              className={
-                styles.productHeroTrustItem
-              }
-            >
-              ✔ 高性能GPU搭載
-            </div>
+      {/* ================================================================
+      BOTTOM
+      ================================================================ */}
 
-          </div>
+      <div
+        className={
+          styles.productHeroBottom
+        }
+      >
 
-          {/* ============================
-          BOTTOM
-          ============================ */}
+        {/* ============================================================
+        PRICE
+        ============================================================ */}
+
+        <div
+          className={
+            styles.productHeroPriceArea
+          }
+        >
 
           <div
             className={
-              styles.productHeroBottom
+              styles.productHeroPriceLabel
             }
           >
 
-            {/* ==========================
             PRICE
-            ========================== */}
-
-            <div
-              className={
-                styles.productHeroPriceArea
-              }
-            >
-
-              <div
-                className={
-                  styles.productHeroPriceLabel
-                }
-              >
-                最安価格
-              </div>
-
-              <div
-                className={
-                  styles.productHeroPrice
-                }
-              >
-                {price
-                  ? `¥${price}`
-                  : '価格未設定'}
-              </div>
-
-            </div>
-
-            {/* ==========================
-            CTA
-            ========================== */}
-
-            <div
-              className={
-                styles.productHeroActions
-              }
-            >
-
-              <Link
-                href={
-                  product?.affiliate_url
-                  || '#'
-                }
-
-                className={
-                  styles.productHeroPrimary
-                }
-              >
-                最安価格を見る
-              </Link>
-
-              <Link
-                href="/ranking"
-
-                className={
-                  styles.productHeroSecondary
-                }
-              >
-                比較を続ける
-              </Link>
-
-            </div>
 
           </div>
+
+          <div
+            className={
+              styles.productHeroPrice
+            }
+          >
+
+            ¥
+            {Number(price)
+              .toLocaleString()}
+
+          </div>
+
+        </div>
+
+        {/* ============================================================
+        ACTIONS
+        ============================================================ */}
+
+        <div
+          className={
+            styles.productHeroActions
+          }
+        >
+
+          <Link
+            href="#spec"
+
+            className={
+              styles.productHeroPrimary
+            }
+          >
+
+            スペックを見る
+
+          </Link>
+
+          <Link
+            href="#related"
+
+            className={
+              styles.productHeroSecondary
+            }
+          >
+
+            近い用途のPCを見る
+
+          </Link>
 
         </div>
 
