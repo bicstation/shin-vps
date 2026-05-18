@@ -1,11 +1,23 @@
 // ============================================================================
 // FILE:
-// /home/maya/shin-vps/next-bicstation/app/product/page.tsx
+// /home/maya/shin-dev/shin-vps/next-bicstation/app/product/page.tsx
 // ============================================================================
+
+'use client'
+
+import {
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
 
 import Link from 'next/link'
 
 import styles from './styles/product-runtime.module.css'
+
+import {
+  buildEndpoint,
+} from '@/shared/lib/api/django/pc/utils/buildEndpoint'
 
 /* ============================================================================
 🔥 Types
@@ -27,62 +39,157 @@ type Product = {
   >
 }
 
+type Shelf = {
+
+  attribute: string
+
+  title: string
+
+  description: string
+}
+
+type ShelfRuntime = Shelf & {
+
+  products: Product[]
+}
+
+/* ============================================================================
+🔥 Semantic Shelves
+============================================================================ */
+
+const SHELVES: Shelf[] = [
+
+  {
+    attribute:
+      'usage-business',
+
+    title:
+      'Business Workflow',
+
+    description:
+      'business workflow 向け semantic runtime。',
+  },
+
+  {
+    attribute:
+      'usage-creator',
+
+    title:
+      'Creator Workflow',
+
+    description:
+      '映像編集・配信・制作 workflow 向け runtime。',
+  },
+
+  {
+    attribute:
+      'usage-ai',
+
+    title:
+      'AI Workflow',
+
+    description:
+      '生成AI・ローカルLLM workflow 向け runtime。',
+  },
+
+  {
+    attribute:
+      'usage-gaming',
+
+    title:
+      'Gaming Runtime',
+
+    description:
+      'gaming immersion と high fps workflow runtime。',
+  },
+
+  {
+    attribute:
+      'usage-mobile',
+
+    title:
+      'Compact Mobility',
+
+    description:
+      '軽量・持ち運び重視 semantic runtime。',
+  },
+
+  {
+    attribute:
+      'memory-heavy',
+
+    title:
+      'Memory Heavy Workflow',
+
+    description:
+      '大容量 memory workload 向け runtime。',
+  },
+
+]
+
 /* ============================================================================
 🔥 Runtime Fetch
 ============================================================================ */
 
-async function getProducts(): Promise<Product[]> {
+async function fetchShelfProducts(
+  attribute: string
+) {
 
   try {
 
+    /* ======================================================================
+    🔥 Endpoint
+    ====================================================================== */
+
+    const endpoint =
+      buildEndpoint(
+        `/general/pc-products/?attribute=${attribute}`
+      )
+
+    /* ======================================================================
+    🔥 Fetch
+    ====================================================================== */
+
     const response =
       await fetch(
-
-        'http://bicstation-host:8083/api/general/pc-products/',
-
-        {
-          cache:
-            'no-store',
-        }
+        endpoint
       )
+
+    /* ======================================================================
+    🔥 Error
+    ====================================================================== */
 
     if (!response.ok) {
 
       throw new Error(
-        'Failed to fetch products'
+        `Failed to fetch ${attribute}`
       )
     }
+
+    /* ======================================================================
+    🔥 JSON
+    ====================================================================== */
 
     const data =
       await response.json()
 
-    /*
-    ========================================================================
-    🔥 Runtime Shape
-    ========================================================================
-    */
+    /* ======================================================================
+    🔥 Products
+    ====================================================================== */
 
-    if (
-      Array.isArray(
-        data?.products
-      )
-    ) {
+    return Array.isArray(
+      data?.products
+    )
 
-      return data.products
-    }
+      ? data.products
 
-    /*
-    ========================================================================
-    🔥 Fallback
-    ========================================================================
-    */
-
-    return []
+      : []
 
   } catch (error) {
 
     console.error(
-      'Product Runtime Error:',
+      'Semantic Shelf Runtime Error:',
+      attribute,
       error
     )
 
@@ -91,17 +198,94 @@ async function getProducts(): Promise<Product[]> {
 }
 
 /* ============================================================================
-🔥 Product Runtime Listing
+🔥 Product Runtime
 ============================================================================ */
 
-export default async function ProductPage() {
+export default function ProductPage() {
 
   /* ==========================================================================
   🔥 Runtime
   ========================================================================== */
 
-  const products =
-    await getProducts()
+  const [
+    shelfRuntime,
+    setShelfRuntime,
+  ] = useState<ShelfRuntime[]>([])
+
+  const [
+    loading,
+    setLoading,
+  ] = useState(true)
+
+  /* ==========================================================================
+  🔥 Fetch
+  ========================================================================== */
+
+  useEffect(() => {
+
+    async function loadRuntime() {
+
+      try {
+
+        const runtime =
+          await Promise.all(
+
+            SHELVES.map(
+              async (
+                shelf
+              ) => ({
+
+                ...shelf,
+
+                products:
+                  await fetchShelfProducts(
+                    shelf.attribute
+                  ),
+              })
+            )
+          )
+
+        setShelfRuntime(
+          runtime
+        )
+
+      } catch (error) {
+
+        console.error(
+          'Runtime Load Error:',
+          error
+        )
+
+      } finally {
+
+        setLoading(false)
+      }
+    }
+
+    loadRuntime()
+
+  }, [])
+
+  /* ==========================================================================
+  🔥 Loading
+  ========================================================================== */
+
+  if (loading) {
+
+    return (
+
+      <main className={styles.runtime}>
+
+        <div className={styles.loading}>
+
+          semantic runtime loading...
+
+        </div>
+
+      </main>
+
+    )
+  }
 
   /* ==========================================================================
   🔥 Render
@@ -135,8 +319,8 @@ export default async function ProductPage() {
           <p className={styles.heroDescription}>
 
             SHIN CORE LINX は、
-            スペック比較ではなく、
-            semantic workflow discovery を提供します。
+            semantic discovery runtime として、
+            workflow exploration を提供します。
 
           </p>
 
@@ -145,226 +329,314 @@ export default async function ProductPage() {
       </section>
 
       {/* ================================================================
-      Runtime Shelf
+      Semantic Shelves
       ================================================================ */}
 
       <div className={styles.runtimeShelves}>
 
-        <section className={styles.shelf}>
-
-          {/* ============================================================
-          Shelf Header
-          ============================================================ */}
-
-          <div className={styles.shelfHeader}>
-
-            <div>
-
-              <div className={styles.shelfEyebrow}>
-
-                SEMANTIC RUNTIME
-
-              </div>
-
-              <h2 className={styles.shelfTitle}>
-
-                Discovery Runtime
-
-              </h2>
-
-              <p className={styles.shelfDescription}>
-
-                backend semantic runtime が
-                検出した discovery nodes。
-
-              </p>
-
-            </div>
-
-          </div>
-
-          {/* ============================================================
-          Shelf Grid
-          ============================================================ */}
-
-          <div className={styles.shelfGrid}>
-
-            {products.map(
-              (
-                product,
-                index
-              ) => {
-
-                /*
-                ==========================================================
-                🔥 Runtime
-                ==========================================================
-                */
-
-                const groupedAttributes =
-                  product?.grouped_attributes
-                  || {}
-
-                const semanticLabels = [
-
-                  ...(
-                    groupedAttributes?.usage
-                    || []
-                  ),
-
-                  ...(
-                    groupedAttributes?.semantic
-                    || []
-                  ),
-
-                ]
-                  .slice(0, 3)
-
-                /*
-                ==========================================================
-                🔥 Render
-                ==========================================================
-                */
-
-                return (
-
-                  <Link
-                    key={
-                      product?.unique_id
-                      || index
-                    }
-                    href={
-                      `/product/${product?.unique_id}`
-                    }
-                    className={styles.card}
-                  >
-
-                    {/* ================================================
-                    Image
-                    ================================================ */}
-
-                    <div className={styles.cardImageArea}>
-
-                      {product?.image_url ? (
-
-                        <img
-                          src={
-                            product.image_url
-                          }
-                          alt={
-                            product?.name
-                          }
-                          className={
-                            styles.cardImage
-                          }
-                        />
-
-                      ) : (
-
-                        <div
-                          className={
-                            styles.cardPlaceholder
-                          }
-                        >
-
-                          NO IMAGE
-
-                        </div>
-
-                      )}
-
-                    </div>
-
-                    {/* ================================================
-                    Content
-                    ================================================ */}
-
-                    <div className={styles.cardContent}>
-
-                      <h3 className={styles.cardTitle}>
-
-                        {product?.name}
-
-                      </h3>
-
-                      {product?.recommendation_reason && (
-
-                        <p
-                          className={
-                            styles.cardReason
-                          }
-                        >
-
-                          {
-                            product.recommendation_reason
-                          }
-
-                        </p>
-
-                      )}
-
-                      {/* ============================================
-                      Semantic Chips
-                      ============================================ */}
-
-                      {!!semanticLabels.length && (
-
-                        <div
-                          className={
-                            styles.cardChips
-                          }
-                        >
-
-                          {semanticLabels.map(
-                            (
-                              label,
-                              chipIndex
-                            ) => (
-
-                              <div
-                                key={chipIndex}
-                                className={
-                                  styles.cardChip
-                                }
-                              >
-
-                                {
-                                  typeof label === 'string'
-
-                                    ? label
-
-                                    : (
-                                      label?.label
-                                      || label?.name
-                                      || 'semantic'
-                                    )
-                                }
-
-                              </div>
-
-                            )
-                          )}
-
-                        </div>
-
-                      )}
-
-                    </div>
-
-                  </Link>
-
-                )
-
-              }
-            )}
-
-          </div>
-
-        </section>
+        {shelfRuntime.map(
+          (
+            shelf
+          ) => (
+
+            <SemanticShelf
+              key={shelf.attribute}
+              shelf={shelf}
+            />
+
+          )
+        )}
 
       </div>
 
     </main>
+
+  )
+}
+
+/* ============================================================================
+🔥 Semantic Shelf
+============================================================================ */
+
+function SemanticShelf({
+  shelf,
+}: {
+  shelf: ShelfRuntime
+}) {
+
+  /* ==========================================================================
+  🔥 Ref
+  ========================================================================== */
+
+  const shelfRef =
+    useRef<HTMLDivElement | null>(
+      null
+    )
+
+  /* ==========================================================================
+  🔥 Scroll
+  ========================================================================== */
+
+  function scrollShelf(
+    direction:
+      'left'
+      | 'right'
+  ) {
+
+    if (!shelfRef.current) {
+
+      return
+    }
+
+    shelfRef.current.scrollBy({
+
+      left:
+        direction === 'left'
+          ? -1200
+          : 1200,
+
+      behavior:
+        'smooth',
+    })
+  }
+
+  /* ==========================================================================
+  🔥 Render
+  ========================================================================== */
+
+  return (
+
+    <section className={styles.shelf}>
+
+      {/* ================================================================
+      Header
+      ================================================================ */}
+
+      <div className={styles.shelfHeader}>
+
+        <div>
+
+          <div className={styles.shelfEyebrow}>
+
+            SEMANTIC WORKFLOW
+
+          </div>
+
+          <h2 className={styles.shelfTitle}>
+
+            {shelf.title}
+
+          </h2>
+
+          <p className={styles.shelfDescription}>
+
+            {shelf.description}
+
+          </p>
+
+        </div>
+
+        {/* ============================================================
+        Controls
+        ============================================================ */}
+
+        <div className={styles.shelfControls}>
+
+          <button
+            className={styles.shelfButton}
+            onClick={() =>
+              scrollShelf(
+                'left'
+              )
+            }
+          >
+
+            ←
+
+          </button>
+
+          <button
+            className={styles.shelfButton}
+            onClick={() =>
+              scrollShelf(
+                'right'
+              )
+            }
+          >
+
+            →
+
+          </button>
+
+        </div>
+
+      </div>
+
+      {/* ================================================================
+      Horizontal Shelf
+      ================================================================ */}
+
+      <div
+        ref={shelfRef}
+        className={styles.horizontalShelf}
+      >
+
+        {shelf.products.map(
+          (
+            product,
+            index
+          ) => {
+
+            const groupedAttributes =
+              product?.grouped_attributes
+              || {}
+
+            const semanticLabels = [
+
+              ...(
+                groupedAttributes?.usage
+                || []
+              ),
+
+              ...(
+                groupedAttributes?.semantic
+                || []
+              ),
+
+            ]
+              .slice(0, 4)
+
+            return (
+
+              <Link
+                key={
+                  product?.unique_id
+                  || index
+                }
+                href={
+                  `/product/${product?.unique_id}`
+                }
+                className={styles.card}
+              >
+
+                {/* ================================================
+                Image
+                ================================================ */}
+
+                <div className={styles.cardImageArea}>
+
+                  {product?.image_url ? (
+
+                    <img
+                      src={
+                        product.image_url
+                      }
+                      alt={
+                        product?.name
+                      }
+                      className={
+                        styles.cardImage
+                      }
+                    />
+
+                  ) : (
+
+                    <div
+                      className={
+                        styles.cardPlaceholder
+                      }
+                    >
+
+                      NO IMAGE
+
+                    </div>
+
+                  )}
+
+                </div>
+
+                {/* ================================================
+                Content
+                ================================================ */}
+
+                <div className={styles.cardContent}>
+
+                  <h3 className={styles.cardTitle}>
+
+                    {product?.name}
+
+                  </h3>
+
+                  {product?.recommendation_reason && (
+
+                    <p
+                      className={
+                        styles.cardReason
+                      }
+                    >
+
+                      {
+                        product.recommendation_reason
+                      }
+
+                    </p>
+
+                  )}
+
+                  {!!semanticLabels.length && (
+
+                    <div
+                      className={
+                        styles.cardChips
+                      }
+                    >
+
+                      {semanticLabels.map(
+                        (
+                          label,
+                          chipIndex
+                        ) => (
+
+                          <div
+                            key={chipIndex}
+                            className={
+                              styles.cardChip
+                            }
+                          >
+
+                            {
+                              typeof label === 'string'
+
+                                ? label
+
+                                : (
+                                  label?.label
+                                  || label?.name
+                                  || 'semantic'
+                                )
+                            }
+
+                          </div>
+
+                        )
+                      )}
+
+                    </div>
+
+                  )}
+
+                </div>
+
+              </Link>
+
+            )
+
+          }
+        )}
+
+      </div>
+
+    </section>
 
   )
 }
