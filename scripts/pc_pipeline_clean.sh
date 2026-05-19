@@ -17,8 +17,8 @@ source "$SCRIPT_DIR/.env.pc"
 # Project Root
 # ==========================================================
 
-# PROJECT_ROOT="/home/maya/shin-vps"
-PROJECT_ROOT="/home/maya/shin-dev/shin-vps"
+PROJECT_ROOT="/home/maya/shin-vps"
+# PROJECT_ROOT="/home/maya/shin-dev/shin-vps"
 
 # ==========================================================
 # Compose Runtime
@@ -144,7 +144,7 @@ run_django migrate_linkshare_to_pc
 log "🧠 Analyze Semantic Specs"
 
 run_django analyze_pc_spec \
-  --limit 300 \
+  --limit 10 \
   --null-only
 
 # ==========================================================

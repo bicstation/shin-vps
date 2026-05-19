@@ -1,0 +1,533 @@
+これはかなり重要なので、
+今の SHIN CORE LINX の思想に合わせて、
+
+# 「探索宇宙 Blueprint」
+
+として整理します。
+
+つまり：
+
+# URL
+
+=
+
+# exploration topology
+
+前提です。
+
+---
+
+# SHIN CORE LINX｜Semantic Exploration URL Blueprint v1
+
+---
+
+# ① ROOT ENTRY LAYER
+
+## 「世界への入口」
+
+---
+
+### TOP Runtime
+
+```txt id="u1"
+/ 
+```
+
+role:
+
+* exploration universe entry
+* onboarding
+* cinematic discovery
+* semantic world introduction
+
+---
+
+### Discovery Hub
+
+```txt id="u2"
+/discover/
+```
+
+role:
+
+* exploration map
+* workflow entry hub
+* semantic universe navigation
+
+---
+
+### Ranking Hub
+
+```txt id="u3"
+/ranking/
+```
+
+role:
+
+* comparative exploration
+* semantic trend entry
+* guided discovery
+
+---
+
+### Finder Hub
+
+```txt id="u4"
+/finder/
+```
+
+role:
+
+* intent routing
+* adaptive discovery
+* semantic navigation
+
+---
+
+# ② WORKFLOW WORLD LAYER
+
+## 「何をしたいか」
+
+---
+
+### Creator World
+
+```txt id="u5"
+/discover/creator
+```
+
+---
+
+### Gaming World
+
+```txt id="u6"
+/discover/gaming
+```
+
+---
+
+### AI Workflow World
+
+```txt id="u7"
+/discover/ai
+```
+
+---
+
+### Business Mobility World
+
+```txt id="u8"
+/discover/mobility
+```
+
+---
+
+### Streaming World
+
+```txt id="u9"
+/discover/streaming
+```
+
+---
+
+### Immersive Experience World
+
+```txt id="u10"
+/discover/immersive
+```
+
+---
+
+### Productivity World
+
+```txt id="u11"
+/discover/productivity
+```
+
+---
+
+### Student World
+
+```txt id="u12"
+/discover/student
+```
+
+---
+
+### Creator AI Hybrid World
+
+```txt id="u13"
+/discover/creator-ai
+```
+
+---
+
+# ③ ENTITY LAYER
+
+## 「意味ノード」
+
+---
+
+### Product Entity
+
+```txt id="u14"
+/product/<unique_id>
+```
+
+role:
+
+* semantic entity node
+* exploration anchor
+* workflow manifestation
+
+---
+
+### Brand Entity
+
+```txt id="u15"
+/brand/<brand-slug>
+```
+
+---
+
+### Workflow Entity
+
+```txt id="u16"
+/workflow/<workflow-slug>
+```
+
+---
+
+### Semantic Attribute Entity
+
+```txt id="u17"
+/semantic/<semantic-slug>
+```
+
+---
+
+# ④ CONTINUATION LAYER
+
+## 「探索継続」
+
+---
+
+### Product Continuation
+
+```txt id="u18"
+/product/<unique_id>/continue
+```
+
+role:
+
+* semantic continuation
+* workflow progression
+* next exploration nodes
+
+---
+
+### Workflow Progression
+
+```txt id="u19"
+/workflow/<workflow>/progression
+```
+
+---
+
+### Ecosystem Continuation
+
+```txt id="u20"
+/ecosystem/<semantic-slug>
+```
+
+---
+
+### Semantic Journey
+
+```txt id="u21"
+/journey/<intent-slug>
+```
+
+---
+
+# ⑤ GRAPH LAYER
+
+## 「意味宇宙 traversal」
+
+---
+
+### Semantic Graph
+
+```txt id="u22"
+/graph/<node>
+```
+
+---
+
+### Exploration Graph
+
+```txt id="u23"
+/graph/explore/<node>
+```
+
+---
+
+### Workflow Graph
+
+```txt id="u24"
+/graph/workflow/<workflow>
+```
+
+---
+
+### Ecosystem Graph
+
+```txt id="u25"
+/graph/ecosystem/<semantic>
+```
+
+---
+
+# ⑥ SEARCH / INTENT LAYER
+
+## 「人間意図 routing」
+
+---
+
+### Intent Finder
+
+```txt id="u26"
+/finder?intent=creator
+```
+
+---
+
+### Workflow Finder
+
+```txt id="u27"
+/finder?workflow=gaming
+```
+
+---
+
+### Semantic Finder
+
+```txt id="u28"
+/finder?semantic=immersive
+```
+
+---
+
+### Hybrid Intent Finder
+
+```txt id="u29"
+/finder?workflow=creator&semantic=ai
+```
+
+---
+
+# ⑦ ECOSYSTEM LAYER
+
+## 「環境探索」
+
+---
+
+### Creator Ecosystem
+
+```txt id="u30"
+/ecosystem/creator
+```
+
+---
+
+### Gaming Ecosystem
+
+```txt id="u31"
+/ecosystem/gaming
+```
+
+---
+
+### Streaming Ecosystem
+
+```txt id="u32"
+/ecosystem/streaming
+```
+
+---
+
+### AI Production Ecosystem
+
+```txt id="u33"
+/ecosystem/ai-production
+```
+
+---
+
+# ⑧ RUNTIME API LAYER
+
+## Backend Semantic Authority
+
+---
+
+### Discovery Runtime API
+
+```txt id="u34"
+/api/general/semantic/discovery/
+```
+
+---
+
+### Workflow Runtime API
+
+```txt id="u35"
+/api/general/discover/<workflow>
+```
+
+---
+
+### Entity Runtime API
+
+```txt id="u36"
+/api/general/pc-products/<unique_id>/
+```
+
+---
+
+### Continuation Runtime API
+
+```txt id="u37"
+/api/general/pc-products/<unique_id>/related/
+```
+
+---
+
+### Semantic Query Runtime API
+
+```txt id="u38"
+/api/general/pc-products/?attribute=<semantic-slug>
+```
+
+---
+
+### Finder Runtime API
+
+```txt id="u39"
+/api/general/finder/
+```
+
+---
+
+### Graph Runtime API
+
+```txt id="u40"
+/api/general/semantic/graph/<node>
+```
+
+---
+
+# ⑨ SEO / TOPOLOGY PRINCIPLES
+
+---
+
+## URL
+
+=
+semantic meaning
+
+---
+
+## URL hierarchy
+
+=
+exploration hierarchy
+
+---
+
+## traversal
+
+=
+workflow continuity
+
+---
+
+## related
+
+=
+continuation edge
+
+---
+
+## discover
+
+=
+world entry
+
+---
+
+## finder
+
+=
+intent routing
+
+---
+
+## product
+
+=
+semantic entity node
+
+---
+
+## graph
+
+=
+deep exploration traversal
+
+---
+
+# ⑩ SHIN CORE LINX CORE STRUCTURE
+
+```txt id="u41"
+戦略
+↓
+Exploration Blueprint
+↓
+Semantic Runtime Structure
+↓
+URL Topology
+↓
+Payload Contracts
+↓
+Frontend Cinematic Experience
+↓
+Human Exploration SEO
+```
+
+---
+
+# 最重要
+
+これは：
+
+# 「URL設計」
+
+ではありません。
+
+---
+
+# 「探索宇宙設計図」
+
+です。
+
+つまり今後：
+
+* Backend runtime
+* Frontend UX
+* SEO structure
+* semantic continuity
+* workflow progression
+
+全部が、
+
+# この topology を中心に繋がっていきます。

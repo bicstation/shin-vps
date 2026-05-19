@@ -11,6 +11,10 @@ human intent inference
 ↓
 workflow runtime generation
 """
+from .contradiction_rules import (
+    MOBILITY_NEGATIVE_KEYWORDS,
+)
+
 
 # ==========================================================
 # WORKFLOW RULES
@@ -203,6 +207,11 @@ def normalize_runtime(runtime):
         return {}
 
     return {
+        
+        "name":
+            runtime.get(
+                "name"
+            ),
 
         "product_type":
             runtime.get(
@@ -564,6 +573,7 @@ def infer_business(runtime):
     return None
 
 
+
 # ==========================================================
 # MOBILITY
 # ==========================================================
@@ -578,6 +588,10 @@ def infer_mobility(runtime):
         "product_type"
     ]
 
+    # ------------------------------------------------------
+    # PC only
+    # ------------------------------------------------------
+
     if product_type not in [
 
         "pc",
@@ -586,11 +600,36 @@ def infer_mobility(runtime):
 
         return None
 
+    # ------------------------------------------------------
+    # semantic contradiction
+    # ------------------------------------------------------
+    
+    normalized_text = " ".join([
+
+        str(
+            runtime["name"] or ""
+        ),
+
+        str(
+            runtime["product_type"] or ""
+        ),
+
+    ]).lower()
+
+    for keyword in MOBILITY_NEGATIVE_KEYWORDS:
+
+        if keyword in normalized_text:
+
+            return None
+
+    # ------------------------------------------------------
+    # mobility workflow
+    # ------------------------------------------------------
+
     return build_workflow_result(
         "mobility",
         1,
     )
-
 
 # ==========================================================
 # STREAMING
@@ -760,11 +799,21 @@ def infer_workflows(runtime):
     return workflow_results
 
 
+
+
 # ==========================================================
 # WORKFLOW TAGS
 # ==========================================================
 
 def build_workflow_tags(workflows):
+
+    """
+    IMPORTANT:
+    canonical traversal tokens
+
+    UI labels must NOT be mixed into
+    traversal/runtime semantics.
+    """
 
     tags = []
 
@@ -781,7 +830,7 @@ def build_workflow_tags(workflows):
         if workflow_name == "gaming":
 
             tags.append(
-                "🎮 Gaming"
+                "gaming"
             )
 
         # --------------------------------------------------
@@ -791,7 +840,7 @@ def build_workflow_tags(workflows):
         elif workflow_name == "creator":
 
             tags.append(
-                "🎬 Creator"
+                "creator"
             )
 
         # --------------------------------------------------
@@ -801,7 +850,7 @@ def build_workflow_tags(workflows):
         elif workflow_name == "ai":
 
             tags.append(
-                "🧠 AI"
+                "ai"
             )
 
         # --------------------------------------------------
@@ -811,7 +860,7 @@ def build_workflow_tags(workflows):
         elif workflow_name == "business":
 
             tags.append(
-                "💼 Business"
+                "business"
             )
 
         # --------------------------------------------------
@@ -821,7 +870,7 @@ def build_workflow_tags(workflows):
         elif workflow_name == "mobility":
 
             tags.append(
-                "✈ Mobility"
+                "mobility"
             )
 
         # --------------------------------------------------
@@ -831,7 +880,7 @@ def build_workflow_tags(workflows):
         elif workflow_name == "streaming":
 
             tags.append(
-                "📡 Streaming"
+                "streaming"
             )
 
         # --------------------------------------------------
@@ -841,7 +890,7 @@ def build_workflow_tags(workflows):
         elif workflow_name == "immersive":
 
             tags.append(
-                "🌈 Immersive"
+                "immersive"
             )
 
     # ------------------------------------------------------
@@ -859,7 +908,6 @@ def build_workflow_tags(workflows):
             )
 
     return unique_tags[:6]
-
 
 # ==========================================================
 # WORKFLOW SCORE

@@ -747,6 +747,15 @@ def build_semantic_shelf_payload():
                 ),
 
             # ==============================================
+            # Shelf Graph
+            # ==============================================
+            "next_shelves":
+                shelf.get(
+                    "next_shelves",
+                    []
+                ),
+
+            # ==============================================
             # UX Runtime
             # ==============================================
             "ui_mode":
@@ -758,6 +767,7 @@ def build_semantic_shelf_payload():
             "products":
                 shelf_products,
         })
+
 
     return payload
 
@@ -786,6 +796,9 @@ def build_semantic_discovery_payload():
         # ==================================================
         "discovery_runtime":
             "semantic_exploration",
+            
+        "runtime":
+            "discovery_v1",
 
         "ui_mode":
             "cinematic",
@@ -870,4 +883,105 @@ def build_semantic_ranking_payload(
 
         "results":
             payload,
+    }
+
+# ==========================================================
+# WORKFLOW PAYLOAD
+# ==========================================================
+
+def build_semantic_workflow_payload(
+    workflow_slug
+):
+
+    products = PCProduct.objects.exclude(
+        semantic_runtime__isnull=True
+    )[:200]
+
+    matched_products = []
+
+    for product in products:
+
+        runtime = safe_runtime(
+            product
+        )
+
+        workflow_tags = runtime.get(
+            "workflow_tags",
+            []
+        )
+
+        if workflow_slug not in workflow_tags:
+            continue
+
+        matched_products.append({
+
+            # ==============================================
+            # Product
+            # ==============================================
+            "id":
+                product.id,
+
+            "unique_id":
+                product.unique_id,
+
+            "name":
+                product.name,
+
+            "image_url":
+                product.image_url,
+
+            "price":
+                product.price,
+
+            # ==============================================
+            # Semantic
+            # ==============================================
+            "semantic_runtime":
+                lightweight_runtime(
+                    runtime
+                ),
+
+            "semantic_labels":
+                runtime.get(
+                    "semantic_labels",
+                    []
+                )[:3],
+
+            # ==============================================
+            # Frontend
+            # ==============================================
+            "render_hints":
+                frontend_render_hints(
+                    runtime
+                ),
+        })
+
+    return {
+
+        # ==================================================
+        # Semantic Contract
+        # ==================================================
+        "semantic_schema_version":
+            SEMANTIC_SCHEMA_VERSION,
+
+        "semantic_authority":
+            SEMANTIC_AUTHORITY,
+
+        # ==================================================
+        # Runtime
+        # ==================================================
+        "runtime":
+            "workflow_v1",
+
+        "workflow":
+            workflow_slug,
+
+        "ui_mode":
+            "cinematic",
+
+        # ==================================================
+        # Products
+        # ==================================================
+        "products":
+            matched_products,
     }

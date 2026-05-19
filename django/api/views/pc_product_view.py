@@ -22,12 +22,10 @@ from api.serializers.pc_product_serializer import (
 from api.services.semantic.semantic_api_service import (
 
     build_semantic_product_payload,
-
     build_semantic_related_products,
-
     build_semantic_shelf_payload,
-
     build_semantic_discovery_payload,
+    build_semantic_workflow_payload,
 )
 
 
@@ -297,36 +295,20 @@ def semantic_shelves(
         payload
     )
 
-
 # =========================================================
-# 🚀 Semantic Discovery Runtime API
-# =========================================================
-@api_view(["GET"])
-@permission_classes([AllowAny])
-def semantic_discovery_runtime(
-    request
-):
-
-    payload = (
-        build_semantic_discovery_payload()
-    )
-
-    return Response(
-        payload
-    )
-
-
-# =========================================================
-# 🎬 Semantic Shelves API
+# 🌌 Workflow Runtime API
 # =========================================================
 @api_view(["GET"])
 @permission_classes([AllowAny])
-def semantic_shelves(
-    request
+def semantic_workflow_runtime(
+    request,
+    workflow_slug
 ):
 
     payload = (
-        build_semantic_shelf_payload()
+        build_semantic_workflow_payload(
+            workflow_slug
+        )
     )
 
     return Response(

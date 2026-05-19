@@ -725,6 +725,63 @@ def determine_edge_type(
 
     return "semantic_related"
 
+# ==========================================================
+# WORKFLOW RELATION
+# ==========================================================
+
+
+def determine_workflow_relation(
+
+    source_runtime,
+    candidate_runtime,
+):
+
+    source_workflows = normalize_workflows(
+        source_runtime
+    )
+
+    candidate_workflows = normalize_workflows(
+        candidate_runtime
+    )
+
+    overlap = set(
+        source_workflows
+    ) & set(
+        candidate_workflows
+    )
+
+    # ======================================================
+    # Same Workflow
+    # ======================================================
+
+    if overlap:
+
+        return "same_workflow"
+
+    # ======================================================
+    # Workflow Evolution
+    # ======================================================
+
+    workflow_edges = {
+
+        ("gaming", "ai"),
+        ("creator", "streaming"),
+        ("mobility", "business"),
+    }
+
+    for source_workflow in source_workflows:
+
+        for candidate_workflow in candidate_workflows:
+
+            if (
+                source_workflow,
+                candidate_workflow,
+            ) in workflow_edges:
+
+                return "workflow_evolution"
+
+    return "semantic_related"
+
 
 # ==========================================================
 # EDGE EXPLANATION
@@ -893,6 +950,15 @@ def build_semantic_edge(
 
         "score":
             score,
+            
+        "workflow_relation":
+
+            determine_workflow_relation(
+
+                source_runtime,
+
+                candidate_runtime,
+            ),
 
         # ==================================================
         # Human Explanation
@@ -1019,3 +1085,4 @@ def build_semantic_graph(
     # ======================================================
 
     return edges[:limit]
+

@@ -727,7 +727,48 @@ def build_workflow_evolution_shelf(products):
 
         shelf_products,
     )
+# ==========================================================
+# SHELF CONNECTIONS
+# ==========================================================
 
+def build_shelf_connections():
+
+    return {
+
+        # --------------------------------------------------
+        # Mobility
+        # --------------------------------------------------
+
+        "mobility_workflow": [
+
+            "ai_workflow",
+
+            "creator_workflow",
+        ],
+
+        # --------------------------------------------------
+        # Creator
+        # --------------------------------------------------
+
+        "creator_workflow": [
+
+            "workflow_evolution",
+
+            "immersive_display",
+        ],
+
+        # --------------------------------------------------
+        # Gaming
+        # --------------------------------------------------
+
+        "gaming_setup": [
+
+            "immersive_display",
+
+            "ai_workflow",
+        ],
+    }
+    
 
 # ==========================================================
 # PRIORITY SORT
@@ -768,6 +809,8 @@ def build_semantic_shelves(products):
     """
 
     shelves = []
+    
+    connections = build_shelf_connections()
 
     shelf_builders = [
 
@@ -821,12 +864,25 @@ def build_semantic_shelves(products):
             shelf = shelf_builder(
                 products
             )
-
+            
             if shelf:
+
+                shelf["next_shelves"] = (
+
+                    connections.get(
+
+                        shelf.get(
+                            "shelf_type"
+                        ),
+
+                        []
+                    )
+                )
 
                 shelves.append(
                     shelf
                 )
+
 
         except Exception:
 

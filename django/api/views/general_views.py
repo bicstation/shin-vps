@@ -350,8 +350,11 @@ class PCProductRankingView(
             # ==============================================
             # Semantic Ranking Payload
             # ==============================================
-            "ranking":
-                payload,
+            "results":
+                payload.get(
+                    "results",
+                    []
+                ),
 
             # ==============================================
             # Count
@@ -540,9 +543,9 @@ class PCProductListAPIView(
 
             "-semantic_score",
 
-            "-workflow_score",
-
             "-spec_score",
+            
+            "-created_at",
         )
 
         return queryset[:100]

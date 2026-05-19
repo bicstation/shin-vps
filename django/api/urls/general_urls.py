@@ -50,6 +50,7 @@ from api.views.pc_product_view import (
     get_related_pc_products,
     semantic_discovery_runtime,
     semantic_shelves,
+    semantic_workflow_runtime,
 )
 
 # ==========================================================
@@ -175,6 +176,16 @@ urlpatterns = [
         "pc-sidebar-stats/",
         pc_sidebar_stats,
         name="pc_sidebar_stats",
+    ),
+    
+    # ==============================================================================
+    # 🌌 Workflow Runtime
+    # ==============================================================================
+
+    path(
+        "discover/<slug:workflow_slug>/",
+        semantic_workflow_runtime,
+        name="semantic_workflow_runtime",
     ),
 ]
 
