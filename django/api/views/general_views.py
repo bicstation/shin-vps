@@ -1,38 +1,26 @@
 # -*- coding: utf-8 -*-
-# /home/maya/dev/shin-vps/django/api/views/general_views.py
+# /home/maya/shin-dev/shin-vps/django/api/views/general_views.py
 
-import json
-import requests
 import logging
-from api.utils.semantic.seo.metadata import ( generate_semantic_metadata )
-from api.utils.semantic.seo.faq import ( generate_semantic_faq)
-from api.utils.semantic.seo.breadcrumbs import ( generate_semantic_breadcrumbs )
-from api.utils.semantic.seo.schema import ( generate_semantic_schemas )
 
 from urllib.parse import unquote
 
 from django.db.models import (
     Count,
-    Q,
-)
-
-from django.http import (
-    StreamingHttpResponse
 )
 
 from django.shortcuts import (
-    get_object_or_404
+    get_object_or_404,
 )
 
 from django_filters.rest_framework import (
-    DjangoFilterBackend
+    DjangoFilterBackend,
 )
 
 from rest_framework import (
     generics,
     filters,
     pagination,
-    views,
 )
 
 from rest_framework.decorators import (
@@ -41,42 +29,75 @@ from rest_framework.decorators import (
 )
 
 from rest_framework.permissions import (
-    AllowAny
+    AllowAny,
 )
 
 from rest_framework.response import (
-    Response
-)
-
-from rest_framework.views import (
-    APIView
+    Response,
 )
 
 # ==========================================================
-# Models
+# SEO
 # ==========================================================
+
+from api.utils.semantic.seo.metadata import (
+    generate_semantic_metadata,
+)
+
+from api.utils.semantic.seo.faq import (
+    generate_semantic_faq,
+)
+
+from api.utils.semantic.seo.breadcrumbs import (
+    generate_semantic_breadcrumbs,
+)
+
+from api.utils.semantic.seo.schema import (
+    generate_semantic_schemas,
+)
+
+# ==========================================================
+# MODELS
+# ==========================================================
+
 from api.models.pc_products import (
-    PCProduct
+    PCProduct,
 )
 
 from api.models import (
     PCAttribute,
-    PriceHistory,
 )
 
 # ==========================================================
-# Serializers
+# SERIALIZERS
 # ==========================================================
-from api.serializers.general_serializers import (
-    PCProductSerializer
+
+from api.serializers.pc_product_serializer import (
+    PCProductSerializer,
+)
+
+# ==========================================================
+# SEMANTIC API SERVICE
+# ==========================================================
+
+from api.services.semantic.semantic_api_service import (
+
+    build_semantic_product_payload,
+
+    build_semantic_ranking_payload,
+
+    build_semantic_related_products,
+
+    build_semantic_discovery_payload,
 )
 
 logger = logging.getLogger(__name__)
 
 
-# --------------------------------------------------------------------------
-# 0. Pagination
-# --------------------------------------------------------------------------
+# ==========================================================
+# PAGINATION
+# ==========================================================
+
 class PCProductLimitOffsetPagination(
     pagination.LimitOffsetPagination
 ):
@@ -86,9 +107,37 @@ class PCProductLimitOffsetPagination(
     max_limit = 100
 
 
-# --------------------------------------------------------------------------
-# 1. 🏆 PC製品ランキング
-# --------------------------------------------------------------------------
+# ==========================================================
+# UTIL
+# ==========================================================
+
+def safe_runtime(product):
+
+    runtime = getattr(
+        product,
+        "semantic_runtime",
+        {}
+    )
+
+    if not runtime:
+        return {}
+
+    return runtime
+
+
+def safe_int(value):
+
+    try:
+        return int(value)
+
+    except:
+        return 0
+
+
+# ==========================================================
+# RANKING VIEW
+# ==========================================================
+
 class PCProductRankingView(
     generics.ListAPIView
 ):
@@ -102,118 +151,123 @@ class PCProductRankingView(
     ]
 
     def get_queryset(self):
-        
+
         slug = self.kwargs.get(
             "slug"
         )
-        print("SLUG:", slug)
-        print(self.request.query_params)
 
         queryset = (
+
             PCProduct.objects
+
             .filter(
                 is_active=True,
-                unified_genre="PC"
+                unified_genre="PC",
             )
+
             .prefetch_related(
                 "attributes"
             )
+
+            .exclude(
+                semantic_runtime__isnull=True
+            )
         )
 
-        # --------------------------------------------------
-        # Semantic Filtering
-        # --------------------------------------------------
-        attribute = None
-        ranking_mode = "listing"
-        
-        if slug:
+        # ==================================================
+        # Semantic Runtime Filter
+        # ==================================================
 
-            attribute = (
-                PCAttribute.objects.filter(
-                    slug=slug
-                ).first()
-             )
+        queryset = queryset.exclude(
+            product_type="accessory"
+        )
 
-            if (
-                attribute
-                and
-                attribute.is_ranking_enabled
+        # ==================================================
+        # Semantic Attribute Filtering
+        # ==================================================
+
+        if slug and slug != "score":
+
+            # --------------------------------------------------
+            # GPU
+            # --------------------------------------------------
+
+            if slug.startswith(
+                "gpu-"
             ):
 
-                ranking_mode = "semantic"
+                queryset = queryset.filter(
+                    attributes__slug=slug
+                )
 
-            if slug != "score":
+            # --------------------------------------------------
+            # Maker
+            # --------------------------------------------------
 
-                # GPU
-                if slug.startswith(
-                    "gpu-"
-                ):
+            elif slug.startswith(
+                "maker-"
+            ):
 
-                    queryset = queryset.filter(
-                        attributes__attr_type="gpu",
-                        attributes__slug=slug
-                    )
+                maker = slug.replace(
+                    "maker-",
+                    ""
+                )
 
-                # Maker
-                elif slug.startswith(
-                    "maker-"
-                ):
+                queryset = queryset.filter(
+                    maker__iexact=maker
+                )
 
-                    maker = slug.replace(
-                        "maker-",
-                        ""
-                    )
+            # --------------------------------------------------
+            # Generic Semantic
+            # --------------------------------------------------
 
-                    queryset = queryset.filter(
-                        maker__iexact=maker
-                    )
+            else:
 
-                # Generic Semantic
-                else:
+                queryset = queryset.filter(
+                    attributes__slug=slug
+                )
 
-                    queryset = queryset.filter(
-                        attributes__slug=slug
-                    )
+        # ==================================================
+        # Semantic Sort
+        # ==================================================
 
-                queryset = queryset.distinct()
+        queryset = queryset.order_by(
 
-        print("COUNT:", queryset.count())
-        # return queryset.order_by(
-        #     "-spec_score"
-        # )[:20]
-        
-        if ranking_mode == "semantic":
-            queryset = queryset.order_by(
-                "-spec_score"
-            )
-        else:
-            queryset = queryset.order_by(
-                "-created_at"
-            )
+            "-semantic_score",
+
+            "-spec_score",
+
+            "-score_gpu",
+
+            "-score_cpu",
+        ).distinct()
+
         return queryset[:20]
-      
+
+    # ======================================================
+    # LIST
+    # ======================================================
+
     def list(self, request, *args, **kwargs):
 
         queryset = self.get_queryset()
 
-        serializer = self.get_serializer(
-            queryset,
-            many=True
+        slug = self.kwargs.get(
+            "slug"
         )
-
-        # ==========================================
-        # Recalculate Ranking Mode
-        # ==========================================
-        slug = self.kwargs.get("slug")
-
-        ranking_mode = "listing"
 
         attribute = None
 
-        seo = {}        
+        ranking_mode = "listing"
+
+        seo = {}
         faq = []
         breadcrumbs = []
         schemas = {}
+
+        # ==================================================
+        # Semantic SEO Runtime
+        # ==================================================
 
         if slug:
 
@@ -223,9 +277,6 @@ class PCProductRankingView(
                 ).first()
             )
 
-            # ======================================
-            # Semantic Ranking Detection
-            # ======================================
             if (
                 attribute
                 and
@@ -234,67 +285,106 @@ class PCProductRankingView(
 
                 ranking_mode = "semantic"
 
-            # ======================================
-            # Semantic SEO Runtime
-            # ======================================
             if attribute:
 
                 seo = generate_semantic_metadata(
                     attribute
                 )
-                
+
                 faq = generate_semantic_faq(
                     attribute
                 )
-                
+
                 breadcrumbs = (
                     generate_semantic_breadcrumbs(
                         attribute
                     )
                 )
+
                 schemas = (
                     generate_semantic_schemas(
+
                         attribute=attribute,
+
                         seo=seo,
+
                         faq=faq,
+
                         breadcrumbs=breadcrumbs,
                     )
                 )
 
-        print(
-            "LIST RANKING MODE:",
-            ranking_mode
-        )
+        # ==================================================
+        # Semantic Ranking Payload
+        # ==================================================
 
-        print(
-            "SEO:",
-            seo
+        payload = (
+            build_semantic_ranking_payload(
+                queryset
+            )
         )
 
         return Response({
 
-            "success": True,
+            # ==============================================
+            # Base
+            # ==============================================
+            "success":
+                True,
+
             "ranking_mode":
                 ranking_mode,
+
             "semantic_slug":
                 slug,
+
+            # ==============================================
+            # Semantic Runtime
+            # ==============================================
+            "semantic_runtime":
+                "v2",
+
+            "semantic_authority":
+                "backend",
+
+            # ==============================================
+            # Semantic Ranking Payload
+            # ==============================================
+            "ranking":
+                payload,
+
+            # ==============================================
+            # Count
+            # ==============================================
+            "count":
+                len(
+                    payload.get(
+                        "results",
+                        []
+                    )
+                ),
+
+            # ==============================================
+            # SEO Runtime
+            # ==============================================
             "seo":
-                seo,               
+                seo,
+
             "faq":
                 faq,
+
             "breadcrumbs":
                 breadcrumbs,
+
             "schemas":
                 schemas,
-            "count":
-                len(serializer.data),
-            "products":
-                serializer.data
         })
-            
-# --------------------------------------------------------------------------
-# 2. 📦 PC製品一覧
-# --------------------------------------------------------------------------
+
+
+# ==========================================================
+# PRODUCT LIST
+# ==========================================================
+
 class PCProductListAPIView(
     generics.ListAPIView
 ):
@@ -322,72 +412,34 @@ class PCProductListAPIView(
 
     search_fields = [
 
-        'name',
-        'cpu_model',
-        'gpu_model',
-        'description'
+        "name",
+
+        "cpu_model",
+
+        "gpu_model",
+
+        "description",
     ]
 
     ordering_fields = [
 
-        'price',
-        'created_at',
-        'spec_score'
+        "price",
+
+        "created_at",
+
+        "spec_score",
+
+        "semantic_score",
     ]
+
+    # ======================================================
+    # QUERYSET
+    # ======================================================
 
     def get_queryset(self):
 
-        print("==========")
-        print("KWARGS:", self.kwargs)
-
-        slug = self.kwargs.get("slug")
-
-        print("SLUG:", slug)
-
-        # ==========================================
-        # Semantic Ranking Detection
-        # ==========================================
-        attribute = None
-
-        ranking_mode = "listing"
-
-        if slug:
-
-            attribute = (
-                PCAttribute.objects.filter(
-                    slug=slug
-                ).first()
-            )
-
-            if (
-                attribute
-                and
-                attribute.is_ranking_enabled
-            ):
-
-                ranking_mode = "semantic"
-
-        print("ATTRIBUTE:", attribute)
-
-        if attribute:
-
-            print(
-                "RANKING ENABLED:",
-                attribute.is_ranking_enabled
-            )
-
-        print(
-            "RANKING MODE:",
-            ranking_mode
-        )
-
-        print("==========")
-
-        # ==========================================
-        # Save ranking mode
-        # ==========================================
-        self._ranking_mode = (
-            ranking_mode
+        slug = self.kwargs.get(
+            "slug"
         )
 
         queryset = (
@@ -396,69 +448,73 @@ class PCProductListAPIView(
 
             .filter(
                 is_active=True,
-                unified_genre="PC"
+                unified_genre="PC",
             )
 
-            # .exclude(
-            #     cpu_model__isnull=True
-            # )
-
-            # .exclude(
-            #     cpu_model=''
-            # )
-
             .prefetch_related(
-                'attributes'
+                "attributes"
+            )
+
+            .exclude(
+                semantic_runtime__isnull=True
             )
 
             .distinct()
         )
 
-        # --------------------------------------------------
+        # ==================================================
         # Maker Filter
-        # --------------------------------------------------
+        # ==================================================
+
         maker = (
             self.request.query_params.get(
-                'maker'
+                "maker"
             )
         )
 
         if maker:
 
             queryset = queryset.filter(
-                maker__iexact=unquote(maker)
+                maker__iexact=unquote(
+                    maker
+                )
             )
 
-        # --------------------------------------------------
+        # ==================================================
         # Semantic Attribute Filter
-        # --------------------------------------------------
+        # ==================================================
+
         attribute_slugs = (
             self.request.query_params.getlist(
-                'attribute'
+                "attribute"
             )
         )
 
         for attr_slug in attribute_slugs:
 
             queryset = queryset.filter(
-                attributes__slug=unquote(attr_slug)
+                attributes__slug=unquote(
+                    attr_slug
+                )
             )
 
-        # --------------------------------------------------
-        # Ranking Slug Filter
-        # --------------------------------------------------
+        # ==================================================
+        # Ranking Slug
+        # ==================================================
+
         if slug:
 
             queryset = queryset.filter(
                 attributes__slug=slug
             )
 
-        # --------------------------------------------------
-        # Price Filter
-        # --------------------------------------------------
+        # ==================================================
+        # Max Price
+        # ==================================================
+
         max_price = (
             self.request.query_params.get(
-                'max_price'
+                "max_price"
             )
         )
 
@@ -467,29 +523,34 @@ class PCProductListAPIView(
             try:
 
                 queryset = queryset.filter(
-                    price__lte=int(max_price)
+                    price__lte=int(
+                        max_price
+                    )
                 )
 
-            except:
+            except Exception:
+
                 pass
 
-        # ==========================================
-        # Semantic Ranking Branch
-        # ==========================================
-        if ranking_mode == "semantic":
+        # ==================================================
+        # Semantic Sort
+        # ==================================================
 
-            queryset = queryset.order_by(
-                "-spec_score"
-            )
+        queryset = queryset.order_by(
 
-        else:
+            "-semantic_score",
 
-            queryset = queryset.order_by(
-                "-created_at"
-            )
+            "-workflow_score",
 
-        return queryset[:20]
-    
+            "-spec_score",
+        )
+
+        return queryset[:100]
+
+    # ======================================================
+    # LIST
+    # ======================================================
+
     def list(self, request, *args, **kwargs):
 
         queryset = self.filter_queryset(
@@ -500,14 +561,26 @@ class PCProductListAPIView(
             queryset
         )
 
-        serializer = self.get_serializer(
-            page,
-            many=True
+        # ==================================================
+        # Semantic Payload
+        # ==================================================
+
+        payload = (
+            build_semantic_ranking_payload(
+                page
+            )
         )
 
         return Response({
 
-            "success": True,
+            "success":
+                True,
+
+            "semantic_runtime":
+                "v2",
+
+            "semantic_authority":
+                "backend",
 
             "count":
                 self.paginator.count,
@@ -518,15 +591,27 @@ class PCProductListAPIView(
             "previous":
                 self.paginator.get_previous_link(),
 
-            "products":
-                serializer.data
+            "results":
+                payload.get(
+                    "results",
+                    []
+                ),
+
+            # ==============================================
+            # Discovery Runtime
+            # ==============================================
+            "discovery":
+                build_semantic_discovery_payload(),
         })
 
-# --------------------------------------------------------------------------
-# 3. 📊 Sidebar Stats
-# --------------------------------------------------------------------------
-@api_view(['GET'])
+
+# ==========================================================
+# SIDEBAR STATS
+# ==========================================================
+
+@api_view(["GET"])
 @permission_classes([AllowAny])
+
 def pc_sidebar_stats(request):
 
     attrs = (
@@ -534,7 +619,9 @@ def pc_sidebar_stats(request):
         PCAttribute.objects
 
         .annotate(
-            product_count=Count('products')
+            product_count=Count(
+                "products"
+            )
         )
 
         .filter(
@@ -548,9 +635,10 @@ def pc_sidebar_stats(request):
 
         key = attr.attr_type
 
-        # ==========================================
-        # Initialize Semantic Group
-        # ==========================================
+        # ==================================================
+        # Semantic Group
+        # ==================================================
+
         if key not in sidebar:
 
             sidebar[key] = {
@@ -567,7 +655,7 @@ def pc_sidebar_stats(request):
                         key.upper(),
 
                     "description":
-                        f"{key.replace('_', ' ').title()}別",
+                        f"{key} semantic group",
 
                     "icon":
                         attr.icon,
@@ -582,12 +670,13 @@ def pc_sidebar_stats(request):
                         attr.semantic_weight,
                 },
 
-                "items": []
+                "items": [],
             }
 
-        # ==========================================
-        # Append Semantic Attribute
-        # ==========================================
+        # ==================================================
+        # Item
+        # ==================================================
+
         sidebar[key]["items"].append({
 
             "name":
@@ -612,622 +701,298 @@ def pc_sidebar_stats(request):
                 attr.semantic_weight,
         })
 
-# --------------------------------------------------------------------------
-# 4. 📄 PC製品詳細
-# --------------------------------------------------------------------------
+    return Response({
+
+        "semantic_runtime":
+            "v2",
+
+        "semantic_authority":
+            "backend",
+
+        "grouped_attributes":
+            sidebar,
+    })
+
+
+# ==========================================================
+# PRODUCT DETAIL
+# ==========================================================
+
 @api_view(["GET"])
 @permission_classes([AllowAny])
+
 def pc_product_detail(
     request,
     unique_id
 ):
 
-    print(
-        "DETAIL HIT:",
-        unique_id
+    product = get_object_or_404(
+
+        PCProduct.objects.prefetch_related(
+            "attributes"
+        ),
+
+        unique_id=unique_id,
     )
 
-    try:
+    # ======================================================
+    # Semantic Product Payload
+    # ======================================================
 
-        product = (
-
-            PCProduct.objects
-
-            .prefetch_related(
-                "attributes"
-            )
-
-            .get(
-                unique_id=unique_id
-            )
+    semantic_payload = (
+        build_semantic_product_payload(
+            product
         )
+    )
 
-        serializer = (
-            PCProductSerializer(
-                product
-            )
+    # ======================================================
+    # Semantic Related
+    # ======================================================
+
+    related_products = (
+        build_semantic_related_products(
+            product
         )
+    )
 
-        # ======================================================
-        # Semantic SEO Runtime
-        # ======================================================
-        seo = {
+    # ======================================================
+    # SEO
+    # ======================================================
 
-            "title":
-                f"{product.name} | SHIN CORE LINX",
+    seo = {
 
-            "description":
+        "title":
+            (
+                f"{product.name}"
+                f" | SHIN CORE LINX"
+            ),
+
+        "description":
+            (
+                f"{product.name}"
+                f" の性能・特徴・"
+                f"おすすめ用途を比較"
+            ),
+
+        "canonical":
+            (
+                f"/product/"
+                f"{product.unique_id}/"
+            ),
+    }
+
+    # ======================================================
+    # FAQ
+    # ======================================================
+
+    runtime = safe_runtime(
+        product
+    )
+
+    primary_workflow = runtime.get(
+        "primary_workflow"
+    )
+
+    faq = [
+
+        {
+
+            "question":
                 (
-                    f"{product.name} の性能・特徴・"
-                    f"おすすめ用途を比較できる"
-                    f"製品詳細ページです。"
+                    f"{product.name}"
+                    f" はどんな用途向け？"
                 ),
 
-            "canonical":
-                f"/product/{product.unique_id}/",
+            "answer":
+                (
+                    f"{primary_workflow}"
+                    f" ワークフローに"
+                    f"適しています。"
+                ),
+        },
+
+        {
+
+            "question":
+                (
+                    f"{product.name}"
+                    f" の特徴は？"
+                ),
+
+            "answer":
+                (
+                    "semantic runtime "
+                    "に基づき"
+                    "高い探索価値を"
+                    "持っています。"
+                ),
+        },
+    ]
+
+    # ======================================================
+    # Breadcrumbs
+    # ======================================================
+
+    breadcrumbs = [
+
+        {
+            "name": "Home",
+            "url": "/",
+        },
+
+        {
+            "name": "Ranking",
+            "url": "/ranking/",
+        },
+
+        {
+            "name":
+                product.name,
+
+            "url":
+                (
+                    f"/product/"
+                    f"{product.unique_id}/"
+                ),
+        },
+    ]
+
+    # ======================================================
+    # Schemas
+    # ======================================================
+
+    schemas = {
+
+        "product_schema": {
+
+            "@context":
+                "https://schema.org",
+
+            "@type":
+                "Product",
+
+            "name":
+                product.name,
+
+            "image":
+                product.image_url,
+
+            "sku":
+                product.unique_id,
         }
+    }
 
-        # ======================================================
-        # Semantic FAQ Runtime
-        # ======================================================
-        faq = [
+    # ======================================================
+    # Response
+    # ======================================================
 
-            {
+    return Response({
 
-                "question":
-                    f"{product.name} はどんな用途におすすめですか？",
+        # ==============================================
+        # Base
+        # ==============================================
+        "success":
+            True,
 
-                "answer":
-                    (
-                        f"{product.name} は "
-                        f"高性能用途や日常用途など、"
-                        f"幅広い利用に対応できるPCです。"
-                    ),
-            },
+        # ==============================================
+        # Semantic Runtime
+        # ==============================================
+        "semantic_runtime":
+            "v2",
 
-            {
+        "semantic_authority":
+            "backend",
 
-                "question":
-                    f"{product.name} の特徴は？",
+        # ==============================================
+        # Product
+        # ==============================================
+        "product":
+            semantic_payload,
 
-                "answer":
-                    (
-                        f"CPU・GPU・メモリ構成など、"
-                        f"バランスの良い構成が特徴です。"
-                    ),
-            },
-        ]
+        # ==============================================
+        # Semantic Continuation
+        # ==============================================
+        "semantic_related":
+            related_products,
 
-        # ======================================================
-        # Semantic Breadcrumb Runtime
-        # ======================================================
-        breadcrumbs = [
+        # ==============================================
+        # Discovery Runtime
+        # ==============================================
+        "discovery":
+            build_semantic_discovery_payload(),
 
-            {
-                "name": "Home",
-                "url": "/",
-            },
+        # ==============================================
+        # Frontend Runtime
+        # ==============================================
+        "ui_mode":
+            "cinematic",
 
-            {
-                "name": "ランキング",
-                "url": "/ranking/",
-            },
+        "exploration_mode":
+            "semantic_continuation",
 
-            {
-                "name":
-                    product.name,
+        # ==============================================
+        # SEO
+        # ==============================================
+        "seo":
+            seo,
 
-                "url":
-                    f"/product/{product.unique_id}/",
-            },
-        ]
+        "faq":
+            faq,
 
-        # ======================================================
-        # Semantic Schema Runtime
-        # ======================================================
-        schemas = {
+        "breadcrumbs":
+            breadcrumbs,
 
-            "product_schema": {
+        "schemas":
+            schemas,
+    })
 
-                "@context":
-                    "https://schema.org",
 
-                "@type":
-                    "Product",
+# ==========================================================
+# RELATED PRODUCTS
+# ==========================================================
 
-                "name":
-                    product.name,
-
-                "image":
-                    product.image_url,
-
-                "description":
-                    seo["description"],
-
-                "sku":
-                    product.unique_id,
-            },
-
-            "breadcrumb_schema": {
-
-                "@context":
-                    "https://schema.org",
-
-                "@type":
-                    "BreadcrumbList",
-
-                "itemListElement": [
-
-                    {
-
-                        "@type":
-                            "ListItem",
-
-                        "position":
-                            1,
-
-                        "name":
-                            "Home",
-
-                        "item":
-                            "/",
-                    },
-
-                    {
-
-                        "@type":
-                            "ListItem",
-
-                        "position":
-                            2,
-
-                        "name":
-                            "ランキング",
-
-                        "item":
-                            "/ranking/",
-                    },
-
-                    {
-
-                        "@type":
-                            "ListItem",
-
-                        "position":
-                            3,
-
-                        "name":
-                            product.name,
-
-                        "item":
-                            f"/product/{product.unique_id}/",
-                    },
-                ]
-            }
-        }
-
-        # ======================================================
-        # Response
-        # ======================================================
-        return Response({
-
-            "success": True,
-
-            # ==============================================
-            # Product Runtime
-            # ==============================================
-            "product":
-                serializer.data,
-
-            # ==============================================
-            # Semantic Runtime
-            # ==============================================
-            "semantic": {
-
-                "page_type":
-                    "product",
-
-                "semantic":
-                    True,
-            },
-
-            # ==============================================
-            # SEO Authority
-            # ==============================================
-            "seo":
-                seo,
-
-            # ==============================================
-            # FAQ Authority
-            # ==============================================
-            "faq":
-                faq,
-
-            # ==============================================
-            # Breadcrumb Authority
-            # ==============================================
-            "breadcrumbs":
-                breadcrumbs,
-
-            # ==============================================
-            # Schema Authority
-            # ==============================================
-            "schemas":
-                schemas,
-        })
-
-    except PCProduct.DoesNotExist:
-
-        return Response(
-            {
-                "error": "not found"
-            },
-            status=404
-        )
-
-# --------------------------------------------------------------------------
-# 5. 🔗 関連商品API
-# --------------------------------------------------------------------------
 @api_view(["GET"])
 @permission_classes([AllowAny])
+
 def get_related_pc_products(
     request,
     unique_id
 ):
 
-    limit = 8
+    product = get_object_or_404(
 
-    try:
-
-        base = (
-
-            PCProduct.objects
-
-            .prefetch_related(
-                "attributes"
-            )
-
-            .get(
-                unique_id=unique_id,
-                is_active=True
-            )
-        )
-
-    except PCProduct.DoesNotExist:
-
-        return Response([])
-
-    # ------------------------------------------------------
-    # Base Semantic Attributes
-    # ------------------------------------------------------
-    base_gpu = (
-
-        base.attributes.filter(
-            attr_type="gpu"
-        ).first()
-    )
-
-    base_usage = (
-
-        base.attributes.filter(
-            attr_type="usage"
-        ).first()
-    )
-
-    base_device = (
-
-        base.attributes.filter(
-            attr_type="device"
-        ).first()
-    )
-
-    base_maker = (
-
-        base.attributes.filter(
-            attr_type="maker"
-        ).first()
-    )
-
-    # ------------------------------------------------------
-    # GPU Neighbor Mapping
-    # ------------------------------------------------------
-    def get_neighbor_gpu_slugs(slug):
-
-        mapping = {
-
-            "gpu-rtx-4050": [
-                "gpu-rtx-4050",
-                "gpu-rtx-4060",
-            ],
-
-            "gpu-rtx-4060": [
-                "gpu-rtx-4050",
-                "gpu-rtx-4060",
-                "gpu-rtx-4070",
-            ],
-
-            "gpu-rtx-4070": [
-                "gpu-rtx-4060",
-                "gpu-rtx-4070",
-                "gpu-rtx-4080",
-            ],
-
-            "gpu-rtx-4080": [
-                "gpu-rtx-4070",
-                "gpu-rtx-4080",
-                "gpu-rtx-4090",
-            ],
-
-            "gpu-rtx-4090": [
-                "gpu-rtx-4080",
-                "gpu-rtx-4090",
-            ],
-        }
-
-        return mapping.get(
-            slug,
-            [slug]
-        )
-
-    # ------------------------------------------------------
-    # Candidate Base Query
-    # ------------------------------------------------------
-    candidates = (
-
-        PCProduct.objects
-
-        .filter(
-            is_active=True,
-            unified_genre="PC"
-        )
-
-        .exclude(
-            id=base.id
-        )
-
-        .prefetch_related(
+        PCProduct.objects.prefetch_related(
             "attributes"
-        )
-
-        .order_by(
-            "-spec_score"
-        )[:150]
-    )
-
-    # ------------------------------------------------------
-    # Match Score
-    # ------------------------------------------------------
-    def calc_score(product):
-
-        score = 0
-
-        matched_attributes = []
-
-        # ==================================================
-        # Device Semantic
-        # ==================================================
-        if base_device:
-
-            if product.attributes.filter(
-                slug=base_device.slug
-            ).exists():
-
-                score += 0.25
-
-                matched_attributes.append(
-                    base_device.slug
-                )
-
-            else:
-
-                # ------------------------------------------
-                # Soft semantic fallback
-                # ------------------------------------------
-                score -= 0.15
-
-        # ==================================================
-        # Price Similarity
-        # ==================================================
-        if base.price and product.price:
-
-            diff = abs(
-                product.price - base.price
-            ) / base.price
-
-            if diff <= 0.10:
-
-                score += 0.20
-
-            elif diff <= 0.20:
-
-                score += 0.10
-
-        # ==================================================
-        # GPU Exact Match
-        # ==================================================
-        if (
-
-            base_gpu
-
-            and product.attributes.filter(
-                slug=base_gpu.slug
-            ).exists()
-        ):
-
-            score += 0.20
-
-            matched_attributes.append(
-                base_gpu.slug
-            )
-
-        # ==================================================
-        # GPU Neighbor Match
-        # ==================================================
-        elif (
-
-            base_gpu
-
-            and product.attributes.filter(
-                slug__in=get_neighbor_gpu_slugs(
-                    base_gpu.slug
-                )
-            ).exists()
-        ):
-
-            score += 0.12
-
-        # ==================================================
-        # Usage Semantic
-        # ==================================================
-        if (
-
-            base_usage
-
-            and product.attributes.filter(
-                slug=base_usage.slug
-            ).exists()
-        ):
-
-            score += 0.20
-
-            matched_attributes.append(
-                base_usage.slug
-            )
-
-        # ==================================================
-        # Maker Semantic
-        # ==================================================
-        if (
-
-            base_maker
-
-            and product.attributes.filter(
-                slug=base_maker.slug
-            ).exists()
-        ):
-
-            score += 0.10
-
-            matched_attributes.append(
-                base_maker.slug
-            )
-
-        # ==================================================
-        # Spec Score Similarity
-        # ==================================================
-        if (
-
-            base.spec_score
-            and product.spec_score
-        ):
-
-            diff = abs(
-                product.spec_score
-                - base.spec_score
-            ) / base.spec_score
-
-            if diff <= 0.10:
-
-                score += 0.10
-
-        return round(
-            score,
-            2
-        ), matched_attributes
-
-    # ------------------------------------------------------
-    # Candidate Selection
-    # ------------------------------------------------------
-    scored = []
-
-    for product in candidates:
-
-        # ==================================================
-        # Skip invalid price
-        # ==================================================
-        if (
-            not product.price
-            or not base.price
-        ):
-            continue
-
-        # ==================================================
-        # Price Range Filter
-        # ==================================================
-        diff = abs(
-            product.price - base.price
-        ) / base.price
-
-        if diff > 0.35:
-            continue
-
-        # ==================================================
-        # Calculate Semantic Score
-        # ==================================================
-        score, matched_attributes = (
-            calc_score(product)
-        )
-
-        # ==================================================
-        # Soft Semantic Threshold
-        # ==================================================
-        if score < 0.20:
-            continue
-
-        product._semantic_score = score
-
-        product._matched_attributes = (
-            matched_attributes
-        )
-
-        scored.append(product)
-
-    # ------------------------------------------------------
-    # Sort Results
-    # ------------------------------------------------------
-    results = sorted(
-
-        scored,
-
-        key=lambda x: (
-            x._semantic_score,
-            x.spec_score or 0
         ),
 
-        reverse=True
-
-    )[:limit]
-
-    # ------------------------------------------------------
-    # Serialize
-    # ------------------------------------------------------
-    serializer = (
-        PCProductSerializer(
-            results,
-            many=True
-        )
+        unique_id=unique_id,
     )
 
-    data = serializer.data
-
-    # ------------------------------------------------------
-    # Semantic Recommendation Metadata
-    # ------------------------------------------------------
-    for i, item in enumerate(data):
-
-        item["similarity_score"] = (
-            results[i]._semantic_score
+    related_products = (
+        build_semantic_related_products(
+            product
         )
-
-        item["matched_attributes"] = (
-            results[i]._matched_attributes
-        )
-
+    )
 
     return Response({
 
-        "success": True,
+        "success":
+            True,
+
+        "semantic_runtime":
+            "v2",
+
+        "semantic_authority":
+            "backend",
+
+        "continuation_runtime":
+            "semantic_graph",
+
+        "count":
+            len(
+                related_products
+            ),
 
         "products":
-            data
+            related_products,
     })

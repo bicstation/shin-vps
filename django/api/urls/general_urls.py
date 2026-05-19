@@ -17,15 +17,39 @@ from api.views.pc_stats_view import (
 # General Views
 # ==========================================================
 
+# from api.views.general_views import (
+
+#     # ======================================================
+#     # Legacy Runtime
+#     # ======================================================
+#     PCProductRankingView,
+
+#     PCProductListAPIView,
+
+#     # ======================================================
+#     # Semantic Runtime
+#     # ======================================================
+#     pc_product_detail,
+
+#     get_related_pc_products,
+
+#     semantic_discovery_runtime,
+
+#     semantic_shelves,
+# )
+
 from api.views.general_views import (
 
     PCProductRankingView,
-
     PCProductListAPIView,
+)
+
+from api.views.pc_product_view import (
 
     pc_product_detail,
-
     get_related_pc_products,
+    semantic_discovery_runtime,
+    semantic_shelves,
 )
 
 # ==========================================================
@@ -72,6 +96,27 @@ urlpatterns = [
     ),
 
     # ==========================================================================
+    # 🚀 Semantic Discovery Runtime
+    # Cinematic Exploration Runtime
+    # ==========================================================================
+
+    path(
+        "semantic/discovery/",
+        semantic_discovery_runtime,
+        name="semantic_discovery_runtime",
+    ),
+
+    # ==========================================================================
+    # 🎬 Semantic Shelves Runtime
+    # ==========================================================================
+
+    path(
+        "semantic/shelves/",
+        semantic_shelves,
+        name="semantic_shelves",
+    ),
+
+    # ==========================================================================
     # 🏆 PC Ranking
     # ==========================================================================
 
@@ -98,7 +143,7 @@ urlpatterns = [
     ),
 
     # ==========================================================================
-    # 🔗 Related Products
+    # 🔗 Semantic Related Runtime
     # IMPORTANT:
     # Must be above detail route
     # ==========================================================================
@@ -110,7 +155,7 @@ urlpatterns = [
     ),
 
     # ==========================================================================
-    # 📄 Product Detail
+    # 📄 Product Detail Runtime
     # IMPORTANT:
     # Keep LAST to avoid URL collision
     # ==========================================================================
@@ -132,3 +177,5 @@ urlpatterns = [
         name="pc_sidebar_stats",
     ),
 ]
+
+

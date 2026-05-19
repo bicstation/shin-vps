@@ -11,6 +11,10 @@ usage-business	esports	gaming_keyword	0	0.86
 usage-business	rgb	gaming_feature	0	0.72
 usage-business	overclock	enthusiast_feature	0	0.74
 usage-business	rtx 5090	ultra_high_end_gpu	0	0.66
+usage-business	g-sync	gaming_feature	0	0.72
+usage-business	freesync	gaming_feature	0	0.68
+usage-business	240hz	gaming_monitor	0	0.82
+usage-business	360hz	gaming_monitor	0	0.92
 usage-mobile	17.3型	large_display	0	0.82
 usage-mobile	18型	large_display	0	0.88
 usage-mobile	4090	high_power_gpu	0	0.84
@@ -19,8 +23,12 @@ usage-mobile	desktop replacement	category	0	0.94
 usage-mobile	tower	form_factor	0	0.96
 usage-mobile	full tower	form_factor	0	0.98
 usage-mobile	water cooling	cooling	0	0.82
+usage-mobile	水冷	cooling	0	0.74
+usage-mobile	240mm radiator	cooling	0	0.88
+usage-mobile	360mm radiator	cooling	0	0.94
 usage-mobile	4kg	spec	0	0.94
 usage-mobile	5kg	spec	0	0.98
+usage-mobile	heavy gaming	high_power_usage	0	0.80
 usage-budget	rtx 5090	ultra_high_end_gpu	0	0.98
 usage-budget	rtx 5080	ultra_high_end_gpu	0	0.92
 usage-budget	threadripper	hedt_cpu	0	0.96
@@ -56,12 +64,35 @@ usage-server	rgb	gaming_feature	0	0.84
 usage-server	glass panel	gaming_feature	0	0.88
 usage-server	gaming chair	joke_noise	0	1.00
 usage-server	fps	gaming_keyword	0	0.82
-usage-mobile	水冷	cooling	0	0.74
-usage-mobile	240mm radiator	cooling	0	0.88
-usage-mobile	360mm radiator	cooling	0	0.94
-usage-mobile	heavy gaming	high_power_usage	0	0.80
-usage-business	g-sync	gaming_feature	0	0.72
-usage-business	freesync	gaming_feature	0	0.68
-usage-business	240hz	gaming_monitor	0	0.82
-usage-business	360hz	gaming_monitor	0	0.92
-
+usage-gaming	screencleaner	cleaning_product	0	0.98
+usage-gaming	screen cleaner	cleaning_product	0	0.98
+usage-gaming	cleaner	cleaning_product	0	0.96
+usage-creator	screencleaner	cleaning_product	0	0.98
+usage-creator	screen cleaner	cleaning_product	0	0.98
+usage-creator	cleaner	cleaning_product	0	0.96
+usage-ai	screencleaner	cleaning_product	0	0.98
+usage-ai	screen cleaner	cleaning_product	0	0.98
+usage-mobile	rack	mount_accessory	0	0.92
+usage-mobile	arm	mount_accessory	0	0.88
+usage-mobile	panel	panel_accessory	0	0.84
+usage-mobile	保護パネル	panel_accessory	0	0.96
+usage-creator	タッチペン	input_accessory	0	0.94
+usage-creator	pen	input_accessory	0	0.90
+usage-creator	stylus	input_accessory	0	0.92
+usage-gaming	タッチペン	input_accessory	0	0.94
+usage-gaming	stylus	input_accessory	0	0.92
+usage-business	タッチペン	input_accessory	0	0.88
+usage-business	stylus	input_accessory	0	0.88
+usage-creator	保護パネル	monitor_accessory	0	0.98
+usage-creator	壁掛けアーム	monitor_accessory	0	0.98
+usage-creator	ラックマウント	monitor_accessory	0	0.98
+usage-gaming	保護パネル	monitor_accessory	0	0.98
+usage-gaming	壁掛けアーム	monitor_accessory	0	0.98
+usage-business	保護パネル	monitor_accessory	0	0.94
+usage-business	壁掛けアーム	monitor_accessory	0	0.94
+usage-ai	mousepad	noise	0	1.00
+usage-ai	keycap	noise	0	1.00
+usage-ai	cleaning cloth	noise	0	1.00
+usage-gaming	cleaning cloth	noise	0	0.88
+usage-business	gaming chair	joke_noise	0	1.00
+usage-business	rgb fan	gaming_noise	0	0.88

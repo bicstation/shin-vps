@@ -7,7 +7,7 @@
 
 import type {
 
-  PCProduct,
+PCProduct,
 
 } from './contracts'
 
@@ -18,183 +18,136 @@ import type {
 export function
 normalizeDetail(
 
-  payload?: any
+payload?: any
 
 ): PCProduct | null {
 
-  // ======================================
-  // Empty Guard
-  // ======================================
+// ======================================
+// Empty Guard
+// ======================================
 
-  if (!payload) {
+if (!payload) {
 
-    return null
-  }
 
-  // ======================================
-  // Normalize
-  // ======================================
+return null
 
-  return {
 
-    /* ====================================
-    Identity
-    ==================================== */
+}
 
-    id:
-      payload?.id,
+// ======================================
+// Minimal Semantic Normalize
+// ======================================
 
-    unique_id:
-      payload?.unique_id || '',
+return {
 
-    /* ====================================
-    Basic
-    ==================================== */
 
-    name:
-      payload?.name || '',
+// ====================================
+// Flat Runtime Payload
+// ====================================
 
-    maker:
-      payload?.maker || '',
+...payload,
 
-    description:
-      payload?.description || '',
+// ====================================
+// Identity Safety
+// ====================================
 
-    /* ====================================
-    URL
-    ==================================== */
+id:
+  payload?.id,
 
-    url:
-      payload?.url || '',
+unique_id:
+  payload?.unique_id || '',
 
-    affiliate_url:
-      payload?.affiliate_url || '',
+// ====================================
+// Basic Safety
+// ====================================
 
-    image_url:
-      payload?.image_url || '',
+name:
+  payload?.name || '',
 
-    /* ====================================
-    Price
-    ==================================== */
+product_type:
+  payload?.product_type || '',
 
-    price:
-      payload?.price || 0,
+maker:
+  payload?.maker || '',
 
-    /* ====================================
-    Specs
-    ==================================== */
+brand:
+  payload?.brand || '',
 
-    cpu_model:
-      payload?.cpu_model || '',
+// ====================================
+// URL Safety
+// ====================================
 
-    gpu_model:
-      payload?.gpu_model || '',
+url:
+  payload?.url || '',
 
-    memory_gb:
-      payload?.memory_gb || 0,
+image_url:
+  payload?.image_url || '',
 
-    storage_gb:
-      payload?.storage_gb || 0,
+// ====================================
+// Runtime Safety
+// ====================================
 
-    /* ====================================
-    Scores
-    ==================================== */
+semantic_runtime:
 
-    spec_score:
-      payload?.spec_score || 0,
+  payload?.semantic_runtime
+  || {},
 
-    score_cpu:
-      payload?.score_cpu || 0,
+adaptive_runtime:
 
-    score_gpu:
-      payload?.score_gpu || 0,
+  payload?.adaptive_runtime
+  || {},
 
-    score_ai:
-      payload?.score_ai || 0,
+semantic_related:
 
-    score_cost:
-      payload?.score_cost || 0,
+  Array.isArray(
+    payload?.semantic_related
+  )
 
-    score_portable:
-      payload?.score_portable || 0,
+    ? payload.semantic_related
 
-    /* ====================================
-    Semantic
-    ==================================== */
+    : [],
 
-    semantic_role:
-      payload?.semantic_role || 'primary',
+semantic_labels:
 
-    semantic_weight:
-      payload?.semantic_weight || 0,
+  Array.isArray(
+    payload?.semantic_labels
+  )
 
-    semantic_score:
-      payload?.semantic_score || 0,
+    ? payload.semantic_labels
 
-    recommendation_reason:
-      payload?.recommendation_reason || '',
+    : [],
 
-    confidence:
-      payload?.confidence || 0,
+render_hints:
 
-    icon:
-      payload?.icon || '',
+  payload?.render_hints
+  || {},
 
-    color:
-      payload?.color || '',
+// ====================================
+// AI Safety
+// ====================================
 
-    /* ====================================
-    Attributes
-    ==================================== */
+ai_summary:
+  payload?.ai_summary || '',
 
-    attributes:
+ai_content:
+  payload?.ai_content || '',
 
-      Array.isArray(
-        payload?.attributes
-      )
+// ====================================
+// Schema
+// ====================================
 
-        ? payload.attributes
+semantic_schema_version:
 
-        : [],
+  payload?.semantic_schema_version
+  || 1,
 
-    grouped_attributes:
-      payload?.grouped_attributes
-      || {},
+// ====================================
+// Raw Backup
+// ====================================
 
-    semantic_schema_version:
+raw:
+  payload,
 
-      payload?.semantic_schema_version
-      || 1,
 
-    /* ====================================
-    AI
-    ==================================== */
-
-    ai_summary:
-      payload?.ai_summary || '',
-
-    ai_content:
-      payload?.ai_content || '',
-
-    /* ====================================
-    Radar
-    ==================================== */
-
-    radar_chart:
-
-      Array.isArray(
-        payload?.radar_chart
-      )
-
-        ? payload.radar_chart
-
-        : [],
-
-    /* ====================================
-    Raw Backup
-    ==================================== */
-
-    raw:
-      payload,
-  }
+}
 }

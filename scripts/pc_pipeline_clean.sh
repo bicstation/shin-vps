@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # ==========================================================
-# SHIN CORE LINX｜PC CLEAN PIPELINE
-# /home/maya/shin-vps/scripts/pc_pipeline_clean.sh
+# SHIN CORE LINX｜SEMANTIC PC PIPELINE
+# /home/maya/shin-vps/scripts/pc_pipeline_semantic.sh
 # ==========================================================
 
 set -e
@@ -17,7 +17,8 @@ source "$SCRIPT_DIR/.env.pc"
 # Project Root
 # ==========================================================
 
-PROJECT_ROOT="/home/maya/shin-vps"
+# PROJECT_ROOT="/home/maya/shin-vps"
+PROJECT_ROOT="/home/maya/shin-dev/shin-vps"
 
 # ==========================================================
 # Compose Runtime
@@ -34,7 +35,11 @@ COMPOSE="docker compose \
 # ==========================================================
 
 log() {
+
+  echo ""
+  echo "=========================================================="
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1"
+  echo "=========================================================="
 }
 
 # ==========================================================
@@ -56,16 +61,59 @@ run_django_raw() {
 }
 
 # ==========================================================
+# Internal API Check
+# ==========================================================
+
+check_api() {
+
+  local URL=$1
+
+  log "📡 API CHECK: $URL"
+
+  RESPONSE=$(
+    docker exec "$DJANGO_CON" \
+    curl -s \
+    "$URL"
+  )
+
+  echo "$RESPONSE" | head -c 1000
+
+  echo ""
+
+  # --------------------------------------------------------
+  # Empty Response
+  # --------------------------------------------------------
+
+  if [ -z "$RESPONSE" ]; then
+
+    echo "❌ ERROR: Empty API response"
+
+    exit 1
+  fi
+
+  # --------------------------------------------------------
+  # Empty Array
+  # --------------------------------------------------------
+
+  if [[ "$RESPONSE" == "[]" ]]; then
+
+    echo "❌ ERROR: API returned empty list"
+
+    exit 1
+  fi
+}
+
+# ==========================================================
 # START
 # ==========================================================
 
-log "🚀 START CLEAN PC PIPELINE"
+log "🚀 START SHIN CORE LINX SEMANTIC PIPELINE"
 
 # ==========================================================
 # ① Import Raw API Data
 # ==========================================================
 
-log "📡 Import Linkshare"
+log "📡 Import Linkshare API"
 
 run_django import_linkshare_api --mid 35909
 run_django import_linkshare_api --mid 2557
@@ -77,7 +125,7 @@ run_django import_linkshare_api --mid 43708
 # ② Reset Stock
 # ==========================================================
 
-log "🧹 Reset stock"
+log "🧹 Reset Product Stock"
 
 run_django reset_pc_stock
 
@@ -85,7 +133,7 @@ run_django reset_pc_stock
 # ③ Transform → PCProduct
 # ==========================================================
 
-log "🔄 Transform → PCProduct"
+log "🔄 Transform Raw → PCProduct"
 
 run_django migrate_linkshare_to_pc
 
@@ -93,17 +141,17 @@ run_django migrate_linkshare_to_pc
 # ④ AI Semantic Analyze
 # ==========================================================
 
-log "🧠 Analyze"
+log "🧠 Analyze Semantic Specs"
 
 run_django analyze_pc_spec \
-  --limit 100 \
+  --limit 300 \
   --null-only
 
 # ==========================================================
-# ⑤ Attribute Sync
+# ⑤ Attribute TSV Sync
 # ==========================================================
 
-log "🏷️ Attributes"
+log "🏷️ Sync Attribute Master"
 
 docker cp \
   "$PROJECT_ROOT/django/master_data/attributes.tsv" \
@@ -115,14 +163,22 @@ docker cp \
 
 run_django sync_master_attributes
 
+# ==========================================================
+# ⑥ Semantic TSV Sync
+# ==========================================================
 
-log "🧠 Semantic Master Sync"
+log "🧠 Sync Semantic Master"
 
 SEMANTIC_FILES=(
+
   "semantic_aliases.tsv"
+
   "semantic_negative_aliases.tsv"
+
   "semantic_normalization_rules.tsv"
+
   "semantic_groups.tsv"
+
   "semantic_group_mappings.tsv"
 )
 
@@ -141,63 +197,108 @@ do
 
 done
 
+# ==========================================================
+# ⑦ Attribute Auto Mapping
+# ==========================================================
+
+log "🔗 Auto Map Semantic Attributes"
 
 run_django auto_map_attributes_v2
 
 # ==========================================================
-# ⑥ Ranking Score
+# ⑧ Product Score Runtime
 # ==========================================================
 
-log "📊 Ranking"
+log "📊 Update Product Scores"
 
 run_django update_product_scores
 
 # ==========================================================
-# ⑦ Image Cache
+# ⑨ Semantic Runtime Build
 # ==========================================================
 
-log "🖼️ Image Cache"
+log "🚀 Build Semantic Runtime"
+
+run_django rebuild_semantic_runtime
+
+# ==========================================================
+# ⑩ Image Cache
+# ==========================================================
+
+log "🖼️ Cache Product Images"
 
 run_django fetch_product_images --limit 500
 
 # ==========================================================
-# ⑧ Internal API Health Check
+# ⑪ Internal Semantic API Health Check
 # ==========================================================
 
-log "📈 API Check (internal)"
+log "📈 Semantic Runtime Health Check"
 
-RESPONSE=$(
-  docker exec "$DJANGO_CON" \
-  curl -s \
-  http://localhost:8000/api/general/pc-products/ranking/score/
-)
+# ----------------------------------------------------------
+# Ranking Runtime
+# ----------------------------------------------------------
 
-echo "$RESPONSE" | head -n 1
+check_api \
+"http://localhost:8000/api/general/pc-products/ranking/"
+
+# ----------------------------------------------------------
+# Discovery Runtime
+# ----------------------------------------------------------
+
+check_api \
+"http://localhost:8000/api/general/semantic/discovery/"
+
+# ----------------------------------------------------------
+# Shelves Runtime
+# ----------------------------------------------------------
+
+check_api \
+"http://localhost:8000/api/general/semantic/shelves/"
 
 # ==========================================================
-# Empty Response Check
+# ⑫ Semantic Runtime Validation
 # ==========================================================
 
-if [ -z "$RESPONSE" ]; then
+log "🧠 Validate Semantic Runtime"
 
-  echo "❌ ERROR: API response empty"
+run_django shell -c "
 
-  exit 1
-fi
+from api.models import PCProduct
+
+count = PCProduct.objects.exclude(
+    semantic_runtime__isnull=True
+).count()
+
+print(f'SEMANTIC_RUNTIME_COUNT={count}')
+
+if count <= 0:
+    raise Exception('semantic runtime empty')
+"
 
 # ==========================================================
-# Empty Array Check
+# ⑬ Semantic Related Validation
 # ==========================================================
 
-if [[ "$RESPONSE" == "[]" ]]; then
+log "🔗 Validate Semantic Related"
 
-  echo "❌ ERROR: API returned empty list"
+run_django shell -c "
 
-  exit 1
-fi
+from api.models import PCProduct
+
+sample = PCProduct.objects.exclude(
+    semantic_runtime__isnull=True
+).first()
+
+if not sample:
+    raise Exception('no semantic sample')
+
+print(sample.name)
+print(sample.semantic_runtime)
+"
 
 # ==========================================================
 # DONE
 # ==========================================================
 
-log "✅ CLEAN PC PIPELINE COMPLETE"
+log "✅ SHIN CORE LINX SEMANTIC PIPELINE COMPLETE"

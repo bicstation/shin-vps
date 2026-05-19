@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
-# /home/maya/shin-vps/django/api/urls/finder_urls.py
+# /home/maya/shin-dev/shin-vps/django/api/urls/finder_urls.py
 
 from django.urls import path
 
+# ==========================================================
+# FINDER VIEW
+# ==========================================================
+
 from api.views.finder_view import (
-    finder_recommend
+    semantic_finder,
 )
 
 # ==============================================================================
@@ -20,12 +24,26 @@ app_name = "finder"
 urlpatterns = [
 
     # ==========================================================================
-    # 🧠 Semantic Recommendation Finder
+    # 🧠 Semantic Discovery Finder
+    # IMPORTANT:
+    # backend-driven semantic exploration runtime
+    # ==========================================================================
+
+    path(
+        "",
+        semantic_finder,
+        name="semantic_finder",
+    ),
+
+    # ==========================================================================
+    # 🧠 Legacy Compatibility
+    # IMPORTANT:
+    # preserve old recommend endpoint
     # ==========================================================================
 
     path(
         "recommend/",
-        finder_recommend,
+        semantic_finder,
         name="recommend",
     ),
 ]

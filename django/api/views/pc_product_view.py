@@ -19,6 +19,17 @@ from api.serializers.pc_product_serializer import (
     PCProductSerializer
 )
 
+from api.services.semantic.semantic_api_service import (
+
+    build_semantic_product_payload,
+
+    build_semantic_related_products,
+
+    build_semantic_shelf_payload,
+
+    build_semantic_discovery_payload,
+)
+
 
 # =========================================================
 # 🥇 Ranking API
@@ -37,8 +48,11 @@ def pc_product_ranking(request):
         PCProduct.objects
 
         .filter(
-            is_active=True,
-            unified_genre="PC"
+            is_active=True
+        )
+
+        .prefetch_related(
+            "attributes"
         )
     )
 
@@ -49,6 +63,7 @@ def pc_product_ranking(request):
 
         qs = qs.order_by(
             "-score_gpu",
+            "-semantic_score",
             "-spec_score"
         )
 
@@ -57,6 +72,7 @@ def pc_product_ranking(request):
         qs = qs.order_by(
             "-score_cpu",
             "-memory_gb",
+            "-semantic_score",
             "-spec_score"
         )
 
@@ -64,20 +80,22 @@ def pc_product_ranking(request):
 
         qs = qs.order_by(
             "-score_cost",
-            "-score_cpu"
+            "-score_cpu",
+            "-semantic_score"
         )
 
     elif use == "ai":
 
         qs = qs.order_by(
             "-score_ai",
-            "-npu_tops",
+            "-semantic_score",
             "-spec_score"
         )
 
     else:
 
         qs = qs.order_by(
+            "-semantic_score",
             "-spec_score"
         )
 
@@ -130,19 +148,81 @@ def pc_product_detail(
             status=404
         )
 
+    # -----------------------------------------------------
+    # Semantic Payload
+    # -----------------------------------------------------
+    semantic_payload = (
+        build_semantic_product_payload(
+            product
+        )
+    )
+
     serializer = (
         PCProductSerializer(
             product
         )
     )
 
-    return Response(
-        serializer.data
-    )
+    data = serializer.data
+
+    # -----------------------------------------------------
+    # Merge Semantic Payload
+    # -----------------------------------------------------
+    data.update({
+
+        "semantic_runtime":
+            semantic_payload.get(
+                "semantic_runtime",
+                {}
+            ),
+
+        "semantic_labels":
+            semantic_payload.get(
+                "semantic_labels",
+                []
+            ),
+
+        "workflows":
+            semantic_payload.get(
+                "workflows",
+                []
+            ),
+
+        "adaptive_runtime":
+            semantic_payload.get(
+                "adaptive_runtime",
+                {}
+            ),
+
+        "runtime_profile":
+            semantic_payload.get(
+                "runtime_profile",
+                {}
+            ),
+
+        "semantic_related":
+            semantic_payload.get(
+                "semantic_related",
+                []
+            ),
+
+        "semantic_score":
+            semantic_payload.get(
+                "semantic_score",
+                0
+            ),
+
+        "product_type":
+            semantic_payload.get(
+                "product_type"
+            ),
+    })
+
+    return Response(data)
 
 
 # =========================================================
-# 🔗 Related Products API
+# 🔗 Semantic Related Products API
 # =========================================================
 @api_view(["GET"])
 @permission_classes([AllowAny])
@@ -151,11 +231,9 @@ def get_related_pc_products(
     unique_id
 ):
 
-    limit = 8
-
     try:
 
-        base = (
+        product = (
 
             PCProduct.objects
 
@@ -173,330 +251,84 @@ def get_related_pc_products(
 
         return Response([])
 
-    # -----------------------------------------------------
-    # Base Semantic Attributes
-    # -----------------------------------------------------
-    base_gpu = (
-
-        base.attributes.filter(
-            attr_type="gpu"
-        ).first()
-    )
-
-    base_usage = (
-
-        base.attributes.filter(
-            attr_type="usage"
-        ).first()
-    )
-
-    base_device = (
-
-        base.attributes.filter(
-            attr_type="device"
-        ).first()
-    )
-
-    base_maker = (
-
-        base.attributes.filter(
-            attr_type="maker"
-        ).first()
-    )
-
-    # -----------------------------------------------------
-    # GPU Neighbor Mapping
-    # -----------------------------------------------------
-    def get_neighbor_gpu_slugs(slug):
-
-        mapping = {
-
-            "gpu-rtx-4050": [
-                "gpu-rtx-4050",
-                "gpu-rtx-4060",
-            ],
-
-            "gpu-rtx-4060": [
-                "gpu-rtx-4050",
-                "gpu-rtx-4060",
-                "gpu-rtx-4070",
-            ],
-
-            "gpu-rtx-4070": [
-                "gpu-rtx-4060",
-                "gpu-rtx-4070",
-                "gpu-rtx-4080",
-            ],
-
-            "gpu-rtx-4080": [
-                "gpu-rtx-4070",
-                "gpu-rtx-4080",
-                "gpu-rtx-4090",
-            ],
-
-            "gpu-rtx-4090": [
-                "gpu-rtx-4080",
-                "gpu-rtx-4090",
-            ],
-        }
-
-        return mapping.get(
-            slug,
-            [slug]
-        )
-
-    # -----------------------------------------------------
-    # Candidate Base Query
-    # -----------------------------------------------------
-    candidates = (
-
-        PCProduct.objects
-
-        .filter(
-            is_active=True,
-            unified_genre="PC"
-        )
-
-        .exclude(
-            id=base.id
-        )
-
-        .prefetch_related(
-            "attributes"
-        )
-
-        .order_by(
-            "-spec_score"
-        )[:150]
-    )
-
-    # -----------------------------------------------------
-    # Match Score
-    # -----------------------------------------------------
-    def calc_score(product):
-
-        score = 0
-
-        matched_attributes = []
-
-        # =================================================
-        # Device Semantic
-        # =================================================
-        if base_device:
-
-            if product.attributes.filter(
-                slug=base_device.slug
-            ).exists():
-
-                score += 0.25
-
-                matched_attributes.append(
-                    base_device.slug
-                )
-
-            else:
-
-                # -----------------------------------------
-                # Soft semantic fallback
-                # -----------------------------------------
-                score -= 0.15
-
-        # =================================================
-        # Price Similarity
-        # =================================================
-        if base.price and product.price:
-
-            diff = abs(
-                product.price - base.price
-            ) / base.price
-
-            if diff <= 0.10:
-
-                score += 0.20
-
-            elif diff <= 0.20:
-
-                score += 0.10
-
-        # =================================================
-        # GPU Exact Match
-        # =================================================
-        if (
-
-            base_gpu
-
-            and product.attributes.filter(
-                slug=base_gpu.slug
-            ).exists()
-        ):
-
-            score += 0.20
-
-            matched_attributes.append(
-                base_gpu.slug
-            )
-
-        # =================================================
-        # GPU Neighbor Match
-        # =================================================
-        elif (
-
-            base_gpu
-
-            and product.attributes.filter(
-                slug__in=get_neighbor_gpu_slugs(
-                    base_gpu.slug
-                )
-            ).exists()
-        ):
-
-            score += 0.12
-
-        # =================================================
-        # Usage Semantic
-        # =================================================
-        if (
-
-            base_usage
-
-            and product.attributes.filter(
-                slug=base_usage.slug
-            ).exists()
-        ):
-
-            score += 0.20
-
-            matched_attributes.append(
-                base_usage.slug
-            )
-
-        # =================================================
-        # Maker Semantic
-        # =================================================
-        if (
-
-            base_maker
-
-            and product.attributes.filter(
-                slug=base_maker.slug
-            ).exists()
-        ):
-
-            score += 0.10
-
-            matched_attributes.append(
-                base_maker.slug
-            )
-
-        # =================================================
-        # Spec Score Similarity
-        # =================================================
-        if (
-
-            base.spec_score
-            and product.spec_score
-        ):
-
-            diff = abs(
-                product.spec_score
-                - base.spec_score
-            ) / base.spec_score
-
-            if diff <= 0.10:
-
-                score += 0.10
-
-        return round(
-            score,
-            2
-        ), matched_attributes
-
-    # -----------------------------------------------------
-    # Candidate Selection
-    # -----------------------------------------------------
-    scored = []
-
-    for product in candidates:
-
-        # =================================================
-        # Skip invalid price
-        # =================================================
-        if (
-            not product.price
-            or not base.price
-        ):
-            continue
-
-        # =================================================
-        # Price Range Filter
-        # =================================================
-        diff = abs(
-            product.price - base.price
-        ) / base.price
-
-        if diff > 0.35:
-            continue
-
-        # =================================================
-        # Semantic Score
-        # =================================================
-        score, matched_attributes = (
-            calc_score(product)
-        )
-
-        # =================================================
-        # Soft semantic threshold
-        # =================================================
-        if score < 0.20:
-            continue
-
-        product._semantic_score = score
-
-        product._matched_attributes = (
-            matched_attributes
-        )
-
-        scored.append(product)
-
-    # -----------------------------------------------------
-    # Sort
-    # -----------------------------------------------------
-    results = sorted(
-
-        scored,
-
-        key=lambda x: (
-            x._semantic_score,
-            x.spec_score or 0
-        ),
-
-        reverse=True
-
-    )[:limit]
-
-    # -----------------------------------------------------
-    # Serialize
-    # -----------------------------------------------------
-    serializer = (
-        PCProductSerializer(
-            results,
-            many=True
+    related_products = (
+        build_semantic_related_products(
+            product
         )
     )
 
-    data = serializer.data
+    return Response(
+        related_products
+    )
 
-    # -----------------------------------------------------
-    # Recommendation Metadata
-    # -----------------------------------------------------
-    for i, item in enumerate(data):
 
-        item["similarity_score"] = (
-            results[i]._semantic_score
-        )
+# =========================================================
+# 🎬 Semantic Discovery Runtime API
+# =========================================================
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def semantic_discovery_runtime(
+    request
+):
 
-        item["matched_attributes"] = (
-            results[i]._matched_attributes
-        )
+    payload = (
+        build_semantic_discovery_payload()
+    )
 
-    return Response(data)
+    return Response(
+        payload
+    )
+
+
+# =========================================================
+# 🧠 Semantic Shelves API
+# =========================================================
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def semantic_shelves(
+    request
+):
+
+    payload = (
+        build_semantic_shelf_payload()
+    )
+
+    return Response(
+        payload
+    )
+
+
+# =========================================================
+# 🚀 Semantic Discovery Runtime API
+# =========================================================
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def semantic_discovery_runtime(
+    request
+):
+
+    payload = (
+        build_semantic_discovery_payload()
+    )
+
+    return Response(
+        payload
+    )
+
+
+# =========================================================
+# 🎬 Semantic Shelves API
+# =========================================================
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def semantic_shelves(
+    request
+):
+
+    payload = (
+        build_semantic_shelf_payload()
+    )
+
+    return Response(
+        payload
+    )

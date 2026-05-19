@@ -271,6 +271,27 @@ class PCProduct(models.Model):
     score_cost = models.IntegerField(default=0, verbose_name="コスパスコア(1-100)")
     score_portable = models.IntegerField(default=0, verbose_name="携帯性スコア(1-100)")
     score_ai = models.IntegerField(default=0, verbose_name="AI・NPUスコア(1-100)")
+    
+    # ==========================================================
+    # Semantic Runtime
+    # ==========================================================
+
+    product_type = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        db_index=True
+    )
+
+    semantic_runtime = models.JSONField(
+        default=dict,
+        blank=True,
+        null=True
+    )
+
+    semantic_score = models.FloatField(
+        default=0
+    )
 
     spec_score = models.IntegerField(default=0, verbose_name="総合評価スコア(0-100)")
     ai_summary = models.CharField(max_length=500, null=True, blank=True, verbose_name="AI記事要約/メタ情報")

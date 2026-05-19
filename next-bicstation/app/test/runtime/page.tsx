@@ -1,23 +1,7 @@
 // ============================================================================
 // FILE:
-// /home/maya/shin-vps/next-bicstation/app/test/runtime/page.tsx
+// /home/maya/shin-dev/shin-vps/next-bicstation/app/test/runtime/page.tsx
 // ============================================================================
-
-/* ============================================================================
-🔥 API
-============================================================================ */
-
-import {
-
-  fetchPCDetail,
-
-} from '@/shared/lib/api/django/pc/detail/detail'
-
-import {
-
-  fetchRelatedPC,
-
-} from '@/shared/lib/api/django/pc/related/related'
 
 /* ============================================================================
 🔥 Props
@@ -25,268 +9,454 @@ import {
 
 type Props = {
 
-  searchParams: {
+searchParams: {
 
-    debug?: string
 
-    uniqueId?: string
+mode?: string
 
-  }
+unique_id?: string
+
+
+}
 }
 
 /* ============================================================================
-🔥 Runtime Test Page
+🔥 Runtime Laboratory
 ============================================================================ */
 
-export default async function RuntimeTestPage({
-  searchParams,
+export default async function RuntimePage({
+searchParams,
 }: Props) {
 
-  // ==========================================================================
-  // Debug Mode
-  // ==========================================================================
+// ==========================================================================
+// Params
+// ==========================================================================
 
-  const debug =
+const mode =
 
-    searchParams?.debug
-    || 'full'
 
-  // ==========================================================================
-  // Runtime UniqueId
-  // ==========================================================================
+searchParams?.mode
+|| 'menu'
 
-  const uniqueId =
 
-    searchParams?.uniqueId
-    || '2557_ag-monu2725qe'
+const uniqueId =
 
-  // ==========================================================================
-  // Fetch Product Runtime
-  // ==========================================================================
 
-  const product =
+searchParams?.unique_id
+|| '35909_1000025-md'
 
-    await fetchPCDetail(
-      uniqueId
+
+// ==========================================================================
+// API Base
+// ==========================================================================
+
+const API_BASE =
+
+
+'http://django-v3:8000/api/general'
+
+
+// ==========================================================================
+// Endpoints
+// ==========================================================================
+
+const detailEndpoint =
+
+
+`${API_BASE}/pc-products/${uniqueId}/`
+
+
+const relatedEndpoint =
+
+
+`${API_BASE}/pc-products/${uniqueId}/related/`
+
+
+const rankingEndpoint =
+
+
+`${API_BASE}/pc-products/ranking/`
+
+
+const sidebarEndpoint =
+
+
+`${API_BASE}/pc-sidebar-stats/`
+
+
+// ==========================================================================
+// Runtime Data
+// ==========================================================================
+
+let runtimeData: any = null
+
+let currentEndpoint = ''
+
+// ==========================================================================
+// Resolve Endpoint
+// ==========================================================================
+
+if (mode === 'detail') {
+
+
+currentEndpoint =
+  detailEndpoint
+
+
+}
+
+if (mode === 'related') {
+
+
+currentEndpoint =
+  relatedEndpoint
+
+
+}
+
+if (mode === 'ranking') {
+
+
+currentEndpoint =
+  rankingEndpoint
+
+
+}
+
+if (mode === 'sidebar') {
+
+
+currentEndpoint =
+  sidebarEndpoint
+
+
+}
+
+// ==========================================================================
+// Fetch Raw Response
+// ==========================================================================
+
+if (
+mode !== 'menu'
+&& currentEndpoint
+) {
+
+
+try {
+
+  console.log(
+    '🔥 FETCH ENDPOINT:',
+    currentEndpoint
+  )
+
+  const response =
+
+    await fetch(
+      currentEndpoint,
+      {
+        cache: 'no-store',
+      }
     )
 
-  // ==========================================================================
-  // Fetch Related Runtime
-  // ==========================================================================
+  console.log(
+    '🔥 RESPONSE STATUS:',
+    response.status
+  )
 
-  const related =
+  console.log(
+    '🔥 RESPONSE OK:',
+    response.ok
+  )
 
-    await fetchRelatedPC(
-      uniqueId
-    )
+  // ================================================================
+  // RAW TEXT
+  // ================================================================
 
-  // ==========================================================================
-  // Render
-  // ==========================================================================
+  const rawText =
 
-  return (
+    await response.text()
 
-    <main
+  console.log(
+    '🔥 RAW RESPONSE TEXT:',
+    rawText
+  )
+
+  // ================================================================
+  // Try JSON Parse
+  // ================================================================
+
+  try {
+
+    runtimeData =
+
+      JSON.parse(
+        rawText
+      )
+
+  } catch {
+
+    runtimeData = {
+
+      error:
+        'JSON PARSE FAILED',
+
+      rawText,
+    }
+
+  }
+
+} catch (error: any) {
+
+  runtimeData = {
+
+    error:
+      'FETCH FAILED',
+
+    message:
+      error?.message || 'Unknown Error',
+  }
+}
+
+
+}
+
+// ==========================================================================
+// Render
+// ==========================================================================
+
+return (
+
+
+<main
+  style={{
+    padding: '40px',
+    background: '#020617',
+    color: '#ffffff',
+    minHeight: '100vh',
+    fontFamily: 'monospace',
+  }}
+>
+
+  {/* ================================================================
+  HEADER
+  ================================================================ */}
+
+  <h1
+    style={{
+      fontSize: '32px',
+      marginBottom: '12px',
+    }}
+  >
+
+    SHIN CORE LINX
+    Runtime Laboratory
+
+  </h1>
+
+  <p
+    style={{
+      color: '#94a3b8',
+      marginBottom: '40px',
+    }}
+  >
+
+    backend semantic runtime inspector
+
+  </p>
+
+  {/* ================================================================
+  CURRENT
+  ================================================================ */}
+
+  <div
+    style={{
+      marginBottom: '40px',
+      padding: '20px',
+      borderRadius: '20px',
+      background: '#0f172a',
+      border:
+        '1px solid rgba(255,255,255,.08)',
+    }}
+  >
+
+    <div
       style={{
-        padding: '40px',
-        background: '#020617',
-        color: '#ffffff',
-        minHeight: '100vh',
-        fontFamily: 'monospace',
+        marginBottom: '12px',
+        color: '#7dd3fc',
       }}
     >
 
-      {/* ================================================================
-      HEADER
-      ================================================================ */}
+      CURRENT MODE
 
-      <h1
-        style={{
-          fontSize: '32px',
-          marginBottom: '12px',
-        }}
-      >
+    </div>
 
-        SHIN CORE LINX
-        Runtime Inspector
+    <div
+      style={{
+        marginBottom: '24px',
+        fontSize: '20px',
+        fontWeight: 700,
+      }}
+    >
 
-      </h1>
+      {mode}
 
-      <p
-        style={{
-          color: '#94a3b8',
-          marginBottom: '12px',
-        }}
-      >
+    </div>
 
-        semantic runtime visibility mode
+    <div
+      style={{
+        marginBottom: '12px',
+        color: '#7dd3fc',
+      }}
+    >
 
-      </p>
+      CURRENT UNIQUE ID
 
-      <p
-        style={{
-          color: '#facc15',
-          marginBottom: '40px',
-        }}
-      >
+    </div>
 
-        current uniqueId:
-        {' '}
-        {uniqueId}
+    <div>
 
-      </p>
+      {uniqueId}
 
-      {/* ================================================================
-      DEBUG NAV
-      ================================================================ */}
+    </div>
+
+  </div>
+
+  {/* ================================================================
+  MENU
+  ================================================================ */}
+
+  <section
+    style={{
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '16px',
+      marginBottom: '60px',
+    }}
+  >
+
+    <a
+      href={`?mode=detail&unique_id=${uniqueId}`}
+      style={{
+        color: '#7dd3fc',
+      }}
+    >
+
+      DETAIL RUNTIME
+
+    </a>
+
+    <a
+      href={`?mode=related&unique_id=${uniqueId}`}
+      style={{
+        color: '#86efac',
+      }}
+    >
+
+      RELATED RUNTIME
+
+    </a>
+
+    <a
+      href={`?mode=ranking`}
+      style={{
+        color: '#facc15',
+      }}
+    >
+
+      RANKING RUNTIME
+
+    </a>
+
+    <a
+      href={`?mode=sidebar`}
+      style={{
+        color: '#f472b6',
+      }}
+    >
+
+      SIDEBAR RUNTIME
+
+    </a>
+
+  </section>
+
+  {/* ================================================================
+  ENDPOINT
+  ================================================================ */}
+
+  {
+    mode !== 'menu' && (
 
       <div
         style={{
-          display: 'flex',
-          gap: '16px',
-          marginBottom: '32px',
-          flexWrap: 'wrap',
+          marginBottom: '24px',
+          padding: '20px',
+          borderRadius: '20px',
+          background: '#0f172a',
+          border:
+            '1px solid rgba(255,255,255,.08)',
         }}
       >
 
-        <a
-          href={`?debug=1&uniqueId=${uniqueId}`}
+        <div
           style={{
+            marginBottom: '12px',
             color: '#7dd3fc',
           }}
         >
 
-          debug=1 product
+          CURRENT ENDPOINT
 
-        </a>
+        </div>
 
-        <a
-          href={`?debug=2&uniqueId=${uniqueId}`}
+        <div
           style={{
-            color: '#86efac',
+            wordBreak: 'break-all',
           }}
         >
 
-          debug=2 related
+          {currentEndpoint}
 
-        </a>
-
-        <a
-          href={`?debug=full&uniqueId=${uniqueId}`}
-          style={{
-            color: '#facc15',
-          }}
-        >
-
-          debug=full
-
-        </a>
+        </div>
 
       </div>
 
-      {/* ================================================================
-      PRODUCT RUNTIME
-      ================================================================ */}
+    )
+  }
 
-      {
-        (
-          debug === '1'
-          || debug === 'full'
-        ) && (
+  {/* ================================================================
+  RAW PAYLOAD
+  ================================================================ */}
 
-          <section
-            style={{
-              marginBottom: '60px',
-            }}
-          >
+  {
+    mode !== 'menu' && (
 
-            <h2
-              style={{
-                marginBottom: '20px',
-                color: '#7dd3fc',
-              }}
-            >
+      <pre
+        style={{
+          overflowX: 'auto',
+          background: '#0f172a',
+          padding: '24px',
+          borderRadius: '20px',
+          border:
+            '1px solid rgba(255,255,255,.08)',
+        }}
+      >
 
-              PRODUCT RUNTIME
+        {
+          JSON.stringify(
+            runtimeData,
+            null,
+            2
+          )
+        }
 
-            </h2>
+      </pre>
 
-            <pre
-              style={{
-                overflowX: 'auto',
-                background: '#0f172a',
-                padding: '24px',
-                borderRadius: '20px',
-                border:
-                  '1px solid rgba(255,255,255,.08)',
-              }}
-            >
+    )
+  }
 
-              {
-                JSON.stringify(
-                  product,
-                  null,
-                  2
-                )
-              }
+</main>
 
-            </pre>
 
-          </section>
-
-        )
-      }
-
-      {/* ================================================================
-      RELATED RUNTIME
-      ================================================================ */}
-
-      {
-        (
-          debug === '2'
-          || debug === 'full'
-        ) && (
-
-          <section>
-
-            <h2
-              style={{
-                marginBottom: '20px',
-                color: '#86efac',
-              }}
-            >
-
-              RELATED RUNTIME
-
-            </h2>
-
-            <pre
-              style={{
-                overflowX: 'auto',
-                background: '#0f172a',
-                padding: '24px',
-                borderRadius: '20px',
-                border:
-                  '1px solid rgba(255,255,255,.08)',
-              }}
-            >
-
-              {
-                JSON.stringify(
-                  related,
-                  null,
-                  2
-                )
-              }
-
-            </pre>
-
-          </section>
-
-        )
-      }
-
-    </main>
-
-  )
+)
 }

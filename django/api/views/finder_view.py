@@ -1,152 +1,551 @@
+# -*- coding: utf-8 -*-
 # /home/maya/shin-vps/django/api/views/finder_view.py
 
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
+from rest_framework.decorators import (
+    api_view,
+    permission_classes,
+)
+
+from rest_framework.permissions import (
+    AllowAny,
+)
+
+from rest_framework.response import (
+    Response,
+)
 
 import traceback
 
-from api.services.finder_engine import recommend_product
+from api.models import PCProduct
+
+# ==========================================================
+# SEMANTIC API SERVICE
+# ==========================================================
+
+from api.services.semantic.semantic_api_service import (
+
+    build_semantic_product_payload,
+
+    build_semantic_shelf_payload,
+
+    build_semantic_discovery_payload,
+)
+
+# ==========================================================
+# DEBUG
+# ==========================================================
+
+DEBUG_MODE = True
 
 
-# =========================
-# デバッグ切り替え
-# =========================
-DEBUG_MODE = True  # 本番では False
+# ==========================================================
+# UTIL
+# ==========================================================
 
-
-# =========================
-# 画像URL生成（超重要）
-# =========================
-def build_image_url(product, request):
-    """
-    画像URLを安全に生成する
-    - ローカル画像優先
-    - 外部URL fallback
-    - docker内部URLを排除
-    """
-
-    base_url = f"{request.scheme}://{request.get_host()}"
+def safe_int(value):
 
     try:
-        # -------------------------
-        # ローカル画像
-        # -------------------------
-        if product.image_local:
-            return f"{base_url}/media/{product.image_local}"
+        return int(value)
 
-        # -------------------------
-        # サムネイルURL
-        # -------------------------
-        if product.thumbnail_url:
-            return product.thumbnail_url.replace(
+    except:
+        return 0
+
+
+def safe_runtime(product):
+
+    runtime = getattr(
+        product,
+        "semantic_runtime",
+        {}
+    )
+
+    if not runtime:
+        return {}
+
+    return runtime
+
+
+# ==========================================================
+# IMAGE URL
+# IMPORTANT:
+# Docker-safe image runtime
+# ==========================================================
+
+def build_image_url(
+    product,
+    request,
+):
+
+    base_url = (
+        f"{request.scheme}"
+        f"://"
+        f"{request.get_host()}"
+    )
+
+    try:
+
+        # ==================================================
+        # Local Image
+        # ==================================================
+
+        if getattr(
+
+            product,
+
+            "image_local",
+
+            None
+        ):
+
+            return (
+
+                f"{base_url}"
+                f"/media/"
+                f"{product.image_local}"
+            )
+
+        # ==================================================
+        # Thumbnail URL
+        # ==================================================
+
+        thumbnail_url = getattr(
+
+            product,
+
+            "thumbnail_url",
+
+            None
+        )
+
+        if thumbnail_url:
+
+            return thumbnail_url.replace(
+
                 "http://django-v3:8000",
+
                 base_url
             )
 
-        # -------------------------
-        # 外部画像
-        # -------------------------
-        if product.image_source:
-            return product.image_source
+        # ==================================================
+        # External Image
+        # ==================================================
+
+        image_source = getattr(
+
+            product,
+
+            "image_source",
+
+            None
+        )
+
+        if image_source:
+
+            return image_source
 
     except Exception:
+
         pass
 
     return ""
 
 
-@api_view(['POST'])
+# ==========================================================
+# FINDER FILTER
+# ==========================================================
+
+def filter_products_by_intent(
+
+    queryset,
+
+    workflow=None,
+
+    semantic=None,
+
+    intent=None,
+):
+
+    results = []
+
+    for product in queryset:
+
+        runtime = safe_runtime(
+            product
+        )
+
+        if not runtime:
+            continue
+
+        workflows = [
+
+            workflow_data.get(
+                "workflow"
+            )
+
+            for workflow_data
+            in runtime.get(
+                "workflows",
+                []
+            )
+
+            if isinstance(
+                workflow_data,
+                dict
+            )
+        ]
+
+        labels = runtime.get(
+            "semantic_labels",
+            []
+        )
+
+        # ==================================================
+        # Workflow
+        # ==================================================
+
+        if workflow:
+
+            if workflow not in workflows:
+                continue
+
+        # ==================================================
+        # Semantic
+        # ==================================================
+
+        if semantic:
+
+            semantic_found = False
+
+            for label in labels:
+
+                if semantic.lower() in str(
+                    label
+                ).lower():
+
+                    semantic_found = True
+                    break
+
+            if not semantic_found:
+                continue
+
+        # ==================================================
+        # Intent
+        # ==================================================
+
+        if intent:
+
+            primary_workflow = runtime.get(
+                "primary_workflow"
+            )
+
+            if (
+                primary_workflow
+                and
+                intent.lower()
+                not in primary_workflow.lower()
+            ):
+
+                continue
+
+        results.append(
+            product
+        )
+
+    return results
+
+
+# ==========================================================
+# SORT
+# ==========================================================
+
+def sort_products(products):
+
+    def score(product):
+
+        runtime = safe_runtime(
+            product
+        )
+
+        semantic_score = safe_int(
+
+            runtime.get(
+                "semantic_score"
+            )
+        )
+
+        workflow_score = safe_int(
+
+            runtime.get(
+                "workflow_score"
+            )
+        )
+
+        return (
+
+            semantic_score
+            +
+            workflow_score
+        )
+
+    return sorted(
+
+        products,
+
+        key=score,
+
+        reverse=True
+    )
+
+
+# ==========================================================
+# SEMANTIC FINDER
+# ==========================================================
+
+@api_view(["GET"])
 @permission_classes([AllowAny])
-def finder_recommend(request):
+
+def semantic_finder(request):
+
     """
-    PC Finder API
-    3つの入力から最適な1台を返す
+    SHIN CORE LINX
+    Semantic Discovery Finder
+
+    examples:
+
+    ?workflow=creator
+    ?workflow=gaming
+    ?workflow=ai
+
+    ?semantic=OLED
+    ?semantic=immersive
+
+    ?intent=ai
     """
 
-    # -------------------------
-    # 入力取得（デフォルト付き）
-    # -------------------------
-    use = request.data.get('use') or 'light'
-    level = request.data.get('level') or 'low'
-    priority = request.data.get('priority') or 'price'
-
-    # -------------------------
-    # バリデーション
-    # -------------------------
-    valid_use = ['light', 'work', 'gaming']
-    valid_level = ['low', 'high']
-    valid_priority = ['price', 'performance']
-
-    if use not in valid_use:
-        return Response({"error": f"Invalid use: {use}"}, status=400)
-
-    if level not in valid_level:
-        return Response({"error": f"Invalid level: {level}"}, status=400)
-
-    if priority not in valid_priority:
-        return Response({"error": f"Invalid priority: {priority}"}, status=400)
-
-    # -------------------------
-    # コア処理
-    # -------------------------
     try:
-        product, reasons = recommend_product(use, level, priority)
+
+        # ==================================================
+        # Query Params
+        # ==================================================
+
+        workflow = request.GET.get(
+            "workflow"
+        )
+
+        semantic = request.GET.get(
+            "semantic"
+        )
+
+        intent = request.GET.get(
+            "intent"
+        )
+
+        limit = safe_int(
+
+            request.GET.get(
+                "limit",
+                24
+            )
+        )
+
+        # ==================================================
+        # Base Query
+        # ==================================================
+
+        queryset = PCProduct.objects.exclude(
+            semantic_runtime__isnull=True
+        )[:500]
+
+        # ==================================================
+        # Semantic Filtering
+        # ==================================================
+
+        filtered_products = (
+
+            filter_products_by_intent(
+
+                queryset,
+
+                workflow=workflow,
+
+                semantic=semantic,
+
+                intent=intent,
+            )
+        )
+
+        # ==================================================
+        # Sort
+        # ==================================================
+
+        filtered_products = sort_products(
+            filtered_products
+        )
+
+        # ==================================================
+        # Limit
+        # ==================================================
+
+        filtered_products = filtered_products[
+            :limit
+        ]
+
+        # ==================================================
+        # Semantic Product Payloads
+        # ==================================================
+
+        product_payloads = []
+
+        for product in filtered_products:
+
+            payload = (
+                build_semantic_product_payload(
+                    product
+                )
+            )
+
+            # ==============================================
+            # Runtime Image Override
+            # ==============================================
+
+            payload["image_url"] = (
+                build_image_url(
+
+                    product,
+
+                    request,
+                )
+            )
+
+            product_payloads.append(
+                payload
+            )
+
+        # ==================================================
+        # Semantic Shelves
+        # ==================================================
+
+        shelves_payload = (
+            build_semantic_shelf_payload()
+        )
+
+        # ==================================================
+        # Discovery Runtime
+        # ==================================================
+
+        discovery_payload = (
+            build_semantic_discovery_payload()
+        )
+
+        # ==================================================
+        # Response
+        # ==================================================
+
+        return Response({
+
+            # ==============================================
+            # Semantic Authority
+            # ==============================================
+            "semantic_runtime":
+                "v2",
+
+            "semantic_authority":
+                "backend",
+
+            # ==============================================
+            # Finder
+            # ==============================================
+            "finder_runtime":
+                "semantic_discovery",
+
+            # ==============================================
+            # Query
+            # ==============================================
+            "query": {
+
+                "workflow":
+                    workflow,
+
+                "semantic":
+                    semantic,
+
+                "intent":
+                    intent,
+
+                "limit":
+                    limit,
+            },
+
+            # ==============================================
+            # Results
+            # ==============================================
+            "count":
+                len(product_payloads),
+
+            "results":
+                product_payloads,
+
+            # ==============================================
+            # Cinematic Shelves
+            # ==============================================
+            "semantic_shelves":
+                shelves_payload,
+
+            # ==============================================
+            # Discovery Runtime
+            # ==============================================
+            "discovery":
+                discovery_payload,
+
+            # ==============================================
+            # UX Runtime
+            # ==============================================
+            "ui_mode":
+                "semantic_exploration",
+
+            "exploration_type":
+                "human_intent_navigation",
+
+            # ==============================================
+            # Debug
+            # ==============================================
+            "debug": {
+
+                "workflow":
+                    workflow,
+
+                "semantic":
+                    semantic,
+
+                "intent":
+                    intent,
+
+                "filtered":
+                    len(filtered_products),
+            }
+
+            if DEBUG_MODE
+            else None,
+        })
 
     except Exception as e:
+
         traceback.print_exc()
 
         if DEBUG_MODE:
+
             return Response({
-                "error": str(e),
-                "type": str(type(e)),
-                "use": use,
-                "level": level,
-                "priority": priority,
+
+                "error":
+                    str(e),
+
+                "type":
+                    str(type(e)),
             }, status=500)
 
         return Response({
-            "error": "Internal server error"
+
+            "error":
+                "internal_server_error"
+
         }, status=500)
-
-    # -------------------------
-    # データなし
-    # -------------------------
-    if not product:
-        return Response({
-            "error": "No product found",
-            "input": {
-                "use": use,
-                "level": level,
-                "priority": priority
-            }
-        }, status=404)
-
-    # -------------------------
-    # URL安全取得
-    # -------------------------
-    product_url = getattr(product, "affiliate_url", None) or ""
-
-    # -------------------------
-    # 画像URL生成
-    # -------------------------
-    image_url = build_image_url(product, request)
-
-    # -------------------------
-    # 正常レスポンス
-    # -------------------------
-    return Response({
-        "product": {
-            "id": product.id,
-            "title": product.title or "",
-            "url": product_url,
-            "price": product.price or 0,
-            "image": image_url,
-        },
-        "reasons": reasons or [],
-        "debug": {
-            "use": use,
-            "level": level,
-            "priority": priority,
-        } if DEBUG_MODE else None
-    })

@@ -6,13 +6,43 @@
 
 export type SemanticAttribute = {
 
-  name: string
+name?: string
 
-  slug: string
+slug?: string
 
-  icon?: string
+icon?: string
 
-  color?: string
+color?: string
+
+label?: string
+}
+
+/* =========================================
+🔥 Semantic Runtime
+========================================= */
+
+export type SemanticRuntime = {
+
+workflows?: string[]
+
+workflow_tags?: string[]
+
+semantic_graph?: any[]
+
+semantic_score?: number
+
+semantic_role?: string
+}
+
+/* =========================================
+🔥 Adaptive Runtime
+========================================= */
+
+export type AdaptiveRuntime = {
+
+product_type?: string
+
+render_hints?: Record<string, any>
 }
 
 /* =========================================
@@ -21,67 +51,101 @@ export type SemanticAttribute = {
 
 export type PCProduct = {
 
-  /* =====================================
-  Identity
-  ===================================== */
+/* =====================================
+Identity
+===================================== */
 
-  unique_id: string
+id?: number
 
-  /* =====================================
-  Basic
-  ===================================== */
+unique_id: string
 
-  name: string
+/* =====================================
+Basic
+===================================== */
 
-  maker?: string
+name?: string
 
-  price?: number
+maker?: string
 
-  image_url?: string
+brand?: string
 
-  url?: string
+product_type?: string
 
-  /* =====================================
-  Specs
-  ===================================== */
+price?: number
 
-  cpu?: string
+image_url?: string
 
-  gpu?: string
+url?: string
 
-  memory?: string
+/* =====================================
+Specs
+===================================== */
 
-  storage?: string
+cpu?: string
 
-  /* =====================================
-  Semantic
-  ===================================== */
+gpu?: string
 
-  semantic_score?: number
+memory?: string
 
-  semantic_role?: string
+storage?: string
 
-  recommendation_reason?: string
+cpu_model?: string
 
-  confidence?: number
+gpu_model?: string
 
-  grouped_attributes?: {
+memory_gb?: number
 
-    usage?: SemanticAttribute[]
+storage_gb?: number
 
-    gpu?: SemanticAttribute[]
+/* =====================================
+Semantic
+===================================== */
 
-    maker?: SemanticAttribute[]
-  }
+semantic_score?: number
+
+semantic_role?: string
+
+recommendation_reason?: string
+
+confidence?: number
+
+semantic_labels?: string[]
+
+grouped_attributes?: {
+
+
+usage?: SemanticAttribute[]
+
+gpu?: SemanticAttribute[]
+
+maker?: SemanticAttribute[]
+
+
+}
+
+/* =====================================
+Runtime
+===================================== */
+
+semantic_runtime?: SemanticRuntime
+
+adaptive_runtime?: AdaptiveRuntime
+
+semantic_related?: any[]
+
+render_hints?: Record<string, any>
+
+/* =====================================
+AI
+===================================== */
+
+ai_summary?: string
+
+ai_content?: string
 }
 
 /* =========================================
 🔥 Detail Response
 ========================================= */
 
-export type PCDetailResponse = {
-
-  success: boolean
-
-  product: PCProduct
-}
+export type PCDetailResponse = PCProduct

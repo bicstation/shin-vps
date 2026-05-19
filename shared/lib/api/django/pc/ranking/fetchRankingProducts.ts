@@ -5,11 +5,15 @@
 ========================================= */
 
 import {
-  buildEndpoint,
+
+buildEndpoint,
+
 } from '../utils/buildEndpoint'
 
 import {
-  safeFetch,
+
+safeFetch,
+
 } from '../utils/safeFetch'
 
 /* =========================================
@@ -19,50 +23,153 @@ import {
 export async function
 fetchRankingProducts(
 
-  type = 'score'
+type = 'score'
 
 ) {
 
-  // ======================================
-  // Endpoint
-  // ======================================
+// ======================================
+// Endpoint
+// ======================================
 
-  const endpoint =
+const endpoint =
 
-    buildEndpoint(
 
-      `/general/pc-products/ranking/${type}/`
+buildEndpoint(
 
+  `/general/pc-products/ranking/${type}/`
+
+)
+
+
+// ======================================
+// Fetch
+// ======================================
+
+const json =
+
+
+await safeFetch(
+  endpoint
+)
+
+
+// ======================================
+// Runtime Debug
+// ======================================
+
+console.log(
+'🔥 FETCH RANKING PRODUCTS URL',
+endpoint
+)
+
+console.log(
+'🔥 FETCH RANKING PRODUCTS RAW',
+json
+)
+
+// ======================================
+// Empty Guard
+// ======================================
+
+if (!json) {
+
+
+return {
+
+  success: false,
+
+  ranking: {
+
+    results: [],
+  },
+
+  raw: null,
+}
+
+
+}
+
+// ======================================
+// Minimal Semantic Normalize
+// ======================================
+
+return {
+
+
+// ====================================
+// Preserve Raw Payload
+// ====================================
+
+...json,
+
+// ====================================
+// Success
+// ====================================
+
+success:
+  json?.success
+  || false,
+
+// ====================================
+// Ranking Runtime
+// ====================================
+
+ranking: {
+
+  results:
+
+    Array.isArray(
+      json?.ranking?.results
     )
 
-  // ======================================
-  // Fetch
-  // ======================================
+      ? json.ranking.results
 
-  const json =
+      : [],
 
-    await safeFetch(
-      endpoint
-    )
+  total:
+    json?.ranking?.total
+    || 0,
 
-  // ======================================
-  // Normalize
-  // ======================================
+  page:
+    json?.ranking?.page
+    || 1,
 
-  return {
+  limit:
+    json?.ranking?.limit
+    || 0,
+},
 
-    success:
-      json?.success
-      || false,
+// ====================================
+// Semantic Runtime
+// ====================================
 
-    products:
+semantic_runtime:
 
-      Array.isArray(
-        json?.products
-      )
+  json?.semantic_runtime
+  || {},
 
-        ? json.products
+semantic_labels:
 
-        : [],
-  }
+  Array.isArray(
+    json?.semantic_labels
+  )
+
+    ? json.semantic_labels
+
+    : [],
+
+render_hints:
+
+  json?.render_hints
+  || {},
+
+// ====================================
+// Raw Backup
+// ====================================
+
+raw:
+  json,
+
+
+}
 }

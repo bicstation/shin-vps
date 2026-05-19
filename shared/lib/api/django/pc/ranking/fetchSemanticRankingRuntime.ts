@@ -5,11 +5,15 @@
 ========================================= */
 
 import {
-  buildEndpoint,
+
+buildEndpoint,
+
 } from '../utils/buildEndpoint'
 
 import {
-  safeFetch,
+
+safeFetch,
+
 } from '../utils/safeFetch'
 
 /* =========================================
@@ -18,43 +22,67 @@ import {
 
 export type SemanticRankingRuntime = {
 
-  success?: boolean
+success?: boolean
 
-  products?: any[]
+ranking?: {
 
-  semantic?: any
 
-  seo?: {
+results?: any[]
 
-    title?: string
+total?: number
 
-    description?: string
+page?: number
 
-    canonical?: string
+limit?: number
 
-    keywords?: string[]
 
-    openGraph?: any
+}
 
-    twitter?: any
-  }
+semantic_runtime?: any
 
-  faq?: any[]
+semantic_labels?: string[]
 
-  breadcrumbs?: any[]
+render_hints?: any
 
-  schemas?: {
+seo?: {
 
-    itemSchema?: any
 
-    breadcrumbSchema?: any
+title?: string
 
-    faqSchema?: any
+description?: string
 
-    collectionSchema?: any
-  }
+canonical?: string
 
-  ui?: any
+keywords?: string[]
+
+openGraph?: any
+
+twitter?: any
+
+
+}
+
+faq?: any[]
+
+breadcrumbs?: any[]
+
+schemas?: {
+
+
+itemSchema?: any
+
+breadcrumbSchema?: any
+
+faqSchema?: any
+
+collectionSchema?: any
+
+
+}
+
+ui?: any
+
+raw?: any
 }
 
 /* =========================================
@@ -64,214 +92,208 @@ export type SemanticRankingRuntime = {
 export async function
 fetchSemanticRankingRuntime(
 
-  slug = 'score'
+slug = 'score'
 
 ): Promise<SemanticRankingRuntime> {
 
-  /* ======================================
-  🔥 Endpoint
-  ====================================== */
+/* ======================================
+🔥 Endpoint
+====================================== */
 
-  const endpoint =
+const endpoint =
 
-    buildEndpoint(
 
-      `/general/pc-products/ranking/${slug}/`
+buildEndpoint(
 
+  `/general/pc-products/ranking/${slug}/`
+
+)
+
+
+/* ======================================
+🔥 Fetch
+====================================== */
+
+const json =
+
+
+await safeFetch(
+  endpoint
+)
+
+
+/* ======================================
+🔥 Runtime Debug
+====================================== */
+
+console.log(
+'🔥 RANKING RUNTIME URL',
+endpoint
+)
+
+console.log(
+'🔥 RANKING RAW JSON',
+json
+)
+
+/* ======================================
+🔥 Empty Guard
+====================================== */
+
+if (!json) {
+
+
+return {
+
+  success: false,
+
+  ranking: {
+
+    results: [],
+  },
+
+  raw: null,
+}
+
+
+}
+
+/* ======================================
+🔥 Minimal Semantic Normalize
+====================================== */
+
+return {
+
+
+// ====================================
+// Preserve Raw Payload
+// ====================================
+
+...json,
+
+// ====================================
+// Success
+// ====================================
+
+success:
+  json?.success
+  || false,
+
+// ====================================
+// Ranking Runtime
+// ====================================
+
+ranking: {
+
+  results:
+
+    Array.isArray(
+      json?.ranking?.results
     )
 
-  /* ======================================
-  🔥 Fetch
-  ====================================== */
+      ? json.ranking.results
 
-  const json =
+      : [],
 
-    await safeFetch(
-      endpoint
-    )
+  total:
+    json?.ranking?.total
+    || 0,
 
-  /* ======================================
-  🔥 Runtime Debug
-  ====================================== */
+  page:
+    json?.ranking?.page
+    || 1,
 
-  console.log(
-    '[Ranking Runtime URL]',
-    endpoint
+  limit:
+    json?.ranking?.limit
+    || 0,
+},
+
+// ====================================
+// Semantic Runtime
+// ====================================
+
+semantic_runtime:
+
+  json?.semantic_runtime
+  || {},
+
+semantic_labels:
+
+  Array.isArray(
+    json?.semantic_labels
   )
 
-  console.log(
-    '🔥 RAW JSON',
-    JSON.stringify(
-      json,
-      null,
-      2
-    )
+    ? json.semantic_labels
+
+    : [],
+
+render_hints:
+
+  json?.render_hints
+  || {},
+
+// ====================================
+// SEO
+// ====================================
+
+seo:
+
+  json?.seo
+  || {},
+
+// ====================================
+// FAQ
+// ====================================
+
+faq:
+
+  Array.isArray(
+    json?.faq
   )
 
-  /* ======================================
-  🔥 Normalize
-  ====================================== */
+    ? json.faq
 
-  return {
+    : [],
 
-    /* ====================================
-    🔥 Success
-    ==================================== */
+// ====================================
+// Breadcrumbs
+// ====================================
 
-    success:
-      json?.success
-      || false,
+breadcrumbs:
 
-    /* ====================================
-    🔥 Products
-    ==================================== */
+  Array.isArray(
+    json?.breadcrumbs
+  )
 
-    products:
+    ? json.breadcrumbs
 
-      Array.isArray(
-        json?.products
-      )
+    : [],
 
-        ? json.products
+// ====================================
+// Schemas
+// ====================================
 
-        : [],
+schemas:
 
-    /* ====================================
-    🔥 Semantic
-    ==================================== */
+  json?.schemas
+  || {},
 
-    semantic:
-      json?.semantic
-      || {},
+// ====================================
+// UI
+// ====================================
 
-    /* ====================================
-    🔥 SEO
-    ==================================== */
+ui:
 
-    seo: {
+  json?.ui
+  || {},
 
-      title:
-        json?.seo?.title,
+// ====================================
+// Raw Backup
+// ====================================
 
-      description:
-        json?.seo?.description,
+raw:
+  json,
 
-      canonical:
-        json?.seo?.canonical,
 
-      keywords:
-
-        Array.isArray(
-          json?.seo?.keywords
-        )
-
-          ? json.seo.keywords
-
-          : [],
-
-      openGraph:
-
-        json?.seo?.openGraph
-        ||
-        json?.seo?.open_graph
-        ||
-        {},
-
-      twitter:
-
-        json?.seo?.twitter
-        || {},
-    },
-
-    /* ====================================
-    🔥 FAQ
-    ==================================== */
-
-    faq:
-
-      Array.isArray(
-        json?.faq
-      )
-
-        ? json.faq
-
-        : [],
-
-    /* ====================================
-    🔥 Breadcrumbs
-    ==================================== */
-
-    breadcrumbs:
-
-      Array.isArray(
-        json?.breadcrumbs
-      )
-
-        ? json.breadcrumbs
-
-        : [],
-
-    /* ====================================
-    🔥 Schemas
-    ==================================== */
-
-    schemas: {
-
-      itemSchema:
-
-        json?.schemas?.itemSchema
-        ||
-        json?.schemas?.item_schema
-        ||
-        json?.schemas?.itemList
-        ||
-        json?.schemas?.item_list
-        ||
-        null,
-
-      breadcrumbSchema:
-
-        json?.schemas?.breadcrumbSchema
-        ||
-        json?.schemas?.breadcrumb_schema
-        ||
-        json?.schemas?.breadcrumbList
-        ||
-        json?.schemas?.breadcrumb_list
-        ||
-        null,
-
-      faqSchema:
-
-        json?.schemas?.faqSchema
-        ||
-        json?.schemas?.faq_schema
-        ||
-        json?.schemas?.faqPage
-        ||
-        json?.schemas?.faq_page
-        ||
-        null,
-
-      collectionSchema:
-
-        json?.schemas?.collectionSchema
-        ||
-        json?.schemas?.collection_schema
-        ||
-        json?.schemas?.collectionPage
-        ||
-        json?.schemas?.collection_page
-        ||
-        null,
-    },
-
-    /* ====================================
-    🔥 UI
-    ==================================== */
-
-    ui:
-      json?.ui
-      || {},
-  }
+}
 }

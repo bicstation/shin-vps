@@ -7,10 +7,13 @@
 
 type SafeFetchOptions =
 
-  RequestInit & {
+RequestInit & {
 
-    timeout?: number
-  }
+
+timeout?: number
+
+
+}
 
 /* =========================================
 🔥 Safe Fetch
@@ -19,187 +22,306 @@ type SafeFetchOptions =
 export async function
 safeFetch<T = any>(
 
-  endpoint: string,
+endpoint: string,
 
-  options?: SafeFetchOptions
+options?: SafeFetchOptions
 
 ): Promise<T | null> {
 
-  // ======================================
-  // Timeout
-  // ======================================
+// ======================================
+// Runtime
+// ======================================
 
-  const timeout =
+const runtime =
 
-    typeof options?.timeout
-      === 'number'
 
-      ? options.timeout
+typeof window === 'undefined'
+  ? 'SSR'
+  : 'CSR'
 
-      : 15000
 
-  // ======================================
-  // Abort Controller
-  // ======================================
+// ======================================
+// Timeout
+// ======================================
 
-  const controller =
+const timeout =
 
-    new AbortController()
 
-  // ======================================
-  // Timeout Timer
-  // ======================================
+typeof options?.timeout
+  === 'number'
 
-  const timeoutId =
+  ? options.timeout
 
-    setTimeout(
-      () => {
+  : 15000
 
-        controller.abort()
 
-      },
-      timeout
-    )
+// ======================================
+// Abort Controller
+// ======================================
 
-  try {
+const controller =
 
-    // ====================================
-    // Fetch
-    // ====================================
 
-    const response =
+new AbortController()
 
-      await fetch(
-        endpoint,
-        {
-          ...options,
 
-          signal:
-            controller.signal,
+// ======================================
+// Timeout Timer
+// ======================================
 
-          headers: {
+const timeoutId =
 
-            'Content-Type':
-              'application/json',
 
-            ...(options?.headers || {}),
-          },
+setTimeout(
+  () => {
 
-          cache:
-            'no-store',
-        }
-      )
+    controller.abort()
 
-    // ====================================
-    // Clear Timeout
-    // ====================================
+  },
+  timeout
+)
 
-    clearTimeout(
-      timeoutId
-    )
 
-    // ====================================
-    // Response Error
-    // ====================================
+try {
 
-    if (!response.ok) {
 
-      console.error(
+// ====================================
+// Request Debug
+// ====================================
 
-        '🔥 API RESPONSE ERROR',
+console.log(
 
-        {
-          endpoint,
+  '🔥 SAFE FETCH REQUEST',
 
-          status:
-            response.status,
+  {
 
-          statusText:
-            response.statusText,
-        }
-      )
+    runtime,
 
-      return null
-    }
+    endpoint,
 
-    // ====================================
-    // JSON Parse
-    // ====================================
+    timeout,
 
-    let data: T
-
-    try {
-
-      data =
-        await response.json()
-
-    } catch (jsonError) {
-
-      console.error(
-
-        '🔥 JSON PARSE ERROR',
-
-        {
-          endpoint,
-          jsonError,
-        }
-      )
-
-      return null
-    }
-
-    // ====================================
-    // Success
-    // ====================================
-
-    return data
-
-  } catch (error: any) {
-
-    // ====================================
-    // Clear Timeout
-    // ====================================
-
-    clearTimeout(
-      timeoutId
-    )
-
-    // ====================================
-    // Abort Error
-    // ====================================
-
-    if (
-      error?.name ===
-      'AbortError'
-    ) {
-
-      console.error(
-
-        '🔥 FETCH TIMEOUT',
-
-        {
-          endpoint,
-          timeout,
-        }
-      )
-
-      return null
-    }
-
-    // ====================================
-    // Network Error
-    // ====================================
-
-    console.error(
-
-      '🔥 SAFE FETCH ERROR',
-
-      {
-        endpoint,
-        error,
-      }
-    )
-
-    return null
+    method:
+      options?.method || 'GET',
   }
+)
+
+// ====================================
+// Fetch
+// ====================================
+
+const response =
+
+  await fetch(
+    endpoint,
+    {
+      ...options,
+
+      signal:
+        controller.signal,
+
+      headers: {
+
+        'Content-Type':
+          'application/json',
+
+        ...(options?.headers || {}),
+      },
+
+      cache:
+        'no-store',
+    }
+  )
+
+// ====================================
+// Clear Timeout
+// ====================================
+
+clearTimeout(
+  timeoutId
+)
+
+// ====================================
+// Response Debug
+// ====================================
+
+console.log(
+
+  '🔥 SAFE FETCH RESPONSE',
+
+  {
+
+    runtime,
+
+    endpoint,
+
+    status:
+      response.status,
+
+    statusText:
+      response.statusText,
+
+    ok:
+      response.ok,
+  }
+)
+
+// ====================================
+// Response Error
+// ====================================
+
+if (!response.ok) {
+
+  console.error(
+
+    '🔥 API RESPONSE ERROR',
+
+    {
+      runtime,
+
+      endpoint,
+
+      status:
+        response.status,
+
+      statusText:
+        response.statusText,
+    }
+  )
+
+  return null
+}
+
+// ====================================
+// JSON Parse
+// ====================================
+
+let data: T
+
+try {
+
+  data =
+    await response.json()
+
+} catch (jsonError) {
+
+  console.error(
+
+    '🔥 JSON PARSE ERROR',
+
+    {
+      runtime,
+
+      endpoint,
+
+      jsonError,
+    }
+  )
+
+  return null
+}
+
+// ====================================
+// Raw Payload Debug
+// ====================================
+
+console.log(
+
+  '🔥 RAW API RESPONSE',
+
+  {
+
+    runtime,
+
+    endpoint,
+
+    semantic_schema_version:
+
+      (data as any)
+        ?.semantic_schema_version,
+
+    has_semantic_runtime:
+
+      !!(data as any)
+        ?.semantic_runtime,
+
+    has_adaptive_runtime:
+
+      !!(data as any)
+        ?.adaptive_runtime,
+
+    has_semantic_related:
+
+      !!(data as any)
+        ?.semantic_related,
+
+    payload:
+      data,
+  }
+)
+
+// ====================================
+// Success
+// ====================================
+
+return data
+
+
+} catch (error: any) {
+
+
+// ====================================
+// Clear Timeout
+// ====================================
+
+clearTimeout(
+  timeoutId
+)
+
+// ====================================
+// Abort Error
+// ====================================
+
+if (
+  error?.name ===
+  'AbortError'
+) {
+
+  console.error(
+
+    '🔥 FETCH TIMEOUT',
+
+    {
+      runtime,
+
+      endpoint,
+
+      timeout,
+    }
+  )
+
+  return null
+}
+
+// ====================================
+// Network Error
+// ====================================
+
+console.error(
+
+  '🔥 SAFE FETCH ERROR',
+
+  {
+    runtime,
+
+    endpoint,
+
+    error,
+  }
+)
+
+return null
+
+
+}
 }
