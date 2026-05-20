@@ -21,14 +21,114 @@ PROJECT_ROOT="/home/maya/shin-vps"
 # PROJECT_ROOT="/home/maya/shin-dev/shin-vps"
 
 # ==========================================================
+# Runtime Environment
+# ==========================================================
+
+RUNTIME="local"
+
+for ARG in "$@"
+do
+
+  case "$ARG" in
+
+    # ------------------------------------------------------
+    # Local
+    # ------------------------------------------------------
+
+    --local)
+
+      RUNTIME="local"
+      ;;
+
+    # ------------------------------------------------------
+    # Staging
+    # ------------------------------------------------------
+
+    --stg)
+
+      RUNTIME="stg"
+      ;;
+
+    # ------------------------------------------------------
+    # Production
+    # ------------------------------------------------------
+
+    --prod)
+
+      RUNTIME="prod"
+      ;;
+
+    # ------------------------------------------------------
+    # Unknown
+    # ------------------------------------------------------
+
+    *)
+
+      echo "❌ Unknown argument: $ARG"
+
+      echo ""
+      echo "Usage:"
+      echo "  ./pc_pipeline_semantic.sh --local"
+      echo "  ./pc_pipeline_semantic.sh --stg"
+      echo "  ./pc_pipeline_semantic.sh --prod"
+
+      exit 1
+      ;;
+  esac
+
+done
+
+# ==========================================================
+# Environment Mapping
+# ==========================================================
+
+if [ "$RUNTIME" = "local" ]; then
+
+  ENV_FILE=".env.local"
+  COMPOSE_OVERRIDE="docker-compose.local.yml"
+  PROJECT_NAME="shin-local"
+
+elif [ "$RUNTIME" = "stg" ]; then
+
+  ENV_FILE=".env.stg"
+  COMPOSE_OVERRIDE="docker-compose.stg.yml"
+  PROJECT_NAME="shin-stg"
+
+elif [ "$RUNTIME" = "prod" ]; then
+
+  ENV_FILE=".env.production"
+  COMPOSE_OVERRIDE="docker-compose.prod.yml"
+  PROJECT_NAME="shin-prod"
+
+else
+
+  echo "❌ Unknown runtime: $RUNTIME"
+
+  exit 1
+fi
+
+# ==========================================================
+# Runtime Info
+# ==========================================================
+
+echo ""
+echo "=========================================================="
+echo "🌌 SHIN CORE LINX RUNTIME"
+echo "=========================================================="
+echo "RUNTIME: $RUNTIME"
+echo "ENV FILE: $ENV_FILE"
+echo "COMPOSE: $COMPOSE_OVERRIDE"
+echo "=========================================================="
+
+# ==========================================================
 # Compose Runtime
 # ==========================================================
 
 COMPOSE="docker compose \
-  -p shin-vps \
-  --env-file $PROJECT_ROOT/.env.production \
+  -p $PROJECT_NAME \
+  --env-file $PROJECT_ROOT/$ENV_FILE \
   -f $PROJECT_ROOT/docker-compose.yml \
-  -f $PROJECT_ROOT/docker-compose.prod.yml"
+  -f $PROJECT_ROOT/$COMPOSE_OVERRIDE"
 
 # ==========================================================
 # Logger
@@ -49,14 +149,14 @@ log() {
 run_django() {
 
   $COMPOSE \
-    exec -T "$DJANGO_CON" \
+    exec -T "$DJANGO_SERVICE" \
     python3 manage.py "$@"
 }
 
 run_django_raw() {
 
   $COMPOSE \
-    exec -T "$DJANGO_CON" \
+    exec -T "$DJANGO_SERVICE" \
     "$@"
 }
 
@@ -71,10 +171,11 @@ check_api() {
   log "📡 API CHECK: $URL"
 
   RESPONSE=$(
-    docker exec "$DJANGO_CON" \
+    $COMPOSE exec "$DJANGO_SERVICE" \
     curl -s \
     "$URL"
   )
+
 
   echo "$RESPONSE" | head -c 1000
 
@@ -144,7 +245,7 @@ run_django migrate_linkshare_to_pc
 log "🧠 Analyze Semantic Specs"
 
 run_django analyze_pc_spec \
-  --limit 10 \
+  --limit 100 \
   --null-only
 
 # ==========================================================
@@ -153,9 +254,9 @@ run_django analyze_pc_spec \
 
 log "🏷️ Sync Attribute Master"
 
-docker cp \
+$COMPOSE cp \
   "$PROJECT_ROOT/django/master_data/attributes.tsv" \
-  "$DJANGO_CON:/usr/src/app/master_data/attributes.tsv" \
+  "$DJANGO_SERVICE:/usr/src/app/master_data/attributes.tsv" \
   || {
     echo "❌ attributes.tsv copy failed"
     exit 1
@@ -187,9 +288,9 @@ do
 
   log "📄 Copy $FILE"
 
-  docker cp \
+  $COMPOSE cp \
     "$PROJECT_ROOT/django/master_data/$FILE" \
-    "$DJANGO_CON:/usr/src/app/master_data/$FILE" \
+    "$DJANGO_SERVICE:/usr/src/app/master_data/$FILE" \
     || {
       echo "❌ $FILE copy failed"
       exit 1

@@ -2,6 +2,27 @@
 # 🚀 SHIN CORE LINX｜BASE RUNTIME COMPOSE
 # Shared Runtime Authority
 # ==============================================================================
+#
+# Philosophy:
+#
+# - compose = runtime topology
+# - env = runtime universe identity
+#
+# This compose file is intentionally universe-agnostic.
+#
+# Runtime universes:
+#
+# - local
+# - stg
+# - prod
+#
+# are controlled by:
+#
+# - .env.local
+# - .env.stg
+# - .env.production
+#
+# ==============================================================================
 
 services:
 
@@ -9,45 +30,61 @@ services:
   # PostgreSQL
   # ============================================================================
   postgres-db-v3:
-    image: postgres:15-alpine
 
-    container_name: postgres-db-v3
+    image: postgres:15-alpine
 
     restart: unless-stopped
 
     environment:
+
       POSTGRES_USER: ${DB_USER}
+
       POSTGRES_PASSWORD: ${DB_PASSWORD}
+
       POSTGRES_DB: ${DB_NAME}
 
     volumes:
+
       - ${POSTGRES_DATA_PATH}:/var/lib/postgresql/data
 
     networks:
+
       - internal-net
 
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"
+        ]
+
       interval: 10s
+
       timeout: 5s
+
       retries: 5
 
     shm_size: 256mb
+
 
   # ============================================================================
   # Django Backend
   # ============================================================================
   django-v3:
-    build:
-      context: .
-      dockerfile: ./django/Dockerfile
 
-    container_name: django-v3
+    build:
+
+      context: .
+
+      dockerfile: ./django/Dockerfile
 
     restart: unless-stopped
 
     depends_on:
+
       postgres-db-v3:
+
         condition: service_healthy
 
     command: >
@@ -58,121 +95,221 @@ services:
       --workers 3
       "
 
+    environment:
+
+      DJANGO_ENV: ${DJANGO_ENV}
+
+      RUNTIME_UNIVERSE: ${RUNTIME_UNIVERSE}
+
+      INTERNAL_API_URL: ${INTERNAL_API_URL}
+
+      SITE_URL: ${SITE_URL}
+
+      SEMANTIC_RUNTIME_ENABLED: ${SEMANTIC_RUNTIME_ENABLED}
+
+      SEMANTIC_GRAPH_ENABLED: ${SEMANTIC_GRAPH_ENABLED}
+
+      WORKFLOW_RUNTIME_ENABLED: ${WORKFLOW_RUNTIME_ENABLED}
+
+      EXPLORATION_RUNTIME_ENABLED: ${EXPLORATION_RUNTIME_ENABLED}
+
     volumes:
+
       - ./django:/usr/src/app
+
       - ./django/media:/usr/src/app/media
 
     networks:
+
       - internal-net
+
       - shared-proxy
+
 
   # ============================================================================
   # Bicstation Frontend
   # ============================================================================
   next-bicstation-v3:
+
     build:
+
       context: .
+
       dockerfile: ./shared/docker/NextJS.Dockerfile
 
       args:
+
         PROJECT_NAME: next-bicstation
+
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+
         INTERNAL_API_URL: ${INTERNAL_API_URL}
 
-    container_name: next-bicstation-v3
+        NEXT_PUBLIC_RUNTIME_UNIVERSE: ${NEXT_PUBLIC_RUNTIME_UNIVERSE}
 
     restart: unless-stopped
 
     environment:
+
       NEXT_PUBLIC_SITE_DOMAIN: bicstation.com
+
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+
       INTERNAL_API_URL: ${INTERNAL_API_URL}
 
+      NEXT_PUBLIC_RUNTIME_UNIVERSE:
+        ${NEXT_PUBLIC_RUNTIME_UNIVERSE}
+
+      NEXT_PUBLIC_RUNTIME_MODE:
+        ${NEXT_PUBLIC_RUNTIME_MODE}
+
+      NEXT_PUBLIC_ENABLE_SEMANTIC_RUNTIME:
+        ${NEXT_PUBLIC_ENABLE_SEMANTIC_RUNTIME}
+
+      NEXT_PUBLIC_RUNTIME_OBSERVATORY:
+        ${NEXT_PUBLIC_RUNTIME_OBSERVATORY}
+
     networks:
+
       - internal-net
+
       - shared-proxy
+
 
   # ============================================================================
   # Bic Saving Frontend
   # ============================================================================
   next-bic-saving-v3:
+
     build:
+
       context: .
+
       dockerfile: ./shared/docker/NextJS.Dockerfile
 
       args:
+
         PROJECT_NAME: next-bic-saving
+
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+
         INTERNAL_API_URL: ${INTERNAL_API_URL}
 
-    container_name: next-bic-saving-v3
+        NEXT_PUBLIC_RUNTIME_UNIVERSE:
+          ${NEXT_PUBLIC_RUNTIME_UNIVERSE}
 
     restart: unless-stopped
 
     environment:
+
       NEXT_PUBLIC_SITE_DOMAIN: bic-saving.com
 
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
 
       INTERNAL_API_URL: ${INTERNAL_API_URL}
 
+      NEXT_PUBLIC_RUNTIME_UNIVERSE:
+        ${NEXT_PUBLIC_RUNTIME_UNIVERSE}
+
+      NEXT_PUBLIC_RUNTIME_MODE:
+        ${NEXT_PUBLIC_RUNTIME_MODE}
+
     networks:
+
       - internal-net
+
       - shared-proxy
+
 
   # ============================================================================
   # Tiper Frontend
   # ============================================================================
   next-tiper-v3:
+
     build:
+
       context: .
+
       dockerfile: ./shared/docker/NextJS.Dockerfile
 
       args:
+
         PROJECT_NAME: next-tiper
+
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+
         INTERNAL_API_URL: ${INTERNAL_API_URL}
 
-    container_name: next-tiper-v3
+        NEXT_PUBLIC_RUNTIME_UNIVERSE:
+          ${NEXT_PUBLIC_RUNTIME_UNIVERSE}
 
     restart: unless-stopped
 
     environment:
+
       NEXT_PUBLIC_SITE_DOMAIN: tiper.live
 
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
 
       INTERNAL_API_URL: ${INTERNAL_API_URL}
 
+      NEXT_PUBLIC_RUNTIME_UNIVERSE:
+        ${NEXT_PUBLIC_RUNTIME_UNIVERSE}
+
+      NEXT_PUBLIC_RUNTIME_MODE:
+        ${NEXT_PUBLIC_RUNTIME_MODE}
+
     networks:
+
       - internal-net
+
       - shared-proxy
+
 
   # ============================================================================
   # AVFlash Frontend
   # ============================================================================
   next-avflash-v3:
+
     build:
+
       context: .
+
       dockerfile: ./shared/docker/NextJS.Dockerfile
 
       args:
+
         PROJECT_NAME: next-avflash
+
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+
         INTERNAL_API_URL: ${INTERNAL_API_URL}
 
-    container_name: next-avflash-v3
+        NEXT_PUBLIC_RUNTIME_UNIVERSE:
+          ${NEXT_PUBLIC_RUNTIME_UNIVERSE}
 
     restart: unless-stopped
 
     environment:
+
       NEXT_PUBLIC_SITE_DOMAIN: avflash.xyz
+
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+
       INTERNAL_API_URL: ${INTERNAL_API_URL}
 
+      NEXT_PUBLIC_RUNTIME_UNIVERSE:
+        ${NEXT_PUBLIC_RUNTIME_UNIVERSE}
+
+      NEXT_PUBLIC_RUNTIME_MODE:
+        ${NEXT_PUBLIC_RUNTIME_MODE}
+
     networks:
+
       - internal-net
+
       - shared-proxy
+
 
 # ==============================================================================
 # Networks
@@ -180,7 +317,9 @@ services:
 networks:
 
   internal-net:
+
     driver: bridge
 
   shared-proxy:
+
     external: true
