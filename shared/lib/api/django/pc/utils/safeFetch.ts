@@ -1,327 +1,306 @@
 // /home/maya/shin-dev/shin-vps/shared/lib/api/django/pc/utils/safeFetch.ts
 // Copyright (c) 2024 Shin Corporation. All rights reserved.
 
+/**
+ * SHIN CORE LINX
+ * Legacy Safe Fetch Bridge
+ *
+ * IMPORTANT:
+ * Canonical transport authority now lives in:
+ *
+ * runtime/transport/safeRuntimeFetch.ts
+ *
+ * This file remains as:
+ * - compatibility layer
+ * - migration bridge
+ * - legacy import stabilizer
+ *
+ * Migration Philosophy:
+ * utils/ → runtime/transport
+ */
+
+import {
+  safeRuntimeFetch,
+} from '../runtime/transport/safeRuntimeFetch'
+
 /* =========================================
 🔥 Types
 ========================================= */
 
-type SafeFetchOptions =
+export type SafeFetchOptions =
 
 RequestInit & {
 
-
-timeout?: number
-
+  timeout?: number
 
 }
 
 /* =========================================
-🔥 Safe Fetch
+🔥 Safe Fetch Bridge
 ========================================= */
 
+/**
+ * Legacy safeFetch compatibility bridge.
+ *
+ * IMPORTANT:
+ * Semantic transport authority is now:
+ *
+ * runtime/transport/safeRuntimeFetch.ts
+ *
+ * Existing frontend runtime pipelines
+ * continue functioning through this bridge.
+ */
 export async function
 safeFetch<T = any>(
 
-endpoint: string,
+  endpoint: string,
 
-options?: SafeFetchOptions
+  options?: SafeFetchOptions
 
 ): Promise<T | null> {
 
-// ======================================
-// Runtime
-// ======================================
+  // ======================================
+  // Runtime
+  // ======================================
 
-const runtime =
+  const runtime =
 
+    typeof window === 'undefined'
+      ? 'SSR'
+      : 'CSR'
 
-typeof window === 'undefined'
-  ? 'SSR'
-  : 'CSR'
+  // ======================================
+  // Bridge Start
+  // ======================================
 
+  console.log(
 
-// ======================================
-// Timeout
-// ======================================
-
-const timeout =
-
-
-typeof options?.timeout
-  === 'number'
-
-  ? options.timeout
-
-  : 15000
-
-
-// ======================================
-// Abort Controller
-// ======================================
-
-const controller =
-
-
-new AbortController()
-
-
-// ======================================
-// Timeout Timer
-// ======================================
-
-const timeoutId =
-
-
-setTimeout(
-  () => {
-
-    controller.abort()
-
-  },
-  timeout
-)
-
-
-try {
-
-
-// ====================================
-// Request Debug
-// ====================================
-
-console.log(
-
-  '🔥 SAFE FETCH REQUEST',
-
-  {
-
-    runtime,
-
-    endpoint,
-
-    timeout,
-
-    method:
-      options?.method || 'GET',
-  }
-)
-
-// ====================================
-// Fetch
-// ====================================
-
-const response =
-
-  await fetch(
-    endpoint,
-    {
-      ...options,
-
-      signal:
-        controller.signal,
-
-      headers: {
-
-        'Content-Type':
-          'application/json',
-
-        ...(options?.headers || {}),
-      },
-
-      cache:
-        'no-store',
-    }
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
   )
 
-// ====================================
-// Clear Timeout
-// ====================================
+  console.log(
 
-clearTimeout(
-  timeoutId
-)
+    '🔥 SAFE FETCH BRIDGE START'
+  )
 
-// ====================================
-// Response Debug
-// ====================================
-
-console.log(
-
-  '🔥 SAFE FETCH RESPONSE',
-
-  {
-
-    runtime,
-
-    endpoint,
-
-    status:
-      response.status,
-
-    statusText:
-      response.statusText,
-
-    ok:
-      response.ok,
-  }
-)
-
-// ====================================
-// Response Error
-// ====================================
-
-if (!response.ok) {
-
-  console.error(
-
-    '🔥 API RESPONSE ERROR',
+  console.log(
 
     {
+
       runtime,
 
       endpoint,
+
+      migration:
+        'utils → runtime/transport',
+
+      method:
+        options?.method || 'GET',
+
+      timeout:
+        options?.timeout || 15000,
+    }
+  )
+
+  console.log(
+
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+  )
+
+  // ======================================
+  // Runtime Transport
+  // ======================================
+
+  const result =
+
+    await safeRuntimeFetch<T>(
+      endpoint,
+      options,
+    )
+
+  // ======================================
+  // Raw Transport Result
+  // ======================================
+
+  console.log(
+
+    '🔥 RAW TRANSPORT RESULT',
+
+    {
+
+      runtime,
+
+      endpoint,
+
+      success:
+        result.success,
 
       status:
-        response.status,
+        result.status,
 
-      statusText:
-        response.statusText,
+      has_data:
+        !!result.data,
+
+      has_error:
+        !!result.error,
+
+      result,
     }
   )
 
-  return null
-}
+  // ======================================
+  // Runtime Failure
+  // ======================================
 
-// ====================================
-// JSON Parse
-// ====================================
+  if (!result.success) {
 
-let data: T
+    console.error(
 
-try {
+      '🔥 SAFE FETCH BRIDGE ERROR',
 
-  data =
-    await response.json()
+      {
 
-} catch (jsonError) {
+        runtime,
 
-  console.error(
+        endpoint,
 
-    '🔥 JSON PARSE ERROR',
+        status:
+          result.status,
+
+        error:
+          result.error,
+      }
+    )
+
+    console.log(
+
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+    )
+
+    console.log(
+
+      '🔥 SAFE FETCH BRIDGE FAILED'
+    )
+
+    console.log(
+
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+    )
+
+    return null
+  }
+
+  // ======================================
+  // Semantic Runtime Debug
+  // ======================================
+
+  console.log(
+
+    '🔥 SEMANTIC RUNTIME PAYLOAD',
 
     {
+
       runtime,
 
       endpoint,
 
-      jsonError,
+      semantic_schema_version:
+
+        (result.data as any)
+          ?.semantic_schema_version,
+
+      has_semantic_runtime:
+
+        !!(result.data as any)
+          ?.semantic_runtime,
+
+      has_adaptive_runtime:
+
+        !!(result.data as any)
+          ?.adaptive_runtime,
+
+      has_semantic_related:
+
+        !!(result.data as any)
+          ?.semantic_related,
+
+      payload_keys:
+
+        Object.keys(
+          (result.data as any) || {}
+        ),
+
+      payload_type:
+
+        Array.isArray(result.data)
+          ? 'array'
+          : typeof result.data,
+
+      payload_exists:
+
+        !!result.data,
+
+      payload:
+        result.data,
     }
   )
 
-  return null
-}
+  // ======================================
+  // Payload Safety
+  // ======================================
 
-// ====================================
-// Raw Payload Debug
-// ====================================
+  if (!result.data) {
 
-console.log(
+    console.error(
 
-  '🔥 RAW API RESPONSE',
+      '🔥 EMPTY RUNTIME PAYLOAD',
 
-  {
+      {
 
-    runtime,
+        runtime,
 
-    endpoint,
+        endpoint,
+      }
+    )
 
-    semantic_schema_version:
-
-      (data as any)
-        ?.semantic_schema_version,
-
-    has_semantic_runtime:
-
-      !!(data as any)
-        ?.semantic_runtime,
-
-    has_adaptive_runtime:
-
-      !!(data as any)
-        ?.adaptive_runtime,
-
-    has_semantic_related:
-
-      !!(data as any)
-        ?.semantic_related,
-
-    payload:
-      data,
+    return null
   }
-)
 
-// ====================================
-// Success
-// ====================================
+  // ======================================
+  // Completion
+  // ======================================
 
-return data
+  console.log(
 
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+  )
 
-} catch (error: any) {
+  console.log(
 
+    '✅ SAFE FETCH BRIDGE SUCCESS'
+  )
 
-// ====================================
-// Clear Timeout
-// ====================================
-
-clearTimeout(
-  timeoutId
-)
-
-// ====================================
-// Abort Error
-// ====================================
-
-if (
-  error?.name ===
-  'AbortError'
-) {
-
-  console.error(
-
-    '🔥 FETCH TIMEOUT',
+  console.log(
 
     {
+
       runtime,
 
       endpoint,
 
-      timeout,
+      payload_received:
+        true,
     }
   )
 
-  return null
-}
+  console.log(
 
-// ====================================
-// Network Error
-// ====================================
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+  )
 
-console.error(
+  // ======================================
+  // Success
+  // ======================================
 
-  '🔥 SAFE FETCH ERROR',
-
-  {
-    runtime,
-
-    endpoint,
-
-    error,
-  }
-)
-
-return null
-
-
-}
+  return result.data
 }
