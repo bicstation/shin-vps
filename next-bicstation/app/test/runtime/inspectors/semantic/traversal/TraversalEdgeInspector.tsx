@@ -35,24 +35,16 @@ export default function TraversalEdgeInspector({
 }: TraversalEdgeInspectorProps) {
 
   // ==========================================================================
-  // Payload
-  // ==========================================================================
-
-  const payload =
-
-    runtime?.payload || {}
-
-  // ==========================================================================
   // Traversal Edges
   // ==========================================================================
 
   const traversalEdges =
 
     Array.isArray(
-      payload?.traversal_edges
+      runtime?.traversal_edges
     )
 
-      ? payload.traversal_edges
+      ? runtime.traversal_edges
 
       : []
 

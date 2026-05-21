@@ -1,368 +1,386 @@
 // ============================================================================
 // FILE:
-// /home/maya/shin-dev/shin-vps/next-bicstation/app/test/runtime/runtime/normalizeRuntimePayload.ts
+// /home/maya/shin-vps/next-bicstation/app/test/runtime/runtime/normalizeRuntimePayload.ts
 // ============================================================================
-
-/**
- * SHIN CORE LINX
- * Runtime Preservation Layer
- *
- * IMPORTANT:
- * This file is NOT a semantic transformation layer.
- *
- * This file represents:
- *
- * semantic runtime preservation authority
- *
- * Responsibilities:
- * - shallow stabilization
- * - runtime safety
- * - traversal-safe shaping
- * - inspector-safe payload handling
- * - null safety
- * - runtime observability stabilization
- *
- * IMPORTANT:
- * This file MUST NOT:
- *
- * ❌ mutate semantic meaning
- * ❌ rewrite workflow logic
- * ❌ regroup semantic entities
- * ❌ infer new semantics
- * ❌ modify traversal meaning
- *
- * Backend remains:
- *
- * semantic authority
- * meaning authority
- * traversal authority
- */
-
-/* ============================================================================
-🔥 Imports
-============================================================================ */
-
-import type {
-
-  RuntimeFetchResult,
-
-} from './fetchRuntime'
-
-/* ============================================================================
-🔥 Normalized Runtime Payload
-============================================================================ */
-
-export type NormalizedRuntimePayload<T = any> = {
-
-  success: boolean
-
-  endpoint: string
-
-  runtime_role: string
-
-  topology_layer: string
-
-  observatory: string
-
-  fetched_at: string
-
-  duration_ms: number
-
-  payload: T
-
-  semantic_schema_version: string | null
-
-  has_semantic_runtime: boolean
-
-  has_adaptive_runtime: boolean
-
-  has_semantic_related: boolean
-
-  payload_size: number
-
-  payload_type: string
-
-  payload_keys: string[]
-
-}
 
 /* ============================================================================
 🔥 Normalize Runtime Payload
 ============================================================================ */
 
-export function normalizeRuntimePayload<T = any>(
+/**
+ * Canonical runtime normalization layer.
+ *
+ * Responsibilities:
+ *
+ * - runtime transport normalization
+ * - payload observability
+ * - semantic runtime flattening
+ * - traversal continuity preservation
+ * - inspector-safe runtime topology
+ *
+ * IMPORTANT:
+ *
+ * Backend remains semantic authority.
+ *
+ * Frontend MUST NOT mutate semantic meaning.
+ */
 
-  runtime:
+export function normalizeRuntimePayload(
 
-    RuntimeFetchResult<T>
+  payload: any,
 
-): NormalizedRuntimePayload<T> {
+  endpoint?: string,
 
-  /* ==========================================================================
-  🔥 Runtime Failure
-  ========================================================================== */
+  duration?: number,
+) {
 
-  if (!runtime.success || !runtime.payload) {
+  // ==========================================================================
+  // Runtime Safety
+  // ==========================================================================
 
-    console.warn(
+  const safePayload =
 
-      '⚠️ NORMALIZE RUNTIME PAYLOAD FAILURE',
+    payload && typeof payload === 'object'
 
-      {
+      ? payload
 
-        endpoint:
-          runtime.endpoint,
+      : {}
 
-        runtime_role:
-          runtime.runtime_role,
-      }
-    )
-
-    return {
-
-      success: false,
-
-      endpoint:
-        runtime.endpoint,
-
-      runtime_role:
-        runtime.runtime_role,
-
-      topology_layer:
-        runtime.topology_layer,
-
-      observatory:
-        runtime.observatory,
-
-      fetched_at:
-        runtime.fetched_at,
-
-      duration_ms:
-        runtime.duration_ms,
-
-      payload:
-        {} as T,
-
-      semantic_schema_version:
-        null,
-
-      has_semantic_runtime:
-        false,
-
-      has_adaptive_runtime:
-        false,
-
-      has_semantic_related:
-        false,
-
-      payload_size:
-        0,
-
-      payload_type:
-        'null',
-
-      payload_keys:
-        [],
-    }
-  }
-
-  /* ==========================================================================
-  🔥 Runtime Payload
-  ========================================================================== */
-
-  const payload =
-
-    runtime.payload as any
-
-  /* ==========================================================================
-  🔥 Payload Keys
-  ========================================================================== */
+  // ==========================================================================
+  // Runtime Metadata
+  // ==========================================================================
 
   const payloadKeys =
 
-    typeof payload === 'object'
-      && payload !== null
+    Object.keys(
+      safePayload
+    )
 
-      ? Object.keys(payload)
+  const payloadSize =
 
-      : []
+    JSON.stringify(
+      safePayload
+    ).length
 
-  /* ==========================================================================
-  🔥 Payload Type
-  ========================================================================== */
+  // ==========================================================================
+  // Canonical Runtime Role
+  // ==========================================================================
 
-  const payloadType =
+  const runtimeRole =
 
-    Array.isArray(payload)
-      ? 'array'
+    safePayload?.runtime_role
 
-      : typeof payload
+    || safePayload?.semantic_runtime
 
-  /* ==========================================================================
-  🔥 Payload Size
-  ========================================================================== */
+    || 'unknown-runtime'
 
-  let payloadSize = 0
+  // ==========================================================================
+  // Canonical Topology Layer
+  // ==========================================================================
 
-  try {
+  const topologyLayer =
 
-    payloadSize =
+    safePayload?.topology_layer
 
-      JSON.stringify(payload)
-        ?.length || 0
+    || (
 
-  } catch {
+      runtimeRole ===
+      'continuation-runtime'
 
-    payloadSize = 0
-  }
+        ? 'traversal'
 
-  /* ==========================================================================
-  🔥 Runtime Observatory
-  ========================================================================== */
+        : runtimeRole ===
+          'ranking-runtime'
+
+            ? 'ranking'
+
+            : runtimeRole ===
+              'sidebar-runtime'
+
+                ? 'navigation'
+
+                : runtimeRole ===
+                  'finder-runtime'
+
+                    ? 'intent-routing'
+
+                    : 'entity'
+    )
+
+  // ==========================================================================
+  // Observatory Layer
+  // ==========================================================================
+
+  const observatory =
+
+    safePayload?.observatory
+
+    || (
+
+      runtimeRole ===
+      'continuation-runtime'
+
+        ? 'semantic-traversal-runtime'
+
+        : runtimeRole ===
+          'ranking-runtime'
+
+            ? 'semantic-ranking-runtime'
+
+            : runtimeRole ===
+              'finder-runtime'
+
+                ? 'semantic-finder-runtime'
+
+                : 'semantic-runtime-observatory'
+    )
+
+  // ==========================================================================
+  // Runtime Flags
+  // ==========================================================================
+
+  const hasSemanticRuntime =
+
+    !!safePayload?.semantic_runtime
+
+  const hasAdaptiveRuntime =
+
+    !!safePayload?.adaptive_runtime
+
+  const hasTraversalEdges =
+
+    Array.isArray(
+      safePayload?.traversal_edges
+    )
+
+  const hasTraversalGraph =
+
+    Array.isArray(
+      safePayload?.traversal_graph
+    )
+
+  // ==========================================================================
+  // Runtime Debug
+  // ==========================================================================
 
   console.log(
 
-    '🧠 NORMALIZED RUNTIME PAYLOAD',
+    '🌌 NORMALIZED RUNTIME PAYLOAD',
 
     {
 
-      endpoint:
-        runtime.endpoint,
+      runtimeRole,
 
-      runtime_role:
-        runtime.runtime_role,
+      topologyLayer,
 
-      topology_layer:
-        runtime.topology_layer,
+      observatory,
 
-      semantic_schema_version:
+      endpoint,
 
-        payload
-          ?.semantic_schema_version
-          || null,
+      payloadKeys:
+        payloadKeys.length,
 
-      has_semantic_runtime:
+      payloadSize,
 
-        !!payload
-          ?.semantic_runtime,
+      hasSemanticRuntime,
 
-      has_adaptive_runtime:
+      hasAdaptiveRuntime,
 
-        !!payload
-          ?.adaptive_runtime,
+      hasTraversalEdges,
 
-      has_semantic_related:
-
-        !!payload
-          ?.semantic_related,
-
-      payload_type:
-        payloadType,
-
-      payload_size:
-        payloadSize,
-
-      payload_keys:
-        payloadKeys,
+      hasTraversalGraph,
     }
   )
 
-  /* ==========================================================================
-  🔥 Runtime Success
-  ========================================================================== */
+  // ==========================================================================
+  // Canonical Runtime Return
+  // ==========================================================================
 
   return {
 
-    success:
-      runtime.success,
+    // ==============================================================
+    // Runtime Transport
+    // ==============================================================
+
+    runtime: true,
 
     endpoint:
-      runtime.endpoint,
 
-    runtime_role:
-      runtime.runtime_role,
+      endpoint
+      || null,
 
-    topology_layer:
-      runtime.topology_layer,
-
-    observatory:
-      runtime.observatory,
+    transport_success: true,
 
     fetched_at:
-      runtime.fetched_at,
+
+      new Date()
+        .toISOString(),
 
     duration_ms:
-      runtime.duration_ms,
 
-    payload:
-      runtime.payload,
-
-    semantic_schema_version:
-
-      payload
-        ?.semantic_schema_version
-        || null,
-
-    has_semantic_runtime:
-
-      !!payload
-        ?.semantic_runtime,
-
-    has_adaptive_runtime:
-
-      !!payload
-        ?.adaptive_runtime,
-
-    has_semantic_related:
-
-      !!payload
-        ?.semantic_related,
+      duration
+      || 0,
 
     payload_size:
+
       payloadSize,
 
     payload_type:
-      payloadType,
+
+      typeof safePayload,
 
     payload_keys:
-      payloadKeys,
+
+      payloadKeys.length,
+
+    // ==============================================================
+    // Runtime Identity
+    // ==============================================================
+
+    runtime_role:
+
+      runtimeRole,
+
+    topology_layer:
+
+      topologyLayer,
+
+    observatory,
+
+    semantic_schema_version:
+
+      safePayload
+        ?.semantic_schema_version
+
+      || safePayload
+        ?.semantic_runtime
+
+      || null,
+
+    semantic_authority:
+
+      safePayload
+        ?.semantic_authority
+
+      || 'backend',
+
+    // ==============================================================
+    // Runtime Flags
+    // ==============================================================
+
+    has_semantic_runtime:
+
+      hasSemanticRuntime,
+
+    has_adaptive_runtime:
+
+      hasAdaptiveRuntime,
+
+    has_traversal_edges:
+
+      hasTraversalEdges,
+
+    has_traversal_graph:
+
+      hasTraversalGraph,
+
+    // ==============================================================
+    // Canonical Runtime Flattening
+    // ==============================================================
+
+    semantic_runtime:
+
+      safePayload
+        ?.semantic_runtime
+
+      || null,
+
+    adaptive_runtime:
+
+      safePayload
+        ?.adaptive_runtime
+
+      || null,
+
+    workflow_runtime:
+
+      safePayload
+        ?.workflow_runtime
+
+      || null,
+
+    semantic_labels:
+
+      safePayload
+        ?.semantic_labels
+
+      || [],
+
+    semantic_graph:
+
+      safePayload
+        ?.semantic_graph
+
+      || [],
+
+    grouped_attributes:
+
+      safePayload
+        ?.grouped_attributes
+
+      || {},
+
+    frontend_contract:
+
+      safePayload
+        ?.frontend_contract
+
+      || null,
+
+    runtime_profile:
+
+      safePayload
+        ?.runtime_profile
+
+      || null,
+
+    traversal_edges:
+
+      Array.isArray(
+        safePayload?.traversal_edges
+      )
+
+        ? safePayload.traversal_edges
+
+        : [],
+
+    traversal_graph:
+
+      Array.isArray(
+        safePayload?.traversal_graph
+      )
+
+        ? safePayload.traversal_graph
+
+        : [],
+
+    related_products:
+
+      Array.isArray(
+        safePayload?.related_products
+      )
+
+        ? safePayload.related_products
+
+        : [],
+
+    // ==============================================================
+    // Raw Payload Preservation
+    // ==============================================================
+
+    raw_payload:
+
+      safePayload,
   }
 }
 
-/* ============================================================================
-🔥 Runtime Preservation Rules
-============================================================================ */
-
-/**
- * IMPORTANT:
- *
- * normalizeRuntimePayload()
- * is:
- *
- * preservation layer
- *
- * NOT:
- *
- * semantic mutation layer
- *
- * Allowed:
- *
- * ✅ null safety
- * ✅ shallow stabilization
- * ✅ payload observability
- * ✅ traversal-safe shaping
- *
- * Forbidden:
- *
- * ❌ semantic regrouping
- * ❌ workflow mutation
- * ❌ edge meaning rewrite
- * ❌ semantic inference
- * ❌ traversal mutation
- */
-
-/* ============================================================================
-🔥 Default Export
-============================================================================ */
-
-export default normalizeRuntimePayload

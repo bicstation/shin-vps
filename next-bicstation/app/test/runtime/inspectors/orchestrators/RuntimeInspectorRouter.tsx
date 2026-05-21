@@ -54,6 +54,8 @@ import TraversalInspectorOrchestrator from './TraversalInspectorOrchestrator'
 
 type RuntimeInspectorRouterProps = {
 
+  mode?: string
+
   runtime?: any
 }
 
@@ -63,6 +65,7 @@ type RuntimeInspectorRouterProps = {
 
 export default function RuntimeInspectorRouter({
 
+  mode,
   runtime,
 
 }: RuntimeInspectorRouterProps) {
@@ -85,6 +88,8 @@ export default function RuntimeInspectorRouter({
     '🛰️ RUNTIME INSPECTOR ROUTER',
 
     {
+
+      mode,
 
       runtimeRole,
 

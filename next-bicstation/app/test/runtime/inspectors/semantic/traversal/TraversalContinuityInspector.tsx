@@ -35,20 +35,12 @@ export default function TraversalContinuityInspector({
 }: TraversalContinuityInspectorProps) {
 
   // ==========================================================================
-  // Payload
-  // ==========================================================================
-
-  const payload =
-
-    runtime?.payload || {}
-
-  // ==========================================================================
   // Continuation Runtime
   // ==========================================================================
 
   const continuationRuntime =
 
-    payload?.continuation_runtime || {}
+    runtime?.continuation_runtime || {}
 
   // ==========================================================================
   // Continuity Flags

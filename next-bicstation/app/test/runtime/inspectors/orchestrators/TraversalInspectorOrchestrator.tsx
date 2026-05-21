@@ -1,37 +1,12 @@
 // ============================================================================
 // FILE:
-// /home/maya/shin-dev/shin-vps/next-bicstation/app/test/runtime/inspectors/orchestrators/TraversalInspectorOrchestrator.tsx
+// /home/maya/shin-vps/next-bicstation/app/test/runtime/inspectors/orchestrators/TraversalInspectorOrchestrator.tsx
 // ============================================================================
 
 'use client'
 
-/**
- * ============================================================================
- * SHIN CORE LINX
- * Traversal Inspector Orchestrator
- * ============================================================================
- *
- * PURPOSE:
- *
- * Traversal runtime observability orchestration
- *
- * IMPORTANT:
- *
- * This orchestrator exists for:
- *
- * traversal-runtime inspector composition
- *
- * NOT:
- *
- * graph mutation
- * semantic normalization
- * traversal rewriting
- *
- * ============================================================================
- */
-
 /* ============================================================================
-🔥 Traversal Inspectors
+🔥 Inspectors
 ============================================================================ */
 
 import TraversalRuntimeInspector
@@ -47,7 +22,7 @@ import TraversalEdgeInspector
 from '../semantic/traversal/TraversalEdgeInspector'
 
 /* ============================================================================
-🔥 Props
+🔥 Types
 ============================================================================ */
 
 type TraversalInspectorOrchestratorProps = {
@@ -65,64 +40,43 @@ export default function TraversalInspectorOrchestrator({
 
 }: TraversalInspectorOrchestratorProps) {
 
-  /* ==========================================================================
-  🔥 Payload
-  ========================================================================== */
-
-  const payload =
-
-    runtime?.payload
-    || {}
-
-  /* ==========================================================================
-  🔥 Traversal Runtime
-  ========================================================================== */
-
-  const traversalRuntime =
-
-    payload?.traversal_runtime
-    || {}
-
-  /* ==========================================================================
-  🔥 Traversal Graph
-  ========================================================================== */
+  // ==========================================================================
+  // Canonical Runtime Topology
+  // ==========================================================================
 
   const traversalGraph =
 
     Array.isArray(
-      payload?.traversal_graph
+      runtime?.traversal_graph
     )
 
-      ? payload.traversal_graph
+      ? runtime.traversal_graph
 
       : []
-
-  /* ==========================================================================
-  🔥 Traversal Edges
-  ========================================================================== */
 
   const traversalEdges =
 
     Array.isArray(
-      payload?.traversal_edges
+      runtime?.traversal_edges
     )
 
-      ? payload.traversal_edges
+      ? runtime.traversal_edges
 
       : []
 
-  /* ==========================================================================
-  🔥 Continuation Runtime
-  ========================================================================== */
+  const relatedProducts =
 
-  const continuationRuntime =
+    Array.isArray(
+      runtime?.related_products
+    )
 
-    payload?.continuation_runtime
-    || {}
+      ? runtime.related_products
 
-  /* ==========================================================================
-  🔥 Runtime Debug
-  ========================================================================== */
+      : []
+
+  // ==========================================================================
+  // Runtime Debug
+  // ==========================================================================
 
   console.log(
 
@@ -131,87 +85,74 @@ export default function TraversalInspectorOrchestrator({
     {
 
       runtimeRole:
-
         runtime?.runtime_role,
 
       topologyLayer:
-
         runtime?.topology_layer,
 
       endpoint:
-
         runtime?.endpoint,
 
       traversalGraph:
-
         traversalGraph.length,
 
       traversalEdges:
-
         traversalEdges.length,
 
-      hasContinuationRuntime:
-
-        !!payload?.continuation_runtime,
+      relatedProducts:
+        relatedProducts.length,
     }
   )
 
-  /* ==========================================================================
-  🔥 Observatory Stack
-  ========================================================================== */
+  // ==========================================================================
+  // Render
+  // ==========================================================================
 
   return (
 
-    <div className="space-y-8">
+    <div className="space-y-6">
 
-      {/* ================================================================
-      🔥 Traversal Runtime
-      ================================================================ */}
+      {/* ============================================================= */}
+      {/* Traversal Runtime */}
+      {/* ============================================================= */}
 
       <TraversalRuntimeInspector
 
-        traversal_runtime={
-          traversalRuntime
-        }
+        runtime={runtime}
 
       />
 
-      {/* ================================================================
-      🔥 Traversal Continuity
-      ================================================================ */}
+      {/* ============================================================= */}
+      {/* Continuation Runtime */}
+      {/* ============================================================= */}
 
       <TraversalContinuityInspector
 
-        continuation_runtime={
-          continuationRuntime
-        }
+        runtime={runtime}
 
       />
 
-      {/* ================================================================
-      🔥 Traversal Graph
-      ================================================================ */}
+      {/* ============================================================= */}
+      {/* Traversal Graph */}
+      {/* ============================================================= */}
 
       <TraversalGraphInspector
 
-        traversal_graph={
-          traversalGraph
-        }
+        runtime={runtime}
 
       />
 
-      {/* ================================================================
-      🔥 Traversal Edges
-      ================================================================ */}
+      {/* ============================================================= */}
+      {/* Traversal Edges */}
+      {/* ============================================================= */}
 
       <TraversalEdgeInspector
 
-        traversal_edges={
-          traversalEdges
-        }
+        runtime={runtime}
 
       />
 
     </div>
   )
 }
+

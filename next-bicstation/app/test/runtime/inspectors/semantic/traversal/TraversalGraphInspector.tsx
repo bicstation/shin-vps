@@ -35,24 +35,16 @@ export default function TraversalGraphInspector({
 }: TraversalGraphInspectorProps) {
 
   // ==========================================================================
-  // Payload
-  // ==========================================================================
-
-  const payload =
-
-    runtime?.payload || {}
-
-  // ==========================================================================
   // Traversal Graph
   // ==========================================================================
 
   const traversalGraph =
 
     Array.isArray(
-      payload?.traversal_graph
+      runtime?.traversal_graph
     )
 
-      ? payload.traversal_graph
+      ? runtime.traversal_graph
 
       : []
 

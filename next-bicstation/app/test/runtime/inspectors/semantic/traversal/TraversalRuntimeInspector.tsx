@@ -35,20 +35,12 @@ export default function TraversalRuntimeInspector({
 }: TraversalRuntimeInspectorProps) {
 
   // ==========================================================================
-  // Payload
-  // ==========================================================================
-
-  const payload =
-
-    runtime?.payload || {}
-
-  // ==========================================================================
   // Traversal Runtime
   // ==========================================================================
 
   const traversalRuntime =
 
-    payload?.traversal_runtime || {}
+    runtime?.traversal_runtime || {}
 
   // ==========================================================================
   // Continuation Runtime
@@ -56,7 +48,7 @@ export default function TraversalRuntimeInspector({
 
   const continuationRuntime =
 
-    payload?.continuation_runtime || {}
+    runtime?.continuation_runtime || {}
 
   // ==========================================================================
   // Traversal Edges
@@ -65,10 +57,10 @@ export default function TraversalRuntimeInspector({
   const traversalEdges =
 
     Array.isArray(
-      payload?.traversal_edges
+      runtime?.traversal_edges
     )
 
-      ? payload.traversal_edges
+      ? runtime.traversal_edges
 
       : []
 
@@ -79,10 +71,10 @@ export default function TraversalRuntimeInspector({
   const traversalGraph =
 
     Array.isArray(
-      payload?.traversal_graph
+      runtime?.traversal_graph
     )
 
-      ? payload.traversal_graph
+      ? runtime.traversal_graph
 
       : []
 
@@ -93,10 +85,10 @@ export default function TraversalRuntimeInspector({
   const relatedProducts =
 
     Array.isArray(
-      payload?.related_products
+      runtime?.related_products
     )
 
-      ? payload.related_products
+      ? runtime.related_products
 
       : []
 
@@ -170,7 +162,7 @@ export default function TraversalRuntimeInspector({
 
                 {
 
-                  traversalRuntime
+                  runtime
                     ?.runtime_role
 
                   || '-'
@@ -188,7 +180,7 @@ export default function TraversalRuntimeInspector({
 
                 {
 
-                  traversalRuntime
+                  runtime
                     ?.topology_layer
 
                   || '-'
@@ -206,7 +198,7 @@ export default function TraversalRuntimeInspector({
 
                 {
 
-                  traversalRuntime
+                  runtime
                     ?.observatory
 
                   || '-'
@@ -227,7 +219,7 @@ export default function TraversalRuntimeInspector({
                   traversalRuntime
                     ?.runtime_status
 
-                  || '-'
+                  || 'ACTIVE'
                 }
 
               </div>
