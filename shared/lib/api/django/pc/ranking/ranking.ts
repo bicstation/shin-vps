@@ -1,38 +1,39 @@
 // ============================================================================
 // FILE:
-// /home/maya/shin-dev/shin-vps/shared/lib/api/django/pc/ranking/fetchSemanticRankingRuntime.ts
+// /home/maya/shin-dev/shin-vps/shared/lib/api/django/pc/ranking/ranking.ts
 // Copyright (c) 2024 Shin Corporation. All rights reserved.
 // ============================================================================
 
 /**
  * SHIN CORE LINX
- * Legacy Semantic Ranking Runtime Transport
+ * Ranking Collection Gateway
  *
  * IMPORTANT:
  *
  * This layer exists for:
  *
- * semantic ranking runtime compatibility
+ * frontend-safe semantic collection exposure
  *
  * NOT:
  *
- * runtime governance authority
+ * semantic ranking generation
  *
  * Responsibilities:
  *
- * - semantic ranking transport
- * - runtime continuity
- * - legacy observability support
- * - semantic payload preservation
+ * - ranking runtime fetch
+ * - shallow-safe collection stabilization
+ * - semantic runtime preservation
+ * - frontend-safe ranking exposure
  *
  * IMPORTANT:
  *
- * Canonical runtime authority now lives in:
+ * This layer MUST NOT:
  *
- * ./runtime
- * ./ranking
- * ./normalize
- * ./contracts
+ * ❌ rerank semantic collections
+ * ❌ infer workflow meaning
+ * ❌ generate semantic labels
+ * ❌ mutate traversal semantics
+ * ❌ generate grouped exploration
  */
 
 /* ============================================================================
@@ -75,16 +76,16 @@ import {
 🔥 Endpoint
 ============================================================================ */
 
-const RANKING_RUNTIME_ENDPOINT =
+const RANKING_ENDPOINT =
 
   '/general/pc-products/ranking'
 
 /* ============================================================================
-🔥 Fetch Semantic Ranking Runtime
+🔥 Fetch Ranking
 ============================================================================ */
 
 /**
- * Legacy-compatible semantic ranking runtime fetch.
+ * Frontend-safe ranking gateway.
  *
  * IMPORTANT:
  *
@@ -92,12 +93,12 @@ const RANKING_RUNTIME_ENDPOINT =
  *
  * - semantic inference
  * - workflow mutation
- * - traversal rewriting
- * - grouped exploration generation
+ * - traversal generation
+ * - exploration rewriting
  *
  * Backend remains semantic authority.
  */
-export async function fetchSemanticRankingRuntime(
+export async function fetchRanking(
 
   slug = 'score',
 
@@ -111,7 +112,7 @@ export async function fetchSemanticRankingRuntime(
 
     console.warn(
 
-      '⚠️ SEMANTIC RANKING RUNTIME EMPTY SLUG'
+      '⚠️ RANKING EMPTY SLUG'
     )
 
     return null
@@ -125,7 +126,7 @@ export async function fetchSemanticRankingRuntime(
 
     buildEndpoint(
 
-      `${RANKING_RUNTIME_ENDPOINT}/${slug}/`
+      `${RANKING_ENDPOINT}/${slug}/`
 
     )
 
@@ -140,45 +141,6 @@ export async function fetchSemanticRankingRuntime(
     )
 
   // ======================================
-  // Runtime Debug
-  // ======================================
-
-  console.log(
-
-    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
-  )
-
-  console.log(
-
-    '🔥 SEMANTIC RANKING RUNTIME FETCH'
-  )
-
-  console.log(
-
-    {
-
-      slug,
-
-      endpoint,
-
-      pipeline:
-        'legacy-semantic-ranking-runtime',
-    }
-  )
-
-  console.log(
-
-    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
-  )
-
-  console.log(
-
-    '🔥 RANKING RUNTIME RESPONSE',
-
-    response
-  )
-
-  // ======================================
   // Invalid Response
   // ======================================
 
@@ -186,7 +148,7 @@ export async function fetchSemanticRankingRuntime(
 
     console.error(
 
-      '🔥 SEMANTIC RANKING RUNTIME FAILURE',
+      '🔥 RANKING FETCH FAILURE',
 
       {
 
@@ -196,18 +158,26 @@ export async function fetchSemanticRankingRuntime(
       }
     )
 
-    return {
-
-      success: false,
-
-      ranking: {
-
-        results: [],
-      },
-
-      raw: null,
-    }
+    return null
   }
+
+  // ======================================
+  // Runtime Debug
+  // ======================================
+
+  console.log(
+
+    '🔥 RANKING ENDPOINT:',
+
+    endpoint
+  )
+
+  console.log(
+
+    '🔥 RANKING RESPONSE:',
+
+    response
+  )
 
   // ======================================
   // Normalize
@@ -224,4 +194,4 @@ export async function fetchSemanticRankingRuntime(
 🔥 Default Export
 ============================================================================ */
 
-export default fetchSemanticRankingRuntime
+export default fetchRanking

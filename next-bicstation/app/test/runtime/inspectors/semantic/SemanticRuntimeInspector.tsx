@@ -6,120 +6,55 @@
 'use client'
 
 /**
+ * ============================================================================
  * SHIN CORE LINX
  * Semantic Runtime Inspector
+ * ============================================================================
  *
- * Semantic Runtime Observatory Layer
+ * PURPOSE:
+ *
+ * Semantic runtime observability gateway
  *
  * IMPORTANT:
- * This component observes:
  *
- * semantic authority payloads
+ * This component exists for:
+ *
+ * runtime topology aware inspector routing
  *
  * NOT:
  *
- * normalized UI payloads
+ * semantic normalization
+ * payload mutation
+ * runtime orchestration
+ * traversal transformation
+ *
+ * ============================================================================
  */
 
 /* ============================================================================
-🔥 Imports
+🔥 Router
 ============================================================================ */
 
-import type {
-
-  SemanticInspectorProps,
-
-} from '../contracts/semantic'
+import RuntimeInspectorRouter
+from '../orchestrators/RuntimeInspectorRouter'
 
 /* ============================================================================
-🔥 Inspector Card
+🔥 Shared
 ============================================================================ */
 
-function InspectorCard({
+import InspectorSection
+from './shared/InspectorSection'
 
-  title,
-
-  value,
-
-}: {
-
-  title: string
-
-  value: any
-
-}) {
-
-  return (
-
-    <div className="rounded-lg border border-zinc-800 bg-black p-4">
-
-      <div className="text-xs uppercase tracking-wide text-zinc-500">
-
-        {title}
-
-      </div>
-
-      <div className="mt-2 break-all text-sm text-zinc-100">
-
-        {
-
-          typeof value === 'boolean'
-
-            ? (
-
-                value
-                  ? 'TRUE'
-                  : 'FALSE'
-              )
-
-            : (
-
-                String(
-                  value ?? '-'
-                )
-              )
-        }
-
-      </div>
-
-    </div>
-  )
-}
+import RuntimeBadge
+from './shared/RuntimeBadge'
 
 /* ============================================================================
-🔥 Semantic Label
+🔥 Props
 ============================================================================ */
 
-function SemanticLabel({
+type SemanticRuntimeInspectorProps = {
 
-  label,
-
-}: {
-
-  label: any
-
-}) {
-
-  return (
-
-    <div className="rounded-full border border-zinc-800 bg-black px-3 py-1 text-xs text-zinc-300">
-
-      {
-
-        typeof label === 'string'
-
-          ? label
-
-          : (
-
-              label?.label
-              || label?.name
-              || 'semantic-label'
-            )
-      }
-
-    </div>
-  )
+  runtime?: any
 }
 
 /* ============================================================================
@@ -128,488 +63,280 @@ function SemanticLabel({
 
 export default function SemanticRuntimeInspector({
 
-  semantic_runtime,
+  runtime,
 
-  adaptive_runtime,
-
-  semantic_labels,
-
-  semantic_metadata,
-
-}: SemanticInspectorProps) {
+}: SemanticRuntimeInspectorProps) {
 
   /* ==========================================================================
-  🔥 Semantic Runtime Safety
+  🔥 Runtime Metadata
   ========================================================================== */
 
-  const semanticRuntime =
+  const runtimeRole =
 
-    semantic_runtime || {}
+    runtime?.runtime_role
+    || '-'
 
-  const adaptiveRuntime =
+  const topologyLayer =
 
-    adaptive_runtime || {}
+    runtime?.topology_layer
+    || '-'
 
-  const labels =
+  const observatory =
 
-    semantic_labels || []
+    runtime?.observatory
+    || '-'
 
-  const metadata =
+  const endpoint =
 
-    semantic_metadata || {}
+    runtime?.endpoint
+    || '-'
 
   /* ==========================================================================
-  🔥 Nested Runtime Extraction
+  🔥 Runtime Payload
   ========================================================================== */
 
-  /**
-   * IMPORTANT:
-   *
-   * Real backend payload structure:
-   *
-   * semantic_runtime.workflow_tags
-   * semantic_runtime.semantic_graph
-   * semantic_runtime.semantic_role
-   *
-   * NOT:
-   *
-   * runtime.workflow_tags
-   */
+  const payload =
 
-  const workflowTags =
-
-    semanticRuntime?.workflow_tags
-    || []
-
-  const semanticGraph =
-
-    semanticRuntime?.semantic_graph
-    || []
-
-  const semanticRole =
-
-    semanticRuntime?.semantic_role
-    || semanticRuntime?.primary_workflow
-    || '-'
-
-  const semanticScore =
-
-    semanticRuntime?.semantic_score
-    || metadata?.semantic_score
-    || '-'
-
-  const semanticConfidence =
-
-    semanticRuntime?.confidence
-    || metadata?.confidence
-    || '-'
-
-  const semanticVersion =
-
-    semanticRuntime?.semantic_version
-    || metadata?.semantic_schema_version
-    || '-'
-
-  const groupedAttributes =
-
-    metadata?.grouped_attributes
+    runtime?.payload
     || {}
 
   /* ==========================================================================
-  🔥 Debug
+  🔥 Runtime Status
+  ========================================================================== */
+
+  const runtimeActive =
+
+    Object.keys(
+      payload
+    ).length > 0
+
+  /* ==========================================================================
+  🔥 Runtime Debug
   ========================================================================== */
 
   console.log(
 
-    '🔥 SEMANTIC RUNTIME INSPECTOR',
+    '🧠 SEMANTIC RUNTIME GATEWAY',
 
     {
 
-      semanticRuntime,
+      runtimeRole,
 
-      workflowTags,
+      topologyLayer,
 
-      semanticGraph,
+      observatory,
 
-      semanticRole,
+      endpoint,
 
-      labels,
-
-      adaptiveRuntime,
+      runtimeActive,
     }
   )
 
   /* ==========================================================================
-  🔥 Observatory
+  🔥 Empty Guard
+  ========================================================================== */
+
+  if (
+
+    !runtime
+
+  ) {
+
+    console.warn(
+
+      '⚠️ SEMANTIC RUNTIME GATEWAY EMPTY',
+
+      {
+
+        runtime,
+      }
+    )
+
+    return (
+
+      <InspectorSection
+
+        title="🧠 Semantic Runtime Gateway"
+
+        description="Semantic runtime observability gateway and topology-aware runtime inspector entrypoint."
+
+        badge="runtime/gateway"
+
+      >
+
+        <div className="rounded-2xl border border-yellow-900 bg-yellow-950/30 p-6">
+
+          <div className="text-sm font-bold text-yellow-400">
+
+            Runtime Payload Missing
+
+          </div>
+
+          <div className="mt-2 text-sm leading-7 text-yellow-200">
+
+            Semantic runtime gateway could not resolve
+            runtime observability payload.
+
+          </div>
+
+        </div>
+
+      </InspectorSection>
+    )
+  }
+
+  /* ==========================================================================
+  🔥 Render
   ========================================================================== */
 
   return (
 
-    <section className="rounded-xl border border-zinc-800 bg-zinc-950 p-6">
+    <div className="space-y-8">
 
       {/* ================================================================
-      🔥 Header
+      🔥 Semantic Runtime Gateway
       ================================================================ */}
 
-      <div className="flex items-center justify-between">
+      <InspectorSection
 
-        <div>
+        title="🧠 Semantic Runtime Gateway"
 
-          <h2 className="text-lg font-bold">
+        description="Semantic runtime observability gateway and runtime topology routing layer."
 
-            🧠 Semantic Runtime Inspector
+        badge="runtime/gateway"
 
-          </h2>
+      >
 
-          <p className="mt-1 text-sm text-zinc-500">
+        {/* ============================================================
+        🔥 Runtime Status
+        ============================================================ */}
 
-            Semantic runtime observability
-            and cinematic semantic rendering
+        <div className="flex flex-wrap gap-3">
 
-          </p>
+          <RuntimeBadge
 
-        </div>
+            label="runtime"
 
-        <div className="rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3 py-1 text-xs text-cyan-300">
-
-          runtime/semantic
-
-        </div>
-
-      </div>
-
-      {/* ================================================================
-      🔥 Runtime Cards
-      ================================================================ */}
-
-      <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-
-        <InspectorCard
-          title="Primary Workflow"
-          value={
-            semanticRuntime?.primary_workflow
-          }
-        />
-
-        <InspectorCard
-          title="Semantic Role"
-          value={semanticRole}
-        />
-
-        <InspectorCard
-          title="Semantic Group"
-          value={
-            semanticRuntime?.base_type
-          }
-        />
-
-        <InspectorCard
-          title="Semantic Score"
-          value={semanticScore}
-        />
-
-        <InspectorCard
-          title="Semantic Confidence"
-          value={semanticConfidence}
-        />
-
-        <InspectorCard
-          title="Schema Version"
-          value={semanticVersion}
-        />
-
-      </div>
-
-      {/* ================================================================
-      🔥 Workflow Tags
-      ================================================================ */}
-
-      <div className="mt-8">
-
-        <h3 className="text-sm font-semibold text-zinc-300">
-
-          Workflow Tags
-
-        </h3>
-
-        <div className="mt-3 flex flex-wrap gap-2">
-
-          {
-
-            workflowTags.length > 0
-
-              ? (
-
-                  workflowTags.map(
-
-                    (
-                      tag: any,
-                      index: number,
-                    ) => (
-
-                      <SemanticLabel
-                        key={index}
-                        label={tag}
-                      />
-
-                    )
-                  )
-                )
-
-              : (
-
-                  <div className="text-sm text-zinc-500">
-
-                    No workflow tags
-
-                  </div>
-                )
-          }
-
-        </div>
-
-      </div>
-
-      {/* ================================================================
-      🔥 Semantic Labels
-      ================================================================ */}
-
-      <div className="mt-8">
-
-        <h3 className="text-sm font-semibold text-zinc-300">
-
-          Semantic Labels
-
-        </h3>
-
-        <div className="mt-3 flex flex-wrap gap-2">
-
-          {
-
-            labels.length > 0
-
-              ? (
-
-                  labels.map(
-
-                    (
-                      label: any,
-                      index: number,
-                    ) => (
-
-                      <SemanticLabel
-                        key={index}
-                        label={label}
-                      />
-
-                    )
-                  )
-                )
-
-              : (
-
-                  <div className="text-sm text-zinc-500">
-
-                    No semantic labels
-
-                  </div>
-                )
-          }
-
-        </div>
-
-      </div>
-
-      {/* ================================================================
-      🔥 Adaptive Runtime
-      ================================================================ */}
-
-      <div className="mt-8">
-
-        <h3 className="text-sm font-semibold text-zinc-300">
-
-          Adaptive Runtime
-
-        </h3>
-
-        <div className="mt-4 grid gap-4 md:grid-cols-2">
-
-          <InspectorCard
-            title="Adaptive Title"
             value={
-              adaptiveRuntime?.focus
+              runtimeActive
+                ? 'active'
+                : 'inactive'
             }
+
+            variant={
+              runtimeActive
+                ? 'success'
+                : 'warning'
+            }
+
           />
 
-          <InspectorCard
-            title="Adaptive Role"
-            value={
-              adaptiveRuntime?.ui_mode
-            }
+          <RuntimeBadge
+
+            label="role"
+
+            value={runtimeRole}
+
+            variant="semantic"
+
+          />
+
+          <RuntimeBadge
+
+            label="topology"
+
+            value={topologyLayer}
+
+            variant="topology"
+
           />
 
         </div>
 
-        <div className="mt-4 rounded-lg border border-zinc-800 bg-black p-4 text-sm text-zinc-400">
+        {/* ============================================================
+        🔥 Runtime Metadata
+        ============================================================ */}
 
-          {
+        <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
 
-            adaptiveRuntime?.interaction_hint
-            || 'No adaptive summary'
-          }
+          <div className="rounded-xl border border-zinc-800 bg-black p-4">
+
+            <div className="text-xs uppercase tracking-[0.2em] text-zinc-500">
+
+              Runtime Role
+
+            </div>
+
+            <div className="mt-3 text-sm text-zinc-100">
+
+              {runtimeRole}
+
+            </div>
+
+          </div>
+
+          <div className="rounded-xl border border-zinc-800 bg-black p-4">
+
+            <div className="text-xs uppercase tracking-[0.2em] text-zinc-500">
+
+              Topology Layer
+
+            </div>
+
+            <div className="mt-3 text-sm text-zinc-100">
+
+              {topologyLayer}
+
+            </div>
+
+          </div>
+
+          <div className="rounded-xl border border-zinc-800 bg-black p-4">
+
+            <div className="text-xs uppercase tracking-[0.2em] text-zinc-500">
+
+              Observatory
+
+            </div>
+
+            <div className="mt-3 text-sm text-zinc-100">
+
+              {observatory}
+
+            </div>
+
+          </div>
+
+          <div className="rounded-xl border border-zinc-800 bg-black p-4">
+
+            <div className="text-xs uppercase tracking-[0.2em] text-zinc-500">
+
+              Endpoint
+
+            </div>
+
+            <div className="mt-3 break-all text-sm text-zinc-100">
+
+              {endpoint}
+
+            </div>
+
+          </div>
 
         </div>
 
-      </div>
+      </InspectorSection>
 
       {/* ================================================================
-      🔥 Grouped Attributes
+      🔥 Runtime Inspector Router
       ================================================================ */}
 
-      <div className="mt-8">
+      <RuntimeInspectorRouter
 
-        <h3 className="text-sm font-semibold text-zinc-300">
+        runtime={runtime}
 
-          Grouped Attributes
+      />
 
-        </h3>
-
-        <pre className="mt-4 overflow-auto rounded-lg border border-zinc-800 bg-black p-4 text-xs text-zinc-400">
-
-          {
-
-            JSON.stringify(
-              groupedAttributes,
-              null,
-              2,
-            )
-          }
-
-        </pre>
-
-      </div>
-
-      {/* ================================================================
-      🔥 Semantic Graph
-      ================================================================ */}
-
-      <div className="mt-8">
-
-        <h3 className="text-sm font-semibold text-zinc-300">
-
-          Semantic Graph
-
-        </h3>
-
-        <div className="mt-4 rounded-lg border border-zinc-800 bg-black p-4 text-sm text-zinc-400">
-
-          Graph Edges:
-
-          {' '}
-
-          <span className="text-cyan-300">
-
-            {semanticGraph.length}
-
-          </span>
-
-        </div>
-
-      </div>
-
-      {/* ================================================================
-      🔥 Meaning
-      ================================================================ */}
-
-      <div className="mt-8 rounded-xl border border-cyan-500/20 bg-cyan-500/5 p-5 text-sm text-cyan-100">
-
-        <div className="space-y-2">
-
-          <div>
-
-            🧠 Semantic runtime represents meaning authority
-
-          </div>
-
-          <div>
-
-            🎬 Adaptive runtime represents cinematic rendering hints
-
-          </div>
-
-          <div>
-
-            🛰 Workflow tags represent traversal-safe semantic grouping
-
-          </div>
-
-          <div>
-
-            🔗 Semantic labels represent UI semantic rendering
-
-          </div>
-
-          <div className="text-red-300">
-
-            ❌ Semantic inference prohibited
-
-          </div>
-
-        </div>
-
-      </div>
-
-      /* ================================================================
-      🔥 Raw Semantic Runtime JSON
-      ================================================================ */
-
-      <div className="mt-8">
-
-        <h3 className="text-sm font-semibold text-zinc-300">
-
-          Raw Semantic Runtime JSON
-
-        </h3>
-
-        <div className="mt-4 overflow-auto rounded-xl border border-zinc-800 bg-black">
-
-          <pre className="p-4 text-xs leading-6 text-cyan-300">
-
-            {
-
-              JSON.stringify(
-
-                {
-
-                  semantic_runtime:
-                    semanticRuntime,
-
-                  adaptive_runtime:
-                    adaptiveRuntime,
-
-                  semantic_labels:
-                    labels,
-
-                  grouped_attributes:
-                    groupedAttributes,
-
-                  semantic_graph:
-                    semanticGraph,
-
-                },
-
-                null,
-
-                2
-              )
-            }
-
-          </pre>
-
-        </div>
-
-      </div>
-
-    </section>
+    </div>
   )
 }

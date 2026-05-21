@@ -56,6 +56,12 @@ import {
 
 } from '@/shared/lib/api/django/pc/detail/runtime'
 
+import {
+
+  fetchSemanticRankingRuntime,
+
+} from '@/shared/lib/api/django/pc/ranking/fetchSemanticRankingRuntime'
+
 /* ============================================================================
 🔥 Fetch Runtime Options
 ============================================================================ */
@@ -399,23 +405,203 @@ export async function fetchRuntime(
 
   if (mode === 'ranking') {
 
-    return {
+    try {
 
-      success: false,
+      // ====================================
+      // Ranking Type
+      // ====================================
 
-      runtime_role:
-        'ranking-runtime',
+      const rankingType =
 
-      topology_layer:
-        'ranking',
+        options?.rankingType
+        || 'score'
 
-      observatory:
-        'semantic-ranking-runtime',
+      // ====================================
+      // Runtime Pipeline
+      // ====================================
 
-      error:
-        'Ranking runtime not implemented',
+      console.log(
+
+        '🔥 RANKING RUNTIME PIPELINE',
+
+        {
+
+          pipeline:
+            'fetchSemanticRankingRuntime',
+
+          rankingType,
+        }
+      )
+
+      // ====================================
+      // Fetch Runtime
+      // ====================================
+
+      const ranking =
+
+        await fetchSemanticRankingRuntime(
+          rankingType
+        )
+
+      // ====================================
+      // Empty Guard
+      // ====================================
+
+      if (!ranking) {
+
+        console.error(
+
+          '🔥 RANKING RUNTIME EMPTY PAYLOAD'
+        )
+
+        return {
+
+          success: false,
+
+          runtime_role:
+            'ranking-runtime',
+
+          topology_layer:
+            'ranking',
+
+          observatory:
+            'semantic-ranking-runtime',
+
+          error:
+            'Empty ranking runtime payload',
+        }
+      }
+
+      // ====================================
+      // Runtime Debug
+      // ====================================
+
+      console.log(
+
+        '🔥 RANKING RAW PAYLOAD',
+
+        {
+
+          rankingType,
+
+          keys:
+
+            Object.keys(
+              ranking || {}
+            ),
+
+          has_semantic_runtime:
+
+            !!ranking?.semantic_runtime,
+
+          semantic_labels:
+
+            ranking?.semantic_labels,
+
+          payload:
+            ranking,
+        }
+      )
+
+      // ====================================
+      // Runtime Success
+      // ====================================
+
+      return {
+
+        success: true,
+
+        endpoint:
+
+          `/api/general/pc-products/ranking/${rankingType}/`,
+
+        runtime_role:
+          'ranking-runtime',
+
+        topology_layer:
+          'ranking',
+
+        observatory:
+          'semantic-ranking-runtime',
+
+        fetched_at:
+          new Date().toISOString(),
+
+        duration_ms:
+          Date.now() - startedAt,
+
+        payload: {
+
+          semantic_runtime:
+
+            ranking?.semantic_runtime,
+
+          semantic_labels:
+
+            ranking?.semantic_labels,
+
+          render_hints:
+
+            ranking?.render_hints,
+
+          ranking:
+
+            ranking?.ranking,
+
+          seo:
+
+            ranking?.seo,
+
+          faq:
+
+            ranking?.faq,
+
+          breadcrumbs:
+
+            ranking?.breadcrumbs,
+
+          schemas:
+
+            ranking?.schemas,
+
+          ui:
+
+            ranking?.ui,
+
+          ...ranking,
+        },
+      }
+
+    } catch (error: any) {
+
+      console.error(
+
+        '🔥 RANKING RUNTIME FAILURE',
+
+        error
+      )
+
+      return {
+
+        success: false,
+
+        runtime_role:
+          'ranking-runtime',
+
+        topology_layer:
+          'ranking',
+
+        observatory:
+          'semantic-ranking-runtime',
+
+        error:
+
+          error?.message
+          || 'Unknown ranking runtime failure',
+      }
     }
   }
+
 
   /* ==========================================================================
   🔥 Sidebar Runtime

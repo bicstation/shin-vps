@@ -11,14 +11,17 @@ export PATH=/usr/local/bin:/usr/bin:/bin
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-source "$SCRIPT_DIR/.env.pc"
-
 # ==========================================================
-# Project Root
+# Project Root Topology
 # ==========================================================
 
-PROJECT_ROOT="/home/maya/shin-vps"
-# PROJECT_ROOT="/home/maya/shin-dev/shin-vps"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+# ==========================================================
+# Runtime Config
+# ==========================================================
+
+source "$PROJECT_ROOT/.env.pc"
 
 # ==========================================================
 # Runtime Environment

@@ -21,12 +21,13 @@
  * frontend relative routes
  */
 
+// const API_BASE =
+//   process.env
+//     .NEXT_PUBLIC_API_URL
+//     || ''
 const API_BASE =
-
-  process.env
-    .NEXT_PUBLIC_API_URL
-    || ''
-
+  process.env.NEXT_PUBLIC_API_URL
+  || '/api'
 /* ============================================================================
 🔥 Runtime Mode
 ============================================================================ */

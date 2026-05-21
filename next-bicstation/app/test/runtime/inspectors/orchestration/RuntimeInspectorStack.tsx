@@ -138,99 +138,32 @@ export default function RuntimeInspectorStack({
 
       {
 
+
         inspectors.map(
 
           (
-            inspector:
-              RuntimeInspectorRegistryItem
+            inspector
           ) => {
-
-            /* ============================================================
-            🔥 Inspector Component
-            ============================================================ */
 
             const InspectorComponent =
 
               inspector.component
 
-            /* ============================================================
-            🔥 Runtime Mapping
-            ============================================================ */
-
-            /**
-             * IMPORTANT:
-             *
-             * Semantic inspector expects:
-             *
-             * semantic_runtime
-             * adaptive_runtime
-             * semantic_labels
-             * semantic_metadata
-             *
-             * Other inspectors currently
-             * consume runtime directly.
-             */
-
-            if (
-              inspector.domain
-              === 'semantic'
-            ) {
-
-              return (
-
-                <InspectorComponent
-
-                  key={
-                    inspector.id
-                  }
-
-                  semantic_runtime={
-                    runtime?.payload
-                      ?.semantic_runtime
-                  }
-
-                  adaptive_runtime={
-                    runtime?.payload
-                      ?.adaptive_runtime
-                  }
-
-                  semantic_labels={
-                    runtime?.payload
-                      ?.semantic_labels
-                  }
-
-                  semantic_metadata={{
-
-                    semantic_schema_version:
-
-                      runtime
-                        ?.semantic_schema_version,
-                  }}
-
-                />
-              )
-            }
-
-            /* ============================================================
-            🔥 Default Runtime Injection
-            ============================================================ */
-
             return (
 
               <InspectorComponent
 
-                key={
-                  inspector.id
-                }
+                key={inspector.id}
 
-                runtime={
-                  runtime
-                }
+                runtime={runtime}
 
               />
+
             )
           }
         )
+
+
       }
 
     </div>

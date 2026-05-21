@@ -1,175 +1,205 @@
-// /shared/lib/api/django/pc/ranking/fetchRankingProducts.ts
+// ============================================================================
+// FILE:
+// /home/maya/shin-dev/shin-vps/shared/lib/api/django/pc/ranking/fetchRankingProducts.ts
+// Copyright (c) 2024 Shin Corporation. All rights reserved.
+// ============================================================================
 
-/* =========================================
+/**
+ * SHIN CORE LINX
+ * Legacy Ranking Transport
+ *
+ * IMPORTANT:
+ *
+ * This layer exists for:
+ *
+ * legacy ranking compatibility
+ *
+ * NOT:
+ *
+ * semantic runtime governance
+ *
+ * Responsibilities:
+ *
+ * - legacy ranking transport
+ * - compatibility continuity
+ * - lightweight collection stabilization
+ *
+ * IMPORTANT:
+ *
+ * New runtime authority lives in:
+ *
+ * ./runtime
+ * ./ranking
+ * ./normalize
+ * ./contracts
+ */
+
+/* ============================================================================
+🔥 Contracts
+============================================================================ */
+
+import type {
+
+  SemanticRankingRuntime,
+
+} from './contracts'
+
+/* ============================================================================
 🔥 Utils
-========================================= */
+============================================================================ */
 
 import {
 
-buildEndpoint,
+  buildEndpoint,
 
 } from '../utils/buildEndpoint'
 
 import {
 
-safeFetch,
+  safeFetch,
 
 } from '../utils/safeFetch'
 
-/* =========================================
+/* ============================================================================
+🔥 Normalize
+============================================================================ */
+
+import {
+
+  normalizeRanking,
+
+} from './normalize'
+
+/* ============================================================================
+🔥 Endpoint
+============================================================================ */
+
+const RANKING_ENDPOINT =
+
+  '/general/pc-products/ranking'
+
+/* ============================================================================
 🔥 Fetch Ranking Products
-========================================= */
+============================================================================ */
 
-export async function
-fetchRankingProducts(
+/**
+ * Legacy-compatible ranking fetch.
+ *
+ * IMPORTANT:
+ *
+ * This layer intentionally avoids:
+ *
+ * - semantic inference
+ * - workflow mutation
+ * - traversal generation
+ * - ranking rewriting
+ *
+ * Backend remains semantic authority.
+ */
+export async function fetchRankingProducts(
 
-type = 'score'
+  type = 'score',
 
-) {
+): Promise<SemanticRankingRuntime | null> {
 
-// ======================================
-// Endpoint
-// ======================================
+  // ======================================
+  // Empty Guard
+  // ======================================
 
-const endpoint =
+  if (!type) {
 
+    console.warn(
 
-buildEndpoint(
-
-  `/general/pc-products/ranking/${type}/`
-
-)
-
-
-// ======================================
-// Fetch
-// ======================================
-
-const json =
-
-
-await safeFetch(
-  endpoint
-)
-
-
-// ======================================
-// Runtime Debug
-// ======================================
-
-console.log(
-'🔥 FETCH RANKING PRODUCTS URL',
-endpoint
-)
-
-console.log(
-'🔥 FETCH RANKING PRODUCTS RAW',
-json
-)
-
-// ======================================
-// Empty Guard
-// ======================================
-
-if (!json) {
-
-
-return {
-
-  success: false,
-
-  ranking: {
-
-    results: [],
-  },
-
-  raw: null,
-}
-
-
-}
-
-// ======================================
-// Minimal Semantic Normalize
-// ======================================
-
-return {
-
-
-// ====================================
-// Preserve Raw Payload
-// ====================================
-
-...json,
-
-// ====================================
-// Success
-// ====================================
-
-success:
-  json?.success
-  || false,
-
-// ====================================
-// Ranking Runtime
-// ====================================
-
-ranking: {
-
-  results:
-
-    Array.isArray(
-      json?.ranking?.results
+      '⚠️ FETCH RANKING PRODUCTS EMPTY TYPE'
     )
 
-      ? json.ranking.results
+    return null
+  }
 
-      : [],
+  // ======================================
+  // Endpoint
+  // ======================================
 
-  total:
-    json?.ranking?.total
-    || 0,
+  const endpoint =
 
-  page:
-    json?.ranking?.page
-    || 1,
+    buildEndpoint(
 
-  limit:
-    json?.ranking?.limit
-    || 0,
-},
+      `${RANKING_ENDPOINT}/${type}/`
 
-// ====================================
-// Semantic Runtime
-// ====================================
+    )
 
-semantic_runtime:
+  // ======================================
+  // Fetch
+  // ======================================
 
-  json?.semantic_runtime
-  || {},
+  const response =
 
-semantic_labels:
+    await safeFetch<SemanticRankingRuntime>(
+      endpoint
+    )
 
-  Array.isArray(
-    json?.semantic_labels
+  // ======================================
+  // Runtime Debug
+  // ======================================
+
+  console.log(
+
+    '🔥 FETCH RANKING PRODUCTS URL',
+
+    endpoint
   )
 
-    ? json.semantic_labels
+  console.log(
 
-    : [],
+    '🔥 FETCH RANKING PRODUCTS RAW',
 
-render_hints:
+    response
+  )
 
-  json?.render_hints
-  || {},
+  // ======================================
+  // Invalid Response
+  // ======================================
 
-// ====================================
-// Raw Backup
-// ====================================
+  if (!response) {
 
-raw:
-  json,
+    console.error(
 
+      '🔥 FETCH RANKING PRODUCTS FAILURE',
 
+      {
+
+        type,
+
+        endpoint,
+      }
+    )
+
+    return {
+
+      success: false,
+
+      ranking: {
+
+        results: [],
+      },
+
+      raw: null,
+    }
+  }
+
+  // ======================================
+  // Normalize
+  // ======================================
+
+  return normalizeRanking(
+
+    response
+
+  )
 }
-}
+
+/* ============================================================================
+🔥 Default Export
+============================================================================ */
+
+export default fetchRankingProducts
