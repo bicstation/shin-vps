@@ -1,58 +1,27 @@
 // ============================================================================
 // FILE:
-// /home/maya/shin-dev/shin-vps/next-bicstation/app/test/runtime/inspectors/semantic/traversal/TraversalContinuityInspector.tsx
+// /home/maya/shin-vps/next-bicstation/app/test/runtime/inspectors/semantic/traversal/TraversalContinuityInspector.tsx
 // ============================================================================
 
 'use client'
-
-/**
- * ============================================================================
- * SHIN CORE LINX
- * Traversal Continuity Inspector
- * ============================================================================
- *
- * PURPOSE:
- *
- * Traversal continuity observability
- *
- * IMPORTANT:
- *
- * This component exists for:
- *
- * semantic traversal continuity visualization
- *
- * NOT:
- *
- * graph mutation
- * traversal rewriting
- * semantic normalization
- *
- * ============================================================================
- */
 
 /* ============================================================================
 🔥 Shared
 ============================================================================ */
 
-import InspectorSection
-from '../shared/InspectorSection'
+import InspectorCard from '../shared/InspectorCard'
 
-import InspectorCard
-from '../shared/InspectorCard'
+import InspectorSection from '../shared/InspectorSection'
 
-import RuntimeBadge
-from '../shared/RuntimeBadge'
-
-import RawJsonInspector
-from '../shared/RawJsonInspector'
+import RuntimeBadge from '../shared/RuntimeBadge'
 
 /* ============================================================================
-🔥 Props
+🔥 Types
 ============================================================================ */
 
 type TraversalContinuityInspectorProps = {
 
-  continuation_runtime?: any
+  runtime?: any
 }
 
 /* ============================================================================
@@ -61,241 +30,249 @@ type TraversalContinuityInspectorProps = {
 
 export default function TraversalContinuityInspector({
 
-  continuation_runtime,
+  runtime,
 
 }: TraversalContinuityInspectorProps) {
 
-  /* ==========================================================================
-  🔥 Continuation Runtime
-  ========================================================================== */
+  // ==========================================================================
+  // Payload
+  // ==========================================================================
+
+  const payload =
+
+    runtime?.payload || {}
+
+  // ==========================================================================
+  // Continuation Runtime
+  // ==========================================================================
 
   const continuationRuntime =
 
-    continuation_runtime || {}
+    payload?.continuation_runtime || {}
 
-  /* ==========================================================================
-  🔥 Continuity Metadata
-  ========================================================================== */
+  // ==========================================================================
+  // Continuity Flags
+  // ==========================================================================
 
-  const continuationMode =
+  const workflowContinuity =
 
-    continuationRuntime?.mode
-    || '-'
+    continuationRuntime
+      ?.workflow_continuity
 
-  const continuationRole =
+  const semanticContinuity =
 
-    continuationRuntime?.role
-    || '-'
+    continuationRuntime
+      ?.semantic_continuity
 
-  const traversalDepth =
+  const graphContinuity =
 
-    continuationRuntime?.depth
-    || 0
+    continuationRuntime
+      ?.graph_continuity
 
-  const traversalConfidence =
-
-    continuationRuntime?.confidence
-    || '-'
-
-  const continuityScore =
-
-    continuationRuntime?.continuity_score
-    || '-'
-
-  /* ==========================================================================
-  🔥 Runtime Status
-  ========================================================================== */
-
-  const continuityActive =
-
-    Object.keys(
-      continuationRuntime
-    ).length > 0
-
-  /* ==========================================================================
-  🔥 Traversal Paths
-  ========================================================================== */
-
-  const traversalPaths =
-
-    Array.isArray(
-      continuationRuntime?.paths
-    )
-
-      ? continuationRuntime.paths
-
-      : []
-
-  /* ==========================================================================
-  🔥 Runtime Debug
-  ========================================================================== */
+  // ==========================================================================
+  // Runtime Debug
+  // ==========================================================================
 
   console.log(
 
-    '🛰️ TRAVERSAL CONTINUITY INSPECTOR',
+    '♾ TRAVERSAL CONTINUITY INSPECTOR',
 
     {
 
-      continuationMode,
+      workflowContinuity,
 
-      continuationRole,
+      semanticContinuity,
 
-      traversalDepth,
-
-      traversalConfidence,
-
-      continuityScore,
-
-      traversalPaths:
-
-        traversalPaths.length,
+      graphContinuity,
     }
   )
 
-  /* ==========================================================================
-  🔥 Render
-  ========================================================================== */
+  // ==========================================================================
+  // Render
+  // ==========================================================================
 
   return (
 
-    <InspectorSection
+    <InspectorCard>
 
-      title="🛰️ Traversal Continuity Inspector"
+      <InspectorSection
 
-      description="Semantic traversal continuity observability and traversal runtime continuity visualization."
+        title="♾ Traversal Continuity"
 
-      badge="runtime/traversal-continuity"
+        badge={
 
-    >
+          <RuntimeBadge>
 
-      {/* ================================================================
-      🔥 Runtime Status
-      ================================================================ */}
+            runtime/continuity
 
-      <div className="flex flex-wrap gap-3">
+          </RuntimeBadge>
+        }
+      >
 
-        <RuntimeBadge
+        <div className="space-y-4 text-sm">
 
-          label="continuity"
+          {/* ============================================================= */}
+          {/* Continuity Authority */}
+          {/* ============================================================= */}
 
-          value={
-            continuityActive
-              ? 'active'
-              : 'inactive'
-          }
+          <div>
 
-          variant={
-            continuityActive
-              ? 'success'
-              : 'warning'
-          }
+            <div className="font-semibold mb-2">
 
-        />
+              Continuity Authority
 
-        <RuntimeBadge
+            </div>
 
-          label="mode"
+            <div className="grid grid-cols-2 gap-2">
 
-          value={continuationMode}
+              <div className="opacity-70">
 
-          variant="topology"
+                Workflow Continuity
 
-        />
+              </div>
 
-        <RuntimeBadge
+              <div>
 
-          label="role"
+                {
 
-          value={continuationRole}
+                  workflowContinuity
 
-          variant="semantic"
+                    ? 'ACTIVE'
 
-        />
+                    : 'INACTIVE'
+                }
 
-      </div>
+              </div>
 
-      {/* ================================================================
-      🔥 Continuity Grid
-      ================================================================ */}
+              <div className="opacity-70">
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+                Semantic Continuity
 
-        <InspectorCard
+              </div>
 
-          title="Continuation Mode"
+              <div>
 
-          value={continuationMode}
+                {
 
-        />
+                  semanticContinuity
 
-        <InspectorCard
+                    ? 'ACTIVE'
 
-          title="Continuation Role"
+                    : 'INACTIVE'
+                }
 
-          value={continuationRole}
+              </div>
 
-        />
+              <div className="opacity-70">
 
-        <InspectorCard
+                Graph Continuity
 
-          title="Traversal Depth"
+              </div>
 
-          value={traversalDepth}
+              <div>
 
-        />
+                {
 
-        <InspectorCard
+                  graphContinuity
 
-          title="Traversal Confidence"
+                    ? 'ACTIVE'
 
-          value={traversalConfidence}
+                    : 'INACTIVE'
+                }
 
-        />
+              </div>
 
-        <InspectorCard
+            </div>
 
-          title="Continuity Score"
+          </div>
 
-          value={continuityScore}
+          {/* ============================================================= */}
+          {/* Runtime Meaning */}
+          {/* ============================================================= */}
 
-        />
+          <div>
 
-      </div>
+            <div className="font-semibold mb-2">
 
-      {/* ================================================================
-      🔥 Traversal Paths
-      ================================================================ */}
+              Runtime Meaning
 
-      <InspectorCard
+            </div>
 
-        title="Traversal Paths"
+            <div className="space-y-2 text-xs opacity-80">
 
-        value={traversalPaths}
+              <div>
 
-        mono
+                ♾ Workflow continuity represents
+                semantic workflow continuation authority
 
-        badge="runtime/traversal-paths"
+              </div>
 
-        description="Semantic traversal continuity paths and traversal-safe orchestration topology."
+              <div>
 
-      />
+                🔗 Semantic continuity represents
+                meaning preservation across traversal topology
 
-      {/* ================================================================
-      🔥 Raw Continuation Runtime
-      ================================================================ */}
+              </div>
 
-      <RawJsonInspector
+              <div>
 
-        title="Raw Continuation Runtime"
+                🛰 Graph continuity represents
+                active semantic graph traversal continuity
 
-        description="Raw continuation runtime authority payload observability."
+              </div>
 
-        badge="runtime/continuation-raw"
+              <div>
 
-        payload={continuationRuntime}
+                ❌ Frontend continuity inference prohibited
 
-      />
+              </div>
 
-    </InspectorSection>
+            </div>
+
+          </div>
+
+          {/* ============================================================= */}
+          {/* Runtime Notes */}
+          {/* ============================================================= */}
+
+          <div>
+
+            <div className="font-semibold mb-2">
+
+              Runtime Notes
+
+            </div>
+
+            <div className="space-y-2 text-xs opacity-70">
+
+              <div>
+
+                Backend remains continuation authority
+
+              </div>
+
+              <div>
+
+                Frontend remains traversal observability authority
+
+              </div>
+
+              <div>
+
+                Traversal continuity must preserve
+                semantic runtime topology
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </InspectorSection>
+
+    </InspectorCard>
   )
 }
+

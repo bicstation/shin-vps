@@ -1,58 +1,27 @@
 // ============================================================================
 // FILE:
-// /home/maya/shin-dev/shin-vps/next-bicstation/app/test/runtime/inspectors/semantic/traversal/TraversalRuntimeInspector.tsx
+// /home/maya/shin-vps/next-bicstation/app/test/runtime/inspectors/semantic/traversal/TraversalRuntimeInspector.tsx
 // ============================================================================
 
 'use client'
-
-/**
- * ============================================================================
- * SHIN CORE LINX
- * Traversal Runtime Inspector
- * ============================================================================
- *
- * PURPOSE:
- *
- * Traversal runtime observability
- *
- * IMPORTANT:
- *
- * This component exists for:
- *
- * semantic traversal runtime visualization
- *
- * NOT:
- *
- * graph mutation
- * semantic normalization
- * traversal rewriting
- *
- * ============================================================================
- */
 
 /* ============================================================================
 🔥 Shared
 ============================================================================ */
 
-import InspectorSection
-from '../shared/InspectorSection'
+import InspectorCard from '../shared/InspectorCard'
 
-import InspectorCard
-from '../shared/InspectorCard'
+import InspectorSection from '../shared/InspectorSection'
 
-import RuntimeBadge
-from '../shared/RuntimeBadge'
-
-import RawJsonInspector
-from '../shared/RawJsonInspector'
+import RuntimeBadge from '../shared/RuntimeBadge'
 
 /* ============================================================================
-🔥 Props
+🔥 Types
 ============================================================================ */
 
 type TraversalRuntimeInspectorProps = {
 
-  traversal_runtime?: any
+  runtime?: any
 }
 
 /* ============================================================================
@@ -61,85 +30,79 @@ type TraversalRuntimeInspectorProps = {
 
 export default function TraversalRuntimeInspector({
 
-  traversal_runtime,
+  runtime,
 
 }: TraversalRuntimeInspectorProps) {
 
-  /* ==========================================================================
-  🔥 Traversal Runtime
-  ========================================================================== */
+  // ==========================================================================
+  // Payload
+  // ==========================================================================
+
+  const payload =
+
+    runtime?.payload || {}
+
+  // ==========================================================================
+  // Traversal Runtime
+  // ==========================================================================
 
   const traversalRuntime =
 
-    traversal_runtime || {}
+    payload?.traversal_runtime || {}
 
-  /* ==========================================================================
-  🔥 Runtime Metadata
-  ========================================================================== */
+  // ==========================================================================
+  // Continuation Runtime
+  // ==========================================================================
 
-  const traversalMode =
+  const continuationRuntime =
 
-    traversalRuntime?.mode
-    || '-'
+    payload?.continuation_runtime || {}
 
-  const traversalRole =
+  // ==========================================================================
+  // Traversal Edges
+  // ==========================================================================
 
-    traversalRuntime?.role
-    || '-'
+  const traversalEdges =
 
-  const traversalState =
+    Array.isArray(
+      payload?.traversal_edges
+    )
 
-    traversalRuntime?.state
-    || '-'
+      ? payload.traversal_edges
 
-  const traversalStrategy =
+      : []
 
-    traversalRuntime?.strategy
-    || '-'
+  // ==========================================================================
+  // Traversal Graph
+  // ==========================================================================
 
-  const traversalDepth =
+  const traversalGraph =
 
-    traversalRuntime?.depth
-    || 0
+    Array.isArray(
+      payload?.traversal_graph
+    )
 
-  const traversalConfidence =
+      ? payload.traversal_graph
 
-    traversalRuntime?.confidence
-    || '-'
+      : []
 
-  const traversalScore =
+  // ==========================================================================
+  // Related Products
+  // ==========================================================================
 
-    traversalRuntime?.score
-    || traversalRuntime?.traversal_score
-    || '-'
+  const relatedProducts =
 
-  /* ==========================================================================
-  🔥 Runtime Topology
-  ========================================================================== */
+    Array.isArray(
+      payload?.related_products
+    )
 
-  const topologyLayer =
+      ? payload.related_products
 
-    traversalRuntime?.topology_layer
-    || '-'
+      : []
 
-  const observatory =
-
-    traversalRuntime?.observatory
-    || '-'
-
-  /* ==========================================================================
-  🔥 Traversal Runtime Integrity
-  ========================================================================== */
-
-  const traversalActive =
-
-    Object.keys(
-      traversalRuntime
-    ).length > 0
-
-  /* ==========================================================================
-  🔥 Runtime Debug
-  ========================================================================== */
+  // ==========================================================================
+  // Runtime Debug
+  // ==========================================================================
 
   console.log(
 
@@ -147,228 +110,330 @@ export default function TraversalRuntimeInspector({
 
     {
 
-      traversalMode,
+      traversalRuntime,
 
-      traversalRole,
+      continuationRuntime,
 
-      traversalState,
+      traversalEdges,
 
-      traversalStrategy,
+      traversalGraph,
 
-      traversalDepth,
-
-      traversalConfidence,
-
-      traversalScore,
-
-      topologyLayer,
-
-      observatory,
-
-      traversalActive,
+      relatedProducts,
     }
   )
 
-  /* ==========================================================================
-  🔥 Render
-  ========================================================================== */
+  // ==========================================================================
+  // Render
+  // ==========================================================================
 
   return (
 
-    <InspectorSection
+    <InspectorCard>
 
-      title="🌌 Traversal Runtime Inspector"
+      <InspectorSection
 
-      description="Semantic traversal runtime observability and traversal topology visualization."
+        title="🌌 Traversal Runtime"
 
-      badge="runtime/traversal"
+        badge={
 
-    >
+          <RuntimeBadge>
 
-      {/* ================================================================
-      🔥 Runtime Status
-      ================================================================ */}
+            runtime/traversal
 
-      <div className="flex flex-wrap gap-3">
+          </RuntimeBadge>
+        }
+      >
 
-        <RuntimeBadge
+        <div className="space-y-4 text-sm">
 
-          label="runtime"
+          {/* ============================================================= */}
+          {/* Runtime Authority */}
+          {/* ============================================================= */}
 
-          value={
-            traversalActive
-              ? 'active'
-              : 'inactive'
-          }
+          <div>
 
-          variant={
-            traversalActive
-              ? 'success'
-              : 'warning'
-          }
+            <div className="font-semibold mb-2">
 
-        />
+              Runtime Authority
 
-        <RuntimeBadge
+            </div>
 
-          label="mode"
+            <div className="grid grid-cols-2 gap-2">
 
-          value={traversalMode}
+              <div className="opacity-70">
 
-          variant="topology"
+                Runtime Role
 
-        />
+              </div>
 
-        <RuntimeBadge
+              <div>
 
-          label="role"
+                {
 
-          value={traversalRole}
+                  traversalRuntime
+                    ?.runtime_role
 
-          variant="semantic"
+                  || '-'
+                }
 
-        />
+              </div>
 
-      </div>
+              <div className="opacity-70">
 
-      {/* ================================================================
-      🔥 Traversal Runtime Grid
-      ================================================================ */}
+                Topology Layer
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              </div>
 
-        <InspectorCard
+              <div>
 
-          title="Traversal Mode"
+                {
 
-          value={traversalMode}
+                  traversalRuntime
+                    ?.topology_layer
 
-        />
+                  || '-'
+                }
 
-        <InspectorCard
+              </div>
 
-          title="Traversal Role"
+              <div className="opacity-70">
 
-          value={traversalRole}
+                Observatory
 
-        />
+              </div>
 
-        <InspectorCard
+              <div>
 
-          title="Traversal State"
+                {
 
-          value={traversalState}
+                  traversalRuntime
+                    ?.observatory
 
-        />
+                  || '-'
+                }
 
-        <InspectorCard
+              </div>
 
-          title="Traversal Strategy"
+              <div className="opacity-70">
 
-          value={traversalStrategy}
+                Runtime Status
 
-        />
+              </div>
 
-        <InspectorCard
+              <div>
 
-          title="Traversal Depth"
+                {
 
-          value={traversalDepth}
+                  traversalRuntime
+                    ?.runtime_status
 
-        />
+                  || '-'
+                }
 
-        <InspectorCard
+              </div>
 
-          title="Traversal Confidence"
+            </div>
 
-          value={traversalConfidence}
+          </div>
 
-        />
+          {/* ============================================================= */}
+          {/* Continuation Runtime */}
+          {/* ============================================================= */}
 
-        <InspectorCard
+          <div>
 
-          title="Traversal Score"
+            <div className="font-semibold mb-2">
 
-          value={traversalScore}
+              Continuation Runtime
 
-        />
+            </div>
 
-        <InspectorCard
+            <div className="grid grid-cols-2 gap-2">
 
-          title="Topology Layer"
+              <div className="opacity-70">
 
-          value={topologyLayer}
+                Workflow Continuity
 
-        />
+              </div>
 
-      </div>
+              <div>
 
-      {/* ================================================================
-      🔥 Observatory Runtime
-      ================================================================ */}
+                {
 
-      <InspectorCard
+                  continuationRuntime
+                    ?.workflow_continuity
 
-        title="Observatory Runtime"
+                    ? 'TRUE'
 
-        value={observatory}
+                    : 'FALSE'
+                }
 
-        badge="runtime/observatory"
+              </div>
 
-        description="Traversal observability runtime and semantic graph topology inspection layer."
+              <div className="opacity-70">
 
-      />
+                Semantic Continuity
 
-      {/* ================================================================
-      🔥 Runtime Integrity
-      ================================================================ */}
+              </div>
 
-      <div className="rounded-2xl border border-zinc-800 bg-black p-6">
+              <div>
 
-        <div className="text-xs uppercase tracking-[0.2em] text-cyan-400">
+                {
 
-          Traversal Runtime Integrity
+                  continuationRuntime
+                    ?.semantic_continuity
+
+                    ? 'TRUE'
+
+                    : 'FALSE'
+                }
+
+              </div>
+
+              <div className="opacity-70">
+
+                Graph Continuity
+
+              </div>
+
+              <div>
+
+                {
+
+                  continuationRuntime
+                    ?.graph_continuity
+
+                    ? 'TRUE'
+
+                    : 'FALSE'
+                }
+
+              </div>
+
+            </div>
+
+          </div>
+
+          {/* ============================================================= */}
+          {/* Traversal Topology */}
+          {/* ============================================================= */}
+
+          <div>
+
+            <div className="font-semibold mb-2">
+
+              Traversal Topology
+
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+
+              <div className="opacity-70">
+
+                Traversal Edges
+
+              </div>
+
+              <div>
+
+                {
+
+                  traversalEdges.length
+                }
+
+              </div>
+
+              <div className="opacity-70">
+
+                Traversal Graph
+
+              </div>
+
+              <div>
+
+                {
+
+                  traversalGraph.length
+                }
+
+              </div>
+
+              <div className="opacity-70">
+
+                Related Products
+
+              </div>
+
+              <div>
+
+                {
+
+                  relatedProducts.length
+                }
+
+              </div>
+
+            </div>
+
+          </div>
+
+          {/* ============================================================= */}
+          {/* Runtime Meaning */}
+          {/* ============================================================= */}
+
+          <div>
+
+            <div className="font-semibold mb-2">
+
+              Runtime Meaning
+
+            </div>
+
+            <div className="space-y-2 text-xs opacity-80">
+
+              <div>
+
+                🌌 Traversal runtime represents
+                semantic continuation authority
+
+              </div>
+
+              <div>
+
+                ♾ Continuation runtime preserves
+                workflow continuity topology
+
+              </div>
+
+              <div>
+
+                🔗 Traversal edges preserve
+                semantic graph continuity
+
+              </div>
+
+              <div>
+
+                🛰 Traversal graph runtime represents
+                exploration topology continuity
+
+              </div>
+
+              <div>
+
+                ❌ Frontend semantic mutation prohibited
+
+              </div>
+
+            </div>
+
+          </div>
 
         </div>
 
-        <div className="mt-4 space-y-3 text-sm text-zinc-300">
+      </InspectorSection>
 
-          <div>
-            {traversalActive ? '✅' : '❌'} Traversal runtime active
-          </div>
-
-          <div>
-            ✅ Semantic traversal observability enabled
-          </div>
-
-          <div>
-            ✅ Traversal topology visualization active
-          </div>
-
-          <div>
-            ❌ Traversal mutation prohibited
-          </div>
-
-        </div>
-
-      </div>
-
-      {/* ================================================================
-      🔥 Raw Traversal Runtime
-      ================================================================ */}
-
-      <RawJsonInspector
-
-        title="Raw Traversal Runtime"
-
-        description="Raw traversal runtime authority payload observability."
-
-        badge="runtime/traversal-raw"
-
-        payload={traversalRuntime}
-
-      />
-
-    </InspectorSection>
+    </InspectorCard>
   )
 }
+

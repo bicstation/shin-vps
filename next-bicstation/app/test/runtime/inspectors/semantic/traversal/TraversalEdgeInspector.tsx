@@ -1,168 +1,27 @@
 // ============================================================================
 // FILE:
-// /home/maya/shin-dev/shin-vps/next-bicstation/app/test/runtime/inspectors/semantic/traversal/TraversalEdgeInspector.tsx
+// /home/maya/shin-vps/next-bicstation/app/test/runtime/inspectors/semantic/traversal/TraversalEdgeInspector.tsx
 // ============================================================================
 
 'use client'
-
-/**
- * ============================================================================
- * SHIN CORE LINX
- * Traversal Edge Inspector
- * ============================================================================
- *
- * PURPOSE:
- *
- * Traversal edge observability
- *
- * IMPORTANT:
- *
- * This component exists for:
- *
- * semantic traversal edge visualization
- *
- * NOT:
- *
- * graph mutation
- * traversal rewriting
- * semantic normalization
- *
- * ============================================================================
- */
 
 /* ============================================================================
 🔥 Shared
 ============================================================================ */
 
-import InspectorSection
-from '../shared/InspectorSection'
+import InspectorCard from '../shared/InspectorCard'
 
-import InspectorCard
-from '../shared/InspectorCard'
+import InspectorSection from '../shared/InspectorSection'
 
-import RuntimeBadge
-from '../shared/RuntimeBadge'
-
-import RawJsonInspector
-from '../shared/RawJsonInspector'
+import RuntimeBadge from '../shared/RuntimeBadge'
 
 /* ============================================================================
-🔥 Props
+🔥 Types
 ============================================================================ */
 
 type TraversalEdgeInspectorProps = {
 
-  traversal_edges?: any[]
-}
-
-/* ============================================================================
-🔥 Traversal Edge Card
-============================================================================ */
-
-function TraversalEdgeCard({
-
-  edge,
-
-  index,
-
-}: {
-
-  edge: any
-
-  index: number
-
-}) {
-
-  /* ==========================================================================
-  🔥 Edge Metadata
-  ========================================================================== */
-
-  const source =
-
-    edge?.source
-    || edge?.from
-    || '-'
-
-  const target =
-
-    edge?.target
-    || edge?.to
-    || '-'
-
-  const relation =
-
-    edge?.relation
-    || edge?.type
-    || '-'
-
-  const score =
-
-    edge?.score
-    || edge?.weight
-    || '-'
-
-  /* ==========================================================================
-  🔥 Render
-  ========================================================================== */
-
-  return (
-
-    <div className="rounded-2xl border border-zinc-800 bg-black p-5">
-
-      <div className="flex items-center justify-between gap-4">
-
-        <div className="text-xs uppercase tracking-[0.2em] text-cyan-400">
-
-          Edge #{index + 1}
-
-        </div>
-
-        <RuntimeBadge
-
-          label="relation"
-
-          value={relation}
-
-          variant="topology"
-
-        />
-
-      </div>
-
-      <div className="mt-4 grid gap-4 md:grid-cols-2">
-
-        <InspectorCard
-
-          title="Source"
-
-          value={source}
-
-        />
-
-        <InspectorCard
-
-          title="Target"
-
-          value={target}
-
-        />
-
-      </div>
-
-      <div className="mt-4">
-
-        <InspectorCard
-
-          title="Traversal Score"
-
-          value={score}
-
-        />
-
-      </div>
-
-    </div>
-  )
+  runtime?: any
 }
 
 /* ============================================================================
@@ -171,35 +30,35 @@ function TraversalEdgeCard({
 
 export default function TraversalEdgeInspector({
 
-  traversal_edges,
+  runtime,
 
 }: TraversalEdgeInspectorProps) {
 
-  /* ==========================================================================
-  🔥 Traversal Edges
-  ========================================================================== */
+  // ==========================================================================
+  // Payload
+  // ==========================================================================
+
+  const payload =
+
+    runtime?.payload || {}
+
+  // ==========================================================================
+  // Traversal Edges
+  // ==========================================================================
 
   const traversalEdges =
 
     Array.isArray(
-      traversal_edges
+      payload?.traversal_edges
     )
 
-      ? traversal_edges
+      ? payload.traversal_edges
 
       : []
 
-  /* ==========================================================================
-  🔥 Runtime Status
-  ========================================================================== */
-
-  const hasEdges =
-
-    traversalEdges.length > 0
-
-  /* ==========================================================================
-  🔥 Runtime Debug
-  ========================================================================== */
+  // ==========================================================================
+  // Runtime Debug
+  // ==========================================================================
 
   console.log(
 
@@ -207,177 +66,212 @@ export default function TraversalEdgeInspector({
 
     {
 
-      edges:
-
-        traversalEdges.length,
-
-      hasEdges,
+      traversalEdges,
     }
   )
 
-  /* ==========================================================================
-  🔥 Render
-  ========================================================================== */
+  // ==========================================================================
+  // Render
+  // ==========================================================================
 
   return (
 
-    <InspectorSection
+    <InspectorCard>
 
-      title="🔗 Traversal Edge Inspector"
+      <InspectorSection
 
-      description="Semantic traversal edge observability and traversal graph relationship visualization."
+        title="🔗 Traversal Edge Runtime"
 
-      badge="runtime/traversal-edges"
+        badge={
 
-    >
+          <RuntimeBadge>
 
-      {/* ================================================================
-      🔥 Runtime Status
-      ================================================================ */}
+            runtime/edges
 
-      <div className="flex flex-wrap gap-3">
+          </RuntimeBadge>
+        }
+      >
 
-        <RuntimeBadge
+        <div className="space-y-4 text-sm">
 
-          label="edges"
+          {/* ============================================================= */}
+          {/* Empty */}
+          {/* ============================================================= */}
 
-          value={
-            String(
-              traversalEdges.length
-            )
-          }
+          {
 
-          variant={
-            hasEdges
-              ? 'success'
-              : 'warning'
-          }
+            traversalEdges.length === 0 && (
 
-        />
+              <div className="text-xs opacity-60">
 
-        <RuntimeBadge
-
-          label="graph"
-
-          value={
-            hasEdges
-              ? 'connected'
-              : 'empty'
-          }
-
-          variant="topology"
-
-        />
-
-      </div>
-
-      {/* ================================================================
-      🔥 Edge Summary
-      ================================================================ */}
-
-      <div className="grid gap-4 md:grid-cols-3">
-
-        <InspectorCard
-
-          title="Total Edges"
-
-          value={traversalEdges.length}
-
-        />
-
-        <InspectorCard
-
-          title="Traversal Runtime"
-
-          value={
-            hasEdges
-              ? 'active'
-              : 'inactive'
-          }
-
-        />
-
-        <InspectorCard
-
-          title="Graph Connectivity"
-
-          value={
-            hasEdges
-              ? 'connected'
-              : 'disconnected'
-          }
-
-        />
-
-      </div>
-
-      {/* ================================================================
-      🔥 Traversal Edges
-      ================================================================ */}
-
-      {
-
-        hasEdges
-
-          ? (
-
-              <div className="space-y-6">
-
-                {
-
-                  traversalEdges.map(
-
-                    (
-
-                      edge: any,
-
-                      index: number
-
-                    ) => (
-
-                      <TraversalEdgeCard
-
-                        key={index}
-
-                        edge={edge}
-
-                        index={index}
-
-                      />
-
-                    )
-                  )
-                }
+                No traversal edges detected
 
               </div>
             )
+          }
 
-          : (
+          {/* ============================================================= */}
+          {/* Edges */}
+          {/* ============================================================= */}
 
-              <div className="rounded-2xl border border-zinc-800 bg-black p-6 text-sm text-zinc-500">
+          {
 
-                No traversal edges detected.
+            traversalEdges.map(
+
+              (
+                edge: any,
+                index: number
+              ) => (
+
+                <div
+
+                  key={index}
+
+                  className="
+                    border
+                    rounded-lg
+                    p-4
+                    space-y-3
+                  "
+                >
+
+                  {/* =================================================== */}
+                  {/* Edge Header */}
+                  {/* =================================================== */}
+
+                  <div className="font-semibold">
+
+                    Edge #{index + 1}
+
+                  </div>
+
+                  {/* =================================================== */}
+                  {/* Edge Fields */}
+                  {/* =================================================== */}
+
+                  <div className="grid grid-cols-2 gap-2">
+
+                    <div className="opacity-70">
+
+                      Edge Type
+
+                    </div>
+
+                    <div>
+
+                      {
+
+                        edge?.edge_type
+                        || '-'
+                      }
+
+                    </div>
+
+                    <div className="opacity-70">
+
+                      Workflow Relation
+
+                    </div>
+
+                    <div>
+
+                      {
+
+                        edge?.workflow_relation
+                        || '-'
+                      }
+
+                    </div>
+
+                    <div className="opacity-70">
+
+                      Similarity Score
+
+                    </div>
+
+                    <div>
+
+                      {
+
+                        edge?.similarity_score
+                        ?? '-'
+                      }
+
+                    </div>
+
+                    <div className="opacity-70">
+
+                      Reason
+
+                    </div>
+
+                    <div>
+
+                      {
+
+                        edge?.reason
+                        || '-'
+                      }
+
+                    </div>
+
+                  </div>
+
+                </div>
+              )
+            )
+          }
+
+          {/* ============================================================= */}
+          {/* Runtime Meaning */}
+          {/* ============================================================= */}
+
+          <div>
+
+            <div className="font-semibold mb-2">
+
+              Runtime Meaning
+
+            </div>
+
+            <div className="space-y-2 text-xs opacity-80">
+
+              <div>
+
+                🔗 Edge runtime represents
+                semantic continuation topology
 
               </div>
-            )
-      }
 
-      {/* ================================================================
-      🔥 Raw Traversal Edges
-      ================================================================ */}
+              <div>
 
-      <RawJsonInspector
+                ♾ Workflow relations represent
+                continuation authority between entities
 
-        title="Raw Traversal Edges"
+              </div>
 
-        description="Raw traversal edge authority payload observability."
+              <div>
 
-        badge="runtime/traversal-edges-raw"
+                🛰 Traversal edges preserve
+                semantic graph continuity
 
-        payload={traversalEdges}
+              </div>
 
-      />
+              <div>
 
-    </InspectorSection>
+                ❌ Frontend edge mutation prohibited
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </InspectorSection>
+
+    </InspectorCard>
   )
 }
+

@@ -1,168 +1,27 @@
 // ============================================================================
 // FILE:
-// /home/maya/shin-dev/shin-vps/next-bicstation/app/test/runtime/inspectors/semantic/traversal/TraversalGraphInspector.tsx
+// /home/maya/shin-vps/next-bicstation/app/test/runtime/inspectors/semantic/traversal/TraversalGraphInspector.tsx
 // ============================================================================
 
 'use client'
-
-/**
- * ============================================================================
- * SHIN CORE LINX
- * Traversal Graph Inspector
- * ============================================================================
- *
- * PURPOSE:
- *
- * Traversal graph observability
- *
- * IMPORTANT:
- *
- * This component exists for:
- *
- * semantic traversal graph visualization
- *
- * NOT:
- *
- * graph mutation
- * semantic normalization
- * traversal rewriting
- *
- * ============================================================================
- */
 
 /* ============================================================================
 🔥 Shared
 ============================================================================ */
 
-import InspectorSection
-from '../shared/InspectorSection'
+import InspectorCard from '../shared/InspectorCard'
 
-import InspectorCard
-from '../shared/InspectorCard'
+import InspectorSection from '../shared/InspectorSection'
 
-import RuntimeBadge
-from '../shared/RuntimeBadge'
-
-import RawJsonInspector
-from '../shared/RawJsonInspector'
+import RuntimeBadge from '../shared/RuntimeBadge'
 
 /* ============================================================================
-🔥 Props
+🔥 Types
 ============================================================================ */
 
 type TraversalGraphInspectorProps = {
 
-  traversal_graph?: any[]
-}
-
-/* ============================================================================
-🔥 Traversal Node Card
-============================================================================ */
-
-function TraversalNodeCard({
-
-  node,
-
-  index,
-
-}: {
-
-  node: any
-
-  index: number
-
-}) {
-
-  /* ==========================================================================
-  🔥 Node Metadata
-  ========================================================================== */
-
-  const nodeId =
-
-    node?.id
-    || node?.node_id
-    || `node-${index + 1}`
-
-  const nodeType =
-
-    node?.type
-    || node?.node_type
-    || '-'
-
-  const nodeRole =
-
-    node?.role
-    || node?.semantic_role
-    || '-'
-
-  const nodeScore =
-
-    node?.score
-    || node?.semantic_score
-    || '-'
-
-  /* ==========================================================================
-  🔥 Render
-  ========================================================================== */
-
-  return (
-
-    <div className="rounded-2xl border border-zinc-800 bg-black p-5">
-
-      <div className="flex items-center justify-between gap-4">
-
-        <div className="text-xs uppercase tracking-[0.2em] text-cyan-400">
-
-          Traversal Node
-
-        </div>
-
-        <RuntimeBadge
-
-          label="type"
-
-          value={nodeType}
-
-          variant="topology"
-
-        />
-
-      </div>
-
-      <div className="mt-4 grid gap-4 md:grid-cols-2">
-
-        <InspectorCard
-
-          title="Node ID"
-
-          value={nodeId}
-
-        />
-
-        <InspectorCard
-
-          title="Node Role"
-
-          value={nodeRole}
-
-        />
-
-      </div>
-
-      <div className="mt-4">
-
-        <InspectorCard
-
-          title="Semantic Score"
-
-          value={nodeScore}
-
-        />
-
-      </div>
-
-    </div>
-  )
+  runtime?: any
 }
 
 /* ============================================================================
@@ -171,213 +30,264 @@ function TraversalNodeCard({
 
 export default function TraversalGraphInspector({
 
-  traversal_graph,
+  runtime,
 
 }: TraversalGraphInspectorProps) {
 
-  /* ==========================================================================
-  🔥 Traversal Graph
-  ========================================================================== */
+  // ==========================================================================
+  // Payload
+  // ==========================================================================
+
+  const payload =
+
+    runtime?.payload || {}
+
+  // ==========================================================================
+  // Traversal Graph
+  // ==========================================================================
 
   const traversalGraph =
 
     Array.isArray(
-      traversal_graph
+      payload?.traversal_graph
     )
 
-      ? traversal_graph
+      ? payload.traversal_graph
 
       : []
 
-  /* ==========================================================================
-  🔥 Runtime Status
-  ========================================================================== */
-
-  const hasGraph =
-
-    traversalGraph.length > 0
-
-  /* ==========================================================================
-  🔥 Runtime Debug
-  ========================================================================== */
+  // ==========================================================================
+  // Runtime Debug
+  // ==========================================================================
 
   console.log(
 
-    '🌌 TRAVERSAL GRAPH INSPECTOR',
+    '🛰 TRAVERSAL GRAPH INSPECTOR',
 
     {
 
-      nodes:
-
-        traversalGraph.length,
-
-      hasGraph,
+      traversalGraph,
     }
   )
 
-  /* ==========================================================================
-  🔥 Render
-  ========================================================================== */
+  // ==========================================================================
+  // Render
+  // ==========================================================================
 
   return (
 
-    <InspectorSection
+    <InspectorCard>
 
-      title="🌌 Traversal Graph Inspector"
+      <InspectorSection
 
-      description="Semantic traversal graph observability and graph topology visualization."
+        title="🛰 Traversal Graph Runtime"
 
-      badge="runtime/traversal-graph"
+        badge={
 
-    >
+          <RuntimeBadge>
 
-      {/* ================================================================
-      🔥 Runtime Status
-      ================================================================ */}
+            runtime/graph
 
-      <div className="flex flex-wrap gap-3">
+          </RuntimeBadge>
+        }
+      >
 
-        <RuntimeBadge
+        <div className="space-y-4 text-sm">
 
-          label="graph"
+          {/* ============================================================= */}
+          {/* Empty */}
+          {/* ============================================================= */}
 
-          value={
-            hasGraph
-              ? 'active'
-              : 'inactive'
-          }
+          {
 
-          variant={
-            hasGraph
-              ? 'success'
-              : 'warning'
-          }
+            traversalGraph.length === 0 && (
 
-        />
+              <div className="text-xs opacity-60">
 
-        <RuntimeBadge
-
-          label="nodes"
-
-          value={
-            String(
-              traversalGraph.length
-            )
-          }
-
-          variant="topology"
-
-        />
-
-      </div>
-
-      {/* ================================================================
-      🔥 Graph Summary
-      ================================================================ */}
-
-      <div className="grid gap-4 md:grid-cols-3">
-
-        <InspectorCard
-
-          title="Total Nodes"
-
-          value={traversalGraph.length}
-
-        />
-
-        <InspectorCard
-
-          title="Graph Runtime"
-
-          value={
-            hasGraph
-              ? 'active'
-              : 'inactive'
-          }
-
-        />
-
-        <InspectorCard
-
-          title="Topology State"
-
-          value={
-            hasGraph
-              ? 'connected'
-              : 'empty'
-          }
-
-        />
-
-      </div>
-
-      {/* ================================================================
-      🔥 Traversal Graph Nodes
-      ================================================================ */}
-
-      {
-
-        hasGraph
-
-          ? (
-
-              <div className="space-y-6">
-
-                {
-
-                  traversalGraph.map(
-
-                    (
-
-                      node: any,
-
-                      index: number
-
-                    ) => (
-
-                      <TraversalNodeCard
-
-                        key={index}
-
-                        node={node}
-
-                        index={index}
-
-                      />
-
-                    )
-                  )
-                }
+                No traversal graph topology detected
 
               </div>
             )
+          }
 
-          : (
+          {/* ============================================================= */}
+          {/* Graph Nodes */}
+          {/* ============================================================= */}
 
-              <div className="rounded-2xl border border-zinc-800 bg-black p-6 text-sm text-zinc-500">
+          {
 
-                No traversal graph nodes detected.
+            traversalGraph.map(
+
+              (
+                node: any,
+                index: number
+              ) => (
+
+                <div
+
+                  key={index}
+
+                  className="
+                    border
+                    rounded-lg
+                    p-4
+                    space-y-3
+                  "
+                >
+
+                  {/* =================================================== */}
+                  {/* Node Header */}
+                  {/* =================================================== */}
+
+                  <div className="font-semibold">
+
+                    Graph Node #{index + 1}
+
+                  </div>
+
+                  {/* =================================================== */}
+                  {/* Node Fields */}
+                  {/* =================================================== */}
+
+                  <div className="grid grid-cols-2 gap-2">
+
+                    <div className="opacity-70">
+
+                      Node ID
+
+                    </div>
+
+                    <div>
+
+                      {
+
+                        node?.id
+                        || '-'
+                      }
+
+                    </div>
+
+                    <div className="opacity-70">
+
+                      Product Type
+
+                    </div>
+
+                    <div>
+
+                      {
+
+                        node?.type
+                        || '-'
+                      }
+
+                    </div>
+
+                    <div className="opacity-70">
+
+                      Semantic Score
+
+                    </div>
+
+                    <div>
+
+                      {
+
+                        node?.semantic_score
+                        ?? '-'
+                      }
+
+                    </div>
+
+                    <div className="opacity-70">
+
+                      Edge Type
+
+                    </div>
+
+                    <div>
+
+                      {
+
+                        node?.edge_type
+                        || '-'
+                      }
+
+                    </div>
+
+                    <div className="opacity-70">
+
+                      Workflow Relation
+
+                    </div>
+
+                    <div>
+
+                      {
+
+                        node?.workflow_relation
+                        || '-'
+                      }
+
+                    </div>
+
+                  </div>
+
+                </div>
+              )
+            )
+          }
+
+          {/* ============================================================= */}
+          {/* Runtime Meaning */}
+          {/* ============================================================= */}
+
+          <div>
+
+            <div className="font-semibold mb-2">
+
+              Runtime Meaning
+
+            </div>
+
+            <div className="space-y-2 text-xs opacity-80">
+
+              <div>
+
+                🛰 Traversal graph runtime represents
+                semantic continuation topology
 
               </div>
-            )
-      }
 
-      {/* ================================================================
-      🔥 Raw Traversal Graph
-      ================================================================ */}
+              <div>
 
-      <RawJsonInspector
+                🔗 Graph nodes preserve
+                semantic traversal structure
 
-        title="Raw Traversal Graph"
+              </div>
 
-        description="Raw traversal graph authority payload observability."
+              <div>
 
-        badge="runtime/traversal-graph-raw"
+                ♾ Workflow relations represent
+                continuity-aware graph traversal
 
-        payload={traversalGraph}
+              </div>
 
-      />
+              <div>
 
-    </InspectorSection>
+                ❌ Frontend graph mutation prohibited
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </InspectorSection>
+
+    </InspectorCard>
   )
 }
+

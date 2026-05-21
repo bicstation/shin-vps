@@ -149,7 +149,12 @@ export default function RuntimeInspectorRouter({
   if (
 
     runtimeRole ===
-    'traversal-runtime'
+      'traversal-runtime'
+
+    ||
+
+    runtimeRole ===
+      'continuation-runtime'
 
   ) {
 
