@@ -41,9 +41,7 @@
 ============================================================================ */
 
 import type {
-
   RuntimeMode,
-
 } from './runtimeModes'
 
 /* ============================================================================
@@ -51,16 +49,16 @@ import type {
 ============================================================================ */
 
 import {
-
   fetchPCDetailRuntime,
-
 } from '@/shared/lib/api/django/pc/detail/runtime'
 
 import {
-
   fetchSemanticRankingRuntime,
-
 } from '@/shared/lib/api/django/pc/ranking/fetchSemanticRankingRuntime'
+
+import {
+  resolveTraversalRuntime,
+} from '@/shared/lib/api/django/pc/traversal'
 
 /* ============================================================================
 🔥 Fetch Runtime Options
@@ -375,29 +373,203 @@ export async function fetchRuntime(
     }
   }
 
+  // ts id="jfxaxg"
   /* ==========================================================================
-  🔥 Related Runtime
+  🔥 Traversal Runtime
   ========================================================================== */
 
-  if (mode === 'related') {
+  if (
 
-    return {
+    mode === 'traversal'
+    || mode === 'related'
 
-      success: false,
+  ) {
 
-      runtime_role:
-        'continuation-runtime',
+    try {
 
-      topology_layer:
-        'continuation',
+      // ====================================
+      // Unique ID
+      // ====================================
 
-      observatory:
-        'semantic-traversal-runtime',
+      const uniqueId =
 
-      error:
-        'Related runtime not implemented',
+        options?.uniqueId
+
+      if (!uniqueId) {
+
+        throw new Error(
+
+          'Traversal runtime requires uniqueId'
+
+        )
+      }
+
+      // ====================================
+      // Runtime Pipeline
+      // ====================================
+
+      console.log(
+
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+      )
+
+      console.log(
+
+        '🌌 TRAVERSAL RUNTIME PIPELINE',
+
+        {
+
+          pipeline:
+            'fetchTraversalRuntime',
+
+          uniqueId,
+        }
+      )
+
+      console.log(
+
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+      )
+
+      // ====================================
+      // Fetch Runtime
+      // ====================================
+
+      const traversal =
+
+        await resolveTraversalRuntime(
+
+          uniqueId
+
+        )
+
+      // ====================================
+      // Runtime Debug
+      // ====================================
+
+      console.log(
+
+        '🌌 TRAVERSAL RAW PAYLOAD',
+
+        {
+
+          keys:
+
+            Object.keys(
+              traversal || {}
+            ),
+
+          traversal_edges:
+
+            traversal
+              ?.traversal_edges
+              ?.length,
+
+          traversal_graph:
+
+            traversal
+              ?.traversal_graph
+              ?.length,
+
+          related_products:
+
+            traversal
+              ?.related_products
+              ?.length,
+
+          payload:
+            traversal,
+        }
+      )
+
+      // ====================================
+      // Runtime Success
+      // ====================================
+
+      return {
+
+        success: true,
+
+        endpoint:
+
+          `/api/general/pc-products/${uniqueId}/related/`,
+
+        runtime_role:
+          'continuation-runtime',
+
+        topology_layer:
+          'traversal',
+
+        observatory:
+          'semantic-traversal-runtime',
+
+        fetched_at:
+          new Date().toISOString(),
+
+        duration_ms:
+          Date.now() - startedAt,
+
+        payload: {
+
+          traversal_runtime:
+
+            traversal
+              ?.traversal_runtime,
+
+          continuation_runtime:
+
+            traversal
+              ?.continuation_runtime,
+
+          traversal_edges:
+
+            traversal
+              ?.traversal_edges,
+
+          traversal_graph:
+
+            traversal
+              ?.traversal_graph,
+
+          related_products:
+
+            traversal
+              ?.related_products,
+
+          ...traversal,
+        },
+      }
+
+    } catch (error: any) {
+
+      console.error(
+
+        '🔥 TRAVERSAL RUNTIME FAILURE',
+
+        error
+      )
+
+      return {
+
+        success: false,
+
+        runtime_role:
+          'continuation-runtime',
+
+        topology_layer:
+          'traversal',
+
+        observatory:
+          'semantic-traversal-runtime',
+
+        error:
+
+          error?.message
+          || 'Unknown traversal runtime failure',
+      }
     }
   }
+  
 
   /* ==========================================================================
   🔥 Ranking Runtime
