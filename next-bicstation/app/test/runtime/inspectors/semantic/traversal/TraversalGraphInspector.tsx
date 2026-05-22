@@ -1,19 +1,19 @@
 // ============================================================================
 // FILE:
-// /home/maya/shin-vps/next-bicstation/app/test/runtime/inspectors/semantic/traversal/TraversalGraphInspector.tsx
+// /home/maya/shin-dev/shin-vps/next-bicstation/app/test/runtime/inspectors/semantic/traversal/TraversalGraphInspector.tsx
 // ============================================================================
 
 'use client'
 
 /* ============================================================================
-🔥 Shared
+🔥 Components
 ============================================================================ */
 
-import InspectorCard from '../shared/InspectorCard'
+import InspectorCard
+from '../shared/InspectorCard'
 
-import InspectorSection from '../shared/InspectorSection'
-
-import RuntimeBadge from '../shared/RuntimeBadge'
+import InspectorSection
+from '../shared/InspectorSection'
 
 /* ============================================================================
 🔥 Types
@@ -28,6 +28,22 @@ type TraversalGraphInspectorProps = {
 🔥 Traversal Graph Inspector
 ============================================================================ */
 
+/**
+ * Traversal graph observatory inspector.
+ *
+ * Responsibilities:
+ *
+ * - semantic traversal graph visualization
+ * - workflow topology inspection
+ * - graph continuity observability
+ * - traversal runtime topology introspection
+ *
+ * IMPORTANT:
+ *
+ * Frontend remains observability authority only.
+ *
+ * Backend remains semantic authority.
+ */
 export default function TraversalGraphInspector({
 
   runtime,
@@ -35,7 +51,7 @@ export default function TraversalGraphInspector({
 }: TraversalGraphInspectorProps) {
 
   // ==========================================================================
-  // Traversal Graph
+  // Canonical Traversal Graph
   // ==========================================================================
 
   const traversalGraph =
@@ -63,223 +79,286 @@ export default function TraversalGraphInspector({
   )
 
   // ==========================================================================
+  // Empty State
+  // ==========================================================================
+
+  if (
+    traversalGraph.length === 0
+  ) {
+
+    return (
+
+      <InspectorSection
+
+        title="Traversal Graph Runtime"
+
+        badge="EMPTY"
+      >
+
+        <div
+          className="
+            rounded-3xl
+            border
+            border-zinc-900
+            bg-zinc-950/40
+            p-6
+            text-sm
+            text-zinc-500
+          "
+        >
+
+          No semantic traversal graph available.
+
+        </div>
+
+      </InspectorSection>
+    )
+  }
+
+  // ==========================================================================
   // Render
   // ==========================================================================
 
   return (
 
-    <InspectorCard>
+    <InspectorSection
 
-      <InspectorSection
+      title="Traversal Graph Runtime"
 
-        title="🛰 Traversal Graph Runtime"
+      badge={`${traversalGraph.length} NODES`}
+    >
 
-        badge={
-
-          <RuntimeBadge>
-
-            runtime/graph
-
-          </RuntimeBadge>
-        }
+      <div
+        className="
+          grid
+          gap-4
+        "
       >
 
-        <div className="space-y-4 text-sm">
+        {
+          traversalGraph.map(
+            (
+              node: any,
+              index: number,
+            ) => (
 
-          {/* ============================================================= */}
-          {/* Empty */}
-          {/* ============================================================= */}
+              <InspectorCard
 
-          {
+                key={index}
 
-            traversalGraph.length === 0 && (
+                title={
+                  node?.node_type
+                  || node?.semantic_role
+                  || 'graph-node'
+                }
 
-              <div className="text-xs opacity-60">
-
-                No traversal graph topology detected
-
-              </div>
-            )
-          }
-
-          {/* ============================================================= */}
-          {/* Graph Nodes */}
-          {/* ============================================================= */}
-
-          {
-
-            traversalGraph.map(
-
-              (
-                node: any,
-                index: number
-              ) => (
+                badge={
+                  node?.workflow
+                  || node?.workflow_role
+                  || 'runtime-node'
+                }
+              >
 
                 <div
-
-                  key={index}
-
                   className="
-                    border
-                    rounded-lg
-                    p-4
                     space-y-3
+                    text-sm
                   "
                 >
 
-                  {/* =================================================== */}
-                  {/* Node Header */}
-                  {/* =================================================== */}
+                  {/* ======================================================
+                  Node Type
+                  ====================================================== */}
 
-                  <div className="font-semibold">
+                  <div>
 
-                    Graph Node #{index + 1}
+                    <div
+                      className="
+                        mb-1
+                        text-xs
+                        uppercase
+                        tracking-widest
+                        text-zinc-500
+                      "
+                    >
 
-                  </div>
-
-                  {/* =================================================== */}
-                  {/* Node Fields */}
-                  {/* =================================================== */}
-
-                  <div className="grid grid-cols-2 gap-2">
-
-                    <div className="opacity-70">
-
-                      Node ID
+                      Node Type
 
                     </div>
 
-                    <div>
+                    <div
+                      className="
+                        text-zinc-200
+                      "
+                    >
 
                       {
-
-                        node?.id
-                        || '-'
-                      }
-
-                    </div>
-
-                    <div className="opacity-70">
-
-                      Product Type
-
-                    </div>
-
-                    <div>
-
-                      {
-
-                        node?.type
-                        || '-'
-                      }
-
-                    </div>
-
-                    <div className="opacity-70">
-
-                      Semantic Score
-
-                    </div>
-
-                    <div>
-
-                      {
-
-                        node?.semantic_score
-                        ?? '-'
-                      }
-
-                    </div>
-
-                    <div className="opacity-70">
-
-                      Edge Type
-
-                    </div>
-
-                    <div>
-
-                      {
-
-                        node?.edge_type
-                        || '-'
-                      }
-
-                    </div>
-
-                    <div className="opacity-70">
-
-                      Workflow Relation
-
-                    </div>
-
-                    <div>
-
-                      {
-
-                        node?.workflow_relation
-                        || '-'
+                        node?.node_type
+                        || 'unknown'
                       }
 
                     </div>
 
                   </div>
+
+                  {/* ======================================================
+                  Workflow Role
+                  ====================================================== */}
+
+                  <div>
+
+                    <div
+                      className="
+                        mb-1
+                        text-xs
+                        uppercase
+                        tracking-widest
+                        text-zinc-500
+                      "
+                    >
+
+                      Workflow Role
+
+                    </div>
+
+                    <div
+                      className="
+                        text-zinc-200
+                      "
+                    >
+
+                      {
+                        node?.workflow_role
+                        || node?.workflow
+                        || 'unknown'
+                      }
+
+                    </div>
+
+                  </div>
+
+                  {/* ======================================================
+                  Semantic Role
+                  ====================================================== */}
+
+                  {
+
+                    node?.semantic_role && (
+
+                      <div>
+
+                        <div
+                          className="
+                            mb-1
+                            text-xs
+                            uppercase
+                            tracking-widest
+                            text-zinc-500
+                          "
+                        >
+
+                          Semantic Role
+
+                        </div>
+
+                        <div
+                          className="
+                            text-zinc-300
+                          "
+                        >
+
+                          {
+                            node.semantic_role
+                          }
+
+                        </div>
+
+                      </div>
+                    )
+                  }
+
+                  {/* ======================================================
+                  Workflow Tags
+                  ====================================================== */}
+
+                  {
+
+                    Array.isArray(
+                      node?.workflow_tags
+                    )
+
+                    &&
+
+                    node.workflow_tags.length > 0 && (
+
+                      <div>
+
+                        <div
+                          className="
+                            mb-2
+                            text-xs
+                            uppercase
+                            tracking-widest
+                            text-zinc-500
+                          "
+                        >
+
+                          Workflow Tags
+
+                        </div>
+
+                        <div
+                          className="
+                            flex
+                            flex-wrap
+                            gap-2
+                          "
+                        >
+
+                          {
+                            node.workflow_tags.map(
+                              (
+                                tag: string,
+                                tagIndex: number,
+                              ) => (
+
+                                <div
+                                  key={tagIndex}
+
+                                  className="
+                                    rounded-full
+                                    border
+                                    border-zinc-800
+                                    bg-zinc-900
+                                    px-3
+                                    py-1
+                                    text-xs
+                                    text-zinc-300
+                                  "
+                                >
+
+                                  {tag}
+
+                                </div>
+                              )
+                            )
+                          }
+
+                        </div>
+
+                      </div>
+                    )
+                  }
 
                 </div>
-              )
+
+              </InspectorCard>
             )
-          }
+          )
+        }
 
-          {/* ============================================================= */}
-          {/* Runtime Meaning */}
-          {/* ============================================================= */}
+      </div>
 
-          <div>
-
-            <div className="font-semibold mb-2">
-
-              Runtime Meaning
-
-            </div>
-
-            <div className="space-y-2 text-xs opacity-80">
-
-              <div>
-
-                🛰 Traversal graph runtime represents
-                semantic continuation topology
-
-              </div>
-
-              <div>
-
-                🔗 Graph nodes preserve
-                semantic traversal structure
-
-              </div>
-
-              <div>
-
-                ♾ Workflow relations represent
-                continuity-aware graph traversal
-
-              </div>
-
-              <div>
-
-                ❌ Frontend graph mutation prohibited
-
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      </InspectorSection>
-
-    </InspectorCard>
+    </InspectorSection>
   )
 }
-

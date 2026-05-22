@@ -28,8 +28,14 @@ from './RelatedProducts.module.css'
 
 type Props = {
 
-related: any[]
+  related: any[]
+
+  continuationRuntime?: any
+
+  traversalEdges?: any[]
+
 }
+
 
 /* ============================================================================
 🔥 COMPONENT
@@ -107,7 +113,37 @@ return (
       }
     >
 
-      SEMANTIC CONTINUITY
+      <div>
+
+        SEMANTIC CONTINUITY
+
+      </div>
+
+      {
+
+        traversalEdges?.length > 0 && (
+
+          <div>
+
+            {traversalEdges.length}
+            semantic edges active
+
+          </div>
+        )
+      }
+
+      {
+
+        continuationRuntime
+          ?.workflow_continuity && (
+
+          <div>
+
+            workflow continuity active
+
+          </div>
+        )
+      }
 
     </div>
 
@@ -138,7 +174,6 @@ return (
   {/* ================================================================
   HORIZONTAL SLIDER
   ================================================================ */}
-
   <div
     className={
       styles.relatedProductsSlider
@@ -148,50 +183,102 @@ return (
     {
       relatedProducts.map(
         (
-          relatedProduct: any
-        ) => (
+          relatedProduct: any,
+          index: number,
+        ) => {
 
-          <div
-            key={
-              relatedProduct?.unique_id
-            }
+          // ==========================================================
+          // Traversal Edge
+          // ==========================================================
 
-            className={
-              styles.relatedProductsItem
-            }
-          >
+          const traversalEdge =
 
-            {/* ======================================================
-            EXPLORATION CARD
-            ====================================================== */}
+            Array.isArray(
+              traversalEdges
+            )
 
-            <ProductExplorationCard
-              product={
-                relatedProduct
-              }
-            />
+              ? traversalEdges[index]
 
-            {/* ======================================================
-            RELATION REASONS
-            ====================================================== */}
+              : null
 
-            <ProductRelationReasons
-              product={
-                relatedProduct
+          return (
+
+            <div
+              key={
+                relatedProduct?.unique_id
               }
 
-              related={
-                relatedProducts
+              className={
+                styles.relatedProductsItem
               }
-            />
+            >
 
-          </div>
+              {/* ======================================================
+              EXPLORATION CARD
+              ====================================================== */}
 
-        )
+              <ProductExplorationCard
+                product={
+                  relatedProduct
+                }
+              />
+
+              {/* ======================================================
+              CONTINUATION RUNTIME
+              ====================================================== */}
+
+              {
+
+                traversalEdge && (
+
+                  <div>
+
+                    <div>
+
+                      {
+                        traversalEdge
+                          ?.edge_type
+                      }
+
+                    </div>
+
+                    <div>
+
+                      {
+                        traversalEdge
+                          ?.workflow_relation
+                      }
+
+                    </div>
+
+                  </div>
+                )
+              }
+
+              {/* ======================================================
+              RELATION REASONS
+              ====================================================== */}
+
+              <ProductRelationReasons
+                product={
+                  relatedProduct
+                }
+
+                related={
+                  relatedProducts
+                }
+              />
+
+            </div>
+          )
+        }
       )
     }
 
   </div>
+
+
+
 
 </section>
 

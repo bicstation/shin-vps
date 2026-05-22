@@ -3,132 +3,84 @@
 // /home/maya/shin-dev/shin-vps/next-bicstation/app/test/runtime/runtime/fetchRuntime.ts
 // ============================================================================
 
-/**
- * SHIN CORE LINX
- * Runtime Observatory
- *
- * Canonical Semantic Runtime Adapter
- *
- * IMPORTANT:
- *
- * Runtime Observatory MUST observe:
- *
- * canonical semantic pipelines
- *
- * NOT:
- *
- * custom transport implementations
- *
- * Responsibilities:
- *
- * - semantic runtime observability
- * - canonical pipeline orchestration
- * - runtime transport observation
- * - semantic preservation visibility
- *
- * IMPORTANT:
- *
- * This layer MUST NOT:
- *
- * ❌ directly call fetch()
- * ❌ hardcode API transport
- * ❌ bypass semantic transport authority
- * ❌ mutate semantic meaning
- */
-
 /* ============================================================================
-🔥 Runtime Modes
+🔥 Detail Runtime
 ============================================================================ */
 
-import type {
-  RuntimeMode,
-} from './runtimeModes'
+// import fetchPCDetailRuntime
+// from '@/shared/lib/api/django/pc/detail/fetchPCDetailRuntime'
+
+import fetchPCDetailRuntime
+from '@/shared/lib/api/django/pc/detail/runtime'
+
+
 
 /* ============================================================================
-🔥 Canonical Runtime Pipelines
+🔥 Ranking Runtime
+============================================================================ */
+
+import fetchSemanticRankingRuntime
+from '@/shared/lib/api/django/pc/ranking/fetchSemanticRankingRuntime'
+
+/* ============================================================================
+🔥 Traversal Runtime
+============================================================================ */
+
+import fetchTraversalRuntime
+from '@/shared/lib/api/django/pc/traversal/fetchTraversalRuntime'
+
+/* ============================================================================
+🔥 Sidebar Runtime
 ============================================================================ */
 
 import {
-  fetchPCDetailRuntime,
-} from '@/shared/lib/api/django/pc/detail/runtime'
-
-import {
-  fetchSemanticRankingRuntime,
-} from '@/shared/lib/api/django/pc/ranking/fetchSemanticRankingRuntime'
-
-import {
-  resolveTraversalRuntime,
-} from '@/shared/lib/api/django/pc/traversal'
+  fetchSidebar,
+} from '@/shared/lib/api/django/pc/sidebar/sidebar'
 
 /* ============================================================================
-🔥 Fetch Runtime Options
+🔥 Types
 ============================================================================ */
 
-export type FetchRuntimeOptions = {
+type RuntimeOptions = {
 
   uniqueId?: string
-
-  rankingType?: string
-
-  finderQuery?: string
-
-}
-
-/* ============================================================================
-🔥 Runtime Response
-============================================================================ */
-
-export type RuntimeFetchResponse = {
-
-  success: boolean
-
-  endpoint?: string
-
-  runtime_role?: string
-
-  topology_layer?: string
-
-  observatory?: string
-
-  fetched_at?: string
-
-  duration_ms?: number
-
-  payload?: any
-
-  error?: string
-
 }
 
 /* ============================================================================
 🔥 Fetch Runtime
 ============================================================================ */
 
+/**
+ * Runtime transport authority.
+ *
+ * Responsibilities:
+ *
+ * - runtime mode orchestration
+ * - semantic runtime transport routing
+ * - topology continuity preservation
+ * - observatory-safe runtime delivery
+ *
+ * IMPORTANT:
+ *
+ * Frontend does NOT mutate semantic meaning.
+ *
+ * Backend remains semantic authority.
+ */
 export async function fetchRuntime(
 
-  mode: RuntimeMode,
+  mode: string,
 
-  options?: FetchRuntimeOptions
+  options: RuntimeOptions = {},
 
-): Promise<RuntimeFetchResponse> {
+) {
 
-  // ======================================
-  // Runtime Start
-  // ======================================
-
-  const startedAt = Date.now()
+  // ==========================================================================
+  // Runtime Debug
+  // ==========================================================================
 
   console.log(
 
-    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
-  )
-
-  console.log(
-
-    '🔥 RUNTIME OBSERVATORY FETCH START'
-  )
-
-  console.log(
+    '🔥 FETCH RUNTIME',
 
     {
 
@@ -138,652 +90,112 @@ export async function fetchRuntime(
     }
   )
 
-  console.log(
-
-    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
-  )
-
-  /* ==========================================================================
-  🔥 Detail Runtime
-  ========================================================================== */
+  // ==========================================================================
+  // Detail Runtime
+  // ==========================================================================
 
   if (mode === 'detail') {
 
-    try {
+    return await fetchPCDetailRuntime(
 
-      // ====================================
-      // Unique ID
-      // ====================================
-
-      const uniqueId =
-
-        options?.uniqueId
-        || '35909_1000025-md'
-
-      // ====================================
-      // Runtime Fetch
-      // ====================================
-
-      console.log(
-
-        '🔥 DETAIL RUNTIME PIPELINE',
-
-        {
-
-          pipeline:
-            'fetchPCDetailRuntime',
-
-          uniqueId,
-        }
-      )
-
-      const detail =
-
-        await fetchPCDetailRuntime(
-          uniqueId
-        )
-
-      // ====================================
-      // Runtime Failure
-      // ====================================
-
-      if (!detail) {
-
-        console.error(
-
-          '🔥 DETAIL RUNTIME EMPTY PAYLOAD'
-        )
-
-        return {
-
-          success: false,
-
-          runtime_role:
-            'product-runtime',
-
-          topology_layer:
-            'entity',
-
-          observatory:
-            'semantic-detail-runtime',
-
-          error:
-            'Empty semantic runtime payload',
-        }
-      }
-
-      // ====================================
-      // Debug
-      // ====================================
-
-      console.log(
-
-        '🔥 DETAIL RAW PAYLOAD',
-
-        {
-
-          keys:
-
-            Object.keys(
-              detail || {}
-            ),
-
-          has_semantic_runtime:
-
-            !!detail?.semantic_runtime,
-
-          has_adaptive_runtime:
-
-            !!detail?.adaptive_runtime,
-
-          semantic_labels:
-
-            detail?.semantic_labels,
-
-          grouped_attributes:
-
-            detail?.grouped_attributes,
-
-          workflow_tags:
-
-            detail
-              ?.semantic_runtime
-              ?.workflow_tags,
-
-          payload:
-            detail,
-        }
-      )
-
-      // ====================================
-      // Runtime Success
-      // ====================================
-
-      return {
-
-        success: true,
-
-        endpoint:
-
-          `/api/general/pc-products/${uniqueId}/`,
-
-        runtime_role:
-          'product-runtime',
-
-        topology_layer:
-          'entity',
-
-        observatory:
-          'semantic-detail-runtime',
-
-        fetched_at:
-          new Date().toISOString(),
-
-        duration_ms:
-          Date.now() - startedAt,
-
-        /**
-         * IMPORTANT:
-         *
-         * normalizeRuntimePayload.ts
-         * expects:
-         *
-         * runtime.payload
-         *
-         * Semantic payload MUST remain
-         * preserved here.
-         */
-        payload: {
-
-          // ==================================
-          // Semantic Authority
-          // ==================================
-
-          semantic_schema_version:
-
-            detail
-              ?.semantic_schema_version,
-
-          semantic_runtime:
-
-            detail
-              ?.semantic_runtime,
-
-          adaptive_runtime:
-
-            detail
-              ?.adaptive_runtime,
-
-          semantic_related:
-
-            detail
-              ?.semantic_related,
-
-          semantic_labels:
-
-            detail
-              ?.semantic_labels,
-
-          grouped_attributes:
-
-            detail
-              ?.grouped_attributes,
-
-          workflow_tags:
-
-            detail
-              ?.semantic_runtime
-              ?.workflow_tags,
-
-          // ==================================
-          // Full Payload Preservation
-          // ==================================
-
-          ...detail,
-        },
-      }
-
-    } catch (error: any) {
-
-      console.error(
-
-        '🔥 DETAIL RUNTIME FAILURE',
-
-        error
-      )
-
-      return {
-
-        success: false,
-
-        runtime_role:
-          'product-runtime',
-
-        topology_layer:
-          'entity',
-
-        observatory:
-          'semantic-detail-runtime',
-
-        error:
-
-          error?.message
-          || 'Unknown runtime failure',
-      }
-    }
+      options.uniqueId || ''
+    )
   }
 
-  // ts id="jfxaxg"
-  /* ==========================================================================
-  🔥 Traversal Runtime
-  ========================================================================== */
-
-  if (
-
-    mode === 'traversal'
-    || mode === 'related'
-
-  ) {
-
-    try {
-
-      // ====================================
-      // Unique ID
-      // ====================================
-
-      const uniqueId =
-
-        options?.uniqueId
-
-      if (!uniqueId) {
-
-        throw new Error(
-
-          'Traversal runtime requires uniqueId'
-
-        )
-      }
-
-      // ====================================
-      // Runtime Pipeline
-      // ====================================
-
-      console.log(
-
-        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
-      )
-
-      console.log(
-
-        '🌌 TRAVERSAL RUNTIME PIPELINE',
-
-        {
-
-          pipeline:
-            'fetchTraversalRuntime',
-
-          uniqueId,
-        }
-      )
-
-      console.log(
-
-        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
-      )
-
-      // ====================================
-      // Fetch Runtime
-      // ====================================
-
-      const traversal =
-
-        await resolveTraversalRuntime(
-
-          uniqueId
-
-        )
-
-      // ====================================
-      // Runtime Debug
-      // ====================================
-
-      console.log(
-
-        '🌌 TRAVERSAL RAW PAYLOAD',
-
-        {
-
-          keys:
-
-            Object.keys(
-              traversal || {}
-            ),
-
-          traversal_edges:
-
-            traversal
-              ?.traversal_edges
-              ?.length,
-
-          traversal_graph:
-
-            traversal
-              ?.traversal_graph
-              ?.length,
-
-          related_products:
-
-            traversal
-              ?.related_products
-              ?.length,
-
-          payload:
-            traversal,
-        }
-      )
-
-      // ====================================
-      // Runtime Success
-      // ====================================
-
-      return {
-
-        success: true,
-
-        endpoint:
-
-          `/api/general/pc-products/${uniqueId}/related/`,
-
-        runtime_role:
-          'continuation-runtime',
-
-        topology_layer:
-          'traversal',
-
-        observatory:
-          'semantic-traversal-runtime',
-
-        fetched_at:
-          new Date().toISOString(),
-
-        duration_ms:
-          Date.now() - startedAt,
-
-        payload: {
-
-          traversal_runtime:
-
-            traversal
-              ?.traversal_runtime,
-
-          continuation_runtime:
-
-            traversal
-              ?.continuation_runtime,
-
-          traversal_edges:
-
-            traversal
-              ?.traversal_edges,
-
-          traversal_graph:
-
-            traversal
-              ?.traversal_graph,
-
-          related_products:
-
-            traversal
-              ?.related_products,
-
-          ...traversal,
-        },
-      }
-
-    } catch (error: any) {
-
-      console.error(
-
-        '🔥 TRAVERSAL RUNTIME FAILURE',
-
-        error
-      )
-
-      return {
-
-        success: false,
-
-        runtime_role:
-          'continuation-runtime',
-
-        topology_layer:
-          'traversal',
-
-        observatory:
-          'semantic-traversal-runtime',
-
-        error:
-
-          error?.message
-          || 'Unknown traversal runtime failure',
-      }
-    }
-  }
-  
-
-  /* ==========================================================================
-  🔥 Ranking Runtime
-  ========================================================================== */
+  // ==========================================================================
+  // Ranking Runtime
+  // ==========================================================================
 
   if (mode === 'ranking') {
 
-    try {
+    console.log(
 
-      // ====================================
-      // Ranking Type
-      // ====================================
+      '🔥 RANKING RUNTIME PIPELINE',
 
-      const rankingType =
+      {
 
-        options?.rankingType
-        || 'score'
+        pipeline:
+          'fetchSemanticRankingRuntime',
 
-      // ====================================
-      // Runtime Pipeline
-      // ====================================
-
-      console.log(
-
-        '🔥 RANKING RUNTIME PIPELINE',
-
-        {
-
-          pipeline:
-            'fetchSemanticRankingRuntime',
-
-          rankingType,
-        }
-      )
-
-      // ====================================
-      // Fetch Runtime
-      // ====================================
-
-      const ranking =
-
-        await fetchSemanticRankingRuntime(
-          rankingType
-        )
-
-      // ====================================
-      // Empty Guard
-      // ====================================
-
-      if (!ranking) {
-
-        console.error(
-
-          '🔥 RANKING RUNTIME EMPTY PAYLOAD'
-        )
-
-        return {
-
-          success: false,
-
-          runtime_role:
-            'ranking-runtime',
-
-          topology_layer:
-            'ranking',
-
-          observatory:
-            'semantic-ranking-runtime',
-
-          error:
-            'Empty ranking runtime payload',
-        }
+        rankingType:
+          'score',
       }
+    )
 
-      // ====================================
-      // Runtime Debug
-      // ====================================
+    return await fetchSemanticRankingRuntime(
 
-      console.log(
-
-        '🔥 RANKING RAW PAYLOAD',
-
-        {
-
-          rankingType,
-
-          keys:
-
-            Object.keys(
-              ranking || {}
-            ),
-
-          has_semantic_runtime:
-
-            !!ranking?.semantic_runtime,
-
-          semantic_labels:
-
-            ranking?.semantic_labels,
-
-          payload:
-            ranking,
-        }
-      )
-
-      // ====================================
-      // Runtime Success
-      // ====================================
-
-      return {
-
-        success: true,
-
-        endpoint:
-
-          `/api/general/pc-products/ranking/${rankingType}/`,
-
-        runtime_role:
-          'ranking-runtime',
-
-        topology_layer:
-          'ranking',
-
-        observatory:
-          'semantic-ranking-runtime',
-
-        fetched_at:
-          new Date().toISOString(),
-
-        duration_ms:
-          Date.now() - startedAt,
-
-        payload: {
-
-          semantic_runtime:
-
-            ranking?.semantic_runtime,
-
-          semantic_labels:
-
-            ranking?.semantic_labels,
-
-          render_hints:
-
-            ranking?.render_hints,
-
-          ranking:
-
-            ranking?.ranking,
-
-          seo:
-
-            ranking?.seo,
-
-          faq:
-
-            ranking?.faq,
-
-          breadcrumbs:
-
-            ranking?.breadcrumbs,
-
-          schemas:
-
-            ranking?.schemas,
-
-          ui:
-
-            ranking?.ui,
-
-          ...ranking,
-        },
-      }
-
-    } catch (error: any) {
-
-      console.error(
-
-        '🔥 RANKING RUNTIME FAILURE',
-
-        error
-      )
-
-      return {
-
-        success: false,
-
-        runtime_role:
-          'ranking-runtime',
-
-        topology_layer:
-          'ranking',
-
-        observatory:
-          'semantic-ranking-runtime',
-
-        error:
-
-          error?.message
-          || 'Unknown ranking runtime failure',
-      }
-    }
+      'score'
+    )
   }
 
+  // ==========================================================================
+  // Traversal Runtime
+  // ==========================================================================
 
-  /* ==========================================================================
-  🔥 Sidebar Runtime
-  ========================================================================== */
+  if (
+
+    mode === 'related'
+
+    ||
+
+    mode === 'traversal'
+
+  ) {
+
+    console.log(
+
+      '🌌 TRAVERSAL RUNTIME PIPELINE',
+
+      {
+
+        pipeline:
+          'fetchTraversalRuntime',
+
+        uniqueId:
+          options.uniqueId,
+      }
+    )
+
+    return await fetchTraversalRuntime(
+
+      options.uniqueId || ''
+    )
+  }
+
+  // ==========================================================================
+  // Sidebar Runtime
+  // ==========================================================================
 
   if (mode === 'sidebar') {
 
+    console.log(
+
+      '📦 SIDEBAR RUNTIME PIPELINE',
+
+      {
+
+        pipeline:
+          'fetchSidebar',
+
+        topology:
+          'navigation-runtime',
+      }
+    )
+
+    const sidebar =
+
+      await fetchSidebar()
+
+    console.log(
+
+      '📦 SIDEBAR RUNTIME RESPONSE',
+
+      sidebar
+    )
+
     return {
 
-      success: false,
+      success: true,
 
       runtime_role:
         'sidebar-runtime',
@@ -794,66 +206,23 @@ export async function fetchRuntime(
       observatory:
         'semantic-sidebar-runtime',
 
-      error:
-        'Sidebar runtime not implemented',
+      semantic_authority:
+        'backend',
+
+      payload:
+        sidebar,
+
+      sidebar,
     }
   }
 
-  /* ==========================================================================
-  🔥 Discovery Runtime
-  ========================================================================== */
+  // ==========================================================================
+  // Unknown Runtime
+  // ==========================================================================
 
-  if (mode === 'discovery') {
+  console.warn(
 
-    return {
-
-      success: false,
-
-      runtime_role:
-        'discovery-runtime',
-
-      topology_layer:
-        'discovery',
-
-      observatory:
-        'semantic-discovery-runtime',
-
-      error:
-        'Discovery runtime not implemented',
-    }
-  }
-
-  /* ==========================================================================
-  🔥 Finder Runtime
-  ========================================================================== */
-
-  if (mode === 'finder') {
-
-    return {
-
-      success: false,
-
-      runtime_role:
-        'finder-runtime',
-
-      topology_layer:
-        'intent-routing',
-
-      observatory:
-        'semantic-finder-runtime',
-
-      error:
-        'Finder runtime not implemented',
-    }
-  }
-
-  /* ==========================================================================
-  🔥 Unknown Runtime
-  ========================================================================== */
-
-  console.error(
-
-    '🔥 UNKNOWN RUNTIME MODE',
+    '⚠ UNKNOWN RUNTIME MODE',
 
     {
 
@@ -875,7 +244,7 @@ export async function fetchRuntime(
       'runtime-observatory',
 
     error:
-      'Unknown runtime mode',
+      `Unknown runtime mode: ${mode}`,
   }
 }
 

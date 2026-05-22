@@ -1,577 +1,255 @@
 // ============================================================================
 // FILE:
-// /home/maya/shin-dev/shin-vps/next-bicstation/app/test/runtime/inspectors/ContinuationInspector.tsx
+// /home/maya/shin-dev/shin-vps/next-bicstation/app/test/runtime/inspectors/traversal/ContinuationInspector.tsx
 // ============================================================================
 
 'use client'
 
-/**
- * SHIN CORE LINX
- * Continuation Runtime Inspector
- *
- * IMPORTANT:
- * This component represents:
- *
- * continuation runtime observability
- *
- * NOT:
- *
- * continuation authority
- *
- * Backend remains:
- *
- * - continuation authority
- * - traversal authority
- * - graph authority
- * - semantic authority
- *
- * Responsibilities:
- * - continuation observability
- * - exploration continuity rendering
- * - workflow continuation visualization
- * - semantic journey observability
- *
- * IMPORTANT:
- * This component MUST NOT:
- *
- * ❌ infer continuation meaning
- * ❌ generate traversal logic
- * ❌ mutate workflow transitions
- * ❌ rewrite graph semantics
- */
-
 /* ============================================================================
-🔥 Imports
+🔥 Components
 ============================================================================ */
 
-import type {
+import InspectorCard
+from '../semantic/shared/InspectorCard'
 
-  TraversalInspectorProps,
-
-  SemanticRelatedNode,
-
-} from '../contracts/traversal'
+import InspectorSection
+from '../semantic/shared/InspectorSection'
 
 /* ============================================================================
-🔥 Meta Card
+🔥 Types
 ============================================================================ */
 
-function MetaCard({
+type ContinuationInspectorProps = {
 
-  label,
-
-  value,
-
-}: {
-
-  label: string
-
-  value: any
-
-}) {
-
-  return (
-
-    <div className="rounded-xl border border-zinc-800 bg-black p-5">
-
-      <div className="text-xs uppercase tracking-wide text-zinc-500">
-
-        {label}
-
-      </div>
-
-      <div className="mt-3 break-all text-sm font-medium text-zinc-100">
-
-        {
-
-          typeof value === 'boolean'
-
-            ? (
-
-                value
-                  ? 'TRUE'
-                  : 'FALSE'
-              )
-
-            : (
-
-                String(
-                  value ?? '-'
-                )
-              )
-        }
-
-      </div>
-
-    </div>
-  )
-}
-
-/* ============================================================================
-🔥 Continuation Node Card
-============================================================================ */
-
-function ContinuationNodeCard({
-
-  node,
-
-  index,
-
-}: {
-
-  node: SemanticRelatedNode
-
-  index: number
-
-}) {
-
-  const edge = node?.edge
-
-  return (
-
-    <div className="rounded-2xl border border-zinc-800 bg-black p-6">
-
-      {/* ================================================================
-      🔥 Header
-      ================================================================ */}
-
-      <div className="flex items-start justify-between gap-4">
-
-        <div>
-
-          <div className="text-xs uppercase tracking-wide text-sky-400">
-
-            Continuation Node
-
-          </div>
-
-          <h3 className="mt-3 text-lg font-bold text-zinc-100">
-
-            {
-
-              node?.title
-              || node?.unique_id
-              || `node-${index + 1}`
-            }
-
-          </h3>
-
-          <div className="mt-2 text-xs text-zinc-500">
-
-            {
-
-              node?.unique_id
-              || 'unknown-node'
-            }
-
-          </div>
-
-        </div>
-
-        <div className="rounded-full border border-zinc-800 bg-zinc-950 px-3 py-1 text-xs text-zinc-400">
-
-          continuation-{index + 1}
-
-        </div>
-
-      </div>
-
-      {/* ================================================================
-      🔥 Meta Grid
-      ================================================================ */}
-
-      <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-
-        <MetaCard
-
-          label="Edge Type"
-
-          value={
-            edge?.edge_type
-          }
-
-        />
-
-        <MetaCard
-
-          label="Workflow Relation"
-
-          value={
-            edge?.workflow_relation
-          }
-
-        />
-
-        <MetaCard
-
-          label="Similarity Score"
-
-          value={
-            edge?.similarity_score
-          }
-
-        />
-
-        <MetaCard
-
-          label="Traversal Depth"
-
-          value={
-            edge?.traversal_depth
-          }
-
-        />
-
-      </div>
-
-      {/* ================================================================
-      🔥 Continuity Hint
-      ================================================================ */}
-
-      <div className="mt-6 rounded-xl border border-zinc-800 bg-zinc-950 p-5">
-
-        <div className="text-xs uppercase tracking-wide text-zinc-500">
-
-          Continuity Hint
-
-        </div>
-
-        <div className="mt-3 text-sm leading-relaxed text-zinc-300">
-
-          {
-
-            edge?.continuity_hint
-            || 'No continuity hint'
-          }
-
-        </div>
-
-      </div>
-
-      {/* ================================================================
-      🔥 Workflow Tags
-      ================================================================ */}
-
-      <div className="mt-6 rounded-xl border border-zinc-800 bg-zinc-950 p-5">
-
-        <div className="text-xs uppercase tracking-wide text-zinc-500">
-
-          Workflow Tags
-
-        </div>
-
-        <div className="mt-4 flex flex-wrap gap-2">
-
-          {
-
-            node?.workflow_tags
-              ?.length
-
-              ? (
-
-                  node.workflow_tags.map(
-
-                    (
-                      tag,
-                      tagIndex
-                    ) => (
-
-                      <div
-
-                        key={tagIndex}
-
-                        className="rounded-full border border-zinc-800 bg-black px-3 py-1 text-xs text-zinc-300"
-                      >
-
-                        {tag}
-
-                      </div>
-                    )
-                  )
-                )
-
-              : (
-
-                  <div className="text-sm text-zinc-500">
-
-                    No workflow tags
-
-                  </div>
-                )
-          }
-
-        </div>
-
-      </div>
-
-      {/* ================================================================
-      🔥 Matched Attributes
-      ================================================================ */}
-
-      <div className="mt-6 rounded-xl border border-zinc-800 bg-zinc-950 p-5">
-
-        <div className="text-xs uppercase tracking-wide text-zinc-500">
-
-          Matched Attributes
-
-        </div>
-
-        <div className="mt-4 flex flex-wrap gap-2">
-
-          {
-
-            edge?.matched_attributes
-              ?.length
-
-              ? (
-
-                  edge.matched_attributes.map(
-
-                    (
-                      attribute,
-                      attributeIndex
-                    ) => (
-
-                      <div
-
-                        key={attributeIndex}
-
-                        className="rounded-full border border-zinc-800 bg-black px-3 py-1 text-xs text-zinc-300"
-                      >
-
-                        {attribute}
-
-                      </div>
-                    )
-                  )
-                )
-
-              : (
-
-                  <div className="text-sm text-zinc-500">
-
-                    No matched attributes
-
-                  </div>
-                )
-          }
-
-        </div>
-
-      </div>
-
-    </div>
-  )
+  runtime?: any
 }
 
 /* ============================================================================
 🔥 Continuation Inspector
 ============================================================================ */
 
+/**
+ * Continuation runtime observatory inspector.
+ *
+ * Responsibilities:
+ *
+ * - workflow continuity inspection
+ * - semantic continuity observability
+ * - graph continuity verification
+ * - continuation runtime introspection
+ *
+ * IMPORTANT:
+ *
+ * Frontend remains observability authority only.
+ *
+ * Backend remains semantic authority.
+ */
 export default function ContinuationInspector({
 
   runtime,
 
-}: TraversalInspectorProps) {
+}: ContinuationInspectorProps) {
 
-  /* ==========================================================================
-  🔥 Semantic Related
-  ========================================================================== */
+  // ==========================================================================
+  // Canonical Continuation Runtime
+  // ==========================================================================
 
-  const semanticRelated =
+  const continuationRuntime =
 
-    runtime
-      ?.payload
-      ?.semantic_related
+    runtime?.workflow_runtime
 
-      || []
+    || runtime?.continuation_runtime
 
-  /* ==========================================================================
-  🔥 Runtime Safety
-  ========================================================================== */
+    || {}
 
-  if (!semanticRelated.length) {
+  // ==========================================================================
+  // Runtime Flags
+  // ==========================================================================
+
+  const workflowContinuity =
+
+    continuationRuntime
+      ?.workflow_continuity
+
+  const semanticContinuity =
+
+    continuationRuntime
+      ?.semantic_continuity
+
+  const graphContinuity =
+
+    continuationRuntime
+      ?.graph_continuity
+
+  // ==========================================================================
+  // Runtime Debug
+  // ==========================================================================
+
+  console.log(
+
+    '♾ TRAVERSAL CONTINUITY INSPECTOR',
+
+    {
+
+      workflowContinuity,
+
+      semanticContinuity,
+
+      graphContinuity,
+    }
+  )
+
+  // ==========================================================================
+  // Empty State
+  // ==========================================================================
+
+  if (
+    !workflowContinuity
+    &&
+    !semanticContinuity
+    &&
+    !graphContinuity
+  ) {
 
     return (
 
-      <section className="rounded-xl border border-zinc-800 bg-zinc-950 p-6">
+      <InspectorSection
 
-        <h2 className="text-lg font-bold">
+        title="Continuation Runtime"
 
-          🌌 Continuation Inspector
+        badge="EMPTY"
+      >
 
-        </h2>
-
-        <p className="mt-4 text-sm text-zinc-500">
+        <div
+          className="
+            rounded-3xl
+            border
+            border-zinc-900
+            bg-zinc-950/40
+            p-6
+            text-sm
+            text-zinc-500
+          "
+        >
 
           No continuation runtime available.
 
-        </p>
+        </div>
 
-      </section>
+      </InspectorSection>
     )
   }
 
-  /* ==========================================================================
-  🔥 Continuation Observatory
-  ========================================================================== */
+  // ==========================================================================
+  // Render
+  // ==========================================================================
 
   return (
 
-    <section className="rounded-[28px] border border-zinc-800 bg-zinc-950 p-8">
+    <InspectorSection
 
-      {/* ================================================================
-      🔥 Header
-      ================================================================ */}
+      title="Continuation Runtime"
 
-      <div className="mb-8">
+      badge="ACTIVE"
+    >
 
-        <div className="text-xs uppercase tracking-[0.18em] text-sky-400">
+      <div
+        className="
+          grid
+          gap-4
+          md:grid-cols-3
+        "
+      >
 
-          Continuation Observatory
+        {/* ==============================================================
+        Workflow Continuity
+        ============================================================== */}
 
-        </div>
+        <InspectorCard
 
-        <h2 className="mt-4 text-3xl font-black text-white">
+          title="Workflow Continuity"
 
-          Continuation Inspector
-
-        </h2>
-
-        <p className="mt-4 max-w-4xl text-sm leading-relaxed text-zinc-400">
-
-          semantic continuation ・
-          exploration continuity ・
-          workflow traversal ・
-          next-node orchestration
-
-        </p>
-
-      </div>
-
-      {/* ================================================================
-      🔥 Observatory Grid
-      ================================================================ */}
-
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-
-        <MetaCard
-
-          label="Continuation Nodes"
-
-          value={
-            semanticRelated.length
+          badge={
+            workflowContinuity
+              ? 'TRUE'
+              : 'FALSE'
           }
+        >
 
-        />
+          <div
+            className="
+              text-sm
+              text-zinc-300
+            "
+          >
 
-        <MetaCard
+            Workflow traversal continuity
+            across semantic runtime graph.
 
-          label="Continuation Runtime"
+          </div>
 
-          value={true}
+        </InspectorCard>
 
-        />
+        {/* ==============================================================
+        Semantic Continuity
+        ============================================================== */}
 
-        <MetaCard
+        <InspectorCard
 
-          label="Exploration Continuity"
+          title="Semantic Continuity"
 
-          value={true}
+          badge={
+            semanticContinuity
+              ? 'TRUE'
+              : 'FALSE'
+          }
+        >
 
-        />
+          <div
+            className="
+              text-sm
+              text-zinc-300
+            "
+          >
 
-        <MetaCard
+            Semantic meaning continuity
+            preserved across traversal runtime.
 
-          label="Semantic Traversal"
+          </div>
 
-          value={true}
+        </InspectorCard>
 
-        />
+        {/* ==============================================================
+        Graph Continuity
+        ============================================================== */}
+
+        <InspectorCard
+
+          title="Graph Continuity"
+
+          badge={
+            graphContinuity
+              ? 'TRUE'
+              : 'FALSE'
+          }
+        >
+
+          <div
+            className="
+              text-sm
+              text-zinc-300
+            "
+          >
+
+            Traversal graph continuity
+            active across runtime topology.
+
+          </div>
+
+        </InspectorCard>
 
       </div>
 
-      {/* ================================================================
-      🔥 Continuation Timeline
-      ================================================================ */}
-
-      <div className="mt-10 space-y-6">
-
-        {
-
-          semanticRelated.map(
-
-            (
-              node,
-              index
-            ) => (
-
-              <ContinuationNodeCard
-
-                key={
-                  node?.unique_id
-                  || index
-                }
-
-                node={node}
-
-                index={index}
-
-              />
-            )
-          )
-        }
-
-      </div>
-
-      {/* ================================================================
-      🔥 Runtime Meaning
-      ================================================================ */}
-
-      <div className="mt-10 rounded-2xl border border-zinc-800 bg-black p-6">
-
-        <div className="text-xs uppercase tracking-wide text-zinc-500">
-
-          Continuation Runtime Meaning
-
-        </div>
-
-        <div className="mt-5 space-y-3 text-sm text-zinc-300">
-
-          <div>
-
-            🌌 Continuation runtime represents exploration continuity
-
-          </div>
-
-          <div>
-
-            🔗 Workflow relations represent semantic evolution
-
-          </div>
-
-          <div>
-
-            🛰 Traversal edges represent continuation topology
-
-          </div>
-
-          <div>
-
-            🧠 Similarity scores represent continuity strength
-
-          </div>
-
-          <div>
-
-            ❌ Continuation inference prohibited
-
-          </div>
-
-        </div>
-
-      </div>
-
-    </section>
+    </InspectorSection>
   )
 }

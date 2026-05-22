@@ -84,19 +84,57 @@ export function normalizeRanking(
   // Ranking Results
   // ======================================
 
+  const runtimePayload = payload as any
+
   const rankingResults =
 
     Array.isArray(
-      payload?.ranking?.results
+      runtimePayload?.ranking?.results
     )
 
-      ? payload.ranking.results
+      ? runtimePayload.ranking.results
 
-      : []
+    : Array.isArray(
+        runtimePayload?.results
+      )
 
-  // ======================================
-  // Minimal Semantic Normalize
-  // ======================================
+      ? runtimePayload.results
+
+    : Array.isArray(
+        runtimePayload?.products
+      )
+
+      ? runtimePayload.products
+
+    : Array.isArray(
+        runtimePayload?.ranking_products
+      )
+
+      ? runtimePayload.ranking_products
+
+    : Array.isArray(
+        runtimePayload?.items
+      )
+
+      ? runtimePayload.items
+
+    : []
+
+  const total =
+
+    runtimePayload?.ranking?.total
+
+    ?? runtimePayload?.count
+
+    ?? runtimePayload?.total
+
+    ?? rankingResults.length
+
+    ?? 0
+
+    // ======================================
+    // Minimal Semantic Normalize
+    // ======================================
 
   return {
 

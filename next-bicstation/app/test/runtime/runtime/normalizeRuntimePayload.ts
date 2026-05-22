@@ -1,6 +1,6 @@
 // ============================================================================
 // FILE:
-// /home/maya/shin-vps/next-bicstation/app/test/runtime/runtime/normalizeRuntimePayload.ts
+// /home/maya/shin-dev/shin-vps/next-bicstation/app/test/runtime/runtime/normalizeRuntimePayload.ts
 // ============================================================================
 
 /* ============================================================================
@@ -13,16 +13,16 @@
  * Responsibilities:
  *
  * - runtime transport normalization
- * - payload observability
- * - semantic runtime flattening
+ * - semantic payload flattening
  * - traversal continuity preservation
- * - inspector-safe runtime topology
+ * - inspector-safe runtime composition
+ * - observability-safe payload exposure
  *
  * IMPORTANT:
  *
  * Backend remains semantic authority.
  *
- * Frontend MUST NOT mutate semantic meaning.
+ * Frontend acts as runtime adapter layer only.
  */
 
 export function normalizeRuntimePayload(
@@ -47,93 +47,68 @@ export function normalizeRuntimePayload(
       : {}
 
   // ==========================================================================
+  // Canonical Runtime Payload
+  // ==========================================================================
+
+  /**
+   * IMPORTANT:
+   *
+   * Some runtime pipelines return:
+   *
+   * payload.payload
+   *
+   * while others return:
+   *
+   * raw_payload.payload
+   *
+   * This canonical adapter layer normalizes both.
+   */
+
+  const runtimePayload =
+
+    safePayload?.payload
+
+    || safePayload?.raw_payload?.payload
+
+    || safePayload
+
+  // ==========================================================================
   // Runtime Metadata
   // ==========================================================================
 
   const payloadKeys =
 
     Object.keys(
-      safePayload
+      runtimePayload || {}
     )
 
   const payloadSize =
 
     JSON.stringify(
-      safePayload
+      runtimePayload || {}
     ).length
 
   // ==========================================================================
-  // Canonical Runtime Role
+  // Canonical Runtime Identity
   // ==========================================================================
 
   const runtimeRole =
 
-    safePayload?.runtime_role
-
-    || safePayload?.semantic_runtime
-
+    runtimePayload?.runtime_role
+    || safePayload?.runtime_role
     || 'unknown-runtime'
-
-  // ==========================================================================
-  // Canonical Topology Layer
-  // ==========================================================================
 
   const topologyLayer =
 
-    safePayload?.topology_layer
-
-    || (
-
-      runtimeRole ===
-      'continuation-runtime'
-
-        ? 'traversal'
-
-        : runtimeRole ===
-          'ranking-runtime'
-
-            ? 'ranking'
-
-            : runtimeRole ===
-              'sidebar-runtime'
-
-                ? 'navigation'
-
-                : runtimeRole ===
-                  'finder-runtime'
-
-                    ? 'intent-routing'
-
-                    : 'entity'
-    )
-
-  // ==========================================================================
-  // Observatory Layer
-  // ==========================================================================
+    runtimePayload?.topology_layer
+    || safePayload?.topology_layer
+    || 'entity'
 
   const observatory =
 
-    safePayload?.observatory
-
-    || (
-
-      runtimeRole ===
-      'continuation-runtime'
-
-        ? 'semantic-traversal-runtime'
-
-        : runtimeRole ===
-          'ranking-runtime'
-
-            ? 'semantic-ranking-runtime'
-
-            : runtimeRole ===
-              'finder-runtime'
-
-                ? 'semantic-finder-runtime'
-
-                : 'semantic-runtime-observatory'
-    )
+    runtimePayload?.observatory
+    || safePayload?.observatory
+    || 'semantic-runtime-observatory'
 
   // ==========================================================================
   // Runtime Flags
@@ -141,22 +116,22 @@ export function normalizeRuntimePayload(
 
   const hasSemanticRuntime =
 
-    !!safePayload?.semantic_runtime
+    !!runtimePayload?.semantic_runtime
 
   const hasAdaptiveRuntime =
 
-    !!safePayload?.adaptive_runtime
+    !!runtimePayload?.adaptive_runtime
 
   const hasTraversalEdges =
 
     Array.isArray(
-      safePayload?.traversal_edges
+      runtimePayload?.traversal_edges
     )
 
   const hasTraversalGraph =
 
     Array.isArray(
-      safePayload?.traversal_graph
+      runtimePayload?.traversal_graph
     )
 
   // ==========================================================================
@@ -189,6 +164,18 @@ export function normalizeRuntimePayload(
       hasTraversalEdges,
 
       hasTraversalGraph,
+
+      traversalEdges:
+
+        runtimePayload
+          ?.traversal_edges
+          ?.length || 0,
+
+      traversalGraph:
+
+        runtimePayload
+          ?.traversal_graph
+          ?.length || 0,
     }
   )
 
@@ -227,7 +214,7 @@ export function normalizeRuntimePayload(
 
     payload_type:
 
-      typeof safePayload,
+      typeof runtimePayload,
 
     payload_keys:
 
@@ -249,17 +236,14 @@ export function normalizeRuntimePayload(
 
     semantic_schema_version:
 
-      safePayload
+      runtimePayload
         ?.semantic_schema_version
-
-      || safePayload
-        ?.semantic_runtime
 
       || null,
 
     semantic_authority:
 
-      safePayload
+      runtimePayload
         ?.semantic_authority
 
       || 'backend',
@@ -285,92 +269,102 @@ export function normalizeRuntimePayload(
       hasTraversalGraph,
 
     // ==============================================================
-    // Canonical Runtime Flattening
+    // Semantic Runtime
     // ==============================================================
 
     semantic_runtime:
 
-      safePayload
+      runtimePayload
         ?.semantic_runtime
+
+      || runtimePayload
+        ?.traversal_runtime
 
       || null,
 
     adaptive_runtime:
 
-      safePayload
+      runtimePayload
         ?.adaptive_runtime
 
       || null,
 
     workflow_runtime:
 
-      safePayload
+      runtimePayload
         ?.workflow_runtime
+
+      || runtimePayload
+        ?.continuation_runtime
 
       || null,
 
     semantic_labels:
 
-      safePayload
+      runtimePayload
         ?.semantic_labels
 
       || [],
 
     semantic_graph:
 
-      safePayload
+      runtimePayload
         ?.semantic_graph
 
       || [],
 
     grouped_attributes:
 
-      safePayload
+      runtimePayload
         ?.grouped_attributes
 
       || {},
 
     frontend_contract:
 
-      safePayload
+      runtimePayload
         ?.frontend_contract
 
       || null,
 
     runtime_profile:
 
-      safePayload
+      runtimePayload
         ?.runtime_profile
 
       || null,
 
+    // ==============================================================
+    // Traversal Runtime
+    // ==============================================================
+
     traversal_edges:
 
       Array.isArray(
-        safePayload?.traversal_edges
+        runtimePayload?.traversal_edges
       )
 
-        ? safePayload.traversal_edges
+        ? runtimePayload.traversal_edges
 
         : [],
 
     traversal_graph:
 
       Array.isArray(
-        safePayload?.traversal_graph
+        runtimePayload?.traversal_graph
       )
 
-        ? safePayload.traversal_graph
+        ? runtimePayload.traversal_graph
 
         : [],
 
     related_products:
 
       Array.isArray(
-        safePayload?.related_products
+        runtimePayload?.related_products
       )
 
-        ? safePayload.related_products
+        ? runtimePayload.related_products
 
         : [],
 
@@ -383,4 +377,3 @@ export function normalizeRuntimePayload(
       safePayload,
   }
 }
-

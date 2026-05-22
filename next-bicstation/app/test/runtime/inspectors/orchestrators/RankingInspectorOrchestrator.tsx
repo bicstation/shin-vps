@@ -5,49 +5,15 @@
 
 'use client'
 
-/**
- * ============================================================================
- * SHIN CORE LINX
- * Ranking Inspector Orchestrator
- * ============================================================================
- *
- * PURPOSE:
- *
- * Ranking runtime observability orchestration
- *
- * IMPORTANT:
- *
- * This orchestrator exists for:
- *
- * ranking-runtime inspector composition
- *
- * NOT:
- *
- * payload normalization
- * semantic mutation
- * ranking transformation
- *
- * ============================================================================
- */
-
 /* ============================================================================
-🔥 Ranking Inspectors
+🔥 Components
 ============================================================================ */
 
-import RankingRuntimeInspector
-from '../semantic/ranking/RankingRuntimeInspector'
-
-import RankingAuthorityInspector
-from '../semantic/ranking/RankingAuthorityInspector'
-
-import RankingCollectionInspector
-from '../semantic/ranking/RankingCollectionInspector'
-
-import RankingPayloadInspector
-from '../semantic/ranking/RankingPayloadInspector'
+import RuntimeInspectorStack
+from '../orchestration/RuntimeInspectorStack'
 
 /* ============================================================================
-🔥 Props
+🔥 Types
 ============================================================================ */
 
 type RankingInspectorOrchestratorProps = {
@@ -59,66 +25,79 @@ type RankingInspectorOrchestratorProps = {
 🔥 Ranking Inspector Orchestrator
 ============================================================================ */
 
+/**
+ * Ranking runtime observatory orchestrator.
+ *
+ * Responsibilities:
+ *
+ * - ranking runtime orchestration
+ * - semantic ranking observability
+ * - ranking collection continuity
+ * - runtime-safe inspector composition
+ *
+ * IMPORTANT:
+ *
+ * Frontend remains observability authority only.
+ *
+ * Backend remains semantic authority.
+ */
 export default function RankingInspectorOrchestrator({
 
   runtime,
 
 }: RankingInspectorOrchestratorProps) {
 
-  /* ==========================================================================
-  🔥 Payload
-  ========================================================================== */
+  // ==========================================================================
+  // Runtime Payload Observability
+  // ==========================================================================
 
-  const payload =
+  const runtimePayload =
 
     runtime?.payload
-    || {}
 
-  /* ==========================================================================
-  🔥 Ranking
-  ========================================================================== */
+    ||
 
-  const ranking =
+    runtime?.raw_payload?.payload
 
-    payload?.ranking
-    || {}
+    ||
 
-  /* ==========================================================================
-  🔥 Ranking Results
-  ========================================================================== */
+    runtime
 
-  const rankingResults =
+    ||
 
-    Array.isArray(
-      ranking?.results
-    )
+    null
 
-      ? ranking.results
+  // ==========================================================================
+  // Runtime Payload Status
+  // ==========================================================================
 
-      : []
+  const hasRuntimePayload =
 
-  /* ==========================================================================
-  🔥 Runtime Metadata
-  ========================================================================== */
+    !!runtimePayload
 
-  const rankingMode =
+  // ==========================================================================
+  // Ranking Collection
+  // ==========================================================================
 
-    payload?.ranking_mode
-    || '-'
+  const rankingProducts =
 
-  const semanticSlug =
+    runtimePayload?.ranking_products
 
-    payload?.semantic_slug
-    || '-'
+    ||
 
-  const semanticRuntime =
+    runtimePayload?.products
 
-    payload?.semantic_runtime
-    || '-'
+    ||
 
-  /* ==========================================================================
-  🔥 Runtime Debug
-  ========================================================================== */
+    runtimePayload?.rankingProducts
+
+    ||
+
+    []
+
+  // ==========================================================================
+  // Runtime Debug
+  // ==========================================================================
 
   console.log(
 
@@ -127,79 +106,181 @@ export default function RankingInspectorOrchestrator({
     {
 
       runtimeRole:
-
         runtime?.runtime_role,
 
       topologyLayer:
-
         runtime?.topology_layer,
 
-      endpoint:
+      observatory:
+        runtime?.observatory,
 
-        runtime?.endpoint,
+      hasRuntimePayload,
 
-      rankingMode,
+      rankingProductsLength:
+        rankingProducts.length,
 
-      semanticSlug,
+      runtimePayload,
 
-      semanticRuntime,
-
-      results:
-
-        rankingResults.length,
+      rawPayload:
+        runtime?.raw_payload,
     }
   )
 
-  /* ==========================================================================
-  🔥 Observatory Stack
-  ========================================================================== */
+  // ==========================================================================
+  // Render
+  // ==========================================================================
 
   return (
 
-    <div className="space-y-8">
+    <RuntimeInspectorStack>
 
-      {/* ================================================================
-      🔥 Ranking Runtime
-      ================================================================ */}
+      {/* ==============================================================
+      Runtime Status
+      ============================================================== */}
 
-      <RankingRuntimeInspector
+      <div
+        className="
+          rounded-3xl
+          border
+          border-zinc-900
+          bg-zinc-950/40
+          p-6
+        "
+      >
 
-        runtime={runtime}
+        <div
+          className="
+            mb-4
+            text-xs
+            uppercase
+            tracking-[0.3em]
+            text-zinc-500
+          "
+        >
 
-      />
+          Ranking Runtime Observatory
 
-      {/* ================================================================
-      🔥 Ranking Authority
-      ================================================================ */}
+        </div>
 
-      <RankingAuthorityInspector
+        <div
+          className="
+            space-y-2
+            text-sm
+            text-zinc-300
+          "
+        >
 
-        runtime={runtime}
+          <div>
 
-      />
+            {
+              hasRuntimePayload
+                ? '✅ Runtime payload active'
+                : '❌ Runtime payload active'
+            }
 
-      {/* ================================================================
-      🔥 Ranking Collection
-      ================================================================ */}
+          </div>
 
-      <RankingCollectionInspector
+          <div>
 
-        ranking={ranking}
+            {
+              rankingProducts.length > 0
+                ? '✅ Ranking collection loaded'
+                : '❌ Ranking collection loaded'
+            }
 
-        results={rankingResults}
+          </div>
 
-      />
+          <div>
 
-      {/* ================================================================
-      🔥 Raw Ranking Payload
-      ================================================================ */}
+            ✅ Ranking orchestration observability enabled
 
-      <RankingPayloadInspector
+          </div>
 
-        payload={payload}
+          <div>
 
-      />
+            ❌ Runtime mutation prohibited
 
-    </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      {/* ==============================================================
+      Raw Payload
+      ============================================================== */}
+
+      <div
+        className="
+          overflow-auto
+          rounded-3xl
+          border
+          border-zinc-900
+          bg-black
+          p-6
+        "
+      >
+
+        <div
+          className="
+            mb-4
+            text-xs
+            uppercase
+            tracking-[0.3em]
+            text-emerald-400
+          "
+        >
+
+          Ranking Runtime Payload
+
+        </div>
+
+        <pre
+          className="
+            whitespace-pre-wrap
+            break-words
+            text-xs
+            text-emerald-300
+          "
+        >
+
+          {
+            JSON.stringify(
+
+              {
+
+                runtimeRole:
+                  runtime?.runtime_role,
+
+                topologyLayer:
+                  runtime?.topology_layer,
+
+                observatory:
+                  runtime?.observatory,
+
+                hasRuntimePayload,
+
+                rankingProductsLength:
+                  rankingProducts.length,
+
+                rankingProducts,
+
+                runtimePayload,
+
+                rawPayload:
+                  runtime?.raw_payload,
+              },
+
+              null,
+
+              2,
+            )
+          }
+
+        </pre>
+
+      </div>
+
+    </RuntimeInspectorStack>
   )
 }

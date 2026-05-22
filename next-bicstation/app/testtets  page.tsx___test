@@ -1,0 +1,287 @@
+// /home/maya/shin-dev/shin-vps/next-bicstation/app/page.tsx
+
+/* ============================================================================
+🔥 Components
+============================================================================ */
+
+import HomeHero
+from './components/home/hero/HomeHero'
+
+import ProductCard
+from '@/shared/components/organisms/cards/ProductCard'
+
+import HeroRankingCard
+from '@/shared/components/organisms/cards/HeroRankingCard'
+
+/* ============================================================================
+🔥 API
+============================================================================ */
+
+import {
+fetchSidebar,
+} from
+'@/shared/lib/api/django/pc/sidebar/sidebar'
+
+import {
+fetchRankingProducts,
+} from
+'@/shared/lib/api/django/pc/ranking/fetchRankingProducts'
+
+/* ============================================================================
+🔥 Home Page
+============================================================================ */
+
+export default async function HomePage() {
+
+console.log(
+'🔥 PAGE SSR START'
+)
+
+/* ==========================================================================
+🔥 FETCH
+========================================================================== */
+
+let sidebar: any = null
+
+let rankingJson: any = null
+
+try {
+
+
+;([
+
+  sidebar,
+  rankingJson,
+
+] = await Promise.all([
+
+  fetchSidebar(),
+
+  fetchRankingProducts(
+    'score'
+  ),
+
+]))
+
+console.log(
+  '🔥 SIDEBAR SUCCESS',
+  sidebar
+)
+
+console.log(
+  '🔥 RANKING SUCCESS',
+  rankingJson
+)
+
+
+} catch (error) {
+
+
+console.error(
+  '🔥 PROMISE ALL COLLAPSE',
+  error
+)
+
+
+}
+
+/* ==========================================================================
+🔥 PRODUCTS
+========================================================================== */
+
+const rankingProducts =
+
+
+Array.isArray(
+  rankingJson?.products
+)
+
+  ? rankingJson.products
+
+  : []
+
+
+console.log(
+'🔥 RANKING PRODUCTS',
+rankingProducts
+)
+
+console.log(
+'🔥 PRODUCTS LENGTH',
+rankingProducts.length
+)
+
+/* ==========================================================================
+🔥 HERO PRODUCT
+========================================================================== */
+
+const heroRanking =
+
+
+rankingProducts?.[0]
+|| null
+
+
+console.log(
+'🔥 HERO PRODUCT',
+heroRanking
+)
+
+/* ==========================================================================
+🔥 DEBUG RETURN
+========================================================================== */
+
+return (
+
+
+<main
+  style={{
+
+    minHeight:
+      '100vh',
+
+    background:
+      '#0f172a',
+
+    color:
+      '#fff',
+  }}
+>
+
+  {/* ================================================================
+  DEBUG PANEL
+  ================================================================ */}
+
+  <pre
+    style={{
+
+      background:
+        '#000',
+
+      color:
+        '#0f0',
+
+      padding:
+        '20px',
+
+      fontSize:
+        '12px',
+
+      overflow:
+        'auto',
+
+      borderBottom:
+        '1px solid #222',
+    }}
+  >
+
+    {
+
+      JSON.stringify({
+
+        sidebar,
+
+        rankingProductsLength:
+          rankingProducts.length,
+
+        heroRanking,
+
+      }, null, 2)
+
+    }
+
+  </pre>
+
+  {/* ================================================================
+  HERO
+  ================================================================ */}
+
+  <HomeHero />
+
+  {/* ================================================================
+  HERO CARD
+  ================================================================ */}
+
+  {
+
+    heroRanking && (
+
+      <div
+        style={{
+
+          padding:
+            '40px',
+        }}
+      >
+
+        <HeroRankingCard
+          product={heroRanking}
+        />
+
+      </div>
+
+    )
+
+  }
+
+  {/* ================================================================
+  PRODUCTS
+  ================================================================ */}
+
+  <section
+    style={{
+
+      display:
+        'grid',
+
+      gridTemplateColumns:
+        'repeat(auto-fit,minmax(320px,1fr))',
+
+      gap:
+        '24px',
+
+      padding:
+        '40px',
+    }}
+  >
+
+    {
+
+      rankingProducts.map(
+
+        (
+          product: any,
+          index: number
+        ) => {
+
+          console.log(
+            '🔥 MAP PRODUCT',
+            product
+          )
+
+          return (
+
+            <ProductCard
+
+              key={
+                product?.unique_id
+                || index
+              }
+
+              product={product}
+            />
+
+          )
+        }
+
+      )
+
+    }
+
+  </section>
+
+</main>
+
+
+)
+}

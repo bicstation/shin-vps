@@ -5,51 +5,24 @@
 
 'use client'
 
-/**
- * ============================================================================
- * SHIN CORE LINX
- * Runtime Inspector Router
- * ============================================================================
- *
- * PURPOSE:
- *
- * Runtime topology aware inspector routing
- *
- * IMPORTANT:
- *
- * This router exists for:
- *
- * runtime-role-based inspector orchestration
- *
- * NOT:
- *
- * semantic normalization
- * payload mutation
- * runtime transformation
- *
- * ============================================================================
- */
-
 /* ============================================================================
-🔥 Entity Runtime
+🔥 Orchestrators
 ============================================================================ */
 
-import EntityInspectorOrchestrator from './EntityInspectorOrchestrator'
+import EntityInspectorOrchestrator
+from './EntityInspectorOrchestrator'
+
+import RankingInspectorOrchestrator
+from './RankingInspectorOrchestrator'
+
+import TraversalInspectorOrchestrator
+from './TraversalInspectorOrchestrator'
+
+import SidebarInspectorOrchestrator
+from './SidebarInspectorOrchestrator'
 
 /* ============================================================================
-🔥 Ranking Runtime
-============================================================================ */
-
-import RankingInspectorOrchestrator from './RankingInspectorOrchestrator'
-
-/* ============================================================================
-🔥 Traversal Runtime
-============================================================================ */
-
-import TraversalInspectorOrchestrator from './TraversalInspectorOrchestrator'
-
-/* ============================================================================
-🔥 Props
+🔥 Types
 ============================================================================ */
 
 type RuntimeInspectorRouterProps = {
@@ -63,29 +36,56 @@ type RuntimeInspectorRouterProps = {
 🔥 Runtime Inspector Router
 ============================================================================ */
 
+/**
+ * Runtime inspector routing authority.
+ *
+ * Responsibilities:
+ *
+ * - runtime-role-based inspector orchestration
+ * - semantic topology continuity
+ * - traversal-safe runtime routing
+ * - inspector fallback continuity
+ *
+ * IMPORTANT:
+ *
+ * Frontend remains observability authority only.
+ *
+ * Backend remains semantic authority.
+ */
 export default function RuntimeInspectorRouter({
 
   mode,
+
   runtime,
 
 }: RuntimeInspectorRouterProps) {
 
-  /* ==========================================================================
-  🔥 Runtime Role
-  ========================================================================== */
+  // ==========================================================================
+  // Runtime Identity
+  // ==========================================================================
 
   const runtimeRole =
 
     runtime?.runtime_role
-    || '-'
+    || 'unknown-runtime'
 
-  /* ==========================================================================
-  🔥 Runtime Debug
-  ========================================================================== */
+  const topologyLayer =
+
+    runtime?.topology_layer
+    || 'unknown-layer'
+
+  const observatory =
+
+    runtime?.observatory
+    || 'unknown-observatory'
+
+  // ==========================================================================
+  // Runtime Debug
+  // ==========================================================================
 
   console.log(
 
-    '🛰️ RUNTIME INSPECTOR ROUTER',
+    '🧭 RUNTIME INSPECTOR ROUTER',
 
     {
 
@@ -93,28 +93,20 @@ export default function RuntimeInspectorRouter({
 
       runtimeRole,
 
-      topologyLayer:
+      topologyLayer,
 
-        runtime?.topology_layer,
-
-      observatory:
-
-        runtime?.observatory,
-
-      endpoint:
-
-        runtime?.endpoint,
+      observatory,
     }
   )
 
-  /* ==========================================================================
-  🔥 Product Runtime
-  ========================================================================== */
+  // ==========================================================================
+  // Entity Runtime
+  // ==========================================================================
 
   if (
 
     runtimeRole ===
-    'product-runtime'
+      'entity-runtime'
 
   ) {
 
@@ -127,14 +119,14 @@ export default function RuntimeInspectorRouter({
     )
   }
 
-  /* ==========================================================================
-  🔥 Ranking Runtime
-  ========================================================================== */
+  // ==========================================================================
+  // Ranking Runtime
+  // ==========================================================================
 
   if (
 
     runtimeRole ===
-    'ranking-runtime'
+      'ranking-runtime'
 
   ) {
 
@@ -147,9 +139,9 @@ export default function RuntimeInspectorRouter({
     )
   }
 
-  /* ==========================================================================
-  🔥 Traversal Runtime
-  ========================================================================== */
+  // ==========================================================================
+  // Traversal Runtime
+  // ==========================================================================
 
   if (
 
@@ -172,69 +164,90 @@ export default function RuntimeInspectorRouter({
     )
   }
 
-  /* ==========================================================================
-  🔥 Unknown Runtime
-  ========================================================================== */
+  // ==========================================================================
+  // Sidebar Runtime
+  // ==========================================================================
 
-  console.warn(
+  if (
 
-    '⚠️ UNKNOWN RUNTIME ROLE',
+    runtimeRole ===
+      'sidebar-runtime'
 
-    {
+  ) {
 
-      runtimeRole,
+    return (
 
-      runtime,
-    }
-  )
+      <SidebarInspectorOrchestrator
+        runtime={runtime}
+      />
 
-  /* ==========================================================================
-  🔥 Empty Fallback
-  ========================================================================== */
+    )
+  }
+
+  // ==========================================================================
+  // Unknown Runtime
+  // ==========================================================================
 
   return (
 
-    <section className="rounded-xl border border-red-900 bg-red-950/30 p-6">
+    <div
+      className="
+        rounded-3xl
+        border
+        border-amber-900/40
+        bg-amber-950/10
+        p-8
+      "
+    >
 
-      <div className="text-sm font-bold text-red-400">
+      <div
+        className="
+          mb-3
+          text-xs
+          uppercase
+          tracking-[0.3em]
+          text-amber-400
+        "
+      >
 
         Unknown Runtime Role
 
       </div>
 
-      <div className="mt-2 text-xs text-red-300">
+      <div
+        className="
+          space-y-2
+          text-sm
+          text-zinc-300
+        "
+      >
 
-        Runtime inspector router could not resolve
-        runtime topology orchestration.
+        <div>
+
+          runtime_role:
+          {' '}
+          {runtimeRole}
+
+        </div>
+
+        <div>
+
+          topology_layer:
+          {' '}
+          {topologyLayer}
+
+        </div>
+
+        <div>
+
+          observatory:
+          {' '}
+          {observatory}
+
+        </div>
 
       </div>
 
-      <pre className="mt-4 overflow-x-auto rounded-lg border border-red-900 bg-black p-4 text-xs leading-6 text-red-300">
-
-{JSON.stringify(
-
-  {
-
-    runtime_role:
-      runtimeRole,
-
-    topology_layer:
-      runtime?.topology_layer,
-
-    observatory:
-      runtime?.observatory,
-
-    endpoint:
-      runtime?.endpoint,
-  },
-
-  null,
-
-  2
-)}
-
-      </pre>
-
-    </section>
+    </div>
   )
 }

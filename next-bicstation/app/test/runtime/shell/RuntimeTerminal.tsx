@@ -1,590 +1,226 @@
 // ============================================================================
 // FILE:
-// /home/maya/shin-dev/shin-vps/next-bicstation/app/test/runtime/components/RuntimeTerminal.tsx
+// /home/maya/shin-dev/shin-vps/next-bicstation/app/test/runtime/shell/RuntimeTerminal.tsx
 // ============================================================================
 
 'use client'
 
 /* ============================================================================
-🔥 Terminal Entry
+🔥 Types
 ============================================================================ */
 
-type TerminalEntry = {
+type RuntimeTerminalProps = {
 
-timestamp?: string
-
-level?: 'info' | 'success' | 'warning' | 'error'
-
-message: string
-}
-
-/* ============================================================================
-🔥 Props
-============================================================================ */
-
-type Props = {
-
-title?: string
-
-entries?: TerminalEntry[]
-
-maxHeight?: number
+  runtime?: any
 }
 
 /* ============================================================================
 🔥 Runtime Terminal
 ============================================================================ */
 
+/**
+ * Runtime observatory terminal.
+ *
+ * Responsibilities:
+ *
+ * - runtime log visualization
+ * - semantic runtime stream visibility
+ * - traversal runtime observability
+ * - live runtime cockpit support
+ */
 export default function RuntimeTerminal({
 
-title = 'Runtime Terminal',
+  runtime,
 
-entries = [],
+}: RuntimeTerminalProps) {
 
-maxHeight = 520,
+  // ==========================================================================
+  // Runtime Identity
+  // ==========================================================================
 
-}: Props) {
+  const runtimeRole =
 
-return (
+    runtime?.runtime_role
+    || 'unknown-runtime'
 
+  const topologyLayer =
 
-<section
-  style={{
+    runtime?.topology_layer
+    || 'unknown-layer'
 
-    position:
-      'relative',
+  const observatory =
 
-    overflow:
-      'hidden',
+    runtime?.observatory
+    || 'unknown-observatory'
 
-    borderRadius:
-      '28px',
+  // ==========================================================================
+  // Runtime Entries
+  // ==========================================================================
 
-    border:
-      '1px solid rgba(255,255,255,.06)',
+  const runtimeEntries = [
 
-    background:
-      `
-      linear-gradient(
-        180deg,
-        rgba(15,23,42,.96),
-        rgba(2,6,23,1)
+    `runtime_role: ${runtimeRole}`,
+
+    `topology_layer: ${topologyLayer}`,
+
+    `observatory: ${observatory}`,
+
+    `traversal_edges: ${
+      Array.isArray(
+        runtime?.traversal_edges
       )
-      `,
-  }}
->
 
-  {/* ================================================================
-  HEADER
-  ================================================================ */}
+        ? runtime.traversal_edges.length
 
-  <div
-    style={{
+        : 0
+    }`,
 
-      display:
-        'flex',
+    `traversal_graph: ${
+      Array.isArray(
+        runtime?.traversal_graph
+      )
 
-      justifyContent:
-        'space-between',
+        ? runtime.traversal_graph.length
 
-      alignItems:
-        'center',
+        : 0
+    }`,
+  ]
 
-      gap:
-        '16px',
+  // ==========================================================================
+  // Runtime Debug
+  // ==========================================================================
 
-      padding:
-        '18px 22px',
+  console.log(
 
-      borderBottom:
-        '1px solid rgba(255,255,255,.06)',
+    '🖥️ RUNTIME TERMINAL',
 
-      background:
-        'rgba(255,255,255,.02)',
-    }}
-  >
+    {
 
-    {/* ============================================================
-    LEFT
-    ============================================================ */}
+      runtimeRole,
 
-    <div
-      style={{
+      topologyLayer,
 
-        display:
-          'flex',
+      observatory,
 
-        alignItems:
-          'center',
+      runtimeEntries,
+    }
+  )
 
-        gap:
-          '14px',
-      }}
+  // ==========================================================================
+  // Render
+  // ==========================================================================
+
+  return (
+
+    <section
+      className="
+        overflow-hidden
+        rounded-3xl
+        border
+        border-zinc-900
+        bg-black
+      "
     >
 
-      {/* ==========================================================
-      TERMINAL DOTS
-      ========================================================== */}
+      {/* ==============================================================
+      Terminal Header
+      ============================================================== */}
 
       <div
-        style={{
-
-          display:
-            'flex',
-
-          alignItems:
-            'center',
-
-          gap:
-            '8px',
-        }}
+        className="
+          flex
+          items-center
+          justify-between
+          border-b
+          border-zinc-900
+          bg-zinc-950
+          px-5
+          py-3
+        "
       >
 
-        <Dot color="#ef4444" />
-        <Dot color="#f59e0b" />
-        <Dot color="#22c55e" />
-
-      </div>
-
-      <div>
-
         <div
-          style={{
-
-            color:
-              '#ffffff',
-
-            fontSize:
-              '15px',
-
-            fontWeight:
-              700,
-          }}
+          className="
+            text-xs
+            uppercase
+            tracking-[0.3em]
+            text-zinc-500
+          "
         >
 
-          {title}
+          Runtime Terminal
 
         </div>
 
         <div
-          style={{
-
-            color:
-              '#64748b',
-
-            fontSize:
-              '12px',
-
-            marginTop:
-              '4px',
-          }}
+          className="
+            text-[10px]
+            uppercase
+            tracking-widest
+            text-emerald-400
+          "
         >
 
-          semantic runtime observatory console
+          LIVE
 
         </div>
 
       </div>
 
-    </div>
+      {/* ==============================================================
+      Terminal Body
+      ============================================================== */}
 
-    {/* ============================================================
-    STATUS
-    ============================================================ */}
+      <div
+        className="
+          space-y-2
+          p-5
+          font-mono
+          text-xs
+        "
+      >
 
-    <div
-      style={{
-
-        padding:
-          '8px 12px',
-
-        borderRadius:
-          '999px',
-
-        background:
-          'rgba(34,197,94,.08)',
-
-        border:
-          '1px solid rgba(34,197,94,.22)',
-
-        color:
-          '#22c55e',
-
-        fontSize:
-          '12px',
-
-        fontWeight:
-          700,
-      }}
-    >
-
-      LIVE
-
-    </div>
-
-  </div>
-
-  {/* ================================================================
-  BODY
-  ================================================================ */}
-
-  <div
-    style={{
-
-      position:
-        'relative',
-
-      maxHeight:
-        `${maxHeight}px`,
-
-      overflow:
-        'auto',
-
-      padding:
-        '24px',
-    }}
-  >
-
-    {/* ============================================================
-    GLOW
-    ============================================================ */}
-
-    <div
-      style={{
-
-        position:
-          'absolute',
-
-        top:
-          '-120px',
-
-        right:
-          '-120px',
-
-        width:
-          '260px',
-
-        height:
-          '260px',
-
-        borderRadius:
-          '999px',
-
-        background:
-          'rgba(14,165,233,.08)',
-
-        filter:
-          'blur(80px)',
-
-        pointerEvents:
-          'none',
-      }}
-    />
-
-    {/* ============================================================
-    EMPTY
-    ============================================================ */}
-
-    {
-      entries.length === 0 && (
-
-        <div
-          style={{
-
-            position:
-              'relative',
-
-            zIndex:
-              2,
-
-            color:
-              '#64748b',
-
-            fontFamily:
-              'monospace',
-
-            fontSize:
-              '13px',
-
-            lineHeight:
-              1.9,
-          }}
-        >
-
-          [runtime] observatory initialized...<br />
-          [runtime] waiting for semantic events...
-        </div>
-
-      )
-    }
-
-    {/* ============================================================
-    ENTRIES
-    ============================================================ */}
-
-    {
-      entries.map(
-        (
-          entry,
-          index
-        ) => {
-
-          const color =
-
-            resolveColor(
-              entry.level
-            )
-
-          return (
-
-            <div
-              key={index}
-
-              style={{
-
-                position:
-                  'relative',
-
-                zIndex:
-                  2,
-
-                display:
-                  'flex',
-
-                alignItems:
-                  'flex-start',
-
-                gap:
-                  '14px',
-
-                padding:
-                  '12px 0',
-
-                borderBottom:
-                  '1px dashed rgba(255,255,255,.04)',
-              }}
-            >
-
-              {/* ==================================================
-              DOT
-              ================================================== */}
+        {
+          runtimeEntries.map(
+            (
+              entry,
+              index,
+            ) => (
 
               <div
-                style={{
+                key={index}
 
-                  width:
-                    '10px',
-
-                  height:
-                    '10px',
-
-                  borderRadius:
-                    '999px',
-
-                  marginTop:
-                    '8px',
-
-                  background:
-                    color,
-
-                  boxShadow:
-                    `0 0 14px ${color}`,
-                }}
-              />
-
-              {/* ==================================================
-              CONTENT
-              ================================================== */}
-
-              <div
-                style={{
-
-                  flex: 1,
-                }}
+                className="
+                  flex
+                  items-start
+                  gap-3
+                  text-emerald-400
+                "
               >
 
-                {/* ==============================================
-                META
-                ============================================== */}
-
-                <div
-                  style={{
-
-                    display:
-                      'flex',
-
-                    alignItems:
-                      'center',
-
-                    gap:
-                      '10px',
-
-                    marginBottom:
-                      '6px',
-
-                    flexWrap:
-                      'wrap',
-                  }}
+                <span
+                  className="
+                    text-zinc-600
+                  "
                 >
 
-                  <span
-                    style={{
+                  $
 
-                      color,
+                </span>
 
-                      fontSize:
-                        '11px',
+                <span>
 
-                      fontWeight:
-                        800,
+                  {entry}
 
-                      letterSpacing:
-                        '.08em',
-
-                      textTransform:
-                        'uppercase',
-                    }}
-                  >
-
-                    {entry.level || 'info'}
-
-                  </span>
-
-                  {
-                    entry.timestamp && (
-
-                      <span
-                        style={{
-
-                          color:
-                            '#64748b',
-
-                          fontSize:
-                            '11px',
-
-                          fontFamily:
-                            'monospace',
-                        }}
-                      >
-
-                        {entry.timestamp}
-
-                      </span>
-
-                    )
-                  }
-
-                </div>
-
-                {/* ==============================================
-                MESSAGE
-                ============================================== */}
-
-                <div
-                  style={{
-
-                    color:
-                      '#cbd5e1',
-
-                    fontSize:
-                      '13px',
-
-                    lineHeight:
-                      1.9,
-
-                    fontFamily:
-                      `
-                      ui-monospace,
-                      SFMono-Regular,
-                      Menlo,
-                      Monaco,
-                      Consolas,
-                      monospace
-                      `,
-                  }}
-                >
-
-                  {entry.message}
-
-                </div>
+                </span>
 
               </div>
-
-            </div>
-
+            )
           )
         }
-      )
-    }
 
-  </div>
+      </div>
 
-</section>
-
-
-)
-}
-
-/* ============================================================================
-🔥 Dot
-============================================================================ */
-
-function Dot({
-color,
-}: {
-color: string
-}) {
-
-return (
-
-
-<div
-  style={{
-
-    width:
-      '10px',
-
-    height:
-      '10px',
-
-    borderRadius:
-      '999px',
-
-    background:
-      color,
-
-    boxShadow:
-      `0 0 12px ${color}`,
-  }}
-/>
-
-
-)
-}
-
-/* ============================================================================
-🔥 Resolve Color
-============================================================================ */
-
-function resolveColor(
-level?: string
-) {
-
-switch (level) {
-
-
-case 'success':
-  return '#22c55e'
-
-case 'warning':
-  return '#f59e0b'
-
-case 'error':
-  return '#ef4444'
-
-default:
-  return '#7dd3fc'
-
-
-}
+    </section>
+  )
 }

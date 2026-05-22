@@ -1,561 +1,259 @@
 // ============================================================================
 // FILE:
-// /home/maya/shin-dev/shin-vps/next-bicstation/app/test/runtime/components/RuntimeSidebar.tsx
+// /home/maya/shin-dev/shin-vps/next-bicstation/app/test/runtime/shell/RuntimeSidebar.tsx
 // ============================================================================
 
 'use client'
 
 /* ============================================================================
-🔥 Runtime Modes
+🔥 Types
 ============================================================================ */
 
-const RUNTIME_MODES = [
+type RuntimeSidebarProps = {
 
-{
-key: 'detail',
-
-
-title:
-  'Product Runtime',
-
-description:
-  'semantic product runtime inspector',
-
-icon:
-  '◉',
-
-
-},
-
-{
-key: 'related',
-
-
-title:
-  'Continuation Runtime',
-
-description:
-  'semantic traversal continuity',
-
-icon:
-  '⇄',
-
-
-},
-
-{
-key: 'ranking',
-
-
-title:
-  'Ranking Runtime',
-
-description:
-  'semantic discovery ranking',
-
-icon:
-  '▲',
-
-
-},
-
-{
-key: 'sidebar',
-
-
-title:
-  'Sidebar Runtime',
-
-description:
-  'semantic aggregation runtime',
-
-icon:
-  '▣',
-
-
-},
-
-{
-key: 'discovery',
-
-
-title:
-  'Discovery Runtime',
-
-description:
-  'exploration orchestration runtime',
-
-icon:
-  '◎',
-
-
-},
-
-{
-key: 'finder',
-
-
-title:
-  'Finder Runtime',
-
-description:
-  'semantic finder laboratory',
-
-icon:
-  '⌕',
-
-
-},
-]
-
-/* ============================================================================
-🔥 Props
-============================================================================ */
-
-type Props = {
-
-mode: string
-
-uniqueId?: string
+  runtime?: any
 }
 
 /* ============================================================================
 🔥 Runtime Sidebar
 ============================================================================ */
 
+/**
+ * Runtime infrastructure navigation shell.
+ *
+ * Responsibilities:
+ *
+ * - runtime layer navigation
+ * - semantic runtime topology visibility
+ * - runtime health observability
+ * - traversal runtime cockpit support
+ */
 export default function RuntimeSidebar({
 
-mode,
+  runtime,
 
-uniqueId,
+}: RuntimeSidebarProps) {
 
-}: Props) {
+  // ==========================================================================
+  // Runtime Identity
+  // ==========================================================================
 
-return (
+  const runtimeRole =
 
+    runtime?.runtime_role
+    || 'unknown-runtime'
 
-<aside
-  style={{
+  const topologyLayer =
 
-    position:
-      'sticky',
+    runtime?.topology_layer
+    || 'unknown-layer'
 
-    top:
-      '110px',
+  // ==========================================================================
+  // Runtime Layers
+  // ==========================================================================
 
-    display:
-      'flex',
-
-    flexDirection:
-      'column',
-
-    gap:
-      '22px',
-  }}
->
-
-  {/* ================================================================
-  OBSERVATORY
-  ================================================================ */}
-
-  <section
-    style={{
-
-      position:
-        'relative',
-
-      overflow:
-        'hidden',
-
-      borderRadius:
-        '28px',
-
-      border:
-        '1px solid rgba(255,255,255,.06)',
-
-      background:
-        `
-        linear-gradient(
-          180deg,
-          rgba(15,23,42,.94),
-          rgba(2,6,23,1)
-        )
-        `,
-
-      padding:
-        '26px',
-    }}
-  >
-
-    {/* ============================================================
-    GLOW
-    ============================================================ */}
-
-    <div
-      style={{
-
-        position:
-          'absolute',
-
-        top:
-          '-100px',
-
-        right:
-          '-100px',
-
-        width:
-          '220px',
-
-        height:
-          '220px',
-
-        borderRadius:
-          '999px',
-
-        background:
-          'rgba(14,165,233,.10)',
-
-        filter:
-          'blur(70px)',
-      }}
-    />
-
-    {/* ============================================================
-    CONTENT
-    ============================================================ */}
-
-    <div
-      style={{
-
-        position:
-          'relative',
-
-        zIndex:
-          2,
-      }}
-    >
-
-      <div
-        style={{
-
-          color:
-            '#7dd3fc',
-
-          fontSize:
-            '11px',
-
-          fontWeight:
-            800,
-
-          letterSpacing:
-            '.14em',
-
-          textTransform:
-            'uppercase',
-
-          marginBottom:
-            '12px',
-        }}
-      >
-
-        Runtime Observatory
-
-      </div>
-
-      <h2
-        style={{
-
-          margin:
-            '0 0 14px',
-
-          fontSize:
-            '28px',
-
-          lineHeight:
-            1.1,
-
-          fontWeight:
-            900,
-        }}
-      >
-
-        Semantic Runtime Navigation
-
-      </h2>
-
-      <div
-        style={{
-
-          color:
-            '#94a3b8',
-
-          fontSize:
-            '14px',
-
-          lineHeight:
-            1.9,
-        }}
-      >
-
-        traversal inspector ・
-        continuation debugger ・
-        exploration runtime laboratory
-
-      </div>
-
-    </div>
-
-  </section>
-
-  {/* ================================================================
-  RUNTIME MODES
-  ================================================================ */}
-
-  <section
-    style={{
-
-      display:
-        'flex',
-
-      flexDirection:
-        'column',
-
-      gap:
-        '14px',
-    }}
-  >
+  const runtimeLayers = [
 
     {
-      RUNTIME_MODES.map(
-        (item) => {
+      label: 'Transport',
+      active: true,
+    },
 
-          const active =
+    {
+      label: 'Normalize',
+      active: true,
+    },
 
-            mode === item.key
+    {
+      label: 'Orchestration',
+      active: true,
+    },
 
-          return (
+    {
+      label: 'Routing',
+      active: true,
+    },
 
-            <a
-              key={item.key}
+    {
+      label: 'Traversal',
 
-              href={
-                `/test/runtime?mode=${item.key}&unique_id=${uniqueId || ''}`
-              }
+      active:
 
-              style={{
+        topologyLayer ===
+        'traversal',
+    },
 
-                position:
-                  'relative',
+    {
+      label: 'Graph',
 
-                overflow:
-                  'hidden',
+      active:
 
-                display:
-                  'block',
+        Array.isArray(
+          runtime?.traversal_graph
+        )
+    },
 
-                padding:
-                  '18px 20px',
+    {
+      label: 'Continuation',
 
-                borderRadius:
-                  '22px',
+      active:
 
-                textDecoration:
-                  'none',
+        runtimeRole ===
+        'continuation-runtime',
+    },
 
-                background:
+    {
+      label: 'Payload',
+      active: true,
+    },
+  ]
 
-                  active
+  // ==========================================================================
+  // Runtime Debug
+  // ==========================================================================
 
-                    ? `
-                    linear-gradient(
-                      180deg,
-                      rgba(14,165,233,.18),
-                      rgba(15,23,42,.92)
-                    )
-                    `
+  console.log(
 
-                    : `
-                    linear-gradient(
-                      180deg,
-                      rgba(15,23,42,.88),
-                      rgba(2,6,23,.98)
-                    )
-                    `,
+    '🛰️ RUNTIME SIDEBAR',
 
-                border:
+    {
 
-                  active
+      runtimeRole,
 
-                    ? '1px solid rgba(14,165,233,.34)'
+      topologyLayer,
 
-                    : '1px solid rgba(255,255,255,.05)',
+      runtimeLayers,
+    }
+  )
 
-                transition:
-                  'all .22s ease',
-              }}
-            >
+  // ==========================================================================
+  // Render
+  // ==========================================================================
 
-              {/* ======================================================
-              ACTIVE GLOW
-              ====================================================== */}
+  return (
 
-              {
-                active && (
+    <aside
+      className="
+        space-y-4
+        rounded-3xl
+        border
+        border-zinc-900
+        bg-zinc-950/40
+        p-6
+      "
+    >
 
-                  <div
-                    style={{
+      {/* ==============================================================
+      Header
+      ============================================================== */}
 
-                      position:
-                        'absolute',
+      <div>
 
-                      inset: 0,
+        <div
+          className="
+            text-xs
+            uppercase
+            tracking-[0.3em]
+            text-zinc-500
+          "
+        >
 
-                      background:
-                        'rgba(14,165,233,.04)',
+          Runtime Layers
 
-                      pointerEvents:
-                        'none',
-                    }}
-                  />
+        </div>
 
-                )
-              }
+      </div>
 
-              {/* ======================================================
-              CONTENT
-              ====================================================== */}
+      {/* ==============================================================
+      Layers
+      ============================================================== */}
+
+      <div
+        className="
+          space-y-2
+        "
+      >
+
+        {
+          runtimeLayers.map(
+            (
+              layer,
+              index,
+            ) => (
 
               <div
-                style={{
+                key={index}
 
-                  position:
-                    'relative',
-
-                  zIndex:
-                    2,
-
-                  display:
-                    'flex',
-
-                  alignItems:
-                    'flex-start',
-
-                  gap:
-                    '16px',
-                }}
+                className="
+                  flex
+                  items-center
+                  justify-between
+                  rounded-2xl
+                  border
+                  border-zinc-900
+                  bg-zinc-950/60
+                  px-4
+                  py-3
+                "
               >
 
-                {/* ==================================================
-                ICON
-                ================================================== */}
-
                 <div
-                  style={{
-
-                    width:
-                      '42px',
-
-                    height:
-                      '42px',
-
-                    borderRadius:
-                      '14px',
-
-                    display:
-                      'flex',
-
-                    alignItems:
-                      'center',
-
-                    justifyContent:
-                      'center',
-
-                    background:
-
-                      active
-
-                        ? 'rgba(14,165,233,.16)'
-
-                        : 'rgba(255,255,255,.04)',
-
-                    color:
-
-                      active
-                        ? '#7dd3fc'
-                        : '#cbd5e1',
-
-                    fontSize:
-                      '18px',
-
-                    fontWeight:
-                      700,
-                  }}
+                  className="
+                    text-sm
+                    text-zinc-300
+                  "
                 >
 
-                  {item.icon}
+                  {layer.label}
 
                 </div>
 
-                {/* ==================================================
-                TEXT
-                ================================================== */}
+                <div
+                  className={
 
-                <div>
+                    layer.active
 
-                  <div
-                    style={{
+                      ? `
+                        rounded-full
+                        bg-emerald-500/20
+                        px-2
+                        py-1
+                        text-[10px]
+                        font-medium
+                        uppercase
+                        tracking-widest
+                        text-emerald-300
+                      `
 
-                      color:
-                        '#ffffff',
+                      : `
+                        rounded-full
+                        bg-zinc-900
+                        px-2
+                        py-1
+                        text-[10px]
+                        font-medium
+                        uppercase
+                        tracking-widest
+                        text-zinc-600
+                      `
+                  }
+                >
 
-                      fontWeight:
-                        800,
-
-                      marginBottom:
-                        '6px',
-
-                      fontSize:
-                        '15px',
-                    }}
-                  >
-
-                    {item.title}
-
-                  </div>
-
-                  <div
-                    style={{
-
-                      color:
-                        '#94a3b8',
-
-                      fontSize:
-                        '13px',
-
-                      lineHeight:
-                        1.7,
-                    }}
-                  >
-
-                    {item.description}
-
-                  </div>
+                  {
+                    layer.active
+                      ? 'ACTIVE'
+                      : 'IDLE'
+                  }
 
                 </div>
 
               </div>
-
-            </a>
-
+            )
           )
         }
-      )
-    }
 
-  </section>
+      </div>
 
-</aside>
-
-
-)
+    </aside>
+  )
 }
