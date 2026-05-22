@@ -205,11 +205,62 @@ export type RankingSEO = {
  *
  * simple product listing
  */
+// export type SemanticRankingRuntime = {
+
+//   success?: boolean
+
+//   ranking?: RankingCollection
+
+//   semantic_runtime?: SemanticRuntime
+
+//   adaptive_runtime?: AdaptiveRuntime
+
+//   semantic_labels?: string[]
+
+//   workflow_tags?: string[]
+
+//   grouped_attributes?: Record<string, any>
+
+//   semantic_graph?: any[]
+
+//   render_hints?: Record<string, any>
+
+//   seo?: RankingSEO
+
+//   faq?: any[]
+
+//   breadcrumbs?: any[]
+
+//   schemas?: {
+
+//     itemSchema?: any
+
+//     breadcrumbSchema?: any
+
+//     faqSchema?: any
+
+//     collectionSchema?: any
+//   }
+
+//   ui?: any
+
+//   semantic_schema_version?: number
+
+//   raw?: any
+// }
+
+
 export type SemanticRankingRuntime = {
 
   success?: boolean
 
   ranking?: RankingCollection
+
+  // ==========================================================================
+  // Canonical Frontend Continuity
+  // ==========================================================================
+
+  products?: any[]
 
   semantic_runtime?: SemanticRuntime
 

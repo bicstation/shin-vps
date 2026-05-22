@@ -1,523 +1,94 @@
-/* eslint-disable @next/next/no-img-element */
-// @ts-nocheck
+// /home/maya/shin-vps/next-bicstation/app/page.tsx
 
-/* =========================================
-🔥 API
-========================================= */
-
-import {
-
-  fetchSidebar,
-
-  fetchRankingProducts,
-
-} from '@/shared/lib/api/django/pc'
-
-/* =========================================
-🔥 Semantic
-========================================= */
+/* ============================================================================
+🔥 Runtime
+============================================================================ */
 
 import {
+fetchSidebar,
+} from '@/shared/lib/api/django/pc/sidebar/sidebar'
 
-  resolveSemanticPresentation,
+import {
+fetchSemanticRankingRuntime,
+} from '@/shared/lib/api/django/pc/ranking/fetchSemanticRankingRuntime'
 
-} from '@/shared/lib/semantic/semanticPresentation'
+/* ============================================================================
+🔥 Home Runtime
+============================================================================ */
 
-/* =========================================
-🔥 Home Components
-========================================= */
+import HomeRuntimeOrchestrator
+from './home/orchestration/HomeRuntimeOrchestrator'
 
-import HomeHero
-  from './components/home/hero/HomeHero'
-
-import HomeCapabilitySection
-  from './components/home/capability/HomeCapabilitySection'
-
-import HomeGuideSection
-  from './components/home/guide/HomeGuideSection'
-
-import HomeTrustSection
-  from './components/home/trust/HomeTrustSection'
-
-import HomeFinderCTA
-  from './components/home/recommendation/HomeFinderCTA'
-
-import HomeBottomCTA
-  from './components/home/cta/HomeBottomCTA'
-
-import HomeStickyCTA
-  from './components/home/cta/HomeStickyCTA'
-
-/* =========================================
-🔥 Semantic Navigation
-========================================= */
-
-import HomeIntentNav
-  from './components/home/recommendation/HomeIntentNav'
-
-import HomeRecommendedPaths
-  from './components/home/recommendation/HomeRecommendedPaths'
-
-/* =========================================
-🔥 Ranking
-========================================= */
-
-import HeroRankingCard
-  from '@/shared/components/organisms/cards/HeroRankingCard'
-
-import ProductCard
-  from '@/shared/components/organisms/cards/ProductCard'
-
-/* =========================================
-🔥 Empty
-========================================= */
-
-import HomeEmpty
-  from './components/home/common/HomeEmpty'
-
-/* =========================================
-🔥 Styles
-========================================= */
-
-import styles
-  from './page.module.css'
-
-/* =========================================
-🔥 Dynamic
-========================================= */
-
-export const dynamic =
-  'force-dynamic'
-
-/* =========================================
+/* ============================================================================
 🔥 Home Page
-========================================= */
+============================================================================ */
 
-export default async function
-HomePage() {
+export default async function Page() {
 
-  /* ======================================
-  FETCH
-  ====================================== */
+// ======================================================
+// Runtime Fetch
+// ======================================================
 
-  const [
+const [
 
-    sidebar,
 
-    rankingJson,
+sidebar,
 
-  ] = await Promise.all([
+ranking,
 
-    fetchSidebar(),
 
-    fetchRankingProducts(
-      'score'
-    ),
+] = await Promise.all([
 
-  ])
 
-  /* ======================================
-  SIDEBAR SEMANTIC
-  ====================================== */
+fetchSidebar(),
 
-  const usageItems =
+fetchSemanticRankingRuntime(),
 
-    Array.isArray(
-      sidebar?.usage
-    )
 
-      ? sidebar.usage
+])
 
-      : []
+// ======================================================
+// Runtime
+// ======================================================
 
-  const gpuItems =
+const runtime = {
 
-    Array.isArray(
-      sidebar?.gpu
-    )
 
-      ? sidebar.gpu
+sidebar,
 
-      : []
+ranking,
 
-  const cpuItems =
+heroRanking:
 
-    Array.isArray(
-      sidebar?.cpu
-    )
-
-      ? sidebar.cpu
-
-      : []
-
-  const makerItems =
-
-    Array.isArray(
-      sidebar?.maker
-    )
-
-      ? sidebar.maker
-
-      : []
-
-  /* ======================================
-  SEMANTIC PRESENTATIONS
-  ====================================== */
-
-  const usagePresentations =
-
-    usageItems.map(
-      item =>
-
-        resolveSemanticPresentation(
-          item
-        )
-    )
-
-  const gpuPresentations =
-
-    gpuItems.map(
-      item =>
-
-        resolveSemanticPresentation(
-          item
-        )
-    )
-
-  const cpuPresentations =
-
-    cpuItems.map(
-      item =>
-
-        resolveSemanticPresentation(
-          item
-        )
-    )
-
-  const makerPresentations =
-
-    makerItems.map(
-      item =>
-
-        resolveSemanticPresentation(
-          item
-        )
-    )
-
-  /* ======================================
-  RANKING PRODUCTS
-  ====================================== */
-
-  const rankingProducts =
-
-    Array.isArray(
-      rankingJson?.products
-    )
-
-      ? rankingJson.products
-
-      : []
-
-  /* ======================================
-  EMPTY
-  ====================================== */
-
-  if (
-
-    !usagePresentations.length
-
-    &&
-
-    !rankingProducts.length
-
-  ) {
-
-    return (
-      <HomeEmpty />
-    )
-  }
-
-  /* ======================================
-  SPLIT
-  ====================================== */
-
-  const heroRanking =
-
-    rankingProducts?.[0]
-    || null
-
-  const subRankings =
-
-    rankingProducts.slice(
-      1,
-      5
-    )
-
-
-console.log({
-
-  HomeHero,
-
-  HomeCapabilitySection,
-
-  HomeGuideSection,
-
-  HomeTrustSection,
-
-  HomeFinderCTA,
-
-  HomeBottomCTA,
-
-  HomeStickyCTA,
-
-  HomeIntentNav,
-
-  HomeRecommendedPaths,
-
-  HeroRankingCard,
-
-  ProductCard,
-
-  HomeEmpty,
-
-})
-
-
-
-
-  /* ======================================
-  RENDER
-  ====================================== */
-
-  return (
-
-    <main
-      className={
-        styles.page
-      }
-    >
-
-      {/* ===================================
-      HERO
-      semantic onboarding
-      =================================== */}
-
-      <HomeHero
-        product={
-          heroRanking
-        }
-      />
-
-      {/* ===================================
-      CAPABILITY
-      =================================== */}
-
-      <HomeCapabilitySection />
-
-      {/* ===================================
-      INTENT NAVIGATION
-      semantic discovery
-      =================================== */}
-
-      <HomeIntentNav
-        items={
-          usagePresentations
-        }
-      />
-
-      {/* ===================================
-      POPULAR RANKING
-      semantic recommendation
-      =================================== */}
-
-      <section
-        className={
-          styles.rankingSection
-        }
-      >
-
-        {/* ============================= */}
-        {/* Header */}
-        {/* ============================= */}
-
-        <div
-          className={
-            styles.sectionHeader
-          }
-        >
-
-          <div
-            className={
-              styles.sectionLabel
-            }
-          >
-
-            SEMANTIC RANKING
-
-          </div>
-
-          <h2
-            className={
-              styles.sectionTitle
-            }
-          >
-
-            人気のおすすめ構成
-
-          </h2>
-
-          <p
-            className={
-              styles.sectionDescription
-            }
-          >
-
-            ゲーム・動画編集・
-            AI画像生成など、
-            用途別で人気の高い
-            おすすめ構成を表示しています。
-
-          </p>
-
-        </div>
-
-        {/* ============================= */}
-        {/* Hero Ranking */}
-        {/* ============================= */}
-
-        {heroRanking && (
-
-          <div
-            className={
-              styles.heroWrap
-            }
-          >
-
-            <HeroRankingCard
-              product={
-                heroRanking
-              }
-            />
-
-          </div>
-
-        )}
-
-        {/* ============================= */}
-        {/* Product Grid */}
-        {/* ============================= */}
-
-        <div
-          className={
-            styles.productGrid
-          }
-        >
-
-          {subRankings.map(
-            (
-              product,
-              index
-            ) => (
-
-              <ProductCard
-
-                key={
-                  product?.unique_id
-                  || index
-                }
-
-                product={
-                  product
-                }
-
-              />
-
-            )
-          )}
-
-        </div>
-
-      </section>
-
-      {/* ===================================
-      RECOMMENDED PATHS
-      semantic recommendation
-      =================================== */}
-
-      <HomeRecommendedPaths
-        items={
-          usagePresentations
-        }
-      />
-
-      {/* ===================================
-      GPU POPULAR
-      =================================== */}
-
-      <HomeRecommendedPaths
-        title='人気GPU構成'
-
-        items={
-          gpuPresentations
-        }
-      />
-
-      {/* ===================================
-      CPU POPULAR
-      =================================== */}
-
-      <HomeRecommendedPaths
-        title='人気CPU構成'
-
-        items={
-          cpuPresentations
-        }
-      />
-
-      {/* ===================================
-      MAKER POPULAR
-      =================================== */}
-
-      <HomeRecommendedPaths
-        title='人気メーカー'
-
-        items={
-          makerPresentations
-        }
-      />
-
-      {/* ===================================
-      GUIDE
-      =================================== */}
-
-      <HomeGuideSection />
-
-      {/* ===================================
-      TRUST
-      =================================== */}
-
-      <HomeTrustSection />
-
-      {/* ===================================
-      FINDER CTA
-      recommendation entry
-      =================================== */}
-
-      <HomeFinderCTA />
-
-      {/* ===================================
-      BOTTOM CTA
-      =================================== */}
-
-      <HomeBottomCTA />
-
-      {/* ===================================
-      STICKY CTA
-      =================================== */}
-
-      <HomeStickyCTA />
-
-    </main>
-
+  Array.isArray(
+    ranking?.products
   )
+
+    ? ranking.products[0]
+
+    : null,
+
+semantic_runtime:
+  true,
+
+adaptive_runtime:
+  true,
+
+
+}
+
+// ======================================================
+// Render
+// ======================================================
+
+return (
+
+
+<HomeRuntimeOrchestrator
+  runtime={runtime}
+/>
+
+
+)
+
 }

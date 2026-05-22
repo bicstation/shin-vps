@@ -1,205 +1,164 @@
 // ============================================================================
 // FILE:
-// /home/maya/shin-dev/shin-vps/shared/lib/api/django/pc/ranking/fetchRankingProducts.ts
-// Copyright (c) 2024 Shin Corporation. All rights reserved.
+// /shared/lib/api/django/pc/ranking/fetchRankingProducts.ts
 // ============================================================================
 
-/**
- * SHIN CORE LINX
- * Legacy Ranking Transport
- *
- * IMPORTANT:
- *
- * This layer exists for:
- *
- * legacy ranking compatibility
- *
- * NOT:
- *
- * semantic runtime governance
- *
- * Responsibilities:
- *
- * - legacy ranking transport
- * - compatibility continuity
- * - lightweight collection stabilization
- *
- * IMPORTANT:
- *
- * New runtime authority lives in:
- *
- * ./runtime
- * ./ranking
- * ./normalize
- * ./contracts
- */
-
-/* ============================================================================
-🔥 Contracts
-============================================================================ */
-
 import type {
-
   SemanticRankingRuntime,
-
 } from './contracts'
 
-/* ============================================================================
-🔥 Utils
-============================================================================ */
-
 import {
-
   buildEndpoint,
-
 } from '../utils/buildEndpoint'
 
 import {
-
   safeFetch,
-
 } from '../utils/safeFetch'
 
-/* ============================================================================
-🔥 Normalize
-============================================================================ */
-
 import {
-
   normalizeRanking,
-
 } from './normalize'
 
-/* ============================================================================
-🔥 Endpoint
-============================================================================ */
-
 const RANKING_ENDPOINT =
-
   '/general/pc-products/ranking'
 
-/* ============================================================================
-🔥 Fetch Ranking Products
-============================================================================ */
-
-/**
- * Legacy-compatible ranking fetch.
- *
- * IMPORTANT:
- *
- * This layer intentionally avoids:
- *
- * - semantic inference
- * - workflow mutation
- * - traversal generation
- * - ranking rewriting
- *
- * Backend remains semantic authority.
- */
 export async function fetchRankingProducts(
-
   type = 'score',
+): Promise<any> {
 
-): Promise<SemanticRankingRuntime | null> {
-
-  // ======================================
+  // ==========================================================================
   // Empty Guard
-  // ======================================
+  // ==========================================================================
 
   if (!type) {
 
     console.warn(
-
       '⚠️ FETCH RANKING PRODUCTS EMPTY TYPE'
     )
 
     return null
   }
 
-  // ======================================
+  // ==========================================================================
   // Endpoint
-  // ======================================
+  // ==========================================================================
 
-  const endpoint =
+  const endpoint = buildEndpoint(
+    `${RANKING_ENDPOINT}/${type}/`
+  )
 
-    buildEndpoint(
-
-      `${RANKING_ENDPOINT}/${type}/`
-
-    )
-
-  // ======================================
+  // ==========================================================================
   // Fetch
-  // ======================================
+  // ==========================================================================
 
   const response =
-
     await safeFetch<SemanticRankingRuntime>(
       endpoint
     )
 
-  // ======================================
+  // ==========================================================================
   // Runtime Debug
-  // ======================================
+  // ==========================================================================
 
   console.log(
-
     '🔥 FETCH RANKING PRODUCTS URL',
-
     endpoint
   )
 
   console.log(
-
     '🔥 FETCH RANKING PRODUCTS RAW',
-
     response
   )
 
-  // ======================================
+  // ==========================================================================
   // Invalid Response
-  // ======================================
+  // ==========================================================================
 
   if (!response) {
 
     console.error(
-
       '🔥 FETCH RANKING PRODUCTS FAILURE',
-
       {
-
         type,
-
         endpoint,
       }
     )
 
     return {
-
-      success: false,
-
-      ranking: {
-
-        results: [],
-      },
-
-      raw: null,
+      products: [],
     }
   }
 
-  // ======================================
+  // ==========================================================================
   // Normalize
-  // ======================================
+  // ==========================================================================
 
-  return normalizeRanking(
+  const normalized =
+    normalizeRanking(response)
 
-    response
+  // ==========================================================================
+  // Runtime Payload
+  // ==========================================================================
 
+  const runtimePayload =
+    normalized as any
+
+  // ==========================================================================
+  // Canonical Product Continuity
+  // ==========================================================================
+
+  const products =
+
+    Array.isArray(
+      runtimePayload?.products
+    )
+
+      ? runtimePayload.products
+
+    : Array.isArray(
+        runtimePayload?.results
+      )
+
+      ? runtimePayload.results
+
+    : Array.isArray(
+        runtimePayload?.ranking?.results
+      )
+
+      ? runtimePayload.ranking.results
+
+    : Array.isArray(
+        runtimePayload?.items
+      )
+
+      ? runtimePayload.items
+
+    : Array.isArray(
+        runtimePayload?.ranking_products
+      )
+
+      ? runtimePayload.ranking_products
+
+    : []
+
+  // ==========================================================================
+  // Continuity Debug
+  // ==========================================================================
+
+  console.log(
+    '🔥 CANONICAL RANKING PRODUCTS',
+    {
+      length: products.length,
+    }
   )
-}
 
-/* ============================================================================
-🔥 Default Export
-============================================================================ */
+  // ==========================================================================
+  // Canonical Frontend Contract
+  // ==========================================================================
+
+  return {
+    products,
+  }
+}
 
 export default fetchRankingProducts
