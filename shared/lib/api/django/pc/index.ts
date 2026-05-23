@@ -6,8 +6,10 @@
 // ============================================================================
 
 /**
+ * ============================================================================
  * SHIN CORE LINX
  * PC Semantic API Gateway
+ * ============================================================================
  *
  * IMPORTANT:
  *
@@ -24,17 +26,25 @@
  * - unified API exposure
  * - continuity-safe exports
  * - adapter aggregation
+ * - traversal continuity stabilization
+ * - runtime phase aggregation
  * - legacy compatibility stabilization
  *
  * IMPORTANT:
  *
  * Backend remains:
  *
- * semantic authority
+ * semantic traversal authority
  *
  * Adapter layer remains:
  *
- * continuity authority
+ * traversal continuity authority
+ *
+ * Frontend remains:
+ *
+ * human traversal experience authority
+ *
+ * ============================================================================
  */
 
 /* ============================================================================
@@ -62,6 +72,18 @@ export * from './related'
 export * from './search'
 
 /* ============================================================================
+🔥 Finder
+============================================================================ */
+
+export * from './finder'
+
+/* ============================================================================
+🔥 Discover
+============================================================================ */
+
+export * from './discover'
+
+/* ============================================================================
 🔥 Sidebar
 ============================================================================ */
 
@@ -74,16 +96,16 @@ export * from './sidebar'
 export * from './ranking'
 
 /* ============================================================================
-🔥 Discover
-============================================================================ */
-
-export * from './discover'
-
-/* ============================================================================
 🔥 Traversal
 ============================================================================ */
 
 export * from './traversal'
+
+/* ============================================================================
+🔥 Runtime
+============================================================================ */
+
+export * from './runtime'
 
 /* ============================================================================
 🔥 Semantic
@@ -130,35 +152,57 @@ import {
 ============================================================================ */
 
 /**
+ * ============================================================================
  * Legacy Product Continuity
+ * ============================================================================
  */
 
 export const fetchPCProducts =
   fetchProducts
 
 /**
+ * ============================================================================
  * Legacy Finder Continuity
+ * ============================================================================
+ *
+ * IMPORTANT:
+ *
+ * Legacy continuity currently maps:
+ *
+ * finder
+ * →
+ * search transport runtime
+ *
+ * Future evolution may migrate toward:
+ *
+ * finder semantic narrowing runtime
  */
 
 export const fetchFinderResult =
   searchPC
 
 /**
+ * ============================================================================
  * Legacy Sidebar Continuity
+ * ============================================================================
  */
 
 export const fetchMakers =
   fetchSidebar
 
 /**
+ * ============================================================================
  * Legacy Ranking Continuity
+ * ============================================================================
  */
 
 export const fetchPCRanking =
   fetchRanking
 
 /**
+ * ============================================================================
  * Legacy Discover Continuity
+ * ============================================================================
  */
 
 export const fetchPCDiscover =
@@ -179,17 +223,32 @@ console.log(
 console.log({
 
   products: true,
+
   detail: true,
+
   related: true,
+
   search: true,
-  sidebar: true,
-  ranking: true,
+
+  finder: true,
+
   discover: true,
+
+  sidebar: true,
+
+  ranking: true,
+
   traversal: true,
+
+  runtime: true,
+
   semantic: true,
 
   continuity:
     'healthy',
+
+  traversal_substrate:
+    'stabilized',
 
   runtime:
     'pc-semantic-api-gateway',

@@ -1,0 +1,213 @@
+// ============================================================================
+// FILE:
+// /home/maya/shin-dev/shin-vps/shared/lib/api/django/pc/finder/contracts.ts
+// ============================================================================
+
+/**
+ * ============================================================================
+ * SHIN CORE LINX
+ * Finder Runtime Contracts
+ * ============================================================================
+ *
+ * PURPOSE:
+ *   - canonical finder runtime contracts
+ *   - semantic narrowing continuity contracts
+ *   - traversal-safe runtime typing
+ *
+ * IMPORTANT:
+ *   - frontend does NOT generate semantic meaning
+ *   - backend remains semantic authority
+ *   - adapter remains continuity authority
+ *
+ * RESPONSIBILITIES:
+ *   - runtime-safe transport contracts
+ *   - narrowing continuity typing
+ *   - traversal-safe response shaping
+ *   - semantic runtime continuity typing
+ *
+ * PROHIBITED:
+ *   - semantic inference
+ *   - traversal generation
+ *   - graph mutation
+ *   - semantic scoring invention
+ *
+ * ============================================================================
+ */
+
+/* ============================================================================
+🔥 Shared Runtime Contracts
+============================================================================ */
+
+import type {
+
+  SemanticEntity,
+  TraversalNode,
+
+} from '../runtime/contracts/runtime'
+
+/* ============================================================================
+🔥 Finder Query
+============================================================================ */
+
+/**
+ * Canonical finder narrowing query.
+ *
+ * IMPORTANT:
+ * Frontend continuity query.
+ *
+ * Adapter layer absorbs:
+ * - alias normalization
+ * - traversal continuity normalization
+ * - payload shaping continuity
+ */
+
+export interface FinderQuery {
+
+  /**
+   * Human traversal continuity usage.
+   *
+   * Examples:
+   * - usage-ai
+   * - usage-gaming
+   * - usage-business
+   */
+
+  usage?: string
+
+  /**
+   * Optional workflow continuity.
+   */
+
+  workflow?: string
+
+  /**
+   * Optional traversal continuity shelf.
+   */
+
+  shelf?: string
+
+  /**
+   * Optional budget continuity.
+   */
+
+  budget_max?: number
+}
+
+/* ============================================================================
+🔥 Finder Runtime Meta
+============================================================================ */
+
+/**
+ * Backend semantic narrowing metadata.
+ */
+
+export interface FinderRuntimeMeta {
+
+  total_products: number
+
+  returned_results: number
+
+  usage_weights?: Record<
+    string,
+    number
+  >
+
+  budget_max?: number | null
+
+  fallback_mode?: boolean
+}
+
+/* ============================================================================
+🔥 Finder Semantic Runtime
+============================================================================ */
+
+/**
+ * Lightweight semantic runtime.
+ *
+ * IMPORTANT:
+ * Recursive semantic graph nesting
+ * is intentionally prohibited.
+ */
+
+export interface FinderSemanticRuntime {
+
+  score?: number
+
+  confidence?: number
+
+  reasons?: string[]
+
+  breakdown?: Record<
+    string,
+    unknown
+  >
+}
+
+/* ============================================================================
+🔥 Finder Product Runtime
+============================================================================ */
+
+/**
+ * Finder semantic product runtime.
+ */
+
+export interface FinderProductRuntime {
+
+  product: SemanticEntity & {
+
+    price?: number
+  }
+
+  semantic?: FinderSemanticRuntime
+}
+
+/* ============================================================================
+🔥 Finder Runtime Response
+============================================================================ */
+
+/**
+ * Canonical finder narrowing runtime response.
+ */
+
+export interface FinderRuntimeResponse {
+
+  meta?: FinderRuntimeMeta
+
+  results: FinderProductRuntime[]
+
+  /**
+   * Optional traversal continuity.
+   */
+
+  continuation?: TraversalNode[]
+
+  /**
+   * Optional workflow continuity.
+   */
+
+  workflow_tags?: string[]
+
+  /**
+   * Optional traversal continuity shelves.
+   */
+
+  next_shelves?: string[]
+
+  /**
+   * Optional semantic runtime metadata.
+   */
+
+  semantic_runtime?: Record<
+    string,
+    unknown
+  >
+
+  /**
+   * Optional adaptive runtime metadata.
+   */
+
+  adaptive_runtime?: Record<
+    string,
+    unknown
+  >
+}

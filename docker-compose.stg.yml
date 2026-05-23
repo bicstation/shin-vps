@@ -49,7 +49,6 @@ services:
     ports:
 
       - "8084:80"
-
       - "8086:8080"
 
     volumes:
