@@ -146,11 +146,13 @@ def detect_usage(
     if gpu_score >= 90:
 
         scores["usage-gaming"] += 3
+        scores["usage-ai"] += 2
 
     elif gpu_score >= 80:
 
         scores["usage-gaming"] += 2
         scores["usage-creator"] += 1
+        scores["usage-ai"] += 1
 
     elif gpu_score <= 10:
 

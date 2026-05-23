@@ -146,10 +146,12 @@ export function normalizeFinderRuntime(
     /**
      * Continuity-safe discover traversal.
      */
-
+    
     next_shelves:
 
-      discoverContinuity.map(
+      runtime.next_shelves
+
+      || discoverContinuity.map(
         (continuity) =>
           continuity.workflow
       ),

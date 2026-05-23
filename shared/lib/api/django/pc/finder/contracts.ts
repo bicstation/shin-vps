@@ -59,6 +59,11 @@ import type {
  * - alias normalization
  * - traversal continuity normalization
  * - payload shaping continuity
+ *
+ * IMPORTANT:
+ * Runtime now supports:
+ *
+ * multi-dimensional semantic narrowing continuity.
  */
 
 export interface FinderQuery {
@@ -70,15 +75,21 @@ export interface FinderQuery {
    * - usage-ai
    * - usage-gaming
    * - usage-business
+   *
+   * IMPORTANT:
+   * Multiple narrowing continuity allowed.
    */
 
-  usage?: string
+  usage?: string[]
 
   /**
    * Optional workflow continuity.
+   *
+   * IMPORTANT:
+   * Supports multi-workflow narrowing continuity.
    */
 
-  workflow?: string
+  workflow?: string[]
 
   /**
    * Optional traversal continuity shelf.
@@ -167,11 +178,28 @@ export interface FinderProductRuntime {
 
 /**
  * Canonical finder narrowing runtime response.
+ *
+ * IMPORTANT:
+ * Backend remains:
+ *
+ * traversal authority
+ *
+ * Adapter preserves:
+ *
+ * traversal continuity.
  */
 
 export interface FinderRuntimeResponse {
 
+  /**
+   * Optional narrowing metadata.
+   */
+
   meta?: FinderRuntimeMeta
+
+  /**
+   * Canonical semantic narrowing results.
+   */
 
   results: FinderProductRuntime[]
 
@@ -189,6 +217,9 @@ export interface FinderRuntimeResponse {
 
   /**
    * Optional traversal continuity shelves.
+   *
+   * IMPORTANT:
+   * Adapter preserves backend traversal continuity.
    */
 
   next_shelves?: string[]
@@ -210,4 +241,22 @@ export interface FinderRuntimeResponse {
     string,
     unknown
   >
+
+  /**
+   * Optional semantic labels continuity.
+   */
+
+  semantic_labels?: string[]
+
+  /**
+   * Optional runtime status continuity.
+   */
+
+  runtime_status?: string
+
+  /**
+   * Optional recommendation continuity.
+   */
+
+  recommendations?: FinderProductRuntime[]
 }
