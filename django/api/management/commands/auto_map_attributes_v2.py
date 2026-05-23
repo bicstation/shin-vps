@@ -170,7 +170,7 @@ def detect_usage(
         ]:
 
             scores["usage-creator"] += 2
-            scores["usage-ai"] += 1
+            scores["usage-ai"] += 3
 
         elif cpu_attr.slug in [
 
@@ -491,7 +491,7 @@ class Command(BaseCommand):
                 # Semantic Threshold
                 # =========================================================
 
-                SEMANTIC_THRESHOLD = 0.70
+                SEMANTIC_THRESHOLD = 0.55
 
 
                 # =========================================================

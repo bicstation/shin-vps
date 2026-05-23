@@ -71,7 +71,7 @@ do
 
       echo ""
       echo "Usage:"
-      echo "  ./pc_pipeline_semantic.sh --local"
+      echo "  ./pc_pipeline_.sh --local"
       echo "  ./pc_pipeline_semantic.sh --stg"
       echo "  ./pc_pipeline_semantic.sh --prod"
 
@@ -248,7 +248,7 @@ run_django migrate_linkshare_to_pc
 log "🧠 Analyze Semantic Specs"
 
 run_django analyze_pc_spec \
-  --limit 100 \
+  --limit 10 \
   --null-only
 
 # ==========================================================

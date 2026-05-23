@@ -240,13 +240,41 @@ def extract_product_type(text):
         return "pc"
 
     lower = text.lower()
-
+      
     # ======================================================
     # Monitor
     # ======================================================
-    if "monitor" in lower:
+
+    MONITOR_KEYWORDS = [
+
+        "monitor",
+        "display",
+        "oled monitor",
+
+        "モニター",
+        "ディスプレイ",
+        "液晶",
+
+        "240hz",
+        "165hz",
+        "144hz",
+
+        "qd-oled",
+        "湾曲",
+    ]
+
+    monitor_hits = 0
+
+    for keyword in MONITOR_KEYWORDS:
+
+        if keyword in lower:
+            monitor_hits += 1
+
+    # モニター特徴が複数ある場合
+    if monitor_hits >= 1:
         return "monitor"
 
+    # OLED + 高Hz は monitor 可能性高
     if "oled" in lower and "hz" in lower:
         return "monitor"
 

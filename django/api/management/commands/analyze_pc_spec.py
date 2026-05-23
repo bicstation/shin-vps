@@ -820,10 +820,250 @@ class Command(BaseCommand):
             # =============================================
             # AI判定
             # =============================================
+            # product.is_ai_pc = spec_data.get(
+            #     'is_ai_pc',
+            #     False
+            # )
+
+            # =============================================
+            # AI Capability Inference
+            # =============================================
+
+            # -------------------------------------------------
+            # Gemini AI Result (Soft Signal)
+            # -------------------------------------------------
+
             product.is_ai_pc = spec_data.get(
                 'is_ai_pc',
                 False
             )
+
+            # -------------------------------------------------
+            # Deterministic AI Capability Scoring
+            # -------------------------------------------------
+
+            ai_capability_score = 0
+
+            gpu = (
+                product.gpu_model or ""
+            ).lower()
+
+            cpu = (
+                product.cpu_model or ""
+            ).lower()
+
+            product_name = (
+                product.name or ""
+            ).lower()
+
+            # -------------------------------------------------
+            # RTX GPU Capability
+            # -------------------------------------------------
+
+            if "rtx 5090" in gpu:
+                ai_capability_score += 50
+
+            elif "rtx 5080" in gpu:
+                ai_capability_score += 45
+
+            elif "rtx 5070" in gpu:
+                ai_capability_score += 40
+
+            elif "rtx 4090" in gpu:
+                ai_capability_score += 45
+
+            elif "rtx 4080" in gpu:
+                ai_capability_score += 40
+
+            elif "rtx 4070" in gpu:
+                ai_capability_score += 35
+
+            elif "rtx 4060" in gpu:
+                ai_capability_score += 25
+
+            elif "rtx 4050" in gpu:
+                ai_capability_score += 15
+
+            # -------------------------------------------------
+            # VRAM Capability
+            # -------------------------------------------------
+
+            vram_text = (
+                product.display_info or ""
+            ).lower()
+
+            vram_match = re.search(
+                r'(\d+)\s*gb',
+                vram_text
+            )
+
+            if vram_match:
+
+                try:
+
+                    vram_gb = int(
+                        vram_match.group(1)
+                    )
+
+                    if vram_gb >= 24:
+                        ai_capability_score += 35
+
+                    elif vram_gb >= 16:
+                        ai_capability_score += 30
+
+                    elif vram_gb >= 12:
+                        ai_capability_score += 20
+
+                    elif vram_gb >= 8:
+                        ai_capability_score += 10
+
+                except Exception:
+                    pass
+
+            # -------------------------------------------------
+            # Memory Capability
+            # -------------------------------------------------
+
+            memory_gb = product.memory_gb or 0
+
+            if memory_gb >= 64:
+                ai_capability_score += 35
+
+            elif memory_gb >= 32:
+                ai_capability_score += 25
+
+            elif memory_gb >= 16:
+                ai_capability_score += 10
+
+            # -------------------------------------------------
+            # Storage Capability
+            # -------------------------------------------------
+
+            storage_gb = product.storage_gb or 0
+
+            if storage_gb >= 2000:
+                ai_capability_score += 10
+
+            elif storage_gb >= 1000:
+                ai_capability_score += 5
+
+            # -------------------------------------------------
+            # AI CPU / NPU Detection
+            # -------------------------------------------------
+
+            if "ryzen ai" in cpu:
+                ai_capability_score += 35
+
+            if "core ultra" in cpu:
+                ai_capability_score += 25
+
+            if "copilot+" in product_name:
+                ai_capability_score += 30
+
+            # -------------------------------------------------
+            # AI Keywords (Boost Only)
+            # -------------------------------------------------
+
+            AI_KEYWORDS = [
+
+                "ai pc",
+                "local llm",
+                "stable diffusion",
+                "comfyui",
+                "automatic1111",
+                "ollama",
+                "lm studio",
+                "vllm",
+                "text generation webui",
+                "cuda",
+                "tensor",
+                "copilot+",
+            ]
+
+            full_text = " ".join([
+                product.name or "",
+                product.description or "",
+                product.cpu_model or "",
+                product.gpu_model or "",
+                product.display_info or "",
+            ]).lower()
+
+            for keyword in AI_KEYWORDS:
+
+                if keyword.lower() in full_text:
+                    ai_capability_score += 10
+
+            # -------------------------------------------------
+            # Creator / Workstation Signal
+            # -------------------------------------------------
+
+            CREATOR_KEYWORDS = [
+                "creator",
+                "workstation",
+                "studio",
+                "proart",
+                "zbook",
+                "thinkpad p",
+            ]
+
+            for keyword in CREATOR_KEYWORDS:
+
+                if keyword in full_text:
+                    ai_capability_score += 12
+
+            # -------------------------------------------------
+            # Final AI Decision
+            # -------------------------------------------------
+
+            # Gemini が弱くても
+            # deterministic capability が強ければ
+            # AI workflow machine とみなす
+
+            if ai_capability_score >= 40:
+
+                product.is_ai_pc = True
+
+            # -------------------------------------------------
+            # Merge AI Score
+            # -------------------------------------------------
+
+            # product.score_ai = max(
+            #     product.score_ai,
+            #     ai_capability_score
+            # )
+            product.score_ai = max(
+
+                safe_int(
+                    spec_data.get('score_ai'),
+                    0
+                ),
+
+                ai_capability_score
+            )
+            # -------------------------------------------------
+            # AI Segment Enhancement
+            # -------------------------------------------------
+
+            if ai_capability_score >= 80:
+
+                product.target_segment = (
+                    "ai_workstation"
+                )
+
+            elif ai_capability_score >= 55:
+
+                product.target_segment = (
+                    "ai_creator"
+                )
+
+            elif ai_capability_score >= 40:
+
+                if not product.target_segment:
+
+                    product.target_segment = (
+                        "ai_ready"
+                    )
+            
 
             # =============================================
             # Scores

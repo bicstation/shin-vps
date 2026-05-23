@@ -124,15 +124,33 @@ export default function DiscoverPage() {
             runtimeLayout.shelves.map(
               async (
                 shelf
-              ) => ({
+              ) => {
 
-                ...shelf,
+                console.log(
+                  'FETCH ATTRIBUTE',
+                  shelf.attribute
+                )
 
-                products:
+                const products =
                   await fetchShelfProducts(
                     shelf.attribute
-                  ),
-              })
+                  )
+
+                console.log(
+                  'SHELF PRODUCTS RESPONSE',
+                  shelf.attribute,
+                  products
+                )
+
+                return {
+
+                  ...shelf,
+
+                  products,
+
+                }
+
+              }
             )
           )
 

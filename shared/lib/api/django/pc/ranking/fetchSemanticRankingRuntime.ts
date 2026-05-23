@@ -174,7 +174,72 @@ export async function fetchSemanticRankingRuntime(
     normalized?.ranking?.results?.length
   )
 
-  return normalized
+    // ==========================================================================
+    // Runtime Payload
+    // ==========================================================================
+
+    const runtimePayload =
+      normalized as any
+
+    // ==========================================================================
+    // Canonical Product Continuity
+    // ==========================================================================
+
+    const products =
+
+      Array.isArray(
+        runtimePayload?.products
+      )
+
+        ? runtimePayload.products
+
+      : Array.isArray(
+          runtimePayload?.results
+        )
+
+        ? runtimePayload.results
+
+      : Array.isArray(
+          runtimePayload?.ranking?.results
+        )
+
+        ? runtimePayload.ranking.results
+
+      : Array.isArray(
+          runtimePayload?.items
+        )
+
+        ? runtimePayload.items
+
+      : Array.isArray(
+          runtimePayload?.ranking_products
+        )
+
+        ? runtimePayload.ranking_products
+
+      : []
+
+    // ==========================================================================
+    // Runtime Continuity Debug
+    // ==========================================================================
+
+    console.log(
+      '🔥 RUNTIME PRODUCTS CONTINUITY',
+      {
+        length: products.length,
+      }
+    )
+
+    // ==========================================================================
+    // Canonical Runtime Contract
+    // ==========================================================================
+
+    return {
+      ...normalized,
+
+      products,
+    }
+  
 }
 
 export default fetchSemanticRankingRuntime

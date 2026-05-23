@@ -131,6 +131,14 @@ export function normalizeRanking(
     ?? rankingResults.length
 
     ?? 0
+  
+  // ======================================
+  // Canonical Products Continuity
+  // ======================================
+
+  const products =
+    rankingResults
+  
 
     // ======================================
     // Minimal Semantic Normalize
@@ -152,6 +160,13 @@ export function normalizeRanking(
 
       payload?.success
       || false,
+    
+    // ====================================
+    // Canonical Frontend Continuity
+    // ====================================
+
+    products:
+      products,
 
     // ====================================
     // Ranking Runtime

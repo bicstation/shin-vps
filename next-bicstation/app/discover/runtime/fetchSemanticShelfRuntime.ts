@@ -10,13 +10,14 @@
  * ============================================================================
  *
  * PURPOSE:
- *   - fetch semantic shelf runtime authority
- *   - fetch workflow-specific discovery runtime
- *   - frontend semantic shelf runtime access
+ *   - fetch semantic discovery traversal runtime
+ *   - fetch semantic shelf continuity
+ *   - frontend traversal runtime access
  *
  * IMPORTANT:
- *   - semantic grouping authority is backend
- *   - frontend does not infer semantic meaning
+ *   - backend remains semantic traversal authority
+ *   - frontend remains topology-agnostic
+ *   - adapter absorbs traversal continuity
  *
  * ============================================================================
  */
@@ -28,6 +29,48 @@ import {
 import type {
   SemanticShelfRuntimeResponse,
 } from './contracts'
+
+/* ============================================================================
+🔥 Shelf Traversal Aliases
+============================================================================ */
+
+const SHELF_ALIASES: Record<string, string> = {
+
+  'usage-ai':
+    'ai_workflow',
+
+  'usage-gaming':
+    'gaming_setup',
+
+  'usage-creator':
+    'creator_workflow',
+
+  'usage-mobile':
+    'mobility_workflow',
+
+  'memory-heavy':
+    'semantic_richness',
+}
+
+/* ============================================================================
+🔥 Resolve Shelf Type
+============================================================================ */
+
+function resolveShelfType(
+
+  attribute: string
+
+): string {
+
+  return (
+
+    SHELF_ALIASES[
+      attribute
+    ]
+
+    || attribute
+  )
+}
 
 /* ============================================================================
 🔥 Fetch Semantic Shelf Runtime
@@ -42,13 +85,48 @@ export async function fetchSemanticShelfRuntime(
   try {
 
     /* ======================================================================
+    🔥 Resolve Shelf Type
+    ====================================================================== */
+
+    const shelfType =
+
+      resolveShelfType(
+        attribute
+      )
+
+    /* ======================================================================
     🔥 Endpoint
     ====================================================================== */
 
     const endpoint =
       buildEndpoint(
-        `/general/pc-products/?attribute=${attribute}`
+        `/general/semantic/discovery/?shelf=${shelfType}`
       )
+
+    /* ======================================================================
+    🔥 Observatory
+    ====================================================================== */
+
+    console.log(
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+    )
+
+    console.log(
+      '🔥 DISCOVER SHELF FETCH'
+    )
+
+    console.log({
+
+      attribute,
+
+      shelfType,
+
+      endpoint,
+    })
+
+    console.log(
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+    )
 
     /* ======================================================================
     🔥 Fetch
@@ -70,7 +148,7 @@ export async function fetchSemanticShelfRuntime(
     if (!response.ok) {
 
       throw new Error(
-        `Failed to fetch semantic shelf runtime: ${attribute}`
+        `Failed semantic discovery shelf runtime: ${attribute}`
       )
     }
 
@@ -82,10 +160,121 @@ export async function fetchSemanticShelfRuntime(
       await response.json()
 
     /* ======================================================================
-    🔥 Return
+    🔥 Runtime Observatory
     ====================================================================== */
 
-    return runtime
+    console.log(
+      '🔥 DISCOVERY RUNTIME RESPONSE',
+      {
+
+        attribute,
+
+        shelfType,
+
+        semanticShelves:
+          runtime?.semantic_shelves?.length,
+
+        nextShelves:
+          runtime?.next_shelves,
+
+        workflowTags:
+          runtime?.workflow_tags,
+      }
+    )
+
+    /* ======================================================================
+    🔥 Resolve Semantic Shelf
+    ====================================================================== */
+
+    const semanticShelves =
+
+      Array.isArray(
+        runtime?.semantic_shelves
+      )
+
+        ? runtime.semantic_shelves
+
+        : []
+
+    const matchedShelf =
+
+      semanticShelves.find(
+        (
+          shelf: any
+        ) => (
+
+          shelf?.shelf_type
+          === shelfType
+        )
+      )
+
+    /* ======================================================================
+    🔥 Shelf Observatory
+    ====================================================================== */
+
+    console.log(
+      '🔥 MATCHED SHELF',
+      {
+
+        shelfType,
+
+        found:
+          !!matchedShelf,
+
+        products:
+          matchedShelf
+            ?.products
+            ?.length,
+
+        nextShelves:
+          matchedShelf
+            ?.next_shelves,
+      }
+    )
+
+    /* ======================================================================
+    🔥 Return Runtime
+    ====================================================================== */
+
+    return {
+
+      success:
+        true,
+
+      shelf:
+        shelfType,
+
+      count:
+
+        matchedShelf
+          ?.products
+          ?.length
+
+          || 0,
+
+      products:
+
+        Array.isArray(
+          matchedShelf?.products
+        )
+
+          ? matchedShelf.products
+
+          : [],
+
+      next_shelves:
+
+        Array.isArray(
+          matchedShelf?.next_shelves
+        )
+
+          ? matchedShelf.next_shelves
+
+          : [],
+
+      raw:
+        runtime,
+    }
 
   } catch (error) {
 
@@ -111,6 +300,10 @@ export async function fetchSemanticShelfRuntime(
         0,
 
       products: [],
+
+      next_shelves: [],
     }
   }
 }
+
+export default fetchSemanticShelfRuntime
