@@ -1,6 +1,7 @@
 # =========================================================
 # SHIN CORE LINX
 # semantic/inference/compile_workflows.py
+# semantic workflow compiler
 # =========================================================
 
 
@@ -8,7 +9,12 @@
 # HELPERS
 # =========================================================
 
-def has_label(data, label):
+def has_label(
+
+    data,
+
+    label
+):
 
     labels = data.get(
         "labels",
@@ -16,6 +22,25 @@ def has_label(data, label):
     )
 
     return label in labels
+
+
+# =========================================================
+# HELPERS
+# =========================================================
+
+def normalize_score(value):
+
+    if value is None:
+
+        return 0
+
+    try:
+
+        return int(value)
+
+    except Exception:
+
+        return 0
 
 
 # =========================================================
@@ -34,22 +59,50 @@ def compile_workflow_tags(
 
 
     # =====================================================
-    # SCORES
+    # NORMALIZED SCORES
     # =====================================================
 
-    ai_score = ai_data.get(
-        "score_ai",
-        0
+    ai_score = normalize_score(
+
+        ai_data.get(
+            "score_ai"
+        )
     )
 
-    gaming_score = gaming_data.get(
-        "score_gaming",
-        0
+    gaming_score = normalize_score(
+
+        gaming_data.get(
+            "score_gaming"
+        )
     )
 
-    creator_score = creator_data.get(
-        "score_creator",
-        0
+    creator_score = normalize_score(
+
+        creator_data.get(
+            "score_creator"
+        )
+    )
+
+
+    # =====================================================
+    # DEBUG
+    # =====================================================
+
+    print(
+        "\n"
+        "================ WORKFLOW SCORES ================"
+    )
+
+    print(
+        f"AI: {ai_score}"
+    )
+
+    print(
+        f"GAMING: {gaming_score}"
+    )
+
+    print(
+        f"CREATOR: {creator_score}"
     )
 
 
@@ -62,8 +115,11 @@ def compile_workflow_tags(
         workflow_tags.extend([
 
             "ai_workflow",
+
             "local_llm",
+
             "stable_diffusion",
+
             "ai_workstation",
         ])
 
@@ -73,6 +129,7 @@ def compile_workflow_tags(
         workflow_tags.extend([
 
             "ai_workflow",
+
             "local_ai",
         ])
 
@@ -94,7 +151,9 @@ def compile_workflow_tags(
         workflow_tags.extend([
 
             "enthusiast_gaming",
+
             "high_refresh_gaming",
+
             "aaa_gaming",
         ])
 
@@ -104,6 +163,7 @@ def compile_workflow_tags(
         workflow_tags.extend([
 
             "high_end_gaming",
+
             "competitive_gaming",
         ])
 
@@ -125,7 +185,9 @@ def compile_workflow_tags(
         workflow_tags.extend([
 
             "creator_workstation",
+
             "video_editing",
+
             "3d_rendering",
         ])
 
@@ -135,6 +197,7 @@ def compile_workflow_tags(
         workflow_tags.extend([
 
             "creator_workflow",
+
             "photo_editing",
         ])
 
@@ -199,10 +262,38 @@ def compile_workflow_tags(
         False
     )
 
-    memory_gb = specs.get(
-        "memory_gb",
-        0
+    memory_gb = normalize_score(
+
+        specs.get(
+            "memory_gb"
+        )
     )
+
+    cpu_model = (
+        specs.get(
+            "cpu_model",
+            ""
+        ) or ""
+    ).lower()
+
+    # =====================================================
+    # NPU detection fallback
+    # =====================================================
+
+    if (
+
+        "core ultra" in cpu_model
+        or "snapdragon x" in cpu_model
+        or "ryzen ai" in cpu_model
+
+    ):
+
+        has_npu = True
+
+
+    # =====================================================
+    # MOBILE AI TAGS
+    # =====================================================
 
     if (
 
@@ -214,7 +305,26 @@ def compile_workflow_tags(
         workflow_tags.extend([
 
             "copilot_plus_pc",
+
             "mobile_ai_pc",
+        ])
+
+
+    # =====================================================
+    # LOW-END SAFETY
+    # =====================================================
+
+    if (
+
+        ai_score == 0
+        and gaming_score == 0
+        and creator_score == 0
+
+    ):
+
+        workflow_tags.extend([
+
+            "basic_computing",
         ])
 
 
@@ -228,6 +338,18 @@ def compile_workflow_tags(
     )
 
     workflow_tags.sort()
+
+
+    # =====================================================
+    # DEBUG
+    # =====================================================
+
+    print(
+        "\n"
+        "================ WORKFLOW TAGS ================"
+    )
+
+    print(workflow_tags)
 
 
     # =====================================================

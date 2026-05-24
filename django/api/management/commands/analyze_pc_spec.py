@@ -1,32 +1,31 @@
 # =========================================================
 # SHIN CORE LINX
 # analyze_pc_spec.py
-#
-# FINAL ORCHESTRATION VERSION
+# parallel semantic runtime analyzer
+# centralized observability integrated
 # =========================================================
+
+from concurrent.futures import (
+
+    ThreadPoolExecutor,
+
+    as_completed,
+)
 
 from django.core.management.base import (
     BaseCommand
 )
 
-from django.utils import timezone
+from api.models import (
+    PCProduct
+)
 
-from api.models import PCProduct
-
-# =========================================================
-# semantic runtime
-# =========================================================
+from api.utils.semantic.runtime.runtime_log import (
+    runtime_log,
+)
 
 from api.utils.semantic.runtime.compile_semantic_runtime import (
     compile_semantic_runtime
-)
-
-# =========================================================
-# content runtime
-# =========================================================
-
-from api.utils.semantic.content.generate_article import (
-    generate_article_content
 )
 
 
@@ -37,18 +36,23 @@ from api.utils.semantic.content.generate_article import (
 class Command(BaseCommand):
 
     help = (
-        "Analyze PC products "
-        "using semantic runtime"
+        "Analyze PC semantic runtime"
     )
 
     # =====================================================
-    # args
+    # ARGUMENTS
     # =====================================================
 
     def add_arguments(
+
         self,
-        parser
+
+        parser,
     ):
+
+        # =================================================
+        # LIMIT
+        # =================================================
 
         parser.add_argument(
 
@@ -56,285 +60,402 @@ class Command(BaseCommand):
 
             type=int,
 
-            default=1,
+            default=10,
+
+            help=(
+                "Limit number of products"
+            ),
         )
+
+        # =================================================
+        # FORCE
+        # =================================================
 
         parser.add_argument(
 
             "--force",
 
             action="store_true",
+
+            help=(
+                "Force runtime rebuild"
+            ),
         )
 
+        # =================================================
+        # NEEDS RUNTIME
+        # =================================================
+
+        parser.add_argument(
+
+            "--needs-runtime",
+
+            action="store_true",
+
+            help=(
+                "Analyze products requiring semantic runtime"
+            ),
+        )
+
+        # =================================================
+        # SKIP EXTRACTION
+        # =================================================
+
+        parser.add_argument(
+
+            "--skip-extraction",
+
+            action="store_true",
+
+            help=(
+                "Reuse existing extracted specs"
+            ),
+        )
+
+        # =================================================
+        # TRACE RUNTIME
+        # =================================================
+
+        parser.add_argument(
+
+            "--trace-runtime",
+
+            action="store_true",
+
+            help=(
+                "Enable semantic runtime observability"
+            ),
+        )
+
+        # =================================================
+        # PARALLEL WORKERS
+        # =================================================
+
+        parser.add_argument(
+
+            "--workers",
+
+            type=int,
+
+            default=4,
+
+            help=(
+                "Parallel semantic workers"
+            ),
+        )
 
     # =====================================================
-    # handle
+    # PRODUCT PROCESSOR
+    # =====================================================
+
+    def process_product(
+
+        self,
+
+        product,
+
+        total,
+
+        index,
+
+        force,
+
+        skip_extraction,
+
+        trace_runtime,
+
+        needs_runtime,
+    ):
+
+        try:
+
+            runtime_log(
+
+                True,
+
+                f"PRODUCT [{index}/{total}]",
+
+                product.name,
+            )
+
+            # =============================================
+            # EXISTING
+            # =============================================
+
+            runtime_log(
+
+                trace_runtime,
+
+                "EXISTING CPU",
+
+                product.cpu_model,
+            )
+
+            runtime_log(
+
+                trace_runtime,
+
+                "EXISTING GPU",
+
+                product.gpu_model,
+            )
+
+            runtime_log(
+
+                trace_runtime,
+
+                "EXISTING MEMORY",
+
+                product.memory_gb,
+            )
+
+            # =============================================
+            # SKIP
+            # =============================================
+
+            if (
+
+                product.semantic_runtime_compiled
+                and not force
+                and not needs_runtime
+
+            ):
+
+                runtime_log(
+
+                    True,
+
+                    "SKIPPED",
+
+                    product.name,
+                )
+
+                return
+
+            # =============================================
+            # COMPILE
+            # =============================================
+
+            runtime_result = (
+                compile_semantic_runtime(
+
+                    product=product,
+
+                    skip_extraction=skip_extraction,
+
+                    trace_runtime=trace_runtime,
+                )
+            )
+
+            # =============================================
+            # SAVE
+            # =============================================
+
+            product.semantic_runtime = (
+                runtime_result
+            )
+
+            product.semantic_runtime_compiled = True
+
+            product.save()
+
+            # =============================================
+            # SUCCESS
+            # =============================================
+
+            runtime_log(
+
+                True,
+
+                "PERSISTED",
+
+                product.name,
+            )
+
+        except Exception as e:
+
+            runtime_log(
+
+                True,
+
+                "RUNTIME ERROR",
+
+                str(e),
+            )
+
+    # =====================================================
+    # HANDLE
     # =====================================================
 
     def handle(
+
         self,
+
         *args,
-        **options
+
+        **options,
     ):
 
-        limit = options[
+        limit = options.get(
             "limit"
-        ]
+        )
 
-        force = options[
+        force = options.get(
             "force"
-        ]
+        )
 
-        # =============================================
-        # queryset
-        # =============================================
+        needs_runtime = options.get(
+            "needs_runtime"
+        )
+
+        skip_extraction = options.get(
+            "skip_extraction"
+        )
+
+        trace_runtime = options.get(
+            "trace_runtime"
+        )
+
+        workers = options.get(
+            "workers"
+        )
+
+        # =================================================
+        # QUERYSET
+        # =================================================
 
         queryset = (
             PCProduct.objects.all()
         )
 
-        # =============================================
-        # skip analyzed
-        # =============================================
+        # =================================================
+        # NEEDS RUNTIME
+        # =================================================
 
-        if not force:
+        if needs_runtime:
 
             queryset = queryset.filter(
 
-                last_spec_parsed_at__isnull=True
+                semantic_runtime_compiled=False
             )
 
-        # =============================================
-        # limit
-        # =============================================
+        # =================================================
+        # LIMIT
+        # =================================================
 
-        products = queryset[:limit]
+        queryset = list(
 
-        total = products.count()
-
-        # =============================================
-        # start
-        # =============================================
-
-        self.stdout.write(
-
-            self.style.SUCCESS(
-
-                f"🚀 解析開始: "
-                f"{total} 件"
-            )
+            queryset.order_by(
+                "-id"
+            )[:limit]
         )
 
-        # =============================================
-        # loop
-        # =============================================
+        total = len(queryset)
 
-        for index, product in enumerate(
+        # =================================================
+        # START
+        # =================================================
 
-            products,
-            start=1
-        ):
+        runtime_log(
 
-            self.analyze_product(
+            True,
 
-                product=product,
+            "SEMANTIC RUNTIME ANALYSIS",
 
-                count=index,
+            {
 
-                total=total,
-            )
+                "products":
+                    total,
 
+                "workers":
+                    workers,
 
-    # =====================================================
-    # analyze product
-    # =====================================================
+                "force":
+                    force,
 
-    def analyze_product(
+                "needs_runtime":
+                    needs_runtime,
 
-        self,
-        product,
-        count,
-        total,
-    ):
+                "skip_extraction":
+                    skip_extraction,
 
-        try:
+                "trace_runtime":
+                    trace_runtime,
+            },
+        )
 
-            print(
-                "\n"
-                "=================================================="
-            )
+        # =================================================
+        # PARALLEL EXECUTION
+        # =================================================
 
-            print(
-                f"🧠 [{count}/{total}]"
-            )
+        with ThreadPoolExecutor(
 
-            print(
-                product.name
-            )
+            max_workers=workers
 
-            # =========================================
-            # semantic runtime
-            # =========================================
+        ) as executor:
 
-            runtime_result = (
-                compile_semantic_runtime(
-                    product
+            futures = []
+
+            for index, product in enumerate(
+
+                queryset,
+
+                start=1,
+            ):
+
+                future = executor.submit(
+
+                    self.process_product,
+
+                    product,
+
+                    total,
+
+                    index,
+
+                    force,
+
+                    skip_extraction,
+
+                    trace_runtime,
+
+                    needs_runtime,
                 )
-            )
 
-            specs = runtime_result.get(
-                "specs",
-                {}
-            )
-
-            ai_data = runtime_result.get(
-                "ai_data",
-                {}
-            )
-
-            workflow_tags = runtime_result.get(
-                "workflow_tags",
-                []
-            )
-
-            # =========================================
-            # observability
-            # =========================================
-
-            print(
-                "\n"
-                "----------------------------------"
-            )
-
-            print(
-                "CPU:",
-                specs.get("cpu_model")
-            )
-
-            print(
-                "GPU:",
-                specs.get("gpu_model")
-            )
-
-            print(
-                "MEMORY:",
-                specs.get("memory_gb")
-            )
-
-            print(
-                "AI SCORE:",
-                ai_data.get(
-                    "score_ai"
+                futures.append(
+                    future
                 )
-            )
 
-            print(
-                "WORKFLOWS:",
-                workflow_tags
-            )
+            # =============================================
+            # WAIT
+            # =============================================
 
-            # =========================================
-            # content runtime
-            # =========================================
+            for future in as_completed(
+                futures
+            ):
 
-            content_result = (
-                generate_article_content(
+                try:
 
-                    product=product,
+                    future.result()
 
-                    runtime_result=runtime_result,
-                )
-            )
+                except Exception as e:
 
-            # =========================================
-            # apply content
-            # =========================================
+                    runtime_log(
 
-            product.ai_title = (
-                content_result.get(
-                    "title"
-                )
-            )
+                        True,
 
-            product.ai_summary = (
-                content_result.get(
-                    "summary"
-                )
-            )
+                        "THREAD ERROR",
 
-            product.ai_content = (
-                content_result.get(
-                    "content"
-                )
-            )
+                        str(e),
+                    )
 
-            product.ai_faq = (
-                content_result.get(
-                    "faq"
-                )
-            )
+        # =================================================
+        # DONE
+        # =================================================
 
-            # =========================================
-            # runtime metadata
-            # =========================================
+        runtime_log(
 
-            product.semantic_runtime = (
-                "v3"
-            )
+            True,
 
-            product.semantic_runtime_updated_at = (
-                timezone.now()
-            )
-
-            product.last_spec_parsed_at = (
-                timezone.now()
-            )
-
-            # =========================================
-            # save
-            # =========================================
-
-            product.save()
-
-            # =========================================
-            # success
-            # =========================================
-
-            self.stdout.write(
-
-                self.style.SUCCESS(
-
-                    f"✅ 更新完了 "
-                    f"({count}/{total}) "
-                    f"{product.unique_id}"
-                )
-            )
-
-        except Exception as e:
-
-            self.stdout.write(
-
-                self.style.ERROR(
-
-                    f"❌ 解析失敗 "
-                    f"({product.unique_id}) "
-                    f"{str(e)}"
-                )
-            )
-
-            print(
-                "\n"
-                "=================================================="
-            )
-
-            print(
-                "RUNTIME ERROR"
-            )
-
-            print(
-                str(e)
-            )
-
-            print(
-                "=================================================="
-            )
+            "SEMANTIC RUNTIME COMPLETED",
+        )

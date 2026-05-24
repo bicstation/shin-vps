@@ -1,6 +1,7 @@
 # =========================================================
 # SHIN CORE LINX
 # semantic/content/generate_faq.py
+# semantic runtime aware FAQ generator
 # =========================================================
 
 
@@ -9,7 +10,9 @@
 # =========================================================
 
 def has_workflow(
+
     workflow_tags,
+
     tag,
 ):
 
@@ -26,6 +29,10 @@ def build_ai_faq(
 
     faq = []
 
+    # =====================================================
+    # AI WORKFLOW
+    # =====================================================
+
     if has_workflow(
 
         workflow_tags,
@@ -40,8 +47,13 @@ def build_ai_faq(
 
             "answer":
                 "RTX GPU や大容量メモリを搭載している場合、"
-                "Stable Diffusion やローカルLLM用途に適しています。"
+                "Stable Diffusion やローカルLLM用途に"
+                "適した semantic workflow が付与されます。"
         })
+
+    # =====================================================
+    # LOCAL LLM
+    # =====================================================
 
     if has_workflow(
 
@@ -60,6 +72,27 @@ def build_ai_faq(
                 "ローカルAI実行向けとして解析されています。"
         })
 
+    # =====================================================
+    # COPILOT+
+    # =====================================================
+
+    if has_workflow(
+
+        workflow_tags,
+        "copilot_plus_pc"
+
+    ):
+
+        faq.append({
+
+            "question":
+                "Copilot+ PC に対応していますか？",
+
+            "answer":
+                "NPU を搭載した AI PC として解析された場合、"
+                "Copilot+ workflow が付与されます。"
+        })
+
     return faq
 
 
@@ -72,6 +105,10 @@ def build_gaming_faq(
 ):
 
     faq = []
+
+    # =====================================================
+    # GAMING READY
+    # =====================================================
 
     if has_workflow(
 
@@ -90,6 +127,10 @@ def build_gaming_faq(
                 "ゲーミング用途にも適しています。"
         })
 
+    # =====================================================
+    # HIGH REFRESH
+    # =====================================================
+
     if has_workflow(
 
         workflow_tags,
@@ -104,7 +145,28 @@ def build_gaming_faq(
 
             "answer":
                 "高Hzディスプレイを搭載している場合、"
-                "competitive gaming 向けとして解析されます。"
+                "competitive gaming 向け workflow が付与されます。"
+        })
+
+    # =====================================================
+    # AAA
+    # =====================================================
+
+    if has_workflow(
+
+        workflow_tags,
+        "aaa_gaming"
+
+    ):
+
+        faq.append({
+
+            "question":
+                "AAAゲームにも対応できますか？",
+
+            "answer":
+                "高性能GPUを搭載した場合、"
+                "AAA gaming workflow として分類されます。"
         })
 
     return faq
@@ -119,6 +181,10 @@ def build_creator_faq(
 ):
 
     faq = []
+
+    # =====================================================
+    # CREATOR WORKSTATION
+    # =====================================================
 
     if has_workflow(
 
@@ -137,6 +203,10 @@ def build_creator_faq(
                 "動画編集や制作用途向けとして解析されています。"
         })
 
+    # =====================================================
+    # 3D RENDERING
+    # =====================================================
+
     if has_workflow(
 
         workflow_tags,
@@ -152,6 +222,27 @@ def build_creator_faq(
             "answer":
                 "高性能GPUと十分なメモリを搭載している場合、"
                 "3D制作向け workflow が付与されます。"
+        })
+
+    # =====================================================
+    # PHOTO EDITING
+    # =====================================================
+
+    if has_workflow(
+
+        workflow_tags,
+        "photo_editing"
+
+    ):
+
+        faq.append({
+
+            "question":
+                "写真編集用途にも適していますか？",
+
+            "answer":
+                "creator workflow が付与されている場合、"
+                "RAW現像や画像編集用途にも適しています。"
         })
 
     return faq
@@ -183,10 +274,59 @@ def build_general_faq():
 # =========================================================
 
 def generate_faq(
-    workflow_tags,
+
+    product,
+
+    runtime_result=None,
 ):
 
     faq = []
+
+    # =====================================================
+    # WORKFLOW TAGS
+    # =====================================================
+
+    workflow_tags = []
+
+    # =====================================================
+    # RUNTIME RESULT
+    # =====================================================
+
+    if runtime_result:
+
+        workflow_tags = runtime_result.get(
+
+            "workflow_tags",
+
+            []
+        )
+
+    # =====================================================
+    # FALLBACK
+    # =====================================================
+
+    elif hasattr(
+
+        product,
+
+        "workflow_tags"
+    ):
+
+        workflow_tags = (
+            product.workflow_tags
+            or []
+        )
+
+    # =====================================================
+    # DEBUG
+    # =====================================================
+
+    print(
+        "\n"
+        "================ FAQ WORKFLOW TAGS ================"
+    )
+
+    print(workflow_tags)
 
     # =====================================================
     # AI
@@ -229,6 +369,25 @@ def generate_faq(
 
         build_general_faq()
     )
+
+    # =====================================================
+    # EMPTY SAFETY
+    # =====================================================
+
+    if not faq:
+
+        faq = [
+
+            {
+
+                "question":
+                    "このPCのsemantic runtime解析とは？",
+
+                "answer":
+                    "現在このPCは semantic runtime により"
+                    "解析中です。"
+            }
+        ]
 
     # =====================================================
     # RETURN

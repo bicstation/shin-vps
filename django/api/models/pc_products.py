@@ -272,6 +272,77 @@ class PCProduct(models.Model):
     score_portable = models.IntegerField(default=0, verbose_name="携帯性スコア(1-100)")
     score_ai = models.IntegerField(default=0, verbose_name="AI・NPUスコア(1-100)")
     
+    
+    
+    # =====================================================
+    # Semantic Runtime
+    # =====================================================
+
+    semantic_runtime = models.JSONField(
+
+        default=dict,
+
+        blank=True,
+
+        verbose_name="Semantic Runtime Payload"
+    )
+
+    semantic_schema_version = models.CharField(
+
+        max_length=20,
+
+        default="v3",
+
+        db_index=True,
+
+        verbose_name="Semantic Schema Version"
+    )
+
+    semantic_runtime_compiled = models.BooleanField(
+
+        default=False,
+
+        db_index=True,
+
+        verbose_name="Semantic Runtime Compiled"
+    )
+
+    semantic_updated_at = models.DateTimeField(
+
+        null=True,
+
+        blank=True,
+
+        verbose_name="Semantic Updated At"
+    )
+
+    workflow_tags = models.JSONField(
+
+        default=list,
+
+        blank=True,
+
+        verbose_name="Workflow Tags"
+    )
+
+    semantic_labels = models.JSONField(
+
+        default=list,
+
+        blank=True,
+
+        verbose_name="Semantic Labels"
+    )
+
+    runtime_profiles = models.JSONField(
+
+        default=list,
+
+        blank=True,
+
+        verbose_name="Runtime Profiles"
+    )
+    
     # ==========================================================
     # Semantic Runtime
     # ==========================================================

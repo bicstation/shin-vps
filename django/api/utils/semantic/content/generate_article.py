@@ -1,9 +1,18 @@
 # =========================================================
 # SHIN CORE LINX
 # semantic/content/generate_article.py
+# semantic runtime aware article generator
+# japanese semantic localization integrated
 # =========================================================
 
 from django.utils.html import strip_tags
+
+from api.utils.semantic.localization.semantic_ja import (
+
+    localize_workflows,
+
+    localize_profiles,
+)
 
 
 # =========================================================
@@ -13,31 +22,136 @@ from django.utils.html import strip_tags
 def safe_text(value):
 
     if not value:
+
         return ""
 
     return str(value).strip()
 
 
-def build_summary(
+# =========================================================
+# HELPERS
+# =========================================================
 
-    product,
-    specs,
-    workflow_tags,
+def build_runtime_summary(
+
+    localized_workflows,
+
+    localized_profiles,
 ):
 
+    parts = []
+
+    # =====================================================
+    # AI
+    # =====================================================
+
+    if "生成AI向け" in localized_workflows:
+
+        parts.append(
+            "生成AI"
+        )
+
+    # =====================================================
+    # GAMING
+    # =====================================================
+
+    if (
+
+        "AAAゲーム向け" in localized_workflows
+        or "高性能ゲーミング" in localized_workflows
+
+    ):
+
+        parts.append(
+            "高性能ゲーミング"
+        )
+
+    elif "ゲーム用途向け" in localized_workflows:
+
+        parts.append(
+            "ゲーム用途"
+        )
+
+    # =====================================================
+    # CREATOR
+    # =====================================================
+
+    if "制作ワークステーション" in localized_workflows:
+
+        parts.append(
+            "動画編集"
+        )
+
+    elif "クリエイティブ制作向け" in localized_workflows:
+
+        parts.append(
+            "クリエイティブ用途"
+        )
+
+    # =====================================================
+    # MOBILE AI
+    # =====================================================
+
+    if "モバイルAI PC" in localized_workflows:
+
+        parts.append(
+            "モバイルAI"
+        )
+
+    # =====================================================
+    # FALLBACK
+    # =====================================================
+
+    if not parts:
+
+        if "モバイル" in localized_profiles:
+
+            parts.append(
+                "日常用途"
+            )
+
+        else:
+
+            parts.append(
+                "マルチ用途"
+            )
+
+    return "・".join(parts)
+
+
+# =========================================================
+# HELPERS
+# =========================================================
+
+def build_spec_summary(
+    specs,
+):
+
+    parts = []
+
     cpu = specs.get(
-        "cpu_model"
+        "cpu_model",
+        ""
     )
 
     gpu = specs.get(
-        "gpu_model"
+        "gpu_model",
+        ""
     )
 
     memory = specs.get(
-        "memory_gb"
+        "memory_gb",
+        0
     )
 
-    parts = []
+    storage = specs.get(
+        "storage_gb",
+        0
+    )
+
+    # =====================================================
+    # CPU
+    # =====================================================
 
     if cpu:
 
@@ -45,11 +159,19 @@ def build_summary(
             f"CPU: {cpu}"
         )
 
+    # =====================================================
+    # GPU
+    # =====================================================
+
     if gpu:
 
         parts.append(
             f"GPU: {gpu}"
         )
+
+    # =====================================================
+    # MEMORY
+    # =====================================================
 
     if memory:
 
@@ -57,48 +179,95 @@ def build_summary(
             f"メモリ: {memory}GB"
         )
 
-    if workflow_tags:
+    # =====================================================
+    # STORAGE
+    # =====================================================
+
+    if storage:
 
         parts.append(
-
-            "用途: "
-            + ", ".join(
-                workflow_tags[:3]
-            )
+            f"ストレージ: {storage}GB"
         )
 
     return " / ".join(parts)
 
 
 # =========================================================
-# BUILD CONTENT
+# HELPERS
 # =========================================================
 
-def build_article_html(
+def build_semantic_analysis(
 
-    product,
-    specs,
-    ai_data,
-    gaming_data,
-    creator_data,
-    workflow_tags,
+    localized_workflows,
 ):
 
-    cpu = specs.get(
-        "cpu_model"
+    # =====================================================
+    # AI
+    # =====================================================
+
+    if "ローカルLLM対応" in localized_workflows:
+
+        return (
+            "このPCはローカルLLMや Stable Diffusion "
+            "などの生成AI用途向けとして"
+            "semantic runtime により解析されています。"
+        )
+
+    # =====================================================
+    # GAMING
+    # =====================================================
+
+    if "AAAゲーム向け" in localized_workflows:
+
+        return (
+            "高性能GPUを搭載した AAAゲーム向け "
+            "semantic workflow PC として解析されています。"
+        )
+
+    # =====================================================
+    # CREATOR
+    # =====================================================
+
+    if "制作ワークステーション" in localized_workflows:
+
+        return (
+            "動画編集やクリエイティブ制作向けの "
+            "creator workflow PC として分類されています。"
+        )
+
+    # =====================================================
+    # MOBILE AI
+    # =====================================================
+
+    if "モバイルAI PC" in localized_workflows:
+
+        return (
+            "AI workflow とモバイル性能を両立した "
+            "Copilot+ semantic PC として解析されています。"
+        )
+
+    # =====================================================
+    # GENERAL
+    # =====================================================
+
+    return (
+        "SHIN CORE LINX semantic runtime により"
+        "マルチ用途向けPCとして解析されています。"
     )
 
-    gpu = specs.get(
-        "gpu_model"
-    )
 
-    memory = specs.get(
-        "memory_gb"
-    )
+# =========================================================
+# HELPERS
+# =========================================================
 
-    storage = specs.get(
-        "storage_gb"
-    )
+def build_score_section(
+
+    ai_data,
+
+    gaming_data,
+
+    creator_data,
+):
 
     ai_score = ai_data.get(
         "score_ai",
@@ -115,6 +284,97 @@ def build_article_html(
         0
     )
 
+    return f"""
+<h3>Semantic Runtime Scores</h3>
+
+<ul>
+    <li>AI Score: {ai_score}</li>
+    <li>Gaming Score: {gaming_score}</li>
+    <li>Creator Score: {creator_score}</li>
+</ul>
+"""
+
+
+# =========================================================
+# HELPERS
+# =========================================================
+
+def build_workflow_section(
+    localized_workflows,
+):
+
+    if not localized_workflows:
+
+        return """
+<h3>Workflow</h3>
+<p>現在 semantic workflow を解析中です。</p>
+"""
+
+    workflow_html = "".join([
+
+        f"<li>{tag}</li>"
+
+        for tag in localized_workflows
+    ])
+
+    return f"""
+<h3>Workflow</h3>
+
+<ul>
+    {workflow_html}
+</ul>
+"""
+
+
+# =========================================================
+# BUILD HTML
+# =========================================================
+
+def build_article_html(
+
+    product,
+
+    specs,
+
+    ai_data,
+
+    gaming_data,
+
+    creator_data,
+
+    localized_workflows,
+
+    localized_profiles,
+):
+
+    runtime_summary = build_runtime_summary(
+
+        localized_workflows,
+
+        localized_profiles,
+    )
+
+    spec_summary = build_spec_summary(
+        specs
+    )
+
+    semantic_analysis = build_semantic_analysis(
+        localized_workflows
+    )
+
+    score_section = build_score_section(
+
+        ai_data,
+
+        gaming_data,
+
+        creator_data,
+    )
+
+    workflow_section = build_workflow_section(
+        localized_workflows
+    )
+
     html = f"""
 <h2>{product.name}</h2>
 
@@ -124,72 +384,42 @@ SHIN CORE LINX semantic runtime により
 自動解析されたPCです。
 </p>
 
-<h3>スペック概要</h3>
-
-<ul>
-    <li>CPU: {cpu}</li>
-    <li>GPU: {gpu}</li>
-    <li>メモリ: {memory}GB</li>
-    <li>ストレージ: {storage}GB</li>
-</ul>
-
-<h3>Semantic Runtime Analysis</h3>
-
-<ul>
-    <li>AI Score: {ai_score}</li>
-    <li>Gaming Score: {gaming_score}</li>
-    <li>Creator Score: {creator_score}</li>
-</ul>
-
-<h3>Workflow Tags</h3>
+<h3>Semantic Runtime Overview</h3>
 
 <p>
-{", ".join(workflow_tags)}
+{runtime_summary}
+</p>
+
+<h3>スペック概要</h3>
+
+<p>
+{spec_summary}
+</p>
+
+<h3>Semantic Analysis</h3>
+
+<p>
+{semantic_analysis}
+</p>
+
+{score_section}
+
+{workflow_section}
+
+<h3>Semantic Runtime Profiles</h3>
+
+<p>
+{", ".join(localized_profiles)}
 </p>
 
 <p>
-この製品の詳細は、
-以下のリンクからご確認いただけます。
+このコンテンツは、
+SHIN CORE LINX semantic runtime により
+自動生成されています。
 </p>
 """
 
     return html.strip()
-
-
-# =========================================================
-# FAQ
-# =========================================================
-
-def build_faq(
-
-    product,
-    workflow_tags,
-):
-
-    faq = [
-
-        {
-            "question":
-                "このPCはAI用途に向いていますか？",
-
-            "answer":
-                "workflow_tags に "
-                "ai_workflow が含まれている場合、"
-                "ローカルAIや生成AI用途に適しています。"
-        },
-
-        {
-            "question":
-                "ゲーム用途でも使えますか？",
-
-            "answer":
-                "gaming_ready や "
-                "high_end_gaming が含まれている場合、"
-                "ゲーム用途にも対応できます。"
-        },
-    ]
-
-    return faq
 
 
 # =========================================================
@@ -199,61 +429,155 @@ def build_faq(
 def generate_article_content(
 
     product,
-    runtime_result,
+
+    runtime_result=None,
 ):
 
+    # =====================================================
+    # FALLBACK
+    # =====================================================
+
+    runtime_result = (
+        runtime_result
+        or {}
+    )
+
+    # =====================================================
+    # SPECS
+    # =====================================================
+
     specs = runtime_result.get(
+
         "specs",
+
         {}
     )
 
-    ai_data = runtime_result.get(
-        "ai_data",
+    # =====================================================
+    # INFERENCE
+    # =====================================================
+
+    inference = runtime_result.get(
+
+        "inference",
+
         {}
     )
 
-    gaming_data = runtime_result.get(
-        "gaming_data",
+    ai_data = inference.get(
+        "ai",
         {}
     )
 
-    creator_data = runtime_result.get(
-        "creator_data",
+    gaming_data = inference.get(
+        "gaming",
         {}
     )
+
+    creator_data = inference.get(
+        "creator",
+        {}
+    )
+
+    # =====================================================
+    # WORKFLOW
+    # =====================================================
 
     workflow_tags = runtime_result.get(
+
         "workflow_tags",
+
+        []
+    )
+
+    runtime_profiles = runtime_result.get(
+
+        "runtime_profiles",
+
         []
     )
 
     # =====================================================
-    # title
+    # FALLBACK FROM PRODUCT
     # =====================================================
 
-    title = (
-        f"{product.name} "
-        f"| SHIN CORE LINX"
+    if not workflow_tags:
+
+        workflow_tags = (
+            product.workflow_tags
+            or []
+        )
+
+    if not runtime_profiles:
+
+        runtime_profiles = (
+            product.runtime_profiles
+            or []
+        )
+
+    # =====================================================
+    # LOCALIZATION
+    # =====================================================
+
+    localized_workflows = (
+        localize_workflows(
+            workflow_tags
+        )
+    )
+
+    localized_profiles = (
+        localize_profiles(
+            runtime_profiles
+        )
     )
 
     # =====================================================
-    # summary
+    # FALLBACK SPECS
     # =====================================================
 
-    summary = build_summary(
+    if not specs:
 
-        product=product,
+        specs = {
 
-        specs=specs,
+            "cpu_model":
+                product.cpu_model or "",
 
-        workflow_tags=workflow_tags,
+            "gpu_model":
+                product.gpu_model or "",
+
+            "memory_gb":
+                product.memory_gb or 0,
+
+            "storage_gb":
+                getattr(
+                    product,
+                    "storage_gb",
+                    0
+                ) or 0,
+        }
+
+    # =====================================================
+    # DEBUG
+    # =====================================================
+
+    print(
+        "\n"
+        "================ ARTICLE RUNTIME ================"
+    )
+
+    print(
+        workflow_tags
+    )
+
+    print(
+        localized_workflows
     )
 
     # =====================================================
-    # html
+    # BUILD ARTICLE
     # =====================================================
 
-    content = build_article_html(
+    html = build_article_html(
 
         product=product,
 
@@ -265,35 +589,21 @@ def generate_article_content(
 
         creator_data=creator_data,
 
-        workflow_tags=workflow_tags,
+        localized_workflows=localized_workflows,
+
+        localized_profiles=localized_profiles,
     )
 
     # =====================================================
-    # faq
+    # CLEANUP
     # =====================================================
 
-    faq = build_faq(
-
-        product=product,
-
-        workflow_tags=workflow_tags,
-    )
+    html = strip_tags(
+        html
+    ).strip()
 
     # =====================================================
-    # return
+    # RETURN
     # =====================================================
 
-    return {
-
-        "title": safe_text(
-            title
-        ),
-
-        "summary": safe_text(
-            summary
-        ),
-
-        "content": content,
-
-        "faq": faq,
-    }
+    return html

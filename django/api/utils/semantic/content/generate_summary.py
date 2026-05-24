@@ -1,198 +1,242 @@
 # =========================================================
 # SHIN CORE LINX
 # semantic/content/generate_summary.py
+# semantic runtime aware summary generator
+# japanese semantic localization integrated
 # =========================================================
+
+from api.utils.semantic.localization.semantic_ja import (
+
+    localize_workflows,
+
+    localize_profiles,
+)
 
 
 # =========================================================
 # HELPERS
 # =========================================================
 
-def safe_text(value):
-
-    if not value:
-        return ""
-
-    return str(value).strip()
-
-
-def build_spec_summary(specs):
-
-    summary_parts = []
-
-    cpu = specs.get(
-        "cpu_model"
-    )
-
-    gpu = specs.get(
-        "gpu_model"
-    )
-
-    memory = specs.get(
-        "memory_gb"
-    )
-
-    storage = specs.get(
-        "storage_gb"
-    )
-
-    if cpu:
-
-        summary_parts.append(
-            f"CPU: {cpu}"
-        )
-
-    if gpu:
-
-        summary_parts.append(
-            f"GPU: {gpu}"
-        )
-
-    if memory:
-
-        summary_parts.append(
-            f"メモリ {memory}GB"
-        )
-
-    if storage:
-
-        summary_parts.append(
-            f"SSD {storage}GB"
-        )
-
-    return " / ".join(
-        summary_parts
-    )
-
-
-def build_workflow_summary(
-    workflow_tags
+def join_features(
+    features,
 ):
 
-    if not workflow_tags:
-
-        return ""
-
-    return "対応workflow: " + ", ".join(
-
-        workflow_tags[:5]
-    )
+    return "・".join(features)
 
 
 # =========================================================
-# AI SUMMARY
+# HELPERS
 # =========================================================
 
-def build_ai_summary(
-    ai_data
+def build_runtime_sentence(
+
+    localized_workflows,
+
+    localized_profiles,
 ):
 
-    score = ai_data.get(
-        "score_ai",
+    parts = []
+
+    # =====================================================
+    # AI
+    # =====================================================
+
+    if "生成AI向け" in localized_workflows:
+
+        parts.append(
+            "生成AI用途"
+        )
+
+    elif "AI活用向け" in localized_workflows:
+
+        parts.append(
+            "AI活用"
+        )
+
+    # =====================================================
+    # GAMING
+    # =====================================================
+
+    if (
+
+        "AAAゲーム向け" in localized_workflows
+        or "高性能ゲーミング" in localized_workflows
+
+    ):
+
+        parts.append(
+            "高性能ゲーミング"
+        )
+
+    elif "ゲーム用途向け" in localized_workflows:
+
+        parts.append(
+            "ゲーム用途"
+        )
+
+    # =====================================================
+    # CREATOR
+    # =====================================================
+
+    if "制作ワークステーション" in localized_workflows:
+
+        parts.append(
+            "動画編集"
+        )
+
+    elif "クリエイティブ制作向け" in localized_workflows:
+
+        parts.append(
+            "クリエイティブ用途"
+        )
+
+    # =====================================================
+    # MOBILE AI
+    # =====================================================
+
+    if "モバイルAI PC" in localized_workflows:
+
+        parts.append(
+            "モバイルAI"
+        )
+
+    # =====================================================
+    # FALLBACK
+    # =====================================================
+
+    if not parts:
+
+        if "モバイル" in localized_profiles:
+
+            parts.append(
+                "日常用途"
+            )
+
+        else:
+
+            parts.append(
+                "マルチ用途"
+            )
+
+    return join_features(parts)
+
+
+# =========================================================
+# HELPERS
+# =========================================================
+
+def build_spec_sentence(
+    specs,
+):
+
+    parts = []
+
+    cpu_model = specs.get(
+        "cpu_model",
+        ""
+    )
+
+    gpu_model = specs.get(
+        "gpu_model",
+        ""
+    )
+
+    memory_gb = specs.get(
+        "memory_gb",
         0
     )
 
-    if score >= 80:
+    # =====================================================
+    # CPU
+    # =====================================================
 
-        return (
-            "ローカルLLMや"
-            "Stable Diffusion用途にも"
-            "対応可能な高性能AI PCです。"
+    if cpu_model:
+
+        parts.append(cpu_model)
+
+    # =====================================================
+    # GPU
+    # =====================================================
+
+    if gpu_model:
+
+        parts.append(gpu_model)
+
+    # =====================================================
+    # MEMORY
+    # =====================================================
+
+    if memory_gb:
+
+        parts.append(
+            f"{memory_gb}GBメモリ"
         )
 
-    if score >= 60:
+    return join_features(parts)
+
+
+# =========================================================
+# HELPERS
+# =========================================================
+
+def build_semantic_sentence(
+
+    localized_workflows,
+):
+
+    # =====================================================
+    # AI
+    # =====================================================
+
+    if "ローカルLLM対応" in localized_workflows:
 
         return (
-            "生成AIやAI支援用途に"
-            "適した構成です。"
+            "ローカルLLMや生成AI用途にも"
+            "適した semantic runtime PCです。"
         )
 
-    if score >= 40:
+    # =====================================================
+    # CREATOR
+    # =====================================================
+
+    if "制作ワークステーション" in localized_workflows:
 
         return (
-            "一般的なAI活用に"
-            "対応できる性能を備えています。"
+            "動画編集やクリエイティブ用途向けに"
+            "最適化された semantic workflow を"
+            "搭載しています。"
         )
+
+    # =====================================================
+    # GAMING
+    # =====================================================
+
+    if "AAAゲーム向け" in localized_workflows:
+
+        return (
+            "AAAゲームや高負荷ゲーミング向けとして"
+            "解析された high-end gaming PCです。"
+        )
+
+    # =====================================================
+    # MOBILE AI
+    # =====================================================
+
+    if "モバイルAI PC" in localized_workflows:
+
+        return (
+            "AI workflow とモバイル性能を両立した"
+            "次世代 Copilot+ semantic PCです。"
+        )
+
+    # =====================================================
+    # GENERAL
+    # =====================================================
 
     return (
-        "一般用途向け構成です。"
+        "SHIN CORE LINX semantic runtime により"
+        "解析されたマルチ用途向けPCです。"
     )
-
-
-# =========================================================
-# GAMING SUMMARY
-# =========================================================
-
-def build_gaming_summary(
-    gaming_data
-):
-
-    score = gaming_data.get(
-        "score_gaming",
-        0
-    )
-
-    if score >= 85:
-
-        return (
-            "AAAゲームや"
-            "高リフレッシュレート環境にも"
-            "対応可能です。"
-        )
-
-    if score >= 65:
-
-        return (
-            "快適なゲーミング用途に"
-            "対応できる性能です。"
-        )
-
-    if score >= 45:
-
-        return (
-            "軽〜中程度のゲーム用途にも"
-            "対応できます。"
-        )
-
-    return ""
-
-
-# =========================================================
-# CREATOR SUMMARY
-# =========================================================
-
-def build_creator_summary(
-    creator_data
-):
-
-    score = creator_data.get(
-        "score_creator",
-        0
-    )
-
-    if score >= 80:
-
-        return (
-            "動画編集や3D制作にも"
-            "対応可能な"
-            "クリエイター向け構成です。"
-        )
-
-    if score >= 60:
-
-        return (
-            "画像編集や動画編集向けとして"
-            "バランスの良い性能です。"
-        )
-
-    if score >= 40:
-
-        return (
-            "一般的なクリエイティブ用途に"
-            "対応できます。"
-        )
-
-    return ""
 
 
 # =========================================================
@@ -202,120 +246,164 @@ def build_creator_summary(
 def generate_summary(
 
     product,
-    runtime_result,
+
+    runtime_result=None,
 ):
 
+    # =====================================================
+    # FALLBACK
+    # =====================================================
+
+    runtime_result = (
+        runtime_result
+        or {}
+    )
+
     specs = runtime_result.get(
+
         "specs",
-        {}
-    )
 
-    ai_data = runtime_result.get(
-        "ai_data",
-        {}
-    )
-
-    gaming_data = runtime_result.get(
-        "gaming_data",
-        {}
-    )
-
-    creator_data = runtime_result.get(
-        "creator_data",
         {}
     )
 
     workflow_tags = runtime_result.get(
+
         "workflow_tags",
+
         []
     )
 
-    summary_parts = []
+    runtime_profiles = runtime_result.get(
 
-    # =====================================================
-    # specs
-    # =====================================================
+        "runtime_profiles",
 
-    spec_summary = build_spec_summary(
-        specs
+        []
     )
 
-    if spec_summary:
+    # =====================================================
+    # FALLBACK FROM PRODUCT
+    # =====================================================
 
-        summary_parts.append(
-            spec_summary
+    if not specs:
+
+        specs = {
+
+            "cpu_model":
+                product.cpu_model or "",
+
+            "gpu_model":
+                product.gpu_model or "",
+
+            "memory_gb":
+                product.memory_gb or 0,
+        }
+
+    if not workflow_tags:
+
+        workflow_tags = (
+            product.workflow_tags
+            or []
+        )
+
+    if not runtime_profiles:
+
+        runtime_profiles = (
+            product.runtime_profiles
+            or []
         )
 
     # =====================================================
-    # AI
+    # LOCALIZATION
     # =====================================================
 
-    ai_summary = build_ai_summary(
-        ai_data
-    )
-
-    if ai_summary:
-
-        summary_parts.append(
-            ai_summary
-        )
-
-    # =====================================================
-    # gaming
-    # =====================================================
-
-    gaming_summary = (
-        build_gaming_summary(
-            gaming_data
-        )
-    )
-
-    if gaming_summary:
-
-        summary_parts.append(
-            gaming_summary
-        )
-
-    # =====================================================
-    # creator
-    # =====================================================
-
-    creator_summary = (
-        build_creator_summary(
-            creator_data
-        )
-    )
-
-    if creator_summary:
-
-        summary_parts.append(
-            creator_summary
-        )
-
-    # =====================================================
-    # workflow
-    # =====================================================
-
-    workflow_summary = (
-        build_workflow_summary(
+    localized_workflows = (
+        localize_workflows(
             workflow_tags
         )
     )
 
-    if workflow_summary:
+    localized_profiles = (
+        localize_profiles(
+            runtime_profiles
+        )
+    )
+
+    # =====================================================
+    # DEBUG
+    # =====================================================
+
+    print(
+        "\n"
+        "================ SUMMARY RUNTIME ================"
+    )
+
+    print(
+        workflow_tags
+    )
+
+    print(
+        localized_workflows
+    )
+
+    # =====================================================
+    # BUILD
+    # =====================================================
+
+    runtime_sentence = (
+        build_runtime_sentence(
+
+            localized_workflows,
+
+            localized_profiles,
+        )
+    )
+
+    spec_sentence = (
+        build_spec_sentence(
+            specs
+        )
+    )
+
+    semantic_sentence = (
+        build_semantic_sentence(
+            localized_workflows
+        )
+    )
+
+    # =====================================================
+    # FINAL SUMMARY
+    # =====================================================
+
+    summary_parts = [
+
+        runtime_sentence,
+    ]
+
+    if spec_sentence:
 
         summary_parts.append(
-            workflow_summary
+            spec_sentence
         )
 
-    # =====================================================
-    # final
-    # =====================================================
-
-    final_summary = "\n".join(
-        summary_parts
+    summary_parts.append(
+        semantic_sentence
     )
 
-    return safe_text(
-        final_summary
+    summary = "。".join(summary_parts)
+
+    # =====================================================
+    # CLEANUP
+    # =====================================================
+
+    summary = summary.replace(
+        "。。",
+        "。"
     )
+
+    summary = summary.strip()
+
+    # =====================================================
+    # RETURN
+    # =====================================================
+
+    return summary

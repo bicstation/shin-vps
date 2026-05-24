@@ -249,7 +249,7 @@ log "🧠 Analyze Semantic Specs"
 
 run_django analyze_pc_spec \
   --limit 10 \
-  --null-only
+  --needs-runtime
 
 # ==========================================================
 # ⑤ Attribute TSV Sync
