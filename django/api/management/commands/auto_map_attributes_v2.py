@@ -1,380 +1,230 @@
 # =========================================================
+# FILE:
+# /home/maya/shin-vps/django/api/management/commands/auto_map_attributes_v2.py
+#
 # SHIN CORE LINX
-# auto_map_attributes_v2.py
-# semantic orchestration stabilized edition
+# Semantic Runtime Orchestration Layer
 # =========================================================
 
-from django.core.management.base import (
-    BaseCommand
-)
-
-from django.db import transaction
+from django.core.management.base import BaseCommand
 
 from api.models import (
-
     PCProduct,
-
-    PCAttribute,
 )
 
-from api.utils.semantic.runtime import (
-    compile_semantic_runtime,
+from api.utils.semantic.loader.load_semantic_master import (
+    load_semantic_master,
+)
+
+from api.utils.semantic.runtime.normalize_runtime import (
+    normalize_runtime,
+)
+
+from api.utils.semantic.runtime.resolve_alias_runtime import (
+    resolve_alias_runtime,
+)
+
+from api.utils.semantic.runtime.detect_attribute_runtime import (
+    detect_attribute_runtime,
+)
+
+from api.utils.semantic.runtime.traverse_group_runtime import (
+    traverse_group_runtime,
+)
+
+from api.utils.semantic.runtime.compile_workflow_runtime import (
+    compile_workflow_runtime,
+)
+
+from api.utils.semantic.runtime.persist_runtime import (
+    persist_runtime,
 )
 
 from api.utils.semantic.runtime.runtime_log import (
     runtime_log,
 )
 
-from api.utils.semantic.mapping.detect_memory import (
-    detect_memory_attr,
-)
-
-from api.utils.semantic.mapping.detect_storage import (
-    detect_storage_attr,
-)
-
-from api.utils.semantic.mapping.detect_features import (
-    detect_pc_feature,
-)
-
-from api.utils.semantic.mapping.detect_usage import (
-    detect_usage,
-)
-
-
-# =========================================================
-# HELPERS
-# =========================================================
-
-def attach_attribute(
-
-    product,
-
-    slug,
-):
-
-    try:
-
-        attr = PCAttribute.objects.get(
-            slug=slug
-        )
-
-        product.attributes.add(
-            attr
-        )
-
-    except PCAttribute.DoesNotExist:
-
-        runtime_log(
-
-            True,
-
-            "ATTRIBUTE NOT FOUND",
-
-            slug,
-        )
-
-
-# =========================================================
-# COMMAND
-# =========================================================
 
 class Command(BaseCommand):
 
     help = (
-        "Auto map semantic attributes V2"
+        "Auto Map Semantic Attributes V2"
     )
 
-    # =====================================================
-    # HANDLE
-    # =====================================================
-
-    def handle(
-
-        self,
-
-        *args,
-
-        **options,
-    ):
+    def handle(self, *args, **options):
 
         # =================================================
-        # START
+        # LOAD MASTER AUTHORITY
         # =================================================
 
-        runtime_log(
-
-            True,
-
-            "AUTO MAP ATTRIBUTES V2",
-
-            "START",
+        semantic_master = (
+            load_semantic_master()
         )
 
-        queryset = (
+        # =================================================
+        # PRODUCTS
+        # =================================================
+
+        products = (
             PCProduct.objects.all()
         )
 
-        total = queryset.count()
+        total = products.count()
 
         # =================================================
-        # EMPTY
+        # SUMMARY
         # =================================================
 
-        if total == 0:
+        summary = {
 
-            runtime_log(
+            "total": 0,
 
-                True,
+            "errors": 0,
 
-                "NO PRODUCTS",
-            )
+            "usage_ai": 0,
 
-            return
+            "usage_gaming": 0,
+
+            "usage_creator": 0,
+
+            "usage_business": 0,
+        }
 
         # =================================================
         # LOOP
         # =================================================
 
-        for index, product in enumerate(
+        for index, product in enumerate(products, start=1):
 
-            queryset,
-
-            start=1,
-        ):
-
-            progress_label = (
+            progress = (
                 f"[{index}/{total}]"
             )
 
             try:
 
-                # =========================================
-                # START
-                # =========================================
-
                 runtime_log(
-
                     True,
-
-                    f"{progress_label} PRODUCT",
-
+                    f"PRODUCT {progress}",
                     product.name,
                 )
 
                 # =========================================
-                # RUNTIME
+                # NORMALIZE
                 # =========================================
 
-                semantic_result = (
-                    compile_semantic_runtime(
-
-                        product=product,
-
-                        trace_runtime=False,
-
-                        progress_label=progress_label,
+                normalized_tokens = (
+                    normalize_runtime(
+                        product,
+                        semantic_master,
                     )
                 )
 
                 # =========================================
-                # SEMANTIC PAYLOAD
+                # RESOLVE ALIAS
                 # =========================================
 
-                workflow_tags = (
-                    semantic_result.get(
-                        "workflow_tags",
-                        []
+                semantic_attributes = (
+                    resolve_alias_runtime(
+                        normalized_tokens,
+                        semantic_master,
                     )
                 )
 
-                runtime_profiles = (
-                    semantic_result.get(
-                        "runtime_profiles",
-                        []
+                # =========================================
+                # ATTRIBUTE DETECT
+                # =========================================
+
+                detected_attributes = (
+                    detect_attribute_runtime(
+                        semantic_attributes,
+                        semantic_master,
                     )
                 )
 
-                semantic_labels = (
-                    semantic_result.get(
-                        "semantic_labels",
-                        []
+                # =========================================
+                # GROUP TRAVERSAL
+                # =========================================
+
+                semantic_groups = (
+                    traverse_group_runtime(
+                        detected_attributes,
+                        semantic_master,
                     )
                 )
 
-                specs = semantic_result.get(
-                    "specs",
-                    {}
+                # =========================================
+                # WORKFLOW COMPILE
+                # =========================================
+
+                semantic_runtime = (
+                    compile_workflow_runtime(
+                        semantic_groups,
+                        semantic_master,
+                    )
                 )
 
                 # =========================================
-                # COMPACT LOG
+                # PERSIST
                 # =========================================
+
+                persist_runtime(
+                    product,
+                    semantic_runtime,
+                )
+
+                # =========================================
+                # SUMMARY
+                # =========================================
+
+                summary["total"] += 1
+
+                groups = semantic_runtime.get(
+                    "groups",
+                    []
+                )
+
+                if "usage-ai" in groups:
+                    summary["usage_ai"] += 1
+
+                if "usage-gaming" in groups:
+                    summary["usage_gaming"] += 1
+
+                if "usage-creator" in groups:
+                    summary["usage_creator"] += 1
+
+                if "usage-business" in groups:
+                    summary["usage_business"] += 1
 
                 runtime_log(
-
                     True,
-
-                    f"{progress_label} SEMANTIC",
-
+                    f"DONE {progress}",
                     {
-
-                        "workflow":
-                            workflow_tags,
-
-                        "profiles":
-                            runtime_profiles,
-
-                        "labels":
-                            semantic_labels,
-                    },
-                )
-
-                # =========================================
-                # DETECT ATTRIBUTES
-                # =========================================
-
-                detected_slugs = set()
-
-                # =========================================
-                # MEMORY
-                # =========================================
-
-                detected_slugs.update(
-
-                    detect_memory_attr(
-                        specs
-                    )
-                )
-
-                # =========================================
-                # STORAGE
-                # =========================================
-
-                detected_slugs.update(
-
-                    detect_storage_attr(
-                        specs
-                    )
-                )
-
-                # =========================================
-                # FEATURES
-                # =========================================
-
-                detected_slugs.update(
-
-                    detect_pc_feature(
-                        specs
-                    )
-                )
-
-                # =========================================
-                # USAGE
-                # =========================================
-
-                detected_slugs.update(
-
-                    detect_usage(
-                        workflow_tags
-                    )
-                )
-
-                # =========================================
-                # WORKFLOW TAGS
-                # =========================================
-
-                detected_slugs.update(
-                    workflow_tags
-                )
-
-                # =========================================
-                # SAVE
-                # =========================================
-
-                with transaction.atomic():
-
-                    product.workflow_tags = (
-                        workflow_tags
-                    )
-
-                    product.runtime_profiles = (
-                        runtime_profiles
-                    )
-
-                    product.semantic_labels = (
-                        semantic_labels
-                    )
-
-                    product.semantic_runtime = (
-                        semantic_result
-                    )
-
-                    product.semantic_runtime_compiled = True
-
-                    product.save()
-
-                    # =====================================
-                    # ATTRIBUTE RESET
-                    # =====================================
-
-                    product.attributes.clear()
-
-                    # =====================================
-                    # ATTACH ATTRIBUTES
-                    # =====================================
-
-                    for slug in detected_slugs:
-
-                        attach_attribute(
-
-                            product,
-
-                            slug,
-                        )
-
-                # =========================================
-                # DONE
-                # =========================================
-
-                runtime_log(
-
-                    True,
-
-                    f"{progress_label} DONE",
-
-                    {
-
-                        "product":
-                            product.name,
-
-                        "attributes":
-                            len(
-                                detected_slugs
-                            ),
+                        "product": product.name,
                     },
                 )
 
             except Exception as e:
 
+                summary["errors"] += 1
+
                 runtime_log(
-
                     True,
-
-                    f"{progress_label} ERROR",
-
+                    "RUNTIME ERROR",
                     str(e),
                 )
 
         # =================================================
-        # COMPLETED
+        # FINAL SUMMARY
         # =================================================
 
         runtime_log(
-
             True,
+            "SEMANTIC SUMMARY",
+            summary,
+        )
 
+        runtime_log(
+            True,
             "AUTO MAP ATTRIBUTES V2",
-
             "COMPLETED",
         )

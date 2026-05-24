@@ -1,12 +1,13 @@
 # =========================================================
-# SHIN CORE LINX
-# semantic/runtime/runtime_log.py
-# centralized semantic observability layer
+# FILE:
+# api/utils/semantic/runtime/runtime_log.py
 # =========================================================
+
+import pprint
 
 
 # =========================================================
-# HELPERS
+# RUNTIME LOG
 # =========================================================
 
 def runtime_log(
@@ -15,44 +16,56 @@ def runtime_log(
 
     title,
 
-    data=None,
-):
+    payload=None,
 
-    # =====================================================
-    # DISABLED
-    # =====================================================
+):
 
     if not enabled:
 
         return
 
     # =====================================================
-    # TITLE SAFETY
+    # HEADER
     # =====================================================
 
-    title = str(title).strip()
-
-    # =====================================================
-    # TITLE
-    # =====================================================
+    print()
 
     print(
+        "=" * 56
+    )
 
-        "\n"
-        f"================ {title} ================",
+    print(
+        f"{title}"
+    )
 
-        flush=True,
+    print(
+        "=" * 56
     )
 
     # =====================================================
-    # DATA
+    # PAYLOAD
     # =====================================================
 
-    if data is not None:
+    if payload is not None:
 
-        print(
+        if isinstance(
 
-            data,
+            payload,
 
-            flush=True,
-        )
+            (
+                dict,
+                list,
+                tuple,
+                set,
+            ),
+
+        ):
+
+            pprint.pprint(
+                payload,
+                sort_dicts=False,
+            )
+
+        else:
+
+            print(payload)
