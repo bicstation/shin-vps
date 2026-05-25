@@ -21,72 +21,95 @@ def persist_runtime(
 ):
 
     # =====================================================
+    # SAFETY
+    # =====================================================
+
+    if not isinstance(
+
+        semantic_runtime,
+
+        dict,
+
+    ):
+
+        semantic_runtime = {}
+
+    # =====================================================
     # RUNTIME
     # =====================================================
 
     workflow_tags = semantic_runtime.get(
+
         "workflow_tags",
+
         []
     )
 
     semantic_labels = semantic_runtime.get(
+
         "semantic_labels",
+
         []
     )
 
     semantic_groups = semantic_runtime.get(
+
         "semantic_groups",
+
         []
     )
 
     semantic_attributes = semantic_runtime.get(
+
         "semantic_attributes",
+
         []
     )
 
-    # =====================================================
-    # FLAGS
-    # =====================================================
+    normalized_tokens = semantic_runtime.get(
 
-    product.is_ai = (
-        "usage-ai"
-        in workflow_tags
+        "normalized_tokens",
+
+        []
     )
 
-    product.is_gaming = (
-        "usage-gaming"
-        in workflow_tags
-    )
+    scores = semantic_runtime.get(
 
-    product.is_creator = (
-        "usage-creator"
-        in workflow_tags
-    )
+        "scores",
 
-    product.is_business = (
-        "usage-business"
-        in workflow_tags
+        {}
     )
 
     # =====================================================
-    # PRIMARY
+    # OBSERVABILITY RUNTIME
     # =====================================================
 
-    primary_usage = None
+    semantic_runtime["runtime_status"] = {
 
-    if workflow_tags:
+        "compiled": True,
 
-        primary_usage = (
-            workflow_tags[0]
-        )
+        "compiled_at":
+            timezone.now().isoformat(),
+
+        "attribute_count":
+            len(
+                semantic_attributes
+            ),
+
+        "group_count":
+            len(
+                semantic_groups
+            ),
+
+        "workflow_count":
+            len(
+                workflow_tags
+            ),
+    }
 
     # =====================================================
-    # SEMANTIC PROJECTION
+    # PROJECTION
     # =====================================================
-
-    product.primary_usage = (
-        primary_usage
-    )
 
     product.workflow_tags = (
         workflow_tags
@@ -96,19 +119,86 @@ def persist_runtime(
         semantic_labels
     )
 
-    product.semantic_groups = (
-        semantic_groups
-    )
-
-    product.semantic_attributes = (
-        semantic_attributes
+    product.semantic_runtime = (
+        semantic_runtime
     )
 
     # =====================================================
-    # FULL RUNTIME
+    # OPTIONAL SCORE
     # =====================================================
 
-    product.semantic_runtime = {
+    semantic_score = 0
+
+    if isinstance(scores, dict):
+
+        semantic_score = max(
+
+            scores.values(),
+
+            default=0,
+        )
+
+    product.semantic_score = (
+        semantic_score
+    )
+
+    # =====================================================
+    # META
+    # =====================================================
+
+    product.semantic_schema_version = (
+        "v2"
+    )
+
+    product.semantic_runtime_compiled = (
+        True
+    )
+
+    product.semantic_updated_at = (
+        timezone.now()
+    )
+
+    # =====================================================
+    # SAVE
+    # =====================================================
+
+    product.save(
+
+        update_fields=[
+
+            # =============================================
+            # WORKFLOW
+            # =============================================
+
+            "workflow_tags",
+
+            "semantic_labels",
+
+            # =============================================
+            # RUNTIME
+            # =============================================
+
+            "semantic_runtime",
+
+            "semantic_score",
+
+            # =============================================
+            # META
+            # =============================================
+
+            "semantic_schema_version",
+
+            "semantic_runtime_compiled",
+
+            "semantic_updated_at",
+        ]
+    )
+
+    # =====================================================
+    # RESULT
+    # =====================================================
+
+    return {
 
         "workflow_tags":
             workflow_tags,
@@ -122,65 +212,12 @@ def persist_runtime(
         "semantic_attributes":
             semantic_attributes,
 
-        "runtime_mode":
-            semantic_runtime.get(
-                "runtime_mode",
-                "production",
-            ),
+        "normalized_tokens":
+            normalized_tokens,
 
-        "specs":
-            semantic_runtime.get(
-                "specs",
-                {},
-            ),
+        "scores":
+            scores,
+
+        "semantic_score":
+            semantic_score,
     }
-
-    # =====================================================
-    # META
-    # =====================================================
-
-    product.semantic_runtime_compiled = True
-
-    product.semantic_schema_version = "v2"
-
-    product.semantic_compiled_at = (
-        timezone.now()
-    )
-
-    # =====================================================
-    # SAVE
-    # =====================================================
-
-    product.save(
-
-        update_fields=[
-
-            "is_ai",
-
-            "is_gaming",
-
-            "is_creator",
-
-            "is_business",
-
-            "primary_usage",
-
-            "workflow_tags",
-
-            "semantic_labels",
-
-            "semantic_groups",
-
-            "semantic_attributes",
-
-            "semantic_runtime",
-
-            "semantic_runtime_compiled",
-
-            "semantic_schema_version",
-
-            "semantic_compiled_at",
-        ]
-    )
-
-    return semantic_runtime

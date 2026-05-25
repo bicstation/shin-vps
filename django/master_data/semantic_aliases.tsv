@@ -110,6 +110,9 @@ intel-core-i9	14900kf	model	0	0.90
 intel-core-i9	raptor lake	generation	0	0.72
 intel-core-i9	intel 14th gen	generation	0	0.74
 intel-core-i9	unlocked	boost	0	0.62
+intel-core-i5	core i5	canonical	0	1.00
+intel-core-i7	core i7	canonical	0	1.00
+intel-core-i9	core i9	canonical	0	1.00
 amd-ryzen-ai	ryzen ai	canonical	0	1.00
 amd-ryzen-ai	ryzen ai 9	marketing	0	0.96
 amd-ryzen-ai	ryzen ai 7	marketing	0	0.92
@@ -242,6 +245,8 @@ gpu-professional	a2000	model	0	0.90
 gpu-professional	a4000	model	0	0.92
 gpu-professional	t1000	model	0	0.82
 gpu-professional	t600	model	0	0.78
+nvidia-rtx-4070	rtx 4070	canonical	0	1.00
+nvidia-rtx-4060	rtx 4060	canonical	0	1.00
 vram-24gb-plus	24gb	canonical	0	1.00
 vram-24gb-plus	24gb gddr6	spec	0	0.94
 vram-24gb-plus	24gb gddr6x	spec	0	0.96

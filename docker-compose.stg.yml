@@ -155,13 +155,13 @@ services:
 
       - "traefik.docker.network=shared-proxy"
 
-      - 'traefik.http.routers.bicstation.rule=Host("stg.bicstation.com")'
+      - 'traefik.http.routers.stg-bicstation.rule=Host("stg.bicstation.com")'
 
-      - "traefik.http.routers.bicstation.entrypoints=web"
+      - "traefik.http.routers.stg-bicstation.entrypoints=web"
 
-      - "traefik.http.routers.bicstation.priority=100"
+      - "traefik.http.routers.stg-bicstation.priority=100"
 
-      - "traefik.http.services.bicstation.loadbalancer.server.port=3000"
+      - "traefik.http.services.stg-bicstation.loadbalancer.server.port=3000"
 
 
   # ============================================================================
@@ -187,13 +187,13 @@ services:
 
       - "traefik.docker.network=shared-proxy"
 
-      - 'traefik.http.routers.saving.rule=Host("stg.bic-saving.com")'
+      - 'traefik.http.routers.stg-saving.rule=Host("stg.bic-saving.com")'
 
-      - "traefik.http.routers.saving.entrypoints=web"
+      - "traefik.http.routers.stg-saving.entrypoints=web"
 
-      - "traefik.http.routers.saving.priority=100"
+      - "traefik.http.routers.stg-saving.priority=100"
 
-      - "traefik.http.services.saving.loadbalancer.server.port=3000"
+      - "traefik.http.services.stg-saving.loadbalancer.server.port=3000"
 
 
   # ============================================================================
@@ -219,13 +219,13 @@ services:
 
       - "traefik.docker.network=shared-proxy"
 
-      - 'traefik.http.routers.tiper.rule=Host("stg.tiper.live")'
+      - 'traefik.http.routers.stg-tiper.rule=Host("stg.tiper.live")'
 
-      - "traefik.http.routers.tiper.entrypoints=web"
+      - "traefik.http.routers.stg-tiper.entrypoints=web"
 
-      - "traefik.http.routers.tiper.priority=100"
+      - "traefik.http.routers.stg-tiper.priority=100"
 
-      - "traefik.http.services.tiper.loadbalancer.server.port=3000"
+      - "traefik.http.services.stg-tiper.loadbalancer.server.port=3000"
 
 
   # ============================================================================
@@ -251,13 +251,13 @@ services:
 
       - "traefik.docker.network=shared-proxy"
 
-      - 'traefik.http.routers.avflash.rule=Host("stg.avflash.xyz")'
+      - 'traefik.http.routers.stg-avflash.rule=Host("stg.avflash.xyz")'
 
-      - "traefik.http.routers.avflash.entrypoints=web"
+      - "traefik.http.routers.stg-avflash.entrypoints=web"
 
-      - "traefik.http.routers.avflash.priority=100"
+      - "traefik.http.routers.stg-avflash.priority=100"
 
-      - "traefik.http.services.avflash.loadbalancer.server.port=3000"
+      - "traefik.http.services.stg-avflash.loadbalancer.server.port=3000"
 
 
 # ==============================================================================

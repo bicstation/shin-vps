@@ -7,6 +7,46 @@ import re
 
 
 # =========================================================
+# CLEAN TOKEN
+# =========================================================
+
+def clean_token(
+
+    token,
+
+):
+
+    token = str(
+        token
+    ).lower().strip()
+
+    # =====================================================
+    # SPACE NORMALIZE
+    # =====================================================
+
+    token = re.sub(
+        r"\s+",
+        " ",
+        token,
+    )
+
+    # =====================================================
+    # DASH NORMALIZE
+    # =====================================================
+
+    token = token.replace(
+        "-",
+        " ",
+    )
+
+    # =====================================================
+    # RETURN
+    # =====================================================
+
+    return token
+
+
+# =========================================================
 # NORMALIZE RUNTIME
 # =========================================================
 
@@ -28,18 +68,53 @@ def normalize_runtime(
 
     raw_tokens = []
 
-    for value in specs.values():
+    for key, value in specs.items():
+
+        # =================================================
+        # SKIP SOURCE TEXT
+        # =================================================
+
+        if key == "source_text":
+
+            continue
+
+        # =================================================
+        # LIST
+        # =================================================
 
         if isinstance(value, list):
 
             raw_tokens.extend(value)
+
+        # =================================================
+        # STRING
+        # =================================================
+
+        elif isinstance(value, str):
+
+            raw_tokens.append(value)
+
+    # =====================================================
+    # CLEAN TOKENS
+    # =====================================================
+
+    raw_tokens = [
+
+        clean_token(token)
+
+        for token in raw_tokens
+
+        if token
+    ]
 
     # =====================================================
     # RULES
     # =====================================================
 
     normalization_rules = semantic_master.get(
+
         "normalization_rules",
+
         []
     )
 
@@ -49,9 +124,7 @@ def normalize_runtime(
 
     for token in raw_tokens:
 
-        normalized = str(
-            token
-        ).lower().strip()
+        normalized = token
 
         # =================================================
         # APPLY RULES
@@ -59,19 +132,21 @@ def normalize_runtime(
 
         for rule in normalization_rules:
 
-            raw_token = str(
+            raw_token = clean_token(
+
                 rule.get(
                     "raw_token",
-                    ""
+                    "",
                 )
-            ).lower().strip()
+            )
 
-            normalized_token = str(
+            normalized_token = clean_token(
+
                 rule.get(
                     "normalized_token",
-                    ""
+                    "",
                 )
-            ).lower().strip()
+            )
 
             if not raw_token:
 
@@ -89,6 +164,55 @@ def normalize_runtime(
 
                 break
 
+            # =============================================
+            # SUBSTRING MATCH
+            # =============================================
+
+            if raw_token in normalized:
+
+                normalized = (
+                    normalized.replace(
+
+                        raw_token,
+
+                        normalized_token,
+                    )
+                )
+
+        # =================================================
+        # FINAL CLEAN
+        # =================================================
+
+        normalized = clean_token(
+            normalized
+        )
+
+        # =================================================
+        # EMPTY FILTER
+        # =================================================
+
+        if not normalized:
+
+            continue
+
+        # =================================================
+        # NOISE FILTER
+        # =================================================
+
+        if normalized in [
+
+            "gb",
+            "tb",
+            "ssd",
+            "hdd",
+        ]:
+
+            continue
+
+        # =================================================
+        # APPEND
+        # =================================================
+
         normalized_tokens.append(
             normalized
         )
@@ -97,8 +221,13 @@ def normalize_runtime(
     # UNIQUE
     # =====================================================
 
-    normalized_tokens = list(
-        set(normalized_tokens)
+    normalized_tokens = sorted(
+
+        list(
+            set(
+                normalized_tokens
+            )
+        )
     )
 
     return normalized_tokens

@@ -248,7 +248,7 @@ run_django migrate_linkshare_to_pc
 log "🧠 Analyze Semantic Specs"
 
 run_django analyze_pc_spec \
-  --limit 10 \
+  --limit 300 \
   --needs-runtime
 
 # ==========================================================

@@ -1,38 +1,49 @@
 # =========================================================
 # FILE:
-# /home/maya/shin-vps/django/api/management/commands/auto_map_attributes_v2.py
-#
-# SHIN CORE LINX
-# Semantic Runtime Orchestration Layer
+# api/management/commands/auto_map_attributes_v2.py
 # =========================================================
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import (
+    BaseCommand,
+)
 
 from api.models import (
     PCProduct,
 )
 
-from api.utils.semantic.loader.load_semantic_master import (
+from api.utils.semantic.authority.loader import (
     load_semantic_master,
 )
 
-from api.utils.semantic.runtime.normalize_runtime import (
+from api.utils.semantic.extraction.extract_pc_specs import (
+    extract_pc_specs,
+)
+
+from api.utils.semantic.authority.normalization import (
     normalize_runtime,
 )
 
-from api.utils.semantic.runtime.resolve_alias_runtime import (
+from api.utils.semantic.authority.aliases import (
     resolve_alias_runtime,
 )
 
-from api.utils.semantic.runtime.detect_attribute_runtime import (
-    detect_attribute_runtime,
+from api.utils.semantic.traversal.detect_usage import (
+    detect_usage_runtime,
 )
 
-from api.utils.semantic.runtime.traverse_group_runtime import (
-    traverse_group_runtime,
+from api.utils.semantic.traversal.detect_memory import (
+    detect_memory_runtime,
 )
 
-from api.utils.semantic.runtime.compile_workflow_runtime import (
+from api.utils.semantic.traversal.detect_storage import (
+    detect_storage_runtime,
+)
+
+from api.utils.semantic.traversal.detect_features import (
+    detect_features_runtime,
+)
+
+from api.utils.semantic.traversal.compile_workflows import (
     compile_workflow_runtime,
 )
 
@@ -45,16 +56,32 @@ from api.utils.semantic.runtime.runtime_log import (
 )
 
 
+# =========================================================
+# COMMAND
+# =========================================================
+
 class Command(BaseCommand):
 
     help = (
-        "Auto Map Semantic Attributes V2"
+        "Compile semantic runtime v2"
     )
 
-    def handle(self, *args, **options):
+    # =====================================================
+    # HANDLE
+    # =====================================================
+
+    def handle(
+
+        self,
+
+        *args,
+
+        **options,
+
+    ):
 
         # =================================================
-        # LOAD MASTER AUTHORITY
+        # LOAD AUTHORITY
         # =================================================
 
         semantic_master = (
@@ -66,7 +93,11 @@ class Command(BaseCommand):
         # =================================================
 
         products = (
-            PCProduct.objects.all()
+            PCProduct.objects
+            .filter(
+                is_active=True,
+            )
+            .order_by("id")
         )
 
         total = products.count()
@@ -79,33 +110,65 @@ class Command(BaseCommand):
 
             "total": 0,
 
+            "ai": 0,
+
+            "gaming": 0,
+
+            "creator": 0,
+
+            "business": 0,
+
             "errors": 0,
-
-            "usage_ai": 0,
-
-            "usage_gaming": 0,
-
-            "usage_creator": 0,
-
-            "usage_business": 0,
         }
 
         # =================================================
         # LOOP
         # =================================================
 
-        for index, product in enumerate(products, start=1):
+        for index, product in enumerate(
 
-            progress = (
-                f"[{index}/{total}]"
-            )
+            products,
+
+            start=1,
+
+        ):
 
             try:
 
+                # =========================================
+                # PRODUCT
+                # =========================================
+
+                print()
+
+                print(
+                    "=" * 56
+                )
+
+                print(
+                    f"PRODUCT [{index}/{total}]"
+                )
+
+                print(
+                    "=" * 56
+                )
+
+                print(
+                    product.name
+                )
+
+                # =========================================
+                # EXTRACTION
+                # =========================================
+
+                specs = extract_pc_specs(
+                    product
+                )
+
                 runtime_log(
-                    True,
-                    f"PRODUCT {progress}",
-                    product.name,
+                    False,
+                    "SPECS",
+                    specs,
                 )
 
                 # =========================================
@@ -114,13 +177,19 @@ class Command(BaseCommand):
 
                 normalized_tokens = (
                     normalize_runtime(
-                        product,
+                        specs,
                         semantic_master,
                     )
                 )
 
+                runtime_log(
+                    False,
+                    "NORMALIZED",
+                    normalized_tokens,
+                )
+
                 # =========================================
-                # RESOLVE ALIAS
+                # ALIASES
                 # =========================================
 
                 semantic_attributes = (
@@ -131,14 +200,37 @@ class Command(BaseCommand):
                 )
 
                 # =========================================
-                # ATTRIBUTE DETECT
+                # EXTRA DETECT
                 # =========================================
 
-                detected_attributes = (
-                    detect_attribute_runtime(
-                        semantic_attributes,
-                        semantic_master,
+                semantic_attributes += (
+                    detect_memory_runtime(
+                        specs
                     )
+                )
+
+                semantic_attributes += (
+                    detect_storage_runtime(
+                        specs
+                    )
+                )
+
+                semantic_attributes += (
+                    detect_features_runtime(
+                        specs
+                    )
+                )
+
+                semantic_attributes = list(
+                    set(
+                        semantic_attributes
+                    )
+                )
+
+                runtime_log(
+                    False,
+                    "ATTRIBUTES",
+                    semantic_attributes,
                 )
 
                 # =========================================
@@ -146,30 +238,90 @@ class Command(BaseCommand):
                 # =========================================
 
                 semantic_groups = (
-                    traverse_group_runtime(
-                        detected_attributes,
+                    detect_usage_runtime(
+                        {
+                            "semantic_attributes":
+                                semantic_attributes
+                        },
                         semantic_master,
                     )
                 )
 
+                runtime_log(
+                    False,
+                    "GROUPS",
+                    semantic_groups,
+                )
+
                 # =========================================
-                # WORKFLOW COMPILE
+                # WORKFLOW
                 # =========================================
 
-                semantic_runtime = (
+                workflow_runtime = (
                     compile_workflow_runtime(
                         semantic_groups,
                         semantic_master,
                     )
                 )
 
+                workflow_tags = (
+                    workflow_runtime.get(
+                        "workflow_tags",
+                        []
+                    )
+                )
+
+                semantic_labels = (
+                    workflow_runtime.get(
+                        "semantic_labels",
+                        []
+                    )
+                )
+
+                runtime_log(
+                    False,
+                    "WORKFLOW",
+                    workflow_runtime,
+                )
+
+                # =========================================
+                # RUNTIME
+                # =========================================
+
+                semantic_runtime = {
+
+                    "runtime_mode":
+                        "production",
+
+                    "specs":
+                        specs,
+
+                    "normalized_tokens":
+                        normalized_tokens,
+
+                    "semantic_attributes":
+                        semantic_attributes,
+
+                    "semantic_groups":
+                        semantic_groups,
+
+                    "workflow_tags":
+                        workflow_tags,
+
+                    "semantic_labels":
+                        semantic_labels,
+                }
+
                 # =========================================
                 # PERSIST
                 # =========================================
 
                 persist_runtime(
+
                     product,
+
                     semantic_runtime,
+
                 )
 
                 # =========================================
@@ -178,53 +330,142 @@ class Command(BaseCommand):
 
                 summary["total"] += 1
 
-                groups = semantic_runtime.get(
-                    "groups",
-                    []
+                if (
+
+                    "usage-ai"
+
+                    in
+
+                    workflow_tags
+
+                ):
+
+                    summary["ai"] += 1
+
+                if (
+
+                    "usage-gaming"
+
+                    in
+
+                    workflow_tags
+
+                ):
+
+                    summary["gaming"] += 1
+
+                if (
+
+                    "usage-creator"
+
+                    in
+
+                    workflow_tags
+
+                ):
+
+                    summary["creator"] += 1
+
+                if (
+
+                    "usage-business"
+
+                    in
+
+                    workflow_tags
+
+                ):
+
+                    summary["business"] += 1
+
+                # =========================================
+                # DONE
+                # =========================================
+
+                print()
+
+                print(
+                    "=" * 56
                 )
 
-                if "usage-ai" in groups:
-                    summary["usage_ai"] += 1
-
-                if "usage-gaming" in groups:
-                    summary["usage_gaming"] += 1
-
-                if "usage-creator" in groups:
-                    summary["usage_creator"] += 1
-
-                if "usage-business" in groups:
-                    summary["usage_business"] += 1
-
-                runtime_log(
-                    True,
-                    f"DONE {progress}",
-                    {
-                        "product": product.name,
-                    },
+                print(
+                    f"DONE [{index}/{total}]"
                 )
 
-            except Exception as e:
+                print(
+                    "=" * 56
+                )
+
+                print({
+
+                    "product":
+                        product.name,
+
+                    "workflow":
+                        workflow_tags,
+
+                    "attributes":
+                        len(
+                            semantic_attributes
+                        ),
+                })
+
+            except Exception as error:
 
                 summary["errors"] += 1
 
-                runtime_log(
-                    True,
-                    "RUNTIME ERROR",
-                    str(e),
+                print()
+
+                print(
+                    "=" * 56
+                )
+
+                print(
+                    "RUNTIME ERROR"
+                )
+
+                print(
+                    "=" * 56
+                )
+
+                print(
+                    str(error)
                 )
 
         # =================================================
-        # FINAL SUMMARY
+        # SUMMARY
         # =================================================
 
-        runtime_log(
-            True,
-            "SEMANTIC SUMMARY",
-            summary,
+        print()
+
+        print(
+            "=" * 56
         )
 
-        runtime_log(
-            True,
-            "AUTO MAP ATTRIBUTES V2",
-            "COMPLETED",
+        print(
+            "SEMANTIC SUMMARY"
+        )
+
+        print(
+            "=" * 56
+        )
+
+        print(summary)
+
+        print()
+
+        print(
+            "=" * 56
+        )
+
+        print(
+            "AUTO MAP ATTRIBUTES V2"
+        )
+
+        print(
+            "=" * 56
+        )
+
+        print(
+            "COMPLETED"
         )

@@ -5,6 +5,8 @@
 
 import pprint
 
+from datetime import datetime
+
 
 # =========================================================
 # RUNTIME LOG
@@ -20,9 +22,21 @@ def runtime_log(
 
 ):
 
+    # =====================================================
+    # DISABLED
+    # =====================================================
+
     if not enabled:
 
         return
+
+    # =====================================================
+    # TIMESTAMP
+    # =====================================================
+
+    timestamp = datetime.now().strftime(
+        "%Y-%m-%d %H:%M:%S"
+    )
 
     # =====================================================
     # HEADER
@@ -31,41 +45,77 @@ def runtime_log(
     print()
 
     print(
-        "=" * 56
+        "=" * 64
     )
 
     print(
-        f"{title}"
+        f"[SEMANTIC RUNTIME] {title}"
     )
 
     print(
-        "=" * 56
+        f"[TIME] {timestamp}"
+    )
+
+    print(
+        "=" * 64
     )
 
     # =====================================================
     # PAYLOAD
     # =====================================================
 
-    if payload is not None:
+    if payload is None:
 
-        if isinstance(
+        print(
+            "[EMPTY PAYLOAD]"
+        )
+
+        return
+
+    # =====================================================
+    # STRUCTURED
+    # =====================================================
+
+    if isinstance(
+
+        payload,
+
+        (
+            dict,
+            list,
+            tuple,
+            set,
+        ),
+
+    ):
+
+        pprint.pprint(
 
             payload,
 
-            (
-                dict,
-                list,
-                tuple,
-                set,
-            ),
+            sort_dicts=False,
 
-        ):
+            width=120,
 
-            pprint.pprint(
-                payload,
-                sort_dicts=False,
-            )
+            compact=False,
+        )
 
-        else:
+    # =====================================================
+    # STRING
+    # =====================================================
 
-            print(payload)
+    else:
+
+        print(
+            payload
+        )
+
+    # =====================================================
+    # FOOTER
+    # =====================================================
+
+    print()
+
+    print(
+        "-" * 64
+    )

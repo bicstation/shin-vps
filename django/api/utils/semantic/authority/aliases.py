@@ -3,6 +3,48 @@
 # api/utils/semantic/authority/aliases.py
 # =========================================================
 
+import re
+
+
+# =========================================================
+# CLEAN TOKEN
+# =========================================================
+
+def clean_token(
+
+    token,
+
+):
+
+    token = str(
+        token
+    ).lower().strip()
+
+    # =====================================================
+    # SPACE NORMALIZE
+    # =====================================================
+
+    token = re.sub(
+        r"\s+",
+        " ",
+        token,
+    )
+
+    # =====================================================
+    # DASH NORMALIZE
+    # =====================================================
+
+    token = token.replace(
+        "-",
+        " ",
+    )
+
+    # =====================================================
+    # RETURN
+    # =====================================================
+
+    return token
+
 
 # =========================================================
 # RESOLVE ALIAS RUNTIME
@@ -35,6 +77,19 @@ def resolve_alias_runtime(
     )
 
     # =====================================================
+    # CLEAN TOKENS
+    # =====================================================
+
+    normalized_tokens = [
+
+        clean_token(token)
+
+        for token in normalized_tokens
+
+        if token
+    ]
+
+    # =====================================================
     # NEGATIVE MAP
     # =====================================================
 
@@ -42,33 +97,45 @@ def resolve_alias_runtime(
 
     for row in negative_aliases:
 
-        alias = str(
+        alias = clean_token(
+
             row.get(
                 "alias",
                 ""
             )
-        ).lower().strip()
+        )
 
-        attribute_slug = str(
+        attribute_slug = clean_token(
+
             row.get(
-                "attribute_slug",
+                "slug",
                 ""
             )
-        ).lower().strip()
+        )
 
-        if (
+        # =================================================
+        # VALIDATION
+        # =================================================
 
-            alias
+        if not alias:
 
-            in
+            continue
 
-            normalized_tokens
+        if not attribute_slug:
 
-        ):
+            continue
 
-            blocked_attributes.add(
-                attribute_slug
-            )
+        # =================================================
+        # NEGATIVE MATCH
+        # =================================================
+
+        for token in normalized_tokens:
+
+            if alias in token:
+
+                blocked_attributes.add(
+                    attribute_slug
+                )
 
     # =====================================================
     # POSITIVE ALIAS
@@ -76,58 +143,97 @@ def resolve_alias_runtime(
 
     for row in aliases:
 
-        alias = str(
+        alias = clean_token(
+
             row.get(
                 "alias",
                 ""
             )
-        ).lower().strip()
+        )
 
-        attribute_slug = str(
+        attribute_slug = clean_token(
+
             row.get(
-                "attribute_slug",
+                "slug",
                 ""
             )
-        ).lower().strip()
+        )
+
+        # =================================================
+        # VALIDATION
+        # =================================================
 
         if not alias:
 
             continue
 
+        if not attribute_slug:
+
+            continue
+
         # =================================================
-        # EXACT MATCH
+        # TOKEN MATCH
         # =================================================
 
-        if (
+        for token in normalized_tokens:
 
-            alias
+            # =============================================
+            # EXACT MATCH
+            # =============================================
 
-            in
+            if token == alias:
 
-            normalized_tokens
+                if (
 
-        ):
-
-            if (
-
-                attribute_slug
-
-                not in
-
-                blocked_attributes
-
-            ):
-
-                semantic_attributes.append(
                     attribute_slug
-                )
+
+                    not in
+
+                    blocked_attributes
+
+                ):
+
+                    semantic_attributes.append(
+                        attribute_slug
+                    )
+
+                continue
+
+            # =============================================
+            # SUBSTRING MATCH
+            # =============================================
+
+            if alias in token:
+
+                if (
+
+                    attribute_slug
+
+                    not in
+
+                    blocked_attributes
+
+                ):
+
+                    semantic_attributes.append(
+                        attribute_slug
+                    )
 
     # =====================================================
     # UNIQUE
     # =====================================================
 
-    semantic_attributes = list(
-        set(semantic_attributes)
+    semantic_attributes = sorted(
+
+        list(
+            set(
+                semantic_attributes
+            )
+        )
     )
+
+    # =====================================================
+    # RESULT
+    # =====================================================
 
     return semantic_attributes

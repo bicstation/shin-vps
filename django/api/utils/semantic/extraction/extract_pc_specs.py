@@ -31,8 +31,53 @@ def extract_pc_specs(
     trace_runtime=False,
 
 ):
+
     # =====================================================
-    # SOURCE
+    # DB SOURCE
+    # =====================================================
+
+    cpu_model = str(
+        getattr(
+            product,
+            "cpu_model",
+            "",
+        ) or ""
+    )
+
+    gpu_model = str(
+        getattr(
+            product,
+            "gpu_model",
+            "",
+        ) or ""
+    )
+
+    display_info = str(
+        getattr(
+            product,
+            "display_info",
+            "",
+        ) or ""
+    )
+
+    memory_gb = str(
+        getattr(
+            product,
+            "memory_gb",
+            "",
+        ) or ""
+    )
+
+    storage_gb = str(
+        getattr(
+            product,
+            "storage_gb",
+            "",
+        ) or ""
+    )
+
+    # =====================================================
+    # SOURCE TEXT
     # =====================================================
 
     source_text = " ".join([
@@ -53,13 +98,15 @@ def extract_pc_specs(
             ) or ""
         ),
 
-        str(
-            getattr(
-                product,
-                "long_description",
-                "",
-            ) or ""
-        ),
+        cpu_model,
+
+        gpu_model,
+
+        display_info,
+
+        f"{memory_gb}gb",
+
+        f"{storage_gb}gb",
 
     ]).lower()
 
@@ -68,20 +115,29 @@ def extract_pc_specs(
     # =====================================================
 
     cpu_specs = extract_cpu(
-        source_text
+        cpu_model
     )
 
     gpu_specs = extract_gpu(
-        source_text
+        gpu_model
     )
 
     memory_specs = extract_memory(
-        source_text
+        f"{memory_gb}gb"
     )
 
     display_specs = extract_display(
-        source_text
+        display_info
     )
+
+    # =====================================================
+    # STORAGE
+    # =====================================================
+
+    storage_specs = [
+
+        f"{storage_gb}gb"
+    ]
 
     # =====================================================
     # RUNTIME SPECS
@@ -100,6 +156,9 @@ def extract_pc_specs(
 
         "memory":
             memory_specs,
+
+        "storage":
+            storage_specs,
 
         "display":
             display_specs,

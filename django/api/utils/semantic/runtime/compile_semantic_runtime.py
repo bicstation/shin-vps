@@ -71,8 +71,7 @@ def compile_semantic_runtime(
     # =====================================================
 
     specs = extract_pc_specs(
-        product,
-        trace_runtime,
+        product
     )
 
     runtime_log(
@@ -82,14 +81,16 @@ def compile_semantic_runtime(
     )
 
     # =====================================================
-    # NORMALIZE
+    # NORMALIZATION
     # =====================================================
 
     normalized_tokens = (
         normalize_runtime(
+
             specs,
+
             semantic_master,
-            trace_runtime,
+
         )
     )
 
@@ -100,14 +101,16 @@ def compile_semantic_runtime(
     )
 
     # =====================================================
-    # ALIAS RESOLVE
+    # ATTRIBUTE RESOLUTION
     # =====================================================
 
     semantic_attributes = (
         resolve_alias_runtime(
+
             normalized_tokens,
+
             semantic_master,
-            trace_runtime,
+
         )
     )
 
@@ -118,32 +121,52 @@ def compile_semantic_runtime(
     )
 
     # =====================================================
-    # DETECT EXTRA ATTRIBUTES
+    # DETECT RUNTIME ATTRIBUTES
     # =====================================================
 
     semantic_attributes += (
+
+        detect_usage_runtime(
+
+            specs,
+
+            semantic_master,
+
+        )
+    )
+
+    semantic_attributes += (
+
         detect_memory_runtime(
-            specs,
-            trace_runtime,
+            specs
         )
     )
 
     semantic_attributes += (
+
         detect_storage_runtime(
-            specs,
-            trace_runtime,
+            specs
         )
     )
 
     semantic_attributes += (
+
         detect_features_runtime(
-            specs,
-            trace_runtime,
+            specs
         )
     )
 
-    semantic_attributes = list(
-        set(semantic_attributes)
+    # =====================================================
+    # UNIQUE ATTRIBUTES
+    # =====================================================
+
+    semantic_attributes = sorted(
+
+        list(
+            set(
+                semantic_attributes
+            )
+        )
     )
 
     runtime_log(
@@ -153,17 +176,72 @@ def compile_semantic_runtime(
     )
 
     # =====================================================
-    # GROUP TRAVERSAL
+    # GROUP MAPPINGS
     # =====================================================
 
-    semantic_groups = (
-        detect_usage_runtime(
-            {
-                "semantic_attributes":
-                    semantic_attributes
-            },
-            semantic_master,
-            trace_runtime,
+    semantic_groups = []
+
+    group_mappings = semantic_master.get(
+
+        "group_mappings",
+
+        []
+    )
+
+    # =====================================================
+    # TRAVERSAL
+    # =====================================================
+
+    for attribute in semantic_attributes:
+
+        for row in group_mappings:
+
+            attribute_slug = str(
+
+                row.get(
+                    "attribute_slug",
+                    ""
+                )
+
+            ).strip()
+
+            group_slug = str(
+
+                row.get(
+                    "group_slug",
+                    ""
+                )
+
+            ).strip()
+
+            if not attribute_slug:
+
+                continue
+
+            if not group_slug:
+
+                continue
+
+            # =============================================
+            # MATCH
+            # =============================================
+
+            if attribute_slug == attribute:
+
+                semantic_groups.append(
+                    group_slug
+                )
+
+    # =====================================================
+    # UNIQUE GROUPS
+    # =====================================================
+
+    semantic_groups = sorted(
+
+        list(
+            set(
+                semantic_groups
+            )
         )
     )
 
@@ -179,9 +257,11 @@ def compile_semantic_runtime(
 
     workflow_runtime = (
         compile_workflow_runtime(
+
             semantic_groups,
+
             semantic_master,
-            trace_runtime,
+
         )
     )
 
@@ -199,6 +279,13 @@ def compile_semantic_runtime(
         )
     )
 
+    scores = (
+        workflow_runtime.get(
+            "scores",
+            {}
+        )
+    )
+
     runtime_log(
         trace_runtime,
         "WORKFLOW",
@@ -206,31 +293,58 @@ def compile_semantic_runtime(
     )
 
     # =====================================================
-    # RUNTIME
+    # SEMANTIC RUNTIME
     # =====================================================
 
     semantic_runtime = {
 
+        # =================================================
+        # META
+        # =================================================
+
         "runtime_mode":
             runtime_mode,
+
+        # =================================================
+        # SOURCE
+        # =================================================
 
         "specs":
             specs,
 
+        # =================================================
+        # NORMALIZED
+        # =================================================
+
         "normalized_tokens":
             normalized_tokens,
+
+        # =================================================
+        # ATTRIBUTES
+        # =================================================
 
         "semantic_attributes":
             semantic_attributes,
 
+        # =================================================
+        # GROUPS
+        # =================================================
+
         "semantic_groups":
             semantic_groups,
+
+        # =================================================
+        # WORKFLOW
+        # =================================================
 
         "workflow_tags":
             workflow_tags,
 
         "semantic_labels":
             semantic_labels,
+
+        "scores":
+            scores,
     }
 
     runtime_log(
@@ -238,5 +352,9 @@ def compile_semantic_runtime(
         "SEMANTIC RUNTIME",
         semantic_runtime,
     )
+
+    # =====================================================
+    # RESULT
+    # =====================================================
 
     return semantic_runtime
