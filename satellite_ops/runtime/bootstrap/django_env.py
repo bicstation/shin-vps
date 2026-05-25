@@ -6,7 +6,9 @@ import importlib
 # Paths
 # ============================================================================
 
-PROJECT_ROOT = "/home/maya/shin-dev/shin-vps"
+# PROJECT_ROOT = "/home/maya/shin-dev/shin-vps"
+PROJECT_ROOT = "/home/maya/shin-vps"
+
 DJANGO_ROOT = f"{PROJECT_ROOT}/django"
 
 # ============================================================================

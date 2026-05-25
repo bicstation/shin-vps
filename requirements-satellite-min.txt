@@ -1,0 +1,11 @@
+django
+requests
+beautifulsoup4
+lxml
+pyyaml
+django-cors-headers
+djangorestframework
+django-filter
+django-extensions
+psycopg2-binary
+

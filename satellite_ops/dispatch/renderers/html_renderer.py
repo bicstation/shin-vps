@@ -47,6 +47,9 @@ class HTMLRenderer:
 
         quote = None
 
+        accent_color = "#2563eb"
+        
+        
         if persona:
 
             persona_config = PERSONAS.get(persona)
@@ -57,6 +60,18 @@ class HTMLRenderer:
 
                 if quotes_path:
                     quote = self.load_random_quote(quotes_path)
+            
+
+        # if persona:
+
+        #     persona_config = PERSONAS.get(persona)
+
+        #     if persona_config:
+
+        #         quotes_path = persona_config.get("quotes_path")
+
+        #         if quotes_path:
+        #             quote = self.load_random_quote(quotes_path)
 
         # --------------------------------------------------------------------
         # Quote Block
@@ -67,7 +82,7 @@ class HTMLRenderer:
             html.append(
                 f"""
                 <blockquote style="
-                    border-left: 4px solid #2563eb;
+                    border-left: 4px solid {accent_color};
                     padding-left: 15px;
                     color: #475569;
                     margin: 20px 0;

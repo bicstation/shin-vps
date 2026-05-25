@@ -31,6 +31,18 @@ class BaseBlogDriver:
             </div>
             '''
         
-        footer = f'<hr><p style="font-size:12px;color:#666;">出典: <a href="{source_url}">{source_url}</a></p>'
+        # footer = f'<hr><p style="font-size:12px;color:#666;">出典: <a href="{source_url}">{source_url}</a></p>'
+        footer = ""
+
+        if source_url:
+
+            footer = (
+                f'<hr>'
+                f'<p style="font-size:12px;color:#666;">'
+                f'出典: <a href="{source_url}">{source_url}</a>'
+                f'</p>'
+            )
+
+
         
         return f"{img_html}{summary}{body}{rel_html}{footer}"
