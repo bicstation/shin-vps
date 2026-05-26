@@ -1,3 +1,4 @@
+# /home/maya/shin-dev/shin-vps/backend/Dockerfile
 # =====================================================================
 # 🚀 SHIN CORE LINX｜Django 共通 Dockerfile
 # FINAL STABLE MONOREPO RUNTIME EDITION

@@ -1,4 +1,4 @@
-#!/home/maya/shin-vps/satellite-env/bin/python3
+#!/home/maya/shin-dev/shin-vps/satellite-env/bin/python3
 # -*- coding: utf-8 -*-
 import re
 import sys
