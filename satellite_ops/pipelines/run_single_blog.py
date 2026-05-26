@@ -18,8 +18,12 @@ from satellite_ops.logs.post_logger import ( log_post, )
 from satellite_ops.topics.saturation.topic_saturation import ( is_topic_saturated,)
 from satellite_ops.observatory.entropy.keyword_entropy import ( analyze_keyword_entropy,)
 from satellite_ops.feeds.article_fetcher import ( fetch_article_text, )
-from satellite_ops.feeds.rss_registry import ( RSS_FEEDS,)
+# from satellite_ops.feeds.rss_registry import ( RSS_FEEDS,)
+from satellite_ops.feeds.rss_registry_loader import RSS_FEEDS
 from satellite_ops.feeds.rss_summarizer import ( summarize_article_text, )
+from satellite_ops.title.satellite_title_generator import (generate_satellite_title,)
+from satellite_ops.rewrite.adapters.gemma4_adapter import ( rewrite_with_gemma4,)
+from satellite_ops.dispatch.renderers.paragraph_renderer import ( build_paragraphs,)
 # ----------------------------------------------------------------------------
 #  RSS Topic
 # ----------------------------------------------------------------------------
@@ -70,15 +74,54 @@ if available_topics:
     TOPIC = random.choice( available_topics )
 
 else:
-    print( "⚠ All topics saturated." )
-    TOPIC = get_random_topic()
+    print("⚠ All topics saturated.")
+    exit()
+    
+if not TOPIC:
+    print("⚠ No available topic.")
+    exit()
 
-article_text = fetch_article_text(TOPIC.get("link", ""))
+
+ARTICLE_LINK = TOPIC.get("link", "")
+
+if not ARTICLE_LINK:
+    print("⚠ Empty article link.")
+    exit()
+
+article_text = fetch_article_text(ARTICLE_LINK)
+
+# article_text = fetch_article_text(TOPIC.get("link", ""))
+
+NOISE_PATTERNS = [
+    "現在JavaScriptが無効",
+    "JavaScriptの設定",
+    "設定を有効にしてください",
+    "設定を変更する方法はこちら",
+    "続きを読む",
+]
+
+for noise in NOISE_PATTERNS:
+    article_text = article_text.replace(noise, "")
 
 print("\n📰 Article Preview\n")
 
 print(article_text[:500])
 
+print("\n🧠 Gemma Rewrite Runtime\n")
+
+REWRITTEN_TEXT = rewrite_with_gemma4( article_text )
+
+print(REWRITTEN_TEXT)
+
+if not REWRITTEN_TEXT:
+    REWRITTEN_TEXT = article_text
+
+# SATELLITE_TITLE = generate_satellite_title(TOPIC,article_text,)
+SATELLITE_TITLE = generate_satellite_title(TOPIC,REWRITTEN_TEXT,)
+
+
+print("\n🧠 Satellite Title\n")
+print(SATELLITE_TITLE)
 
 summary_paragraphs = summarize_article_text(article_text)
 
@@ -94,10 +137,9 @@ CURRENT_HOUR = datetime.now().hour
 # Paragraphs
 # ----------------------------------------------------------------------------
 
-paragraphs = select_builder(
-    topic=TOPIC,
-    hour=CURRENT_HOUR,
-)
+# paragraphs = select_builder( topic=TOPIC, hour=CURRENT_HOUR, )
+paragraphs = build_paragraphs(REWRITTEN_TEXT)
+
 
 # ----------------------------------------------------------------------------
 # Renderer
@@ -120,7 +162,8 @@ cta_html = renderer.load_cta(
 
 
 html = renderer.render_article(
-title=TOPIC["title"],
+# title=TOPIC["title"],
+title=SATELLITE_TITLE,
 paragraphs=paragraphs,
 persona="bicstation",
 cta_html=cta_html,
@@ -151,7 +194,8 @@ driver = LivedoorDriver(driver_config)
 # ----------------------------------------------------------------------------
 
 driver.post(
-title=TOPIC["title"],
+# title=TOPIC["title"],
+title=SATELLITE_TITLE,
 body=html,
 )
 
