@@ -14,8 +14,8 @@
 import requests
 
 OLLAMA_URL = "http://localhost:11434/api/generate"
-# MODEL_NAME = "gemma3:1b"
-MODEL_NAME = "gemma2:2b"
+MODEL_NAME = "gemma3:1b"
+# MODEL_NAME = "gemma2:2b"
 
 PROMPT_TEMPLATE = """
 以下の記事を、

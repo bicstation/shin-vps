@@ -1,0 +1,22 @@
+services:
+
+  governance-importer:
+   
+    build:
+      context: .
+
+    container_name: shin-governance-importer
+
+    working_dir: /app
+
+    volumes:
+      - /home/maya/shin-vps:/app
+
+    command: tail -f /dev/null
+
+    networks:
+      - shin-local_internal-net
+
+networks:
+  shin-local_internal-net:
+    external: true
