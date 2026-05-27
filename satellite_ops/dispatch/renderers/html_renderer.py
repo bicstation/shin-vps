@@ -9,7 +9,7 @@
 from pathlib import Path
 import random
 
-from satellite_ops.personas.persona_registry import PERSONAS
+from satellite_ops.personas.registry.persona_registry import PERSONAS
 
 class HTMLRenderer:
 
@@ -31,6 +31,10 @@ class HTMLRenderer:
         paragraphs,
         persona=None,
         cta_html=None,
+        image_url=None,
+        source_url=None,
+        source_name=None,
+        
     ) -> str:
 
         html = []
@@ -98,13 +102,40 @@ class HTMLRenderer:
 
         for paragraph in paragraphs:
             html.append(f"<p>{paragraph}</p>")
+            
+        # --------------------------------------------------------------------
+        # Source Attribution
+        # --------------------------------------------------------------------
 
+        if source_url:
+
+            html.append(
+                f"""
+                <p style="
+                    margin-top:24px;
+                    font-size:12px;
+                    color:#777;
+                ">
+                出典：
+                <a
+                    href="{source_url}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                {source_name or source_url}
+                </a>
+                </p>
+                """
+            )
+            
         # --------------------------------------------------------------------
         # CTA
         # --------------------------------------------------------------------
 
         if cta_html:
             html.append(cta_html)
+
+
 
         # --------------------------------------------------------------------
         # Final HTML

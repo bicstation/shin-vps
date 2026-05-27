@@ -82,9 +82,9 @@ bicstation	tech_pc	https://pc.watch.impress.co.jp/data/rss/1.0/pcw/feed.rdf	PC
 bicstation	tech_news	https://rss.itmedia.co.jp/rss/2.0/news_bursts.xml	ITmedia
 bicstation	tech_pc	https://rss.itmedia.co.jp/rss/2.0/pcuser.xml	ITmedia
 bicstation	tech_gadget	https://www.gizmodo.jp/index.xml	Gizmodo
-bicstation	tech_pc	https://ascii.jp/rss.xml	ASCII
+bicstation	tech_all	https://ascii.jp/rss.xml	ASCII
 bicstation	tech_business	https://ascii.jp/biz/rss.xml	ASCII
-bicstation	tech_news	https://ascii.jp/tech/rss.xml	ASCII
+bicstation	tech_pc	https://ascii.jp/tech/rss.xml	ASCII
 bicstation	tech_news	https://ascii.jp/web/rss.xml	ASCII
 bicstation	tech_gadget	https://ascii.jp/digital/rss.xml	ASCII
 bicstation	tech_apple	https://ascii.jp/mac/rss.xml	ASCII
@@ -92,6 +92,7 @@ bicstation	tech_hobby	https://ascii.jp/hobby/rss.xml	ASCII
 bicstation	tech_pc	https://ascii.jp/pc/rss.xml	ASCII
 bicstation	tech_news	https://techcrunch.com/feed/	TechCrunch
 bicstation	tech_network	https://internet.watch.impress.co.jp/data/rss/1.0/iw/feed.rdf	Internet
+bicstation	tech_pc	https://www.watch.impress.co.jp/data/rss/1.0/ipw/feed.rdf	ITmedia
 bicstation	tech_business	https://rss.itmedia.co.jp/rss/2.0/business.xml	ITmedia
 bicstation	tech_mobile	https://rss.itmedia.co.jp/rss/2.0/mobile.xml	ITmedia
 bicstation	tech_gadget	https://www.phileweb.com/rss/rss.php	Phile-web

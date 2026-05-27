@@ -15,7 +15,9 @@ class LivedoorDriver(BaseBlogDriver):
         XML 1.0規格外の文字を物理的に排除し、400 Bad Requestを回避
         """
         # --- 設定情報の取得 ---
-        url = (self.config.get('url') or self.config.get('endpoint') or '').strip()
+        # url = (self.config.get('url') or self.config.get('endpoint') or '').strip()
+        url = (self.config.get('endpoint') or self.config.get('url') or '').strip()
+        
         user = str(self.config.get('user') or '').strip()
         key = str(self.config.get('api_key') or self.config.get('api_key_or_pw') or '').strip()
 
