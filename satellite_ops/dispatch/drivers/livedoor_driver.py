@@ -47,8 +47,13 @@ class LivedoorDriver(BaseBlogDriver):
         # カテゴリタグ (AtomPubでは <content> より前に置くのが一般的で安全)
         category_tag = ""
         if category:
-            safe_category = escape(str(category).strip())
-            category_tag = f'<category term="{safe_category}" />'
+
+            safe_category = str(category or "").strip()
+            if safe_category:
+                safe_category = escape(safe_category)
+                category_tag = (
+                    f'<category term="{safe_category}" />'
+                )
         
         # --- AtomPub XML 構築 ---
         # 確実に utf-8 宣言。CDATAを使うことでHTMLタグを保護

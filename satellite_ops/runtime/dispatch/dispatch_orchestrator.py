@@ -51,6 +51,8 @@ class DispatchOrchestrator:
         html: str,
 
         image_url: str = None,
+        
+        category: str = "",
 
     ) -> dict:
         """
@@ -129,6 +131,8 @@ class DispatchOrchestrator:
             body=html,
 
             image_url=image_url,
+            
+            category=category,
         )
 
         # --------------------------------------------------------------------

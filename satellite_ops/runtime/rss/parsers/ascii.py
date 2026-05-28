@@ -82,20 +82,20 @@ class ASCIIParser:
             # Main Body Detection
             # ================================================================
 
-            # print("\n🧪 ASCII HTML Preview\n")
+            print("\n🧪 ASCII HTML Preview\n")
 
             # print(
             #     # soup.prettify()[:3000]
-            #     soup.prettify()[15000:32000]
+            #     soup.prettify()[1000:32000]
             # )
-            print("\n🧪 FIND TEST\n")
+            # print("\n🧪 FIND TEST\n")
 
-            print(
-                soup.find(
-                    "div",
-                    id="contents_detail",
-                )
-            )
+            # print(
+            #     soup.find(
+            #         "div",
+            #         id="contents_detail",
+            #     )
+            # )
             
             body = (
 

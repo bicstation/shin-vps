@@ -10,37 +10,16 @@
 
 import random
 
-from satellite_ops.registry.blogs.blog_loader import (
-    load_blog,
-)
+from satellite_ops.registry.blogs.blog_loader import (load_blog,)
+from satellite_ops.registry.rss.rss_loader import (load_rss_by_categories,)
+from satellite_ops.runtime.models.runtime_context import (RuntimeContext,)
+from satellite_ops.runtime.rss.rss_orchestrator import (RSSOrchestrator,)
+from satellite_ops.runtime.rewrite.rewrite_orchestrator import (RewriteOrchestrator,)
+from satellite_ops.runtime.render.render_orchestrator import (RenderOrchestrator,)
+from satellite_ops.runtime.dispatch.dispatch_orchestrator import (DispatchOrchestrator,)
+from satellite_ops.observatory.runtime_observer import (RuntimeObserver,)
+from satellite_ops.runtime.categories.category_map import (CATEGORY_LABELS,)
 
-from satellite_ops.registry.rss.rss_loader import (
-    load_rss_by_categories,
-)
-
-from satellite_ops.runtime.models.runtime_context import (
-    RuntimeContext,
-)
-
-from satellite_ops.runtime.rss.rss_orchestrator import (
-    RSSOrchestrator,
-)
-
-from satellite_ops.runtime.rewrite.rewrite_orchestrator import (
-    RewriteOrchestrator,
-)
-
-from satellite_ops.runtime.render.render_orchestrator import (
-    RenderOrchestrator,
-)
-
-from satellite_ops.runtime.dispatch.dispatch_orchestrator import (
-    DispatchOrchestrator,
-)
-
-from satellite_ops.observatory.runtime_observer import (
-    RuntimeObserver,
-)
 
 # ============================================================================
 # Runtime Engine
@@ -506,6 +485,34 @@ class RuntimeEngine:
         self.observer.html_preview(
             context.html
         )
+        
+        
+        # --------------------------------------------------------------------
+        # Category Normalize
+        # --------------------------------------------------------------------
+
+        category = context.rss_source.get(
+        "category",
+        "",
+        )
+
+        # list → string
+
+        if isinstance(category, list):
+            category = (
+                category[0]
+                if category
+                else ""
+            )
+
+
+        # internal → display label
+
+        category = CATEGORY_LABELS.get(
+            category,
+            category,
+        )
+       
 
         # --------------------------------------------------------------------
         # Dispatch Runtime
@@ -528,6 +535,8 @@ class RuntimeEngine:
                     html=context.html,
 
                     image_url=None,
+
+                    category=category,
                 )
             )
 
@@ -566,6 +575,14 @@ class RuntimeEngine:
         # --------------------------------------------------------------------
         # Runtime Complete
         # --------------------------------------------------------------------
+        
+        self.observer.section(
+            "🧠 Category Runtime"
+        )
+
+        self.observer.info(
+            category
+        )
 
         self.observer.section(
             "✅ Runtime Complete"

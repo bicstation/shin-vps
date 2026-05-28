@@ -1,5 +1,5 @@
 # ============================================================================
-# SHIN SATELLITE OPS｜Gemma 4 Rewrite Adapter
+# SHIN SATELLITE OPS｜Gemma Rewrite Adapter
 # ============================================================================
 # Purpose:
 # Lightweight LLM rewrite runtime
@@ -14,8 +14,12 @@
 import os
 import requests
 
+from pathlib import Path
+
 # ============================================================================
+
 # Environment Runtime
+
 # ============================================================================
 
 OLLAMA_HOST = os.getenv(
@@ -29,32 +33,20 @@ OLLAMA_MODEL = os.getenv(
 )
 
 # ============================================================================
-# Source Prompt Overlays
+# Overlay Runtime
 # ============================================================================
 
-SOURCE_PROMPT_OVERLAYS = {
+BASE_DIR = (
+Path(__file__)
+.resolve()
+.parent
+.parent
+)
 
-"techcrunch": """
-* 翻訳口調禁止
-* 「〜して頂きたいです」を禁止
-* 日本語ニュース調を維持
-* 過度に丁寧な翻訳を避ける
-* 英語記事を自然な日本語ニュース風にする
-""",
+OVERLAY_DIR = (
+BASE_DIR / "overlays"
+)
 
-
-"yahoo": """
-* 関連記事を無視
-* 世論調査を無視
-* ノイズを拾わない
-""",
-
-
-"ascii": """
-* 過度に会話口調へしない
-* ITニュースの温度感を維持
-""",
-}
 
 # ============================================================================
 # Base Prompt
@@ -81,38 +73,85 @@ PROMPT_TEMPLATE = """
   """
 
 # ============================================================================
+# Load Overlay
+# ============================================================================
+
+def load_overlay(
+source_type: str,
+) -> str:
+
+
+    try:
+
+        if not source_type:
+            return ""
+
+        overlay_path = (
+            OVERLAY_DIR /
+            f"{source_type}.txt"
+        )
+
+        if not overlay_path.exists():
+
+            print(
+                f"⚠ overlay not found: {overlay_path}"
+            )
+
+            return ""
+
+        return overlay_path.read_text(
+            encoding="utf-8"
+        ).strip()
+
+    except Exception as e:
+
+        print(
+            f"⚠ Overlay Load Error: {e}"
+        )
+
+        return ""
+
+
+# ============================================================================
 # Rewrite Runtime
 # ============================================================================
 
 def rewrite_with_gemma4(
+
 article_text="",
 source_type="",
 overlay="",
 
 ):
 
-
-    if not article_text:
-        return ""
-
-
-    # ========================================================================
-    # Prompt Overlay
-    # ========================================================================
-
-    system_overlay = SOURCE_PROMPT_OVERLAYS.get(
-  
-    source_type,
-    ""
-
+    source_type = (
+        source_type
+        .strip()
+        .lower()
     )
 
+    if not article_text:
+
+        return ""
+
+    # ========================================================================
+    # System Overlay
+    # ========================================================================
+
+    system_overlay = load_overlay(
+        source_type
+    )
+
+    # ========================================================================
+    # Final Overlay
+    # ========================================================================
+
     final_overlay = f"""
+
 
     {system_overlay}
 
     {overlay}
-
 
     """
 
@@ -122,6 +161,7 @@ overlay="",
     # ========================================================================
 
     prompt = f"""
+
 
     {PROMPT_TEMPLATE}
 
@@ -140,7 +180,9 @@ overlay="",
     payload = {
 
         "model": OLLAMA_MODEL,
+
         "prompt": prompt,
+
         "stream": False,
     }
 
@@ -160,6 +202,7 @@ overlay="",
         data = response.json()
 
         print("\n🧪 Gemma RAW Response\n")
+
         print(data)
 
         rewritten = data.get(
@@ -172,8 +215,7 @@ overlay="",
     except Exception as e:
 
         print(
-            f"❌ Gemma4 Rewrite Error: {e}"
+            f"❌ Gemma Rewrite Error: {e}"
         )
 
         return ""
-
