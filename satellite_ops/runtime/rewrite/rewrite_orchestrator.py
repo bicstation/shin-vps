@@ -43,10 +43,10 @@ class RewriteOrchestrator:
     def execute(
 
         self,
-
-        article_text: str,
-
-        persona: str = "",
+        article_text: str, 
+        persona: str = "", 
+        source_type: str = "",
+        overlay: str = "",
 
     ) -> str:
 
@@ -64,10 +64,14 @@ class RewriteOrchestrator:
 
         rewritten = rewrite_lightly(
 
-            article_text,
+        article_text,
+        persona,
+        source_type=source_type,
+        overlay=overlay,
 
-            persona,
         )
+
+
 
         # --------------------------------------------------------------------
         # Fallback Continuity

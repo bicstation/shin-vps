@@ -1,16 +1,30 @@
 # ============================================================================
-# SHIN SATELLITE OPS｜PhileWeb Parser
+# SHIN SATELLITE OPS｜TechCrunch Parser
 # ============================================================================
 
 import requests
+
 from bs4 import BeautifulSoup
 
-class PhileWebParser:
+BLOCK_WORDS = [
+
+"StrictlyVC",
+"Subscribe",
+"Register",
+"Upcoming event",
+"Save up to",
+"TechCrunch event",
+"advertisement",
 
 
-    # ========================================================================
-    # Parse
-    # ========================================================================
+]
+
+class TechCrunchParser:
+
+
+# ========================================================================
+# Parse
+# ========================================================================
 
     @classmethod
     def parse(
@@ -31,11 +45,9 @@ class PhileWebParser:
                 }
             )
 
-            # ================================================================
-            # Encoding Normalize
-            # ================================================================
-
-            response.encoding = "cp932"
+            response.encoding = (
+                response.apparent_encoding
+            )
 
             soup = BeautifulSoup(
 
@@ -45,21 +57,28 @@ class PhileWebParser:
             )
 
             # ================================================================
-            # Main Body
+            # Main Body Detection
             # ================================================================
-
+            
             body = (
-
+            
                 soup.find(
                     "div",
-                    class_="p-article__body",
+                    class_="entry-content",
                 )
 
                 or
 
                 soup.find(
                     "div",
-                    class_="article-body",
+                    class_="article-content",
+                )
+
+                or
+
+                soup.find(
+                    "div",
+                    class_="wp-block-post-content",
                 )
 
                 or
@@ -67,18 +86,19 @@ class PhileWebParser:
                 soup.find(
                     "article",
                 )
+
             )
 
             if not body:
 
                 print(
-                    "⚠ PhileWeb body not found"
+                    "⚠ TechCrunch body not found"
                 )
 
                 return ""
 
             # ================================================================
-            # Remove Noise
+            # Remove Noise Blocks
             # ================================================================
 
             for tag in body.find_all([
@@ -86,9 +106,8 @@ class PhileWebParser:
                 "script",
                 "style",
                 "aside",
-                "iframe",
                 "noscript",
-
+                "iframe",
             ]):
 
                 tag.decompose()
@@ -117,10 +136,23 @@ class PhileWebParser:
                     continue
 
                 # ------------------------------------------------------------
+                # Noise Filter
+                # ------------------------------------------------------------
+
+                if any(
+
+                    word.lower()
+                    in text.lower()
+
+                    for word in BLOCK_WORDS
+                ):
+                    continue
+
+                # ------------------------------------------------------------
                 # Too Short
                 # ------------------------------------------------------------
 
-                if len(text) < 20:
+                if len(text) < 40:
                     continue
 
                 text_parts.append(text)
@@ -136,7 +168,7 @@ class PhileWebParser:
         except Exception as e:
 
             print(
-                f"⚠ PhileWeb Parser Error: {e}"
+                f"⚠ TechCrunch Parser Error: {e}"
             )
 
             return ""
@@ -164,18 +196,16 @@ class PhileWebParser:
                 }
             )
 
-            # ================================================================
-            # Encoding Normalize
-            # ================================================================
-
-            response.encoding = "cp932"
+            response.encoding = (
+                response.apparent_encoding
+            )
 
             return response.text
 
         except Exception as e:
 
             print(
-                f"⚠ PhileWeb fetch_html Error: {e}"
+                f"⚠ TechCrunch fetch_html Error: {e}"
             )
 
             return ""

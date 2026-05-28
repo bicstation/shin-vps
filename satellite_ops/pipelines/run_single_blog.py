@@ -15,17 +15,42 @@
 #
 # ============================================================================
 
-from satellite_ops.runtime.engine.runtime_engine import (
-    RuntimeEngine,
-)
+import argparse
+
+from satellite_ops.runtime.engine.runtime_engine import (RuntimeEngine,)
 
 # ============================================================================
 # Runtime Config
 # ============================================================================
 
-BLOG_NAME = "pc-compass"
-
+DEFAULT_BLOG_NAME = "pc-compass"
 ENABLE_REAL_POST = True
+
+# ============================================================================
+# CLI
+# ============================================================================
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument(
+
+"--rss",
+type=str,
+default=None,
+help="RSS source filter"
+
+)
+
+parser.add_argument(
+
+"--blog",
+type=str,
+default=DEFAULT_BLOG_NAME,
+help="Target blog name"
+
+)
+
+args = parser.parse_args()
 
 # ============================================================================
 # Runtime Boot
@@ -33,13 +58,19 @@ ENABLE_REAL_POST = True
 
 def main():
 
+    print("\n🛰 SHIN SATELLITE OPS\n")
+    print("\n🎯 Runtime Target\n")
+    print(f"Blog => {args.blog}")
+    print(f"RSS   => {args.rss}")
+
     engine = RuntimeEngine()
 
     context = engine.execute(
 
-        blog_name=BLOG_NAME,
-
+        blog_name=args.blog,
         enable_real_post=ENABLE_REAL_POST,
+        rss_filter=args.rss,
+
     )
 
     return context
@@ -49,5 +80,4 @@ def main():
 # ============================================================================
 
 if __name__ == "__main__":
-
     main()

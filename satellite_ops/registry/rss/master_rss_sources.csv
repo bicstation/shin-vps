@@ -95,7 +95,7 @@ bicstation	tech_network	https://internet.watch.impress.co.jp/data/rss/1.0/iw/fee
 bicstation	tech_pc	https://www.watch.impress.co.jp/data/rss/1.0/ipw/feed.rdf	ITmedia
 bicstation	tech_business	https://rss.itmedia.co.jp/rss/2.0/business.xml	ITmedia
 bicstation	tech_mobile	https://rss.itmedia.co.jp/rss/2.0/mobile.xml	ITmedia
-bicstation	tech_gadget	https://www.phileweb.com/rss/rss.php	Phile-web
+bicstation	tech_gadget	https://www.phileweb.com/rss.php	Phile-web
 saving	finance_tech	https://www.sbbit.jp/rss/HotTopics.rss	Fintech
 saving	finance_jp	https://zuuonline.com/feed	ZUU
 saving	finance_jp	https://financial-field.com/feed	Financial
@@ -124,6 +124,7 @@ bicstation	Mobile_and_Network	https://news.yahoo.co.jp/rss/media/impktw/all.xml	
 bicstation	Business_and_Productivity	https://news.yahoo.co.jp/rss/media/binsider/all.xml	ビジネスPC、自動化PC
 bicstation	Market_and_Economy	https://news.yahoo.co.jp/rss/topics/business.xml	ビジネスPC、リセールPC（経済）
 bicstation	Market_and_Economy	https://news.yahoo.co.jp/rss/categories/business.xml	ビジネスPC、リセールPC（企業動向）
+
 saving	FX_Economy_Trend	https://news.yahoo.co.jp/rss/topics/business.xml	経済トピックス：為替に直結する重要ニュース
 saving	FX_Economy_Trend	https://news.yahoo.co.jp/rss/categories/business.xml	経済カテゴリ：国内外の景気動向と市場影響
 saving	FX_Strategy_Method	https://news.yahoo.co.jp/rss/media/moneyp/all.xml	マネーポスト：投資家向けの具体的な手法

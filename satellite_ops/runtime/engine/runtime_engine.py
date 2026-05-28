@@ -72,13 +72,12 @@ class RuntimeEngine:
     def execute(
 
         self,
-
         blog_name: str,
-
-        enable_real_post: bool = True,
+        enable_real_post: bool = True,       
+        rss_filter: str | None = None,
 
     ):
-
+        
         # --------------------------------------------------------------------
         # Runtime Context
         # --------------------------------------------------------------------
@@ -155,6 +154,52 @@ class RuntimeEngine:
 
                 f"{rss.get('rss_url', '')}"
             )
+        
+        # --------------------------------------------------------------------
+        # RSS Filter
+        # --------------------------------------------------------------------
+        
+        if rss_filter:
+
+            rss_sources = [
+
+                rss for rss in rss_sources
+
+                if (
+
+                    rss_filter.lower()
+
+                    in rss.get(
+                        "source_name",
+                        ""
+                    ).lower()
+
+                    or
+
+                    rss_filter.lower()
+
+                    in rss.get(
+                        "rss_url",
+                        ""
+                    ).lower()
+                )
+            ]
+
+            self.observer.section(
+                "🎯 RSS Filter"
+            )
+
+            self.observer.info(
+                rss_filter
+            )
+
+        if not rss_sources:
+
+            self.observer.error(
+                "Filtered RSS sources not found."
+            )
+
+            return False
 
         # --------------------------------------------------------------------
         # Select RSS
@@ -335,19 +380,34 @@ class RuntimeEngine:
         # Rewrite Runtime
         # --------------------------------------------------------------------
 
+        rewrite_overlay = getattr(
+
+            rss_runtime.get(
+                "parser_instance",
+                None,
+            ),
+
+            "REWRITE_OVERLAY",
+
+            ""
+
+        )
+
         context.rewritten_text = (
 
             self.rewrite.execute(
-
                 article_text[:4000],
-
                 context.blog.get(
                     "persona",
                     "",
                 ),
+                source_type=context.source_name.lower(),
+                overlay=rewrite_overlay,
             )
+
         )
 
+        
         # --------------------------------------------------------------------
         # Rewrite Validation
         # --------------------------------------------------------------------

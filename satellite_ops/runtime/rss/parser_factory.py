@@ -8,6 +8,9 @@ from satellite_ops.runtime.rss.parsers.fanza import ( FanzaParser,)
 from satellite_ops.runtime.rss.parsers.itmedia import ( ITmediaParser,)
 from satellite_ops.runtime.rss.parsers.impress import ( ImpressParser,)
 from satellite_ops.runtime.rss.parsers.ascii import ( ASCIIParser,)
+from satellite_ops.runtime.rss.parsers.techcrunch import ( TechCrunchParser, )
+from satellite_ops.runtime.rss.parsers.phileweb import ( PhileWebParser, )
+from satellite_ops.runtime.rss.parsers.gizmodo import ( GizmodoParser, )
 
 # ============================================================================
 # Get Parser
@@ -63,14 +66,29 @@ def get_parser(
 
         return ASCIIParser
 
+    # ========================================================================
+    # TechCrunch
+    # ========================================================================
+
+    if "techcrunch.com" in target:
+
+        return TechCrunchParser
+
+    # ========================================================================
+    # TechCrunch
+    # ========================================================================
+
+    if "gizmodo.jp" in target:
+
+        return GizmodoParser
 
     # # ========================================================================
     # # PhileWeb
     # # ========================================================================
 
-    # if "phileweb.com" in target:
+    if "phileweb.com" in target:
 
-    #     return PhileWebParser
+        return PhileWebParser
 
     # ========================================================================
     # FANZA / DMM
