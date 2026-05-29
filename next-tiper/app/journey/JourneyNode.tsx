@@ -4,9 +4,7 @@ import Link from 'next/link'
 
 import styles from './JourneyLayer.module.css'
 
-import type {
-JourneyItem,
-} from './journey.config'
+import type {JourneyItem,} from './journey.config'
 
 type Props = {
 item: JourneyItem

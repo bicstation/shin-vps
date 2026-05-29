@@ -4,9 +4,7 @@ import styles from './JourneyLayer.module.css'
 
 import JourneyNode from './JourneyNode'
 
-import {
-JOURNEY_ITEMS,
-} from './journey.config'
+import {JOURNEY_ITEMS,} from './journey.config'
 
 export default function JourneyLayer() {
 
