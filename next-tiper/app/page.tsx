@@ -16,6 +16,7 @@ import { getUnifiedProducts } from '@/shared/lib/api/django-bridge';
 import { constructMetadata } from '@/shared/lib/utils/metadata';
 import { getSiteMetadata } from '@/shared/lib/utils/siteConfig';
 import { UnifiedPost } from '@/shared/lib/api/types';
+import JourneyLayer from './journey/JourneyLayer';
 
 import styles from './page.module.css';
 
