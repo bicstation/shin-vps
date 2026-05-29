@@ -1,0 +1,550 @@
+{
+  "timestamp": "2026-05-29T13:50:49.823144",
+  "blog_name": "pc-compass",
+  "persona": "システム戦略家。 PCは人生を拡張する「資本」である。全方位の羅針盤。総合案内・ロードマップ！俯瞰的・ガイド。",
+  "rss_universe": [
+    "pcwatch",
+    "itmedia-news",
+    "itmedia-pc",
+    "gizmodo",
+    "ascii-tech",
+    "ascii-web",
+    "ascii-digital",
+    "ascii-pc",
+    "techcrunch",
+    "itmedia-watch",
+    "phileweb",
+    "yahoo-it-topics",
+    "yahoo-it-category",
+    "yahoo-business-topics",
+    "yahoo-business-category"
+  ],
+  "article_count": 75,
+  "articles": [
+    {
+      "rss_key": "pcwatch",
+      "source_name": "PC",
+      "rss_url": "https://pc.watch.impress.co.jp/data/rss/1.0/pcw/feed.rdf",
+      "title": "Microsoft、立て続けのゼロデイ脆弱性公表を非難。発見者は7月に報復と予告",
+      "url": "https://pc.watch.impress.co.jp/docs/news/2112811.html"
+    },
+    {
+      "rss_key": "pcwatch",
+      "source_name": "PC",
+      "rss_url": "https://pc.watch.impress.co.jp/data/rss/1.0/pcw/feed.rdf",
+      "title": "ロード時間が半減。「Microsoft 365 Copilot」アプリがデザイン刷新で高速化",
+      "url": "https://pc.watch.impress.co.jp/docs/news/2112774.html"
+    },
+    {
+      "rss_key": "pcwatch",
+      "source_name": "PC",
+      "rss_url": "https://pc.watch.impress.co.jp/data/rss/1.0/pcw/feed.rdf",
+      "title": "【本日みつけたお買い得品】疲れた時に「翼」を授けるレッドブル24本入りが1,129円引きでセール中！",
+      "url": "https://pc.watch.impress.co.jp/docs/news/todays_sales/2112793.html"
+    },
+    {
+      "rss_key": "pcwatch",
+      "source_name": "PC",
+      "rss_url": "https://pc.watch.impress.co.jp/data/rss/1.0/pcw/feed.rdf",
+      "title": "【本日みつけたお買い得品】ケルヒャーのコードレス高圧洗浄機が1,180円引きでオトク",
+      "url": "https://pc.watch.impress.co.jp/docs/news/todays_sales/2112772.html"
+    },
+    {
+      "rss_key": "pcwatch",
+      "source_name": "PC",
+      "rss_url": "https://pc.watch.impress.co.jp/data/rss/1.0/pcw/feed.rdf",
+      "title": "Anthropic、“誠実”になった新AIモデル「Claude Opus 4.8」",
+      "url": "https://pc.watch.impress.co.jp/docs/news/2112759.html"
+    },
+    {
+      "rss_key": "itmedia-news",
+      "source_name": "ITmedia",
+      "rss_url": "https://rss.itmedia.co.jp/rss/2.0/news_bursts.xml",
+      "title": "データセンター会社の偉い人に「自分だけのDCを作れるゲーム」遊んでもらった　プロ目線でガチレビュー",
+      "url": "https://www.itmedia.co.jp/news/articles/2605/29/news018.html"
+    },
+    {
+      "rss_key": "itmedia-news",
+      "source_name": "ITmedia",
+      "rss_url": "https://rss.itmedia.co.jp/rss/2.0/news_bursts.xml",
+      "title": "富士通、約4万5000人分の物資をリアルタイム管理するシステムを海上自衛隊に提供",
+      "url": "https://www.itmedia.co.jp/news/articles/2605/29/news088.html"
+    },
+    {
+      "rss_key": "itmedia-news",
+      "source_name": "ITmedia",
+      "rss_url": "https://rss.itmedia.co.jp/rss/2.0/news_bursts.xml",
+      "title": "それで、メモリ不足はいつまで続くの？　なかなか終わらない狂騒のウラ側",
+      "url": "https://www.itmedia.co.jp/news/articles/2605/29/news041.html"
+    },
+    {
+      "rss_key": "itmedia-news",
+      "source_name": "ITmedia",
+      "rss_url": "https://rss.itmedia.co.jp/rss/2.0/news_bursts.xml",
+      "title": "「Mythos級モデル」一般提供、数週間以内に　米Anthropic「Opus 4.8」リリース",
+      "url": "https://www.itmedia.co.jp/news/articles/2605/29/news084.html"
+    },
+    {
+      "rss_key": "itmedia-news",
+      "source_name": "ITmedia",
+      "rss_url": "https://rss.itmedia.co.jp/rss/2.0/news_bursts.xml",
+      "title": "YouTube PremiumにPodcast向け新機能　AIによる再生速度の自動調整など3機能",
+      "url": "https://www.itmedia.co.jp/news/articles/2605/29/news082.html"
+    },
+    {
+      "rss_key": "itmedia-pc",
+      "source_name": "ITmedia",
+      "rss_url": "https://rss.itmedia.co.jp/rss/2.0/pcuser.xml",
+      "title": "鉄道運転シミュレーターが楽しくなる！　「ズイキマスコンPRO」（クラファン版）を買って使ってみた",
+      "url": "https://www.itmedia.co.jp/pcuser/articles/2605/29/news091.html"
+    },
+    {
+      "rss_key": "itmedia-pc",
+      "source_name": "ITmedia",
+      "rss_url": "https://rss.itmedia.co.jp/rss/2.0/pcuser.xml",
+      "title": "2025年度の国内PC出荷台数は「過去最高」に　ＭＭ総研調べ",
+      "url": "https://www.itmedia.co.jp/pcuser/articles/2605/29/news089.html"
+    },
+    {
+      "rss_key": "itmedia-pc",
+      "source_name": "ITmedia",
+      "rss_url": "https://rss.itmedia.co.jp/rss/2.0/pcuser.xml",
+      "title": "Intelが携帯ゲーミングPC向け新SoC「Intel Arc G」シリーズを発表",
+      "url": "https://www.itmedia.co.jp/pcuser/articles/2605/28/news154.html"
+    },
+    {
+      "rss_key": "itmedia-pc",
+      "source_name": "ITmedia",
+      "rss_url": "https://rss.itmedia.co.jp/rss/2.0/pcuser.xml",
+      "title": "300ドル級エントリーノートPC向けSoC「Snapdragon C」登場　搭載製品は2026年後半に",
+      "url": "https://www.itmedia.co.jp/pcuser/articles/2605/28/news146.html"
+    },
+    {
+      "rss_key": "itmedia-pc",
+      "source_name": "ITmedia",
+      "rss_url": "https://rss.itmedia.co.jp/rss/2.0/pcuser.xml",
+      "title": "レノボが「キャプテン翼」とコラボしたTVCMを5月31日から放映　FIFAワールドカップの機運を高める狙い",
+      "url": "https://www.itmedia.co.jp/pcuser/articles/2605/28/news142.html"
+    },
+    {
+      "rss_key": "gizmodo",
+      "source_name": "Gizmodo",
+      "rss_url": "https://www.gizmodo.jp/index.xml",
+      "title": "Steam Deck OLED、海外で在庫復活＆正式値上げ。日本は相変わらず在庫なし",
+      "url": "https://www.gizmodo.jp/article/valves-massive-price-hikes-just-ruined-the-steam-deck/"
+    },
+    {
+      "rss_key": "gizmodo",
+      "source_name": "Gizmodo",
+      "rss_url": "https://www.gizmodo.jp/index.xml",
+      "title": "弱点克服！ 3COINSのワンプッシュ製氷器が容量2倍に進化",
+      "url": "https://www.gizmodo.jp/article/3coins-one-push-ice-tray/"
+    },
+    {
+      "rss_key": "gizmodo",
+      "source_name": "Gizmodo",
+      "rss_url": "https://www.gizmodo.jp/index.xml",
+      "title": "飛行機の「燃油サーチャージ」って何？ 今年の夏、旅行は海外と国内どっちがよさそう？",
+      "url": "https://www.gizmodo.jp/article/airline-fuel-surcharge/"
+    },
+    {
+      "rss_key": "gizmodo",
+      "source_name": "Gizmodo",
+      "rss_url": "https://www.gizmodo.jp/index.xml",
+      "title": "80gのプロジェクターに20gの空気入れ。アウトドアで重宝する小型ガジェット5選",
+      "url": "https://www.gizmodo.jp/article/pico-projector-gizmart-5/"
+    },
+    {
+      "rss_key": "gizmodo",
+      "source_name": "Gizmodo",
+      "rss_url": "https://www.gizmodo.jp/index.xml",
+      "title": "【スマホのAI 徹底検証】使ってわかった、Nothingの本当に使えるAI機能はこれだ",
+      "url": "https://www.gizmodo.jp/article/ai-phone-nothing/"
+    },
+    {
+      "rss_key": "ascii-tech",
+      "source_name": "ASCII",
+      "rss_url": "https://ascii.jp/tech/rss.xml",
+      "title": "集団内の多様性と同調が、危機の回避に役立つ――ハエの行動から探る「集団の力」",
+      "url": "https://ascii.jp/elem/000/004/400/4400136/?rss"
+    },
+    {
+      "rss_key": "ascii-tech",
+      "source_name": "ASCII",
+      "rss_url": "https://ascii.jp/tech/rss.xml",
+      "title": "6/25はアスキーのIT業界交流会！ 情シスの皆さんが語り合う参加費無料イベント、ウナギと台湾かき氷を食べながらゆるっと楽しもう！【テーマは「セキュリティの理想と現実」】",
+      "url": "https://ascii.jp/elem/000/004/404/4404143/?rss"
+    },
+    {
+      "rss_key": "ascii-tech",
+      "source_name": "ASCII",
+      "rss_url": "https://ascii.jp/tech/rss.xml",
+      "title": "“防犯カメラ”を超えて、売上と効率の向上へ　LINE WORKS Visionが拓く、AI×クラウドカメラの可能性",
+      "url": "https://ascii.jp/elem/000/004/406/4406148/?rss"
+    },
+    {
+      "rss_key": "ascii-tech",
+      "source_name": "ASCII",
+      "rss_url": "https://ascii.jp/tech/rss.xml",
+      "title": "AI時代は“すべてのリスクを追いかけない”運用を　マクニカが予防型セキュリティ新基盤を発表",
+      "url": "https://ascii.jp/elem/000/004/405/4405690/?rss"
+    },
+    {
+      "rss_key": "ascii-tech",
+      "source_name": "ASCII",
+      "rss_url": "https://ascii.jp/tech/rss.xml",
+      "title": "Obsidianで構築したエンジニアの「第二の脳」― 個人ナレッジベース構築のすべて",
+      "url": "https://ascii.jp/elem/000/004/404/4404638/?rss"
+    },
+    {
+      "rss_key": "ascii-web",
+      "source_name": "ASCII",
+      "rss_url": "https://ascii.jp/web/rss.xml",
+      "title": "KUSANAGI Security Editionが進化！ 新機能「SafeUpgrade」でダウンタイムゼロのnginxアップデートを実現",
+      "url": "https://ascii.jp/elem/000/004/319/4319892/?rss"
+    },
+    {
+      "rss_key": "ascii-web",
+      "source_name": "ASCII",
+      "rss_url": "https://ascii.jp/web/rss.xml",
+      "title": "高速CMS基盤「KUSANAGI Security Edition」がMicrosoft Azureに登場｜自動アップデートで安全性を確保",
+      "url": "https://ascii.jp/elem/000/004/319/4319891/?rss"
+    },
+    {
+      "rss_key": "ascii-web",
+      "source_name": "ASCII",
+      "rss_url": "https://ascii.jp/web/rss.xml",
+      "title": "KUSANAGI 9、新たにOracle CloudにAlmaLinux OS 9を採用し、2032年までの長期サポート提供開始",
+      "url": "https://ascii.jp/elem/000/004/314/4314706/?rss"
+    },
+    {
+      "rss_key": "ascii-web",
+      "source_name": "ASCII",
+      "rss_url": "https://ascii.jp/web/rss.xml",
+      "title": "例えるなら“表参道の一等地”　14年ぶりに申請開始する「ブランドTLD」の価値とは？",
+      "url": "https://ascii.jp/elem/000/004/268/4268134/?rss"
+    },
+    {
+      "rss_key": "ascii-web",
+      "source_name": "ASCII",
+      "rss_url": "https://ascii.jp/web/rss.xml",
+      "title": "自動アップデートやマルウェア対策を盛り込んだ「KUSANAGI Security Edition」発表",
+      "url": "https://ascii.jp/elem/000/004/226/4226975/?rss"
+    },
+    {
+      "rss_key": "ascii-digital",
+      "source_name": "ASCII",
+      "rss_url": "https://ascii.jp/digital/rss.xml",
+      "title": "Ryzen 7＋メモリ16GBで10万円切りのASUS「Vivobook 15」がAmazonで爆売れ中",
+      "url": "https://ascii.jp/elem/000/004/405/4405738/?rss"
+    },
+    {
+      "rss_key": "ascii-digital",
+      "source_name": "ASCII",
+      "rss_url": "https://ascii.jp/digital/rss.xml",
+      "title": "VAIO F16が特典付き15万円台！「文字が見づらい」に応える16型ノートPC",
+      "url": "https://ascii.jp/elem/000/004/406/4406016/?rss"
+    },
+    {
+      "rss_key": "ascii-digital",
+      "source_name": "ASCII",
+      "rss_url": "https://ascii.jp/digital/rss.xml",
+      "title": "Ryzenよりもコスパが優秀!?Core Ultra 7 270K Plus＆RTX 5070のミニタワーゲーミングPC、木材をあしらったデザインも秀逸",
+      "url": "https://ascii.jp/elem/000/004/399/4399310/?rss"
+    },
+    {
+      "rss_key": "ascii-digital",
+      "source_name": "ASCII",
+      "rss_url": "https://ascii.jp/digital/rss.xml",
+      "title": "ゲーミングデスクトップPCは、コスパの高いOZgaming「Z1シリーズ」が1位、2位を獲得した！ ソフマップ・ドットコム販売ランキング（5月1日～15日）",
+      "url": "https://ascii.jp/elem/000/004/404/4404582/?rss"
+    },
+    {
+      "rss_key": "ascii-digital",
+      "source_name": "ASCII",
+      "rss_url": "https://ascii.jp/digital/rss.xml",
+      "title": "グーグル「Pixel 10」シリーズ、最大1万円引きの特別セール",
+      "url": "https://ascii.jp/elem/000/004/406/4406197/?rss"
+    },
+    {
+      "rss_key": "ascii-pc",
+      "source_name": "ASCII",
+      "rss_url": "https://ascii.jp/pc/rss.xml",
+      "title": "ゲーミングデスクトップPCは、コスパの高いOZgaming「Z1シリーズ」が1位、2位を獲得した！ ソフマップ・ドットコム販売ランキング（5月1日～15日）",
+      "url": "https://ascii.jp/elem/000/004/404/4404582/?rss"
+    },
+    {
+      "rss_key": "ascii-pc",
+      "source_name": "ASCII",
+      "rss_url": "https://ascii.jp/pc/rss.xml",
+      "title": "「ゲームが上手くなった感じ！」「暗いところが見やすい！」GIGABYTE最新モニター体験会で聞いた、参加者のリアルな声",
+      "url": "https://ascii.jp/elem/000/004/403/4403950/?rss"
+    },
+    {
+      "rss_key": "ascii-pc",
+      "source_name": "ASCII",
+      "rss_url": "https://ascii.jp/pc/rss.xml",
+      "title": "『NieR』15周年記念ゲーミングチェア登場　カイネ仕様の限定モデル予約開始",
+      "url": "https://ascii.jp/elem/000/004/406/4406118/?rss"
+    },
+    {
+      "rss_key": "ascii-pc",
+      "source_name": "ASCII",
+      "rss_url": "https://ascii.jp/pc/rss.xml",
+      "title": "サンワサプライ、65W PD対応『クランプタップ』発売　デスク配線を一気に整理",
+      "url": "https://ascii.jp/elem/000/004/406/4406105/?rss"
+    },
+    {
+      "rss_key": "ascii-pc",
+      "source_name": "ASCII",
+      "rss_url": "https://ascii.jp/pc/rss.xml",
+      "title": "RTX 50シリーズ対応、省スペース設計も実現　エプソンダイレクト「Endeavor MR8500」",
+      "url": "https://ascii.jp/elem/000/004/406/4406101/?rss"
+    },
+    {
+      "rss_key": "techcrunch",
+      "source_name": "TechCrunch",
+      "rss_url": "https://techcrunch.com/feed/",
+      "title": "Blue Origin’s New Glenn rocket explodes during testing in Florida",
+      "url": "https://techcrunch.com/2026/05/28/blue-origins-new-glenn-rocket-explodes-during-testing-in-florida/"
+    },
+    {
+      "rss_key": "techcrunch",
+      "source_name": "TechCrunch",
+      "rss_url": "https://techcrunch.com/feed/",
+      "title": "Glean’s top line crosses $300M as AI budget-cutting becomes its major selling point",
+      "url": "https://techcrunch.com/2026/05/28/gleans-top-line-crosses-300m-as-ai-budget-cutting-becomes-its-major-selling-point/"
+    },
+    {
+      "rss_key": "techcrunch",
+      "source_name": "TechCrunch",
+      "rss_url": "https://techcrunch.com/feed/",
+      "title": "Waymo dominates autonomous vehicle registrations as Tesla trails behind",
+      "url": "https://techcrunch.com/2026/05/28/waymo-dominates-texas-autonomous-vehicle-registrations-as-tesla-trails-behind/"
+    },
+    {
+      "rss_key": "techcrunch",
+      "source_name": "TechCrunch",
+      "rss_url": "https://techcrunch.com/feed/",
+      "title": "How to apply to Startup Battlefield 2026, what you need ahead of the June 8 deadline",
+      "url": "https://techcrunch.com/2026/05/28/how-to-apply-to-startup-battlefield-2026-what-you-need-ahead-of-the-june-8-deadline/"
+    },
+    {
+      "rss_key": "techcrunch",
+      "source_name": "TechCrunch",
+      "rss_url": "https://techcrunch.com/feed/",
+      "title": "The internet is being rebuilt for machines",
+      "url": "https://techcrunch.com/2026/05/28/the-internet-is-being-rebuilt-for-machines/"
+    },
+    {
+      "rss_key": "itmedia-watch",
+      "source_name": "ITmedia",
+      "rss_url": "https://www.watch.impress.co.jp/data/rss/1.0/ipw/feed.rdf",
+      "title": "Microsoft 365 Copilot、デザイン大幅リニューアルで高速化",
+      "url": "https://www.watch.impress.co.jp/docs/news/2112852.html"
+    },
+    {
+      "rss_key": "itmedia-watch",
+      "source_name": "ITmedia",
+      "rss_url": "https://www.watch.impress.co.jp/data/rss/1.0/ipw/feed.rdf",
+      "title": "ガバメントAI「源内」、全府省庁18万人に向けた実証実験開始",
+      "url": "https://www.watch.impress.co.jp/docs/news/2112863.html"
+    },
+    {
+      "rss_key": "itmedia-watch",
+      "source_name": "ITmedia",
+      "rss_url": "https://www.watch.impress.co.jp/data/rss/1.0/ipw/feed.rdf",
+      "title": "Waymo、自動運転専用の新車両「Ojai」　両開きドアと広い室内",
+      "url": "https://www.watch.impress.co.jp/docs/news/2112834.html"
+    },
+    {
+      "rss_key": "itmedia-watch",
+      "source_name": "ITmedia",
+      "rss_url": "https://www.watch.impress.co.jp/data/rss/1.0/ipw/feed.rdf",
+      "title": "アサヒ「スーパードライ」刷新　“冷え”に特化",
+      "url": "https://www.watch.impress.co.jp/docs/news/2112828.html"
+    },
+    {
+      "rss_key": "itmedia-watch",
+      "source_name": "ITmedia",
+      "rss_url": "https://www.watch.impress.co.jp/data/rss/1.0/ipw/feed.rdf",
+      "title": "アンソロピック、資金調達で評価額154兆円に　OpenAI超え",
+      "url": "https://www.watch.impress.co.jp/docs/news/2112795.html"
+    },
+    {
+      "rss_key": "phileweb",
+      "source_name": "Phile-web",
+      "rss_url": "https://www.phileweb.com/rss.php",
+      "title": "音楽への知的好奇心を満たす。ストリーミング時代に、aurender「A1000」を買うべき3つの理由",
+      "url": "http://www.phileweb.com/review/article/202605/29/6536.html"
+    },
+    {
+      "rss_key": "phileweb",
+      "source_name": "Phile-web",
+      "rss_url": "https://www.phileweb.com/rss.php",
+      "title": "iFi Audio、Spotify／Tidal／Qobuzのネイティブ再生に対応するネットワークプレーヤー「ZEN Stream 3」",
+      "url": "http://www.phileweb.com/news/audio/202605/29/27701.html"
+    },
+    {
+      "rss_key": "phileweb",
+      "source_name": "Phile-web",
+      "rss_url": "https://www.phileweb.com/rss.php",
+      "title": "丸太のような剛腕で悪人をねじ伏せる！ マ・ドンソクの魅力溢れる“ワンパン”アクション",
+      "url": "http://www.phileweb.com/review/column/202605/29/3048.html"
+    },
+    {
+      "rss_key": "phileweb",
+      "source_name": "Phile-web",
+      "rss_url": "https://www.phileweb.com/rss.php",
+      "title": "ONIX、ブランド初の据え置きネットワークトランスポート「Zenith XMT20」。Linuxベースの独自開発システムで動作",
+      "url": "http://www.phileweb.com/news/audio/202605/29/27700.html"
+    },
+    {
+      "rss_key": "phileweb",
+      "source_name": "Phile-web",
+      "rss_url": "https://www.phileweb.com/rss.php",
+      "title": "嵐のラストライブ配信も目前！ スマホからテレビへHDMI出力するときの注意点は？",
+      "url": "http://www.phileweb.com/review/column/202605/29/3055.html"
+    },
+    {
+      "rss_key": "yahoo-it-topics",
+      "source_name": "PC全般、コスパPC、ビジネスPC",
+      "rss_url": "https://news.yahoo.co.jp/rss/topics/it.xml",
+      "title": "Anthropic ミュトス級AIを公開へ",
+      "url": "https://news.yahoo.co.jp/pickup/6582140?source=rss"
+    },
+    {
+      "rss_key": "yahoo-it-topics",
+      "source_name": "PC全般、コスパPC、ビジネスPC",
+      "rss_url": "https://news.yahoo.co.jp/rss/topics/it.xml",
+      "title": "Anthropic企業価値 OpenAI上回る",
+      "url": "https://news.yahoo.co.jp/pickup/6582127?source=rss"
+    },
+    {
+      "rss_key": "yahoo-it-topics",
+      "source_name": "PC全般、コスパPC、ビジネスPC",
+      "rss_url": "https://news.yahoo.co.jp/rss/topics/it.xml",
+      "title": "国産AI 新たに約15社が出資意向",
+      "url": "https://news.yahoo.co.jp/pickup/6582109?source=rss"
+    },
+    {
+      "rss_key": "yahoo-it-topics",
+      "source_name": "PC全般、コスパPC、ビジネスPC",
+      "rss_url": "https://news.yahoo.co.jp/rss/topics/it.xml",
+      "title": "3メガ銀 OpenAI新型モデル活用へ",
+      "url": "https://news.yahoo.co.jp/pickup/6582101?source=rss"
+    },
+    {
+      "rss_key": "yahoo-it-topics",
+      "source_name": "PC全般、コスパPC、ビジネスPC",
+      "rss_url": "https://news.yahoo.co.jp/rss/topics/it.xml",
+      "title": "ガバメントAI 全府省庁で実証開始",
+      "url": "https://news.yahoo.co.jp/pickup/6582074?source=rss"
+    },
+    {
+      "rss_key": "yahoo-it-category",
+      "source_name": "全般、自動化PC、データ防衛",
+      "rss_url": "https://news.yahoo.co.jp/rss/categories/it.xml",
+      "title": "Inspire Highが探究実践冊子を公開、中学・高校の事例を紹介(こどもとIT)",
+      "url": "https://news.yahoo.co.jp/articles/fe49ed9caf49c60d974671cb4421981b064730ce?source=rss"
+    },
+    {
+      "rss_key": "yahoo-it-category",
+      "source_name": "全般、自動化PC、データ防衛",
+      "rss_url": "https://news.yahoo.co.jp/rss/categories/it.xml",
+      "title": "Microsoft 365 Copilot、デザイン大幅リニューアルで高速化(Impress Watch)",
+      "url": "https://news.yahoo.co.jp/articles/ea5aa26b50c4a4c7d72e96a7a9ce90b0b46b4792?source=rss"
+    },
+    {
+      "rss_key": "yahoo-it-category",
+      "source_name": "全般、自動化PC、データ防衛",
+      "rss_url": "https://news.yahoo.co.jp/rss/categories/it.xml",
+      "title": "ガバメントAI「源内」、全府省庁18万人に向けた実証実験開始(Impress Watch)",
+      "url": "https://news.yahoo.co.jp/articles/2d621b19ea440b335d79ab271db5a729fb3d2ab9?source=rss"
+    },
+    {
+      "rss_key": "yahoo-it-category",
+      "source_name": "全般、自動化PC、データ防衛",
+      "rss_url": "https://news.yahoo.co.jp/rss/categories/it.xml",
+      "title": "AIの収益化を阻む「3つの壁」をどう打ち破るか--レノボが示す2026年度事業戦略(ZDNET Japan)",
+      "url": "https://news.yahoo.co.jp/articles/0ff8a930ca2be92d4cc9dfa7a8ef1d5a471fc72d?source=rss"
+    },
+    {
+      "rss_key": "yahoo-it-category",
+      "source_name": "全般、自動化PC、データ防衛",
+      "rss_url": "https://news.yahoo.co.jp/rss/categories/it.xml",
+      "title": "ビットコイン、停戦合意報道に反応薄く　リスクオンに取り残される【楽天ウォレットDaily Report】(NADA NEWS)",
+      "url": "https://news.yahoo.co.jp/articles/49e54481b1f3f7c73b7b1a434b5d1ad40db62b62?source=rss"
+    },
+    {
+      "rss_key": "yahoo-business-topics",
+      "source_name": "ビジネスPC、リセールPC（経済）",
+      "rss_url": "https://news.yahoo.co.jp/rss/topics/business.xml",
+      "title": "飲食料品 夏以降値上げラッシュか",
+      "url": "https://news.yahoo.co.jp/pickup/6582147?source=rss"
+    },
+    {
+      "rss_key": "yahoo-business-topics",
+      "source_name": "ビジネスPC、リセールPC（経済）",
+      "rss_url": "https://news.yahoo.co.jp/rss/topics/business.xml",
+      "title": "トヨタ 次世代EVの開発を中止へ",
+      "url": "https://news.yahoo.co.jp/pickup/6582098?source=rss"
+    },
+    {
+      "rss_key": "yahoo-business-topics",
+      "source_name": "ビジネスPC、リセールPC（経済）",
+      "rss_url": "https://news.yahoo.co.jp/rss/topics/business.xml",
+      "title": "JAL機が緊急着陸 タイヤ不具合か",
+      "url": "https://news.yahoo.co.jp/pickup/6582152?source=rss"
+    },
+    {
+      "rss_key": "yahoo-business-topics",
+      "source_name": "ビジネスPC、リセールPC（経済）",
+      "rss_url": "https://news.yahoo.co.jp/rss/topics/business.xml",
+      "title": "JAL飲酒問題 国交相「大変遺憾」",
+      "url": "https://news.yahoo.co.jp/pickup/6582160?source=rss"
+    },
+    {
+      "rss_key": "yahoo-business-topics",
+      "source_name": "ビジネスPC、リセールPC（経済）",
+      "rss_url": "https://news.yahoo.co.jp/rss/topics/business.xml",
+      "title": "三菱「パジェロ」7年ぶり復活へ",
+      "url": "https://news.yahoo.co.jp/pickup/6582165?source=rss"
+    },
+    {
+      "rss_key": "yahoo-business-category",
+      "source_name": "ビジネスPC、リセールPC（企業動向）",
+      "rss_url": "https://news.yahoo.co.jp/rss/categories/business.xml",
+      "title": "高市首相「笑顔が消えた瞬間」に不信感が爆発するワケ…「“ネガキャン動画”問題」が浮き彫りにした《知識バイアス》の恐怖(東洋経済オンライン)",
+      "url": "https://news.yahoo.co.jp/articles/7955fccb947d48a22f97db07ad7b3ddb7bcfa7ad?source=rss"
+    },
+    {
+      "rss_key": "yahoo-business-category",
+      "source_name": "ビジネスPC、リセールPC（企業動向）",
+      "rss_url": "https://news.yahoo.co.jp/rss/categories/business.xml",
+      "title": "【速報】三菱パジェロ復活確定!! これ…パジェロジュニア、パジェロミニも揃って復活か!?？(ベストカーWeb)",
+      "url": "https://news.yahoo.co.jp/articles/c1414b6bc293b7ee0b2ceb3b0e62588e95c9c745?source=rss"
+    },
+    {
+      "rss_key": "yahoo-business-category",
+      "source_name": "ビジネスPC、リセールPC（企業動向）",
+      "rss_url": "https://news.yahoo.co.jp/rss/categories/business.xml",
+      "title": "三菱自、2029年度までの新中計発表　「パジェロ」シリーズ展開(日刊自動車新聞)",
+      "url": "https://news.yahoo.co.jp/articles/13c1559ec3adf71a3dd2db60adecd7962b5d0521?source=rss"
+    },
+    {
+      "rss_key": "yahoo-business-category",
+      "source_name": "ビジネスPC、リセールPC（企業動向）",
+      "rss_url": "https://news.yahoo.co.jp/rss/categories/business.xml",
+      "title": "ライカM11-P／Q3／D-LUX 8などに「メタルグレー」カラー(デジカメ Watch)",
+      "url": "https://news.yahoo.co.jp/articles/d72f48a51c918b89c0ef70e3c50a8c53a1c9aa14?source=rss"
+    },
+    {
+      "rss_key": "yahoo-business-category",
+      "source_name": "ビジネスPC、リセールPC（企業動向）",
+      "rss_url": "https://news.yahoo.co.jp/rss/categories/business.xml",
+      "title": "50代独身で貯蓄が「500万円」しかありません。“おひとりさま”なら老後資金「2000万円」も不要と聞きましたが、本当に安心できますか？(ファイナンシャルフィールド)",
+      "url": "https://news.yahoo.co.jp/articles/c451693eb1bb4adae7183004cabc62ec2ebf6283?source=rss"
+    }
+  ]
+}

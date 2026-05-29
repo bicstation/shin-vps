@@ -19,7 +19,9 @@ from satellite_ops.runtime.render.render_orchestrator import (RenderOrchestrator
 from satellite_ops.runtime.dispatch.dispatch_orchestrator import (DispatchOrchestrator,)
 from satellite_ops.observatory.runtime_observer import (RuntimeObserver,)
 from satellite_ops.runtime.categories.category_map import (CATEGORY_LABELS,)
-
+from satellite_ops.observatory.article_universe import (save_article_universe,)
+from satellite_ops.observatory.article_universe_builder import (build_article_universe,)
+from satellite_ops.observatory.observation_summary import (save_observation_summary,)
 
 # ============================================================================
 # Runtime Engine
@@ -134,6 +136,7 @@ class RuntimeEngine:
                 f"{rss.get('rss_url', '')}"
             )
         
+        
         # --------------------------------------------------------------------
         # RSS Filter
         # --------------------------------------------------------------------
@@ -180,9 +183,34 @@ class RuntimeEngine:
 
             return False
 
+
+        article_universe = (
+            build_article_universe(
+                rss_sources
+            )
+        )
+
+        self.observer.section(
+            "🌌 Article Universe"
+        )
+
+        self.observer.info(
+            f"{len(article_universe)} articles"
+        )
+
         # --------------------------------------------------------------------
         # Select RSS
         # --------------------------------------------------------------------
+        
+        self.observer.section(
+            "📡 Candidate RSS Universe"
+        )
+
+        for rss in rss_sources:
+
+            self.observer.info(
+                f"{rss.get('rss_key')}"
+            )
 
         context.rss_source = random.choice(
             rss_sources
@@ -571,7 +599,60 @@ class RuntimeEngine:
                         "dispatch_failed",
                     )
                 )
+        
+        # --------------------------------------------------------------------
+        # Article Universe Observation
+        # --------------------------------------------------------------------
+        
 
+        save_article_universe(
+
+                blog_name=context.blog.get(
+                    "blog_name",
+                    "",
+                ),
+
+                persona=context.blog.get(
+                    "persona",
+                    "",
+                ),
+
+                rss_universe=[
+
+                    rss.get(
+                        "rss_key",
+                        "",
+                    )
+
+                    for rss in rss_sources
+
+                ],
+
+                articles=article_universe,
+
+            )
+            
+        save_observation_summary(
+
+            blog_name=context.blog.get(
+                "blog_name",
+                "",
+            ),
+
+            rss_universe=[
+                rss.get(
+                    "rss_key",
+                    "",
+                )
+
+                for rss in rss_sources
+
+            ],
+
+            articles=article_universe,
+
+        )        
+        
         # --------------------------------------------------------------------
         # Runtime Complete
         # --------------------------------------------------------------------
@@ -583,11 +664,62 @@ class RuntimeEngine:
         self.observer.info(
             category
         )
+        context.success = True
+        
+        self.observer.section(
+            "🌌 Article Universe Archive"
+        )
 
+        self.observer.info(
+            f"{len(article_universe)} articles archived"
+        )
+        
+        self.observer.section(
+            "🌌 Article Universe Archive"
+        )
+
+        self.observer.info(
+            f"{len(article_universe)} articles archived"
+        )
+        
+        summary_path = save_observation_summary(
+            blog_name=context.blog.get(
+                "blog_name",
+                "",
+            ),
+            rss_universe=[
+                rss.get(
+                    "rss_key",
+                    "",
+                )
+                for rss in rss_sources
+            ],
+            articles=article_universe,
+        )
+
+        self.observer.section(
+            "📊 Observation Summary"
+        )
+
+        self.observer.info(
+            str(summary_path)
+        )
+        
         self.observer.section(
             "✅ Runtime Complete"
         )
+        
+        if context.success:
+            self.observer.success(
+                "Dispatch Success"
+            )
 
-        context.success = True
+            self.observer.section(
+                "🌐 Public URL"
+            )
+
+            self.observer.info(
+                f"https://{context.blog.get('url', '')}/"
+            )
 
         return context

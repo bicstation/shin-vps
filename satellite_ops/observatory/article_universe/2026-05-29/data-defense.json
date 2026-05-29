@@ -1,0 +1,82 @@
+{
+  "timestamp": "2026-05-29T14:07:21.854992",
+  "blog_name": "data-defense",
+  "persona": "デジタル要塞の守護者。 バックアップのないデータは存在しない。クラウド・NAS・3-2-1ルール！慎重・専門家。",
+  "rss_universe": [
+    "yahoo-it-topics",
+    "yahoo-it-category"
+  ],
+  "article_count": 10,
+  "articles": [
+    {
+      "rss_key": "yahoo-it-topics",
+      "source_name": "PC全般、コスパPC、ビジネスPC",
+      "rss_url": "https://news.yahoo.co.jp/rss/topics/it.xml",
+      "title": "Anthropic ミュトス級AIを公開へ",
+      "url": "https://news.yahoo.co.jp/pickup/6582140?source=rss"
+    },
+    {
+      "rss_key": "yahoo-it-topics",
+      "source_name": "PC全般、コスパPC、ビジネスPC",
+      "rss_url": "https://news.yahoo.co.jp/rss/topics/it.xml",
+      "title": "Anthropic企業価値 OpenAI上回る",
+      "url": "https://news.yahoo.co.jp/pickup/6582127?source=rss"
+    },
+    {
+      "rss_key": "yahoo-it-topics",
+      "source_name": "PC全般、コスパPC、ビジネスPC",
+      "rss_url": "https://news.yahoo.co.jp/rss/topics/it.xml",
+      "title": "国産AI 新たに約15社が出資意向",
+      "url": "https://news.yahoo.co.jp/pickup/6582109?source=rss"
+    },
+    {
+      "rss_key": "yahoo-it-topics",
+      "source_name": "PC全般、コスパPC、ビジネスPC",
+      "rss_url": "https://news.yahoo.co.jp/rss/topics/it.xml",
+      "title": "3メガ銀 OpenAI新型モデル活用へ",
+      "url": "https://news.yahoo.co.jp/pickup/6582101?source=rss"
+    },
+    {
+      "rss_key": "yahoo-it-topics",
+      "source_name": "PC全般、コスパPC、ビジネスPC",
+      "rss_url": "https://news.yahoo.co.jp/rss/topics/it.xml",
+      "title": "ガバメントAI 全府省庁で実証開始",
+      "url": "https://news.yahoo.co.jp/pickup/6582074?source=rss"
+    },
+    {
+      "rss_key": "yahoo-it-category",
+      "source_name": "全般、自動化PC、データ防衛",
+      "rss_url": "https://news.yahoo.co.jp/rss/categories/it.xml",
+      "title": "DAZNでW杯2026日本代表戦のパブリックビューイング開催、全国のイオンシネマやモールのべ102会場(ケータイ Watch)",
+      "url": "https://news.yahoo.co.jp/articles/a7825b7662be93c506dbb0689c51084f17dbcbda?source=rss"
+    },
+    {
+      "rss_key": "yahoo-it-category",
+      "source_name": "全般、自動化PC、データ防衛",
+      "rss_url": "https://news.yahoo.co.jp/rss/categories/it.xml",
+      "title": "Inspire Highが探究実践冊子を公開、中学・高校の事例を紹介(こどもとIT)",
+      "url": "https://news.yahoo.co.jp/articles/fe49ed9caf49c60d974671cb4421981b064730ce?source=rss"
+    },
+    {
+      "rss_key": "yahoo-it-category",
+      "source_name": "全般、自動化PC、データ防衛",
+      "rss_url": "https://news.yahoo.co.jp/rss/categories/it.xml",
+      "title": "Microsoft 365 Copilot、デザイン大幅リニューアルで高速化(Impress Watch)",
+      "url": "https://news.yahoo.co.jp/articles/ea5aa26b50c4a4c7d72e96a7a9ce90b0b46b4792?source=rss"
+    },
+    {
+      "rss_key": "yahoo-it-category",
+      "source_name": "全般、自動化PC、データ防衛",
+      "rss_url": "https://news.yahoo.co.jp/rss/categories/it.xml",
+      "title": "ガバメントAI「源内」、全府省庁18万人に向けた実証実験開始(Impress Watch)",
+      "url": "https://news.yahoo.co.jp/articles/2d621b19ea440b335d79ab271db5a729fb3d2ab9?source=rss"
+    },
+    {
+      "rss_key": "yahoo-it-category",
+      "source_name": "全般、自動化PC、データ防衛",
+      "rss_url": "https://news.yahoo.co.jp/rss/categories/it.xml",
+      "title": "AIの収益化を阻む「3つの壁」をどう打ち破るか--レノボが示す2026年度事業戦略(ZDNET Japan)",
+      "url": "https://news.yahoo.co.jp/articles/0ff8a930ca2be92d4cc9dfa7a8ef1d5a471fc72d?source=rss"
+    }
+  ]
+}

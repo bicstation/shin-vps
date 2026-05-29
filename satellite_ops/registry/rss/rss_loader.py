@@ -26,9 +26,6 @@ RSS_CSV = (
 # ============================================================================
 
 def _parse_categories(value: str) -> list:
-    """
-    Convert comma-separated categories into clean list.
-    """
 
     if not value:
         return []
@@ -40,17 +37,58 @@ def _parse_categories(value: str) -> list:
     ]
 
 
-def _normalize_rss_row(row: dict) -> dict:
-    """
-    Normalize RSS registry row.
-    """
+def _safe_int(
+    value,
+    default=0,
+):
+
+    try:
+        return int(value)
+
+    except (ValueError, TypeError):
+        return default
+
+
+def _is_description_row(
+    row: dict,
+) -> bool:
+
+    return (
+        row.get(
+            "rss_key",
+            "",
+        )
+        == "feed固有ID"
+    )
+
+
+# ============================================================================
+# Normalize Row
+# ============================================================================
+
+def _normalize_rss_row(
+    row: dict,
+) -> dict:
 
     return {
+
+        # ------------------------------------------------------------
+        # Identity
+        # ------------------------------------------------------------
 
         "project": row.get(
             "project",
             "",
         ),
+
+        "rss_key": row.get(
+            "rss_key",
+            "",
+        ),
+
+        # ------------------------------------------------------------
+        # Human
+        # ------------------------------------------------------------
 
         "source_name": row.get(
             "source_name",
@@ -62,12 +100,66 @@ def _normalize_rss_row(row: dict) -> dict:
             "",
         ),
 
+        # ------------------------------------------------------------
+        # Semantic
+        # ------------------------------------------------------------
+
+        "rss_category": row.get(
+            "rss_category",
+            "",
+        ),
+
         "category": _parse_categories(
             row.get(
                 "rss_category",
                 "",
             )
         ),
+
+        # ------------------------------------------------------------
+        # Runtime Authority
+        # ------------------------------------------------------------
+
+        "overlay_key": row.get(
+            "overlay_key",
+            "",
+        ),
+
+        "parser_key": row.get(
+            "parser_key",
+            "",
+        ),
+
+        "worldview": row.get(
+            "worldview",
+            "",
+        ),
+
+        "rewrite_mode": row.get(
+            "rewrite_mode",
+            "light",
+        ),
+
+        # ------------------------------------------------------------
+        # Runtime Control
+        # ------------------------------------------------------------
+
+        "enabled": _safe_int(
+            row.get(
+                "enabled",
+                "1",
+            ),
+            1,
+        ),
+
+        "priority": _safe_int(
+            row.get(
+                "priority",
+                "50",
+            ),
+            50,
+        ),
+
     }
 
 
@@ -78,9 +170,6 @@ def _normalize_rss_row(row: dict) -> dict:
 def load_rss_by_categories(
     categories: list,
 ) -> list:
-    """
-    Load RSS sources matching categories.
-    """
 
     matched_sources = []
 
@@ -97,9 +186,22 @@ def load_rss_by_categories(
 
         for row in reader:
 
-            normalized = _normalize_rss_row(
+            if _is_description_row(
                 row
+            ):
+                continue
+
+            normalized = (
+                _normalize_rss_row(
+                    row
+                )
             )
+
+            if not normalized.get(
+                "enabled",
+                1,
+            ):
+                continue
 
             if any(
                 cat in normalized["category"]
@@ -118,9 +220,6 @@ def load_rss_by_categories(
 # ============================================================================
 
 def load_all_rss_sources() -> list:
-    """
-    Load all RSS sources.
-    """
 
     sources = []
 
@@ -137,8 +236,25 @@ def load_all_rss_sources() -> list:
 
         for row in reader:
 
+            if _is_description_row(
+                row
+            ):
+                continue
+
+            normalized = (
+                _normalize_rss_row(
+                    row
+                )
+            )
+
+            if not normalized.get(
+                "enabled",
+                1,
+            ):
+                continue
+
             sources.append(
-                _normalize_rss_row(row)
+                normalized
             )
 
     return sources

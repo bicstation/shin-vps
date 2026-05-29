@@ -1,84 +1,84 @@
 project	rss_key	rss_category	rss_url	source_name	overlay_key	parser_key	enabled	priority	language	rewrite_mode	worldview
 運用宇宙	feed固有ID	semantic category	RSS URL	人間向け表示	rewrite routing	parser routing	有効/無効	dispatch優先	ja/en	rewrite強度	worldview routing
-avflash		adult_video	https://www.dmm.co.jp/rental/ppr/-/list/=/rss=create/sort=date/	DMMレンタル単品_新着			1	50	ja	light	avflash
-avflash		adult_reserve	https://www.dmm.co.jp/rental/ppr/-/list/=/reserve=only/rss=create/sort=date/	DMMレンタル単品_予約			1	50	ja	light	avflash
-avflash		adult_reserve	http://www.dmm.co.jp/mono/dvd/-/list/=/reserve=only/rss=create/sort=date/	DMM通販DVD_予約			1	50	ja	light	avflash
-avflash		adult_doujin	https://www.dmm.co.jp/dc/doujin/-/list/=/rss=create/sort=date/	FANZA同人_新着			1	50	ja	light	avflash
-avflash		adult_doujin	https://www.dmm.co.jp/dc/doujin/-/list/=/media=comic/rss=create/sort=date/	FANZA同人_コミック			1	50	ja	light	avflash
-avflash		adult_doujin	https://www.dmm.co.jp/dc/doujin/-/list/=/media=cg/rss=create/sort=date/	FANZA同人_CG			1	50	ja	light	avflash
-avflash		adult_doujin	https://www.dmm.co.jp/dc/doujin/-/list/=/media=game/rss=create/sort=date/	FANZA同人_ゲーム			1	50	ja	light	avflash
-avflash		adult_doujin	https://www.dmm.co.jp/dc/doujin/-/list/=/media=voice/rss=create/sort=date/	FANZA同人_ボイス			1	50	ja	light	avflash
-avflash		adult_lovecul	https://lovecul.dmm.co.jp/tl/-/list/=/media=comic/rss=create/sort=date/	らぶカルTL_コミック			1	50	ja	light	avflash
-avflash		adult_lovecul	https://lovecul.dmm.co.jp/tl/-/list/=/media=cg/rss=create/sort=date/	らぶカルTL_CG			1	50	ja	light	avflash
-avflash		adult_lovecul	https://lovecul.dmm.co.jp/tl/-/list/=/media=game/rss=create/sort=date/	らぶカルTL_ゲーム			1	50	ja	light	avflash
-avflash		adult_lovecul	https://lovecul.dmm.co.jp/tl/-/list/=/media=voice/rss=create/sort=date/	らぶカルTL_ボイス			1	50	ja	light	avflash
-avflash		adult_lovecul	https://lovecul.dmm.co.jp/bl/-/list/=/rss=create/sort=date/	らぶカルBL_総合			1	50	ja	light	avflash
-avflash		adult_lovecul	https://lovecul.dmm.co.jp/bl/-/list/=/media=comic/rss=create/sort=date/	らぶカルBL_コミック			1	50	ja	light	avflash
-avflash		adult_lovecul	https://lovecul.dmm.co.jp/bl/-/list/=/media=cg/rss=create/sort=date/	らぶカルBL_CG			1	50	ja	light	avflash
-avflash		adult_lovecul	https://lovecul.dmm.co.jp/bl/-/list/=/media=game/rss=create/sort=date/	らぶカルBL_ゲーム			1	50	ja	light	avflash
-avflash		adult_lovecul	https://lovecul.dmm.co.jp/bl/-/list/=/media=voice/rss=create/sort=date/	らぶカルBL_ボイス			1	50	ja	light	avflash
-avflash		adult_anime	http://www.dmm.co.jp/mono/anime/-/list/=/rss=create/sort=date/	通販アニメ_新着			1	50	ja	light	avflash
-avflash		adult_anime	http://www.dmm.co.jp/mono/anime/-/list/=/reserve=only/rss=create/sort=date/	通販アニメ_予約			1	50	ja	light	avflash
-avflash		adult_game	http://www.dmm.co.jp/mono/pcgame/-/list/=/rss=create/sort=date/	通販PCゲーム_新着			1	50	ja	light	avflash
-avflash		adult_game	http://www.dmm.co.jp/mono/pcgame/-/list/=/reserve=only/rss=create/sort=date/	通販PCゲーム_予約			1	50	ja	light	avflash
-avflash		adult_book	http://www.dmm.co.jp/mono/book/-/list/=/rss=create/sort=date/	通販ブック_新着			1	50	ja	light	avflash
-avflash		adult_book	http://www.dmm.co.jp/mono/book/-/list/=/media=comic/rss=create/sort=date/	通販コミック_新着			1	50	ja	light	avflash
-avflash		adult_book	http://www.dmm.co.jp/mono/book/-/list/=/media=photo/rss=create/sort=date/	通販エロ本_新着			1	50	ja	light	avflash
-avflash		adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/rss=create/sort=date/	グッズ_新着			1	50	ja	light	avflash
-avflash		adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10001/rss=create/sort=date/	グッズ_バイブ			1	50	ja	light	avflash
-avflash		adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10013/rss=create/sort=date/	グッズ_ローター			1	50	ja	light	avflash
-avflash		adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10062/rss=create/sort=date/	グッズ_オナホール			1	50	ja	light	avflash
-avflash		adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10074/rss=create/sort=date/	グッズ_ラブドール			1	50	ja	light	avflash
-avflash		adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10019/rss=create/sort=date/	グッズ_アナル			1	50	ja	light	avflash
-avflash		adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10065/rss=create/sort=date/	グッズ_補強			1	50	ja	light	avflash
-avflash		adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10053/rss=create/sort=date/	グッズ_包茎矯正			1	50	ja	light	avflash
-avflash		adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10082/rss=create/sort=date/	グッズ_SM			1	50	ja	light	avflash
-avflash		adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10079/rss=create/sort=date/	グッズ_ローション			1	50	ja	light	avflash
-avflash		adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10026/rss=create/sort=date/	グッズ_コンドーム			1	50	ja	light	avflash
-avflash		adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10034/rss=create/sort=date/	グッズ_コスプレ			1	50	ja	light	avflash
-avflash		adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10052/rss=create/sort=date/	グッズ_ランジェリー			1	50	ja	light	avflash
-avflash		adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=19999/rss=create/sort=date/	グッズ_その他			1	50	ja	light	avflash
-avflash		adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10095/rss=create/sort=date/	グッズ_1000円以下			1	50	ja	light	avflash
-tiper		adult_video	https://www.dmm.co.jp/rental/ppr/-/list/=/rss=create/sort=date/	DMMレンタル単品_新着			1	50	ja	light	tiper
-tiper		adult_reserve	https://www.dmm.co.jp/rental/ppr/-/list/=/reserve=only/rss=create/sort=date/	DMMレンタル単品_予約			1	50	ja	light	tiper
-tiper		adult_reserve	http://www.dmm.co.jp/mono/dvd/-/list/=/reserve=only/rss=create/sort=date/	DMM通販DVD_予約			1	50	ja	light	tiper
-tiper		adult_doujin	https://www.dmm.co.jp/dc/doujin/-/list/=/rss=create/sort=date/	FANZA同人_新着			1	50	ja	light	tiper
-tiper		adult_doujin	https://www.dmm.co.jp/dc/doujin/-/list/=/media=comic/rss=create/sort=date/	FANZA同人_コミック			1	50	ja	light	tiper
-tiper		adult_doujin	https://www.dmm.co.jp/dc/doujin/-/list/=/media=cg/rss=create/sort=date/	FANZA同人_CG			1	50	ja	light	tiper
-tiper		adult_doujin	https://www.dmm.co.jp/dc/doujin/-/list/=/media=game/rss=create/sort=date/	FANZA同人_ゲーム			1	50	ja	light	tiper
-tiper		adult_doujin	https://www.dmm.co.jp/dc/doujin/-/list/=/media=voice/rss=create/sort=date/	FANZA同人_ボイス			1	50	ja	light	tiper
-tiper		adult_lovecul	https://lovecul.dmm.co.jp/tl/-/list/=/rss=create/sort=date/	らぶカルTL_新着			1	50	ja	light	tiper
-tiper		adult_lovecul	https://lovecul.dmm.co.jp/tl/-/list/=/media=comic/rss=create/sort=date/	らぶカルTL_コミック			1	50	ja	light	tiper
-tiper		adult_lovecul	https://lovecul.dmm.co.jp/tl/-/list/=/media=cg/rss=create/sort=date/	らぶカルTL_CG			1	50	ja	light	tiper
-tiper		adult_lovecul	https://lovecul.dmm.co.jp/tl/-/list/=/media=game/rss=create/sort=date/	らぶカルTL_ゲーム			1	50	ja	light	tiper
-tiper		adult_lovecul	https://lovecul.dmm.co.jp/tl/-/list/=/media=voice/rss=create/sort=date/	らぶカルTL_ボイス			1	50	ja	light	tiper
-tiper		adult_lovecul	https://lovecul.dmm.co.jp/bl/-/list/=/rss=create/sort=date/	らぶカルBL_総合			1	50	ja	light	tiper
-tiper		adult_lovecul	https://lovecul.dmm.co.jp/bl/-/list/=/media=comic/rss=create/sort=date/	らぶカルBL_コミック			1	50	ja	light	tiper
-tiper		adult_lovecul	https://lovecul.dmm.co.jp/bl/-/list/=/media=cg/rss=create/sort=date/	らぶカルBL_CG			1	50	ja	light	tiper
-tiper		adult_lovecul	https://lovecul.dmm.co.jp/bl/-/list/=/media=game/rss=create/sort=date/	らぶカルBL_ゲーム			1	50	ja	light	tiper
-tiper		adult_lovecul	https://lovecul.dmm.co.jp/bl/-/list/=/media=voice/rss=create/sort=date/	らぶカルBL_ボイス			1	50	ja	light	tiper
-tiper		adult_anime	http://www.dmm.co.jp/mono/anime/-/list/=/rss=create/sort=date/	通販アニメ_新着			1	50	ja	light	tiper
-tiper		adult_anime	http://www.dmm.co.jp/mono/anime/-/list/=/reserve=only/rss=create/sort=date/	通販アニメ_予約			1	50	ja	light	tiper
-tiper		adult_game	http://www.dmm.co.jp/mono/pcgame/-/list/=/rss=create/sort=date/	通販PCゲーム_新着			1	50	ja	light	tiper
-tiper		adult_game	http://www.dmm.co.jp/mono/pcgame/-/list/=/reserve=only/rss=create/sort=date/	通販PCゲーム_予約			1	50	ja	light	tiper
-tiper		adult_book	http://www.dmm.co.jp/mono/book/-/list/=/rss=create/sort=date/	通販ブック_新着			1	50	ja	light	tiper
-tiper		adult_book	http://www.dmm.co.jp/mono/book/-/list/=/media=comic/rss=create/sort=date/	通販コミック_新着			1	50	ja	light	tiper
-tiper		adult_book	http://www.dmm.co.jp/mono/book/-/list/=/media=photo/rss=create/sort=date/	通販エロ本_新着			1	50	ja	light	tiper
-tiper		adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/rss=create/sort=date/	グッズ_新着			1	50	ja	light	tiper
-tiper		adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10001/rss=create/sort=date/	グッズ_バイブ			1	50	ja	light	tiper
-tiper		adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10013/rss=create/sort=date/	グッズ_ローター			1	50	ja	light	tiper
-tiper		adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10062/rss=create/sort=date/	グッズ_オナホール			1	50	ja	light	tiper
-tiper		adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10074/rss=create/sort=date/	グッズ_ラブドール			1	50	ja	light	tiper
-tiper		adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10019/rss=create/sort=date/	グッズ_アナル			1	50	ja	light	tiper
-tiper		adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10065/rss=create/sort=date/	グッズ_補強			1	50	ja	light	tiper
-tiper		adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10053/rss=create/sort=date/	グッズ_包茎矯正			1	50	ja	light	tiper
-tiper		adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10082/rss=create/sort=date/	グッズ_SM			1	50	ja	light	tiper
-tiper		adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10079/rss=create/sort=date/	グッズ_ローション			1	50	ja	light	tiper
-tiper		adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10026/rss=create/sort=date/	グッズ_コンドーム			1	50	ja	light	tiper
-tiper		adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10034/rss=create/sort=date/	グッズ_コスプレ			1	50	ja	light	tiper
-tiper		adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10052/rss=create/sort=date/	グッズ_ランジェリー			1	50	ja	light	tiper
-tiper		adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=19999/rss=create/sort=date/	グッズ_その他			1	50	ja	light	tiper
-tiper		adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10095/rss=create/sort=date/	グッズ_1000円以下			1	50	ja	light	tiper
+avflash	dmm-rental-new	adult_video	https://www.dmm.co.jp/rental/ppr/-/list/=/rss=create/sort=date/	DMMレンタル単品_新着	adult-video	dmm	1	50	ja	light	avflash
+avflash	dmm-rental-reserve	adult_reserve	https://www.dmm.co.jp/rental/ppr/-/list/=/reserve=only/rss=create/sort=date/	DMMレンタル単品_予約	adult-reserve	dmm	1	50	ja	light	avflash
+avflash	dmm-dvd-reserve	adult_reserve	http://www.dmm.co.jp/mono/dvd/-/list/=/reserve=only/rss=create/sort=date/	DMM通販DVD_予約	adult-reserve	dmm	1	50	ja	light	avflash
+avflash	fanza-doujin-all	adult_doujin	https://www.dmm.co.jp/dc/doujin/-/list/=/rss=create/sort=date/	FANZA同人_新着	doujin	dmm	1	50	ja	light	avflash
+avflash	fanza-doujin-comic	adult_doujin	https://www.dmm.co.jp/dc/doujin/-/list/=/media=comic/rss=create/sort=date/	FANZA同人_コミック	doujin-comic	dmm	1	50	ja	light	avflash
+avflash	fanza-doujin-cg	adult_doujin	https://www.dmm.co.jp/dc/doujin/-/list/=/media=cg/rss=create/sort=date/	FANZA同人_CG	doujin-cg	dmm	1	50	ja	light	avflash
+avflash	fanza-doujin-game	adult_doujin	https://www.dmm.co.jp/dc/doujin/-/list/=/media=game/rss=create/sort=date/	FANZA同人_ゲーム	doujin-game	dmm	1	50	ja	light	avflash
+avflash	fanza-doujin-voice	adult_doujin	https://www.dmm.co.jp/dc/doujin/-/list/=/media=voice/rss=create/sort=date/	FANZA同人_ボイス	doujin-voice	dmm	1	50	ja	light	avflash
+avflash	lovecul-tl-comic	adult_lovecul	https://lovecul.dmm.co.jp/tl/-/list/=/media=comic/rss=create/sort=date/	らぶカルTL_コミック	tl-comic	dmm	1	50	ja	light	avflash
+avflash	lovecul-tl-cg	adult_lovecul	https://lovecul.dmm.co.jp/tl/-/list/=/media=cg/rss=create/sort=date/	らぶカルTL_CG	tl-cg	dmm	1	50	ja	light	avflash
+avflash	lovecul-tl-game	adult_lovecul	https://lovecul.dmm.co.jp/tl/-/list/=/media=game/rss=create/sort=date/	らぶカルTL_ゲーム	tl-game	dmm	1	50	ja	light	avflash
+avflash	lovecul-tl-voice	adult_lovecul	https://lovecul.dmm.co.jp/tl/-/list/=/media=voice/rss=create/sort=date/	らぶカルTL_ボイス	tl-voice	dmm	1	50	ja	light	avflash
+avflash	lovecul-bl-all	adult_lovecul	https://lovecul.dmm.co.jp/bl/-/list/=/rss=create/sort=date/	らぶカルBL_総合	bl	dmm	1	50	ja	light	avflash
+avflash	lovecul-bl-comic	adult_lovecul	https://lovecul.dmm.co.jp/bl/-/list/=/media=comic/rss=create/sort=date/	らぶカルBL_コミック	bl-comic	dmm	1	50	ja	light	avflash
+avflash	lovecul-bl-cg	adult_lovecul	https://lovecul.dmm.co.jp/bl/-/list/=/media=cg/rss=create/sort=date/	らぶカルBL_CG	bl-cg	dmm	1	50	ja	light	avflash
+avflash	lovecul-bl-game	adult_lovecul	https://lovecul.dmm.co.jp/bl/-/list/=/media=game/rss=create/sort=date/	らぶカルBL_ゲーム	bl-game	dmm	1	50	ja	light	avflash
+avflash	lovecul-bl-voice	adult_lovecul	https://lovecul.dmm.co.jp/bl/-/list/=/media=voice/rss=create/sort=date/	らぶカルBL_ボイス	bl-voice	dmm	1	50	ja	light	avflash
+avflash	dmm-anime-new	adult_anime	http://www.dmm.co.jp/mono/anime/-/list/=/rss=create/sort=date/	通販アニメ_新着	anime	dmm	1	50	ja	light	avflash
+avflash	dmm-anime-reserve	adult_anime	http://www.dmm.co.jp/mono/anime/-/list/=/reserve=only/rss=create/sort=date/	通販アニメ_予約	anime-reserve	dmm	1	50	ja	light	avflash
+avflash	dmm-pcgame-new	adult_game	http://www.dmm.co.jp/mono/pcgame/-/list/=/rss=create/sort=date/	通販PCゲーム_新着	game	dmm	1	50	ja	light	avflash
+avflash	dmm-pcgame-reserve	adult_game	http://www.dmm.co.jp/mono/pcgame/-/list/=/reserve=only/rss=create/sort=date/	通販PCゲーム_予約	game-reserve	dmm	1	50	ja	light	avflash
+avflash	dmm-book-new	adult_book	http://www.dmm.co.jp/mono/book/-/list/=/rss=create/sort=date/	通販ブック_新着	book	dmm	1	50	ja	light	avflash
+avflash	dmm-comic-new	adult_book	http://www.dmm.co.jp/mono/book/-/list/=/media=comic/rss=create/sort=date/	通販コミック_新着	comic	dmm	1	50	ja	light	avflash
+avflash	dmm-photo-new	adult_book	http://www.dmm.co.jp/mono/book/-/list/=/media=photo/rss=create/sort=date/	通販エロ本_新着	photo-book	dmm	1	50	ja	light	avflash
+avflash	dmm-goods-all	adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/rss=create/sort=date/	グッズ_新着	goods	dmm	1	50	ja	light	avflash
+avflash	dmm-goods-vibe	adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10001/rss=create/sort=date/	グッズ_バイブ	goods-toy	dmm	1	50	ja	light	avflash
+avflash	dmm-goods-rotor	adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10013/rss=create/sort=date/	グッズ_ローター	goods-toy	dmm	1	50	ja	light	avflash
+avflash	dmm-goods-hole	adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10062/rss=create/sort=date/	グッズ_オナホール	goods-toy	dmm	1	50	ja	light	avflash
+avflash	dmm-goods-doll	adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10074/rss=create/sort=date/	グッズ_ラブドール	goods-premium	dmm	1	50	ja	light	avflash
+avflash	dmm-goods-anal	adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10019/rss=create/sort=date/	グッズ_アナル	goods-fetish	dmm	1	50	ja	light	avflash
+avflash	dmm-goods-enhance	adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10065/rss=create/sort=date/	グッズ_補強	goods-care	dmm	1	50	ja	light	avflash
+avflash	dmm-goods-correction	adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10053/rss=create/sort=date/	グッズ_包茎矯正	goods-care	dmm	1	50	ja	light	avflash
+avflash	dmm-goods-sm	adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10082/rss=create/sort=date/	グッズ_SM	goods-fetish	dmm	1	50	ja	light	avflash
+avflash	dmm-goods-lotion	adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10079/rss=create/sort=date/	グッズ_ローション	goods-care	dmm	1	50	ja	light	avflash
+avflash	dmm-goods-condom	adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10026/rss=create/sort=date/	グッズ_コンドーム	goods-care	dmm	1	50	ja	light	avflash
+avflash	dmm-goods-cosplay	adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10034/rss=create/sort=date/	グッズ_コスプレ	goods-fashion	dmm	1	50	ja	light	avflash
+avflash	dmm-goods-lingerie	adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10052/rss=create/sort=date/	グッズ_ランジェリー	goods-fashion	dmm	1	50	ja	light	avflash
+avflash	dmm-goods-other	adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=19999/rss=create/sort=date/	グッズ_その他	goods-other	dmm	1	50	ja	light	avflash
+avflash	dmm-goods-under1000	adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10095/rss=create/sort=date/	グッズ_1000円以下	goods-budget	dmm	1	50	ja	light	avflash
+tiper	dmm-rental-new	adult_video	https://www.dmm.co.jp/rental/ppr/-/list/=/rss=create/sort=date/	DMMレンタル単品_新着	adult-video	dmm	1	50	ja	light	tiper
+tiper	dmm-rental-reserve	adult_reserve	https://www.dmm.co.jp/rental/ppr/-/list/=/reserve=only/rss=create/sort=date/	DMMレンタル単品_予約	adult-reserve	dmm	1	50	ja	light	tiper
+tiper	dmm-dvd-reserve	adult_reserve	http://www.dmm.co.jp/mono/dvd/-/list/=/reserve=only/rss=create/sort=date/	DMM通販DVD_予約	adult-reserve	dmm	1	50	ja	light	tiper
+tiper	fanza-doujin-all	adult_doujin	https://www.dmm.co.jp/dc/doujin/-/list/=/rss=create/sort=date/	FANZA同人_新着	doujin	dmm	1	50	ja	light	tiper
+tiper	fanza-doujin-comic	adult_doujin	https://www.dmm.co.jp/dc/doujin/-/list/=/media=comic/rss=create/sort=date/	FANZA同人_コミック	doujin-comic	dmm	1	50	ja	light	tiper
+tiper	fanza-doujin-cg	adult_doujin	https://www.dmm.co.jp/dc/doujin/-/list/=/media=cg/rss=create/sort=date/	FANZA同人_CG	doujin-cg	dmm	1	50	ja	light	tiper
+tiper	fanza-doujin-game	adult_doujin	https://www.dmm.co.jp/dc/doujin/-/list/=/media=game/rss=create/sort=date/	FANZA同人_ゲーム	doujin-game	dmm	1	50	ja	light	tiper
+tiper	fanza-doujin-voice	adult_doujin	https://www.dmm.co.jp/dc/doujin/-/list/=/media=voice/rss=create/sort=date/	FANZA同人_ボイス	doujin-voice	dmm	1	50	ja	light	tiper
+tiper	lovecul-tl-all	adult_lovecul	https://lovecul.dmm.co.jp/tl/-/list/=/rss=create/sort=date/	らぶカルTL_新着	tl	dmm	1	50	ja	light	tiper
+tiper	lovecul-tl-comic	adult_lovecul	https://lovecul.dmm.co.jp/tl/-/list/=/media=comic/rss=create/sort=date/	らぶカルTL_コミック	tl-comic	dmm	1	50	ja	light	tiper
+tiper	lovecul-tl-cg	adult_lovecul	https://lovecul.dmm.co.jp/tl/-/list/=/media=cg/rss=create/sort=date/	らぶカルTL_CG	tl-cg	dmm	1	50	ja	light	tiper
+tiper	lovecul-tl-game	adult_lovecul	https://lovecul.dmm.co.jp/tl/-/list/=/media=game/rss=create/sort=date/	らぶカルTL_ゲーム	tl-game	dmm	1	50	ja	light	tiper
+tiper	lovecul-tl-voice	adult_lovecul	https://lovecul.dmm.co.jp/tl/-/list/=/media=voice/rss=create/sort=date/	らぶカルTL_ボイス	tl-voice	dmm	1	50	ja	light	tiper
+tiper	lovecul-bl-all	adult_lovecul	https://lovecul.dmm.co.jp/bl/-/list/=/rss=create/sort=date/	らぶカルBL_総合	bl	dmm	1	50	ja	light	tiper
+tiper	lovecul-bl-comic	adult_lovecul	https://lovecul.dmm.co.jp/bl/-/list/=/media=comic/rss=create/sort=date/	らぶカルBL_コミック	bl-comic	dmm	1	50	ja	light	tiper
+tiper	lovecul-bl-cg	adult_lovecul	https://lovecul.dmm.co.jp/bl/-/list/=/media=cg/rss=create/sort=date/	らぶカルBL_CG	bl-cg	dmm	1	50	ja	light	tiper
+tiper	lovecul-bl-game	adult_lovecul	https://lovecul.dmm.co.jp/bl/-/list/=/media=game/rss=create/sort=date/	らぶカルBL_ゲーム	bl-game	dmm	1	50	ja	light	tiper
+tiper	lovecul-bl-voice	adult_lovecul	https://lovecul.dmm.co.jp/bl/-/list/=/media=voice/rss=create/sort=date/	らぶカルBL_ボイス	bl-voice	dmm	1	50	ja	light	tiper
+tiper	dmm-anime-new	adult_anime	http://www.dmm.co.jp/mono/anime/-/list/=/rss=create/sort=date/	通販アニメ_新着	anime	dmm	1	50	ja	light	tiper
+tiper	dmm-anime-reserve	adult_anime	http://www.dmm.co.jp/mono/anime/-/list/=/reserve=only/rss=create/sort=date/	通販アニメ_予約	anime-reserve	dmm	1	50	ja	light	tiper
+tiper	dmm-pcgame-new	adult_game	http://www.dmm.co.jp/mono/pcgame/-/list/=/rss=create/sort=date/	通販PCゲーム_新着	game	dmm	1	50	ja	light	tiper
+tiper	dmm-pcgame-reserve	adult_game	http://www.dmm.co.jp/mono/pcgame/-/list/=/reserve=only/rss=create/sort=date/	通販PCゲーム_予約	game-reserve	dmm	1	50	ja	light	tiper
+tiper	dmm-book-new	adult_book	http://www.dmm.co.jp/mono/book/-/list/=/rss=create/sort=date/	通販ブック_新着	book	dmm	1	50	ja	light	tiper
+tiper	dmm-comic-new	adult_book	http://www.dmm.co.jp/mono/book/-/list/=/media=comic/rss=create/sort=date/	通販コミック_新着	comic	dmm	1	50	ja	light	tiper
+tiper	dmm-photo-new	adult_book	http://www.dmm.co.jp/mono/book/-/list/=/media=photo/rss=create/sort=date/	通販エロ本_新着	photo-book	dmm	1	50	ja	light	tiper
+tiper	dmm-goods-all	adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/rss=create/sort=date/	グッズ_新着	goods	dmm	1	50	ja	light	tiper
+tiper	dmm-goods-vibe	adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10001/rss=create/sort=date/	グッズ_バイブ	goods-toy	dmm	1	50	ja	light	tiper
+tiper	dmm-goods-rotor	adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10013/rss=create/sort=date/	グッズ_ローター	goods-toy	dmm	1	50	ja	light	tiper
+tiper	dmm-goods-hole	adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10062/rss=create/sort=date/	グッズ_オナホール	goods-toy	dmm	1	50	ja	light	tiper
+tiper	dmm-goods-doll	adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10074/rss=create/sort=date/	グッズ_ラブドール	goods-premium	dmm	1	50	ja	light	tiper
+tiper	dmm-goods-anal	adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10019/rss=create/sort=date/	グッズ_アナル	goods-fetish	dmm	1	50	ja	light	tiper
+tiper	dmm-goods-enhance	adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10065/rss=create/sort=date/	グッズ_補強	goods-care	dmm	1	50	ja	light	tiper
+tiper	dmm-goods-correction	adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10053/rss=create/sort=date/	グッズ_包茎矯正	goods-care	dmm	1	50	ja	light	tiper
+tiper	dmm-goods-sm	adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10082/rss=create/sort=date/	グッズ_SM	goods-fetish	dmm	1	50	ja	light	tiper
+tiper	dmm-goods-lotion	adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10079/rss=create/sort=date/	グッズ_ローション	goods-care	dmm	1	50	ja	light	tiper
+tiper	dmm-goods-condom	adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10026/rss=create/sort=date/	グッズ_コンドーム	goods-care	dmm	1	50	ja	light	tiper
+tiper	dmm-goods-cosplay	adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10034/rss=create/sort=date/	グッズ_コスプレ	goods-fashion	dmm	1	50	ja	light	tiper
+tiper	dmm-goods-lingerie	adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10052/rss=create/sort=date/	グッズ_ランジェリー	goods-fashion	dmm	1	50	ja	light	tiper
+tiper	dmm-goods-other	adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=19999/rss=create/sort=date/	グッズ_その他	goods-other	dmm	1	50	ja	light	tiper
+tiper	dmm-goods-under1000	adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10095/rss=create/sort=date/	グッズ_1000円以下	goods-budget	dmm	1	50	ja	light	tiper
 bicstation	pcwatch	tech_pc	https://pc.watch.impress.co.jp/data/rss/1.0/pcw/feed.rdf	PC	pcwatch	impress	1	50	ja	light	bicstation
 bicstation	itmedia-news	tech_news	https://rss.itmedia.co.jp/rss/2.0/news_bursts.xml	ITmedia	itmedia-news	itmedia	1	50	ja	light	bicstation
 bicstation	itmedia-pc	tech_pc	https://rss.itmedia.co.jp/rss/2.0/pcuser.xml	ITmedia	itmedia-pc	itmedia	1	50	ja	light	bicstation
