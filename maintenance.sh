@@ -31,7 +31,7 @@ echo ""
 
 echo "🗑 Removing Stopped Containers"
 
-docker container prune -f
+docker container prune -af
 
 echo "✅ Container Cleanup Complete"
 
@@ -43,7 +43,7 @@ echo ""
 
 echo "🌐 Removing Unused Networks"
 
-docker network prune -f
+docker network prune -af
 
 echo "✅ Network Cleanup Complete"
 
@@ -55,7 +55,7 @@ echo ""
 
 echo "🖼 Removing Dangling Images"
 
-docker image prune -f
+docker image prune -af
 
 echo "✅ Image Cleanup Complete"
 
@@ -67,7 +67,7 @@ echo ""
 
 echo "🏗 Cleaning Builder Cache"
 
-docker builder prune -f
+docker builder prune -af
 
 echo "✅ Builder Cleanup Complete"
 
