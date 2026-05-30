@@ -236,16 +236,41 @@ jobs:
               -f docker-compose.prod.yml \
               ps
 
+            
+
             # ==================================================
             # 📄 Runtime Logs
             # ==================================================
 
             echo ""
-            echo "📄 Last Runtime Logs"
+            echo "📄 Django Logs"
 
-            docker logs --tail 30 django-v3 || true
+            docker compose \
+              -p shin-prod \
+              --env-file .env.production \
+              -f docker-compose.yml \
+              -f docker-compose.prod.yml \
+              logs --tail=20 django-v3 || true
 
-            docker logs --tail 30 next-bicstation-v3 || true
+            echo ""
+            echo "📄 Next.js Logs"
+
+            docker compose \
+              -p shin-prod \
+              --env-file .env.production \
+              -f docker-compose.yml \
+              -f docker-compose.prod.yml \
+              logs --tail=20 next-bicstation-v3 || true
+
+            echo ""
+            echo "📄 Traefik Logs"
+
+            docker compose \
+              -p shin-prod \
+              --env-file .env.production \
+              -f docker-compose.yml \
+              -f docker-compose.prod.yml \
+              logs --tail=20 traefik || true
 
             # ==================================================
             # 🧹 Docker Cleanup
@@ -253,13 +278,9 @@ jobs:
 
             echo ""
             echo "🧹 Docker Cleanup"
-
             docker image prune -af || true
-
             docker builder prune -af || true
-
             docker container prune -f || true
-
             echo "✅ Cleanup Complete"
 
             # ==================================================
