@@ -61,21 +61,13 @@ jobs:
         with:
 
           host: ${{ secrets.SSH_HOST }}
-
           username: ${{ secrets.SSH_USER }}
-
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
-
           port: 2222
-
           source: "."
-
           target: "/home/maya/shin-vps"
-
           strip_components: 0
-
           overwrite: true
 
       # ==========================================================
@@ -88,15 +80,10 @@ jobs:
         with:
 
           host: ${{ secrets.SSH_HOST }}
-
           username: ${{ secrets.SSH_USER }}
-
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
-
           port: 2222
-
           command_timeout: 90m
 
           script: |
@@ -218,9 +205,29 @@ jobs:
 
             echo "✅ Django Admin OK"
 
-            curl -k -f https://bicstation.com/ || exit 1
+            # ==================================================
+            # 🩺 Health Checks
+            # ==================================================
 
-            echo "✅ Frontend OK"
+            echo ""
+            echo "🩺 Running Health Checks..."
+
+            curl -fsS https://api.bicstation.com/admin/ > /dev/null
+            echo "✅ Django Admin OK"
+
+            curl -fsS https://tiper.live/ > /dev/null
+            echo "✅ Tiper OK"
+
+            curl -fsS https://avflash.xyz/ > /dev/null
+            echo "✅ AVFLASH OK"
+
+            curl -fsS https://bicstation.com/ > /dev/null
+            echo "✅ BICSTATION OK"
+
+            curl -fsS https://bic-saving.com/ > /dev/null
+            echo "✅ BIC SAVING OK"
+
+
 
             # ==================================================
             # 📊 Container Status
@@ -236,7 +243,6 @@ jobs:
               -f docker-compose.prod.yml \
               ps
 
-            
 
             # ==================================================
             # 📄 Runtime Logs
@@ -260,7 +266,7 @@ jobs:
               --env-file .env.production \
               -f docker-compose.yml \
               -f docker-compose.prod.yml \
-              logs --tail=20 next-bicstation-v3 || true
+              logs --tail=20 shoin-prod-next-bicstation-v3-1 || true
 
             echo ""
             echo "📄 Traefik Logs"
@@ -276,12 +282,12 @@ jobs:
             # 🧹 Docker Cleanup
             # ==================================================
 
-            echo ""
-            echo "🧹 Docker Cleanup"
-            docker image prune -af || true
-            docker builder prune -af || true
-            docker container prune -f || true
-            echo "✅ Cleanup Complete"
+            # echo ""
+            # echo "🧹 Docker Cleanup"
+            # docker image prune -af || true
+            # docker builder prune -af || true
+            # docker container prune -f || true
+            # echo "✅ Cleanup Complete"
 
             # ==================================================
             # 🎉 Done
@@ -290,5 +296,5 @@ jobs:
             echo ""
             echo "=================================================="
             echo "✅ SHIN CORE LINX DEPLOY SUCCESS"
-            echo "=================================================="
+            echo "=================================================="ontainer Status
             echo ""
