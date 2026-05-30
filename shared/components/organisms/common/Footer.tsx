@@ -18,26 +18,26 @@ export default function Footer() {
 
       case 'tiper':
         return [
-          { label: 'AVFLASH', href: 'https://avflash.xyz' },
-          { label: 'BICSTATION', href: 'https://bicstation.com' },
-          { label: 'BIC SAVING', href: 'https://bic-saving.com' },
+          { label: '🎬 AVFLASH', href: 'https://avflash.xyz' },
+          { label: '🖥️ BICSTATION', href: 'https://bicstation.com' },
+          { label: '💰 BIC SAVING', href: 'https://bic-saving.com' },
         ];
 
       case 'avflash':
         return [
-          { label: 'TIPER', href: 'https://tiper.live' },
-          { label: 'BICSTATION', href: 'https://bicstation.com' },
-          { label: 'BIC SAVING', href: 'https://bic-saving.com' },
+          { label: '❤️ TIPER', href: 'https://tiper.live' },
+          { label: '🖥️ BICSTATION', href: 'https://bicstation.com' },
+          { label: '💰 BIC SAVING', href: 'https://bic-saving.com' },
         ];
 
       case 'bicstation':
         return [
-          { label: 'BIC SAVING', href: 'https://bic-saving.com' },
+          { label: '💰 BIC SAVING', href: 'https://bic-saving.com' },
         ];
 
       case 'saving':
         return [
-          { label: 'BICSTATION', href: 'https://bicstation.com' },
+          { label: '🖥️ BICSTATION', href: 'https://bicstation.com' },
         ];
 
       default:
@@ -51,44 +51,35 @@ export default function Footer() {
 
       <div className={styles.footerGrid}>
 
-        {/* ================================================
-        ABOUT
-        ================================================ */}
+        {/* SITE */}
         <div>
-
-          <h3>ABOUT</h3>
+          <h3>SITE</h3>
 
           <a href="/about">サイトについて</a>
           <a href="/guide">利用ガイド</a>
-
         </div>
 
-        {/* ================================================
-        NETWORK
-        ================================================ */}
+        {/* NETWORK */}
         <div>
-
-          <h3>NETWORK</h3>
+          <h3>SHIN NETWORK</h3>
 
           {networkLinks.map(link => (
             <a
               key={link.label}
               href={link.href}
+              target="_blank"
+              rel="noopener noreferrer"
             >
               {link.label}
             </a>
           ))}
-
         </div>
 
-        {/* ================================================
-        SUPPORT
-        ================================================ */}
+        {/* SUPPORT */}
         <div>
-
           <h3>SUPPORT</h3>
 
-          <a href="/privacy">
+          <a href="/privacy-policy">
             プライバシーポリシー
           </a>
 
@@ -99,26 +90,26 @@ export default function Footer() {
           <a href="/contact">
             お問い合わせ
           </a>
-
         </div>
 
       </div>
 
       <div className={styles.brand}>
 
-        Powered by
-
         <span className={styles.brandStrong}>
           SHIN CORE LINX
+        </span>
+
+        <span className={styles.brandSub}>
+          Knowledge • Discovery • Growth
         </span>
 
       </div>
 
       <div className={styles.copy}>
-        © {new Date().getFullYear()} SHIN CORE LINX
+        © {new Date().getFullYear()} SHIN CORE LINX NETWORK
       </div>
 
     </footer>
   );
 }
-

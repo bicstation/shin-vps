@@ -1,210 +1,181 @@
+/* =====================================================
+🏛 SHIN CORE LINX FOOTER
+===================================================== */
+
 .footer {
-  margin-top: 40px;
+  margin-top: 48px;
 
-  padding: 28px 16px;
+  padding: 48px 20px 24px;
 
-  background: #020617;
+  background:
+    linear-gradient(
+      180deg,
+      #071224 0%,
+      #020617 100%
+    );
 
-  color: #94a3b8;
-
-  text-align: center;
-
-  font-size: 12px;
-
-  line-height: 1.8;
-}
-
-/* =====================================================
-🛡 Trust
-===================================================== */
-
-.trustBlock {
-  margin-bottom: 18px;
-}
-
-.trustTitle {
-  color: #fff;
-
-  font-weight: bold;
-
-  margin-bottom: 6px;
-}
-
-.trustItem {
-  margin-bottom: 2px;
-}
-
-/* =====================================================
-⚠ Notice
-===================================================== */
-
-.notice {
-  font-size: 11px;
-
-  margin-bottom: 14px;
-}
-
-/* =====================================================
-🧠 Brand
-===================================================== */
-
-.brand {
-  font-size: 11px;
-
-  margin-bottom: 14px;
-
-  color: #64748b;
-
-  letter-spacing: 0.05em;
-}
-
-.brandStrong {
-  color: #94a3b8;
-}
-
-/* =====================================================
-📢 Ad Area
-===================================================== */
-
-.adSection {
-  margin: 24px auto;
-
-  max-width: 336px;
-}
-
-.adLabel {
-  font-size: 10px;
-
-  color: #64748b;
-
-  margin-bottom: 8px;
-
-  letter-spacing: 0.08em;
-}
-
-/* レクタングル */
-.rectangleAd {
-  width: 336px;
-
-  max-width: 100%;
-
-  min-height: 280px;
-
-  margin: 0 auto;
-
-  border-radius: 10px;
-
-  background: #0f172a;
-
-  border: 1px solid #1e293b;
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  color: #64748b;
-
-  font-size: 11px;
-}
-
-/* =====================================================
-🔗 Links
-===================================================== */
-
-.links {
-  margin-bottom: 16px;
-}
-
-.link {
-  text-decoration: underline;
+  border-top:
+    1px solid rgba(255,255,255,0.08);
 
   color: #94a3b8;
 
-  margin: 0 6px;
+  font-size: 13px;
 }
 
 /* =====================================================
-🏁 Copyright
-===================================================== */
-
-.copy {
-  font-size: 11px;
-
-  color: #64748b;
-}
-
-/* =====================================================
-📱 Responsive
-===================================================== */
-
-@media (max-width: 768px) {
-
-  .footer {
-    padding: 24px 14px;
-  }
-
-  .rectangleAd {
-    width: 100%;
-
-    min-height: 250px;
-  }
-}
-
-/* =====================================================
-🏛 Footer Foundation
+📚 GRID
 ===================================================== */
 
 .footerGrid {
+
   display: grid;
 
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
 
-  gap: 32px;
+  gap: 48px;
 
-  max-width: 1000px;
+  max-width: 1100px;
 
-  margin: 0 auto 32px auto;
-
-  text-align: left;
+  margin: 0 auto 40px auto;
 }
 
-.footerColumn h3 {
+/* =====================================================
+📂 COLUMN
+===================================================== */
+
+.footerGrid h3 {
+
   color: #ffffff;
 
-  font-size: 13px;
+  font-size: 12px;
 
-  margin-bottom: 12px;
+  font-weight: 700;
+
+  letter-spacing: 0.15em;
+
+  text-transform: uppercase;
+
+  margin-bottom: 18px;
+
+  opacity: .9;
 }
 
-.footerColumn a {
+.footerGrid a {
+
   display: block;
 
   color: #94a3b8;
 
   text-decoration: none;
 
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 
-  font-size: 12px;
+  transition: all .2s ease;
 }
 
-.footerColumn a:hover {
+.footerGrid a:hover {
+
   color: #ffffff;
+
+  transform: translateX(4px);
 }
 
 /* =====================================================
-📱 Mobile
+🌐 NETWORK EMPHASIS
+===================================================== */
+
+.footerGrid a[target="_blank"] {
+
+  color: #cbd5e1;
+
+  font-weight: 600;
+}
+
+/* =====================================================
+🧠 BRAND
+===================================================== */
+
+.brand {
+
+  text-align: center;
+
+  padding-top: 24px;
+
+  border-top:
+    1px solid rgba(255,255,255,0.06);
+
+  margin-top: 16px;
+}
+
+.brandStrong {
+
+  display: block;
+
+  color: #ffffff;
+
+  font-size: 18px;
+
+  font-weight: 700;
+
+  letter-spacing: 0.08em;
+
+  margin-bottom: 6px;
+}
+
+.brandSub {
+
+  display: block;
+
+  font-size: 12px;
+
+  color: #64748b;
+
+  letter-spacing: 0.05em;
+}
+
+/* =====================================================
+🏁 COPYRIGHT
+===================================================== */
+
+.copy {
+
+  text-align: center;
+
+  margin-top: 12px;
+
+  font-size: 11px;
+
+  color: #64748b;
+}
+
+/* =====================================================
+📱 MOBILE
 ===================================================== */
 
 @media (max-width: 768px) {
 
+  .footer {
+
+    padding: 36px 20px 20px;
+  }
+
   .footerGrid {
+
     grid-template-columns: 1fr;
 
-    gap: 24px;
+    gap: 28px;
 
     text-align: center;
+  }
+
+  .footerGrid a:hover {
+
+    transform: none;
+  }
+
+  .brandStrong {
+
+    font-size: 16px;
   }
 }
