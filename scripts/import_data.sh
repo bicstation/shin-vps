@@ -14,14 +14,17 @@ CURRENT_USER=$USER
 if [[ "$CURRENT_HOSTNAME" == *"x162-43"* ]] || [[ "$CURRENT_HOSTNAME" == "maya" && "$CURRENT_HOSTNAME" != "Marya" ]]; then
     IS_VPS=true; ENV_TYPE="PRODUCTION (VPS)"; COMPOSE_FILE="docker-compose.prod.yml"; COLOR="\e[32m"
     DEFAULT_BASE="http://$(hostname -I | awk '{print $1}'):8083"
+    NEXT_CON="shin-prod-next-bicstation-v3"
+    NEXT_SIN="shin-prod"
+    DJANGO_CON="django-v3"
 else
     IS_VPS=false; ENV_TYPE="LOCAL (Development)"; COMPOSE_FILE="docker-compose.yml"; COLOR="\e[36m"
     DEFAULT_BASE="http://api-tiper-host:8083"
+    NEXT_CON="shin-local-next-bicstation-v3"
+    DJANGO_CON="django-v3"
+    NEXT_SIN="shin-local"
 fi
 
-# コンテナ名設定
-DJANGO_CON="django-v3"
-NEXT_CON="next-bicstation-v3"
 
 # 装飾
 RESET="\e[0m"; RED="\e[31m"; YELLOW="\e[33m"; BLUE="\e[34m"; MAGENTA="\e[35m"; CYAN="\e[36m"; BOLD="\e[1m"; GREEN="\e[32m"
@@ -58,15 +61,15 @@ compose_exec() {
 
 # --- 4. 共通実行関数 ---
 run_django() {
-    compose_exec exec -T "$DJANGO_CON" python3 manage.py "$@"
+    compose_exec -p "$NEXT_SIN" exec -T "$DJANGO_CON" python3 manage.py "$@"
 }
 
 run_django_raw() {
-    compose_exec exec -T "$DJANGO_CON" "$@"
+    compose_exec -p "$NEXT_SIN" exec -T "$DJANGO_CON" "$@"
 }
 
 run_next() {
-    compose_exec exec -T "$NEXT_CON" "$@"
+    compose_exec -p "$NEXT_SIN" exec -T "$NEXT_CON" "$@"
 }
 
 # --- 4. 拡張機能 ---
