@@ -146,16 +146,6 @@ export default async function RootLayout({
           <Header />
         </Suspense>
 
-        {/* 2. 告知バー */}
-        <div className={styles.adDisclosure}>
-          <div className={styles.adDisclosureInner}>
-            【PR】本サイトはアフィリエイト広告を利用しています。
-            <span style={{ marginLeft: '10px', opacity: 0.8 }}>
-              ※18歳未満の方の閲覧は固くお断りいたします。
-            </span>
-          </div>
-        </div>
-
         {/* 3. メインレイアウト構造 */}
         <div className={styles.layoutContainer}>
           <div className={styles.layoutInner}>
@@ -175,6 +165,18 @@ export default async function RootLayout({
 
             {/* 🏗️ メインコンテンツ領域 */}
             <main className={styles.mainContent}>
+
+              {/* 2. 告知バー */}
+              <div className={styles.adDisclosure}>
+                <div className={styles.adDisclosureInner}>
+                  【PR】本サイトはアフィリエイト広告を利用しています。
+                  <span style={{ marginLeft: '10px', opacity: 0.8 }}>
+                    ※18歳未満の方の閲覧は固くお断りいたします。
+                  </span>
+                </div>
+              </div>
+
+
               <Suspense fallback={
                 <div className="p-10 text-center text-gray-500 italic text-sm">
                   SYNCING_GATEWAY...

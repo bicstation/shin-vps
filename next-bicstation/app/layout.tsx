@@ -6,7 +6,7 @@ import { Inter } from "next/font/google";
 import '@/shared/styles/globals.css';
 import '@/shared/styles/markdown.css';
 
-import Header from '@/shared/components/organisms/common/HeaderLite';
+import Header from '@/shared/components/organisms/common/Header';
 import Footer from '@/shared/components/organisms/common/Footer';
 // import ChatBotLoader from '@/shared/components/organisms/common/ChatBotLoader';
 

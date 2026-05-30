@@ -1,95 +1,119 @@
 'use client';
 
 import styles from './Footer.module.css';
+import { getSiteMetadata } from '@/shared/lib/utils/siteConfig';
 
 export default function Footer() {
+
+  const hostname =
+    typeof window !== 'undefined'
+      ? window.location.hostname
+      : '';
+
+  const site = getSiteMetadata(hostname);
+
+  const networkLinks = (() => {
+
+    switch (site.site_tag) {
+
+      case 'tiper':
+        return [
+          { label: 'AVFLASH', href: 'https://avflash.xyz' },
+          { label: 'BICSTATION', href: 'https://bicstation.com' },
+          { label: 'BIC SAVING', href: 'https://bic-saving.com' },
+        ];
+
+      case 'avflash':
+        return [
+          { label: 'TIPER', href: 'https://tiper.live' },
+          { label: 'BICSTATION', href: 'https://bicstation.com' },
+          { label: 'BIC SAVING', href: 'https://bic-saving.com' },
+        ];
+
+      case 'bicstation':
+        return [
+          { label: 'BIC SAVING', href: 'https://bic-saving.com' },
+        ];
+
+      case 'saving':
+        return [
+          { label: 'BICSTATION', href: 'https://bicstation.com' },
+        ];
+
+      default:
+        return [];
+    }
+  })();
 
   return (
 
     <footer className={styles.footer}>
 
-      {/* =================================================
-      🛡 Trust
-      ================================================= */}
-      <div className={styles.trustBlock}>
+      <div className={styles.footerGrid}>
 
-        <div className={styles.trustTitle}>
-          安心してご利用いただけます
+        {/* ================================================
+        ABOUT
+        ================================================ */}
+        <div>
+
+          <h3>ABOUT</h3>
+
+          <a href="/about">サイトについて</a>
+          <a href="/guide">利用ガイド</a>
+
         </div>
 
-        <div className={styles.trustItem}>
-          ✔ 掲載商品はすべて公式ショップ
+        {/* ================================================
+        NETWORK
+        ================================================ */}
+        <div>
+
+          <h3>NETWORK</h3>
+
+          {networkLinks.map(link => (
+            <a
+              key={link.label}
+              href={link.href}
+            >
+              {link.label}
+            </a>
+          ))}
+
         </div>
 
-        <div className={styles.trustItem}>
-          ✔ 安全な購入リンクのみ使用
-        </div>
+        {/* ================================================
+        SUPPORT
+        ================================================ */}
+        <div>
 
-        <div className={styles.trustItem}>
-          ✔ 無理な販売は行いません
+          <h3>SUPPORT</h3>
+
+          <a href="/privacy">
+            プライバシーポリシー
+          </a>
+
+          <a href="/terms">
+            利用規約
+          </a>
+
+          <a href="/contact">
+            お問い合わせ
+          </a>
+
         </div>
 
       </div>
 
-      {/* =================================================
-      ⚠ Notice
-      ================================================= */}
-      <div className={styles.notice}>
-        ※在庫状況や価格は変動する場合があります
-      </div>
-
-      {/* =================================================
-      🧠 Brand
-      ================================================= */}
       <div className={styles.brand}>
-        Powered by{' '}
+
+        Powered by
+
         <span className={styles.brandStrong}>
           SHIN CORE LINX
         </span>
-      </div>
-
-      {/* =================================================
-      📢 Rectangle Ad
-      ================================================= */}
-      <div className={styles.adSection}>
-
-        <div className={styles.adLabel}>
-          SPONSORED
-        </div>
-
-        <div className={styles.rectangleAd}>
-
-          {/* Adsense差込位置 */}
-          RECTANGLE AD AREA
-
-        </div>
 
       </div>
 
-      {/* =================================================
-      🔗 Links
-      ================================================= */}
-      <div className={styles.links}>
-
-        <a
-          href="/privacy"
-          className={styles.link}
-        >
-          プライバシーポリシー
-        </a>
-
-        <a
-          href="/terms"
-          className={styles.link}
-        >
-          利用規約
-        </a>
-
-      </div>
-
-      {/* =================================================
-      🏁 Copyright
-      ================================================= */}
       <div className={styles.copy}>
         © {new Date().getFullYear()} SHIN CORE LINX
       </div>
@@ -97,3 +121,4 @@ export default function Footer() {
     </footer>
   );
 }
+

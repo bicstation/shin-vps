@@ -9,8 +9,18 @@ export default function GeneralSidebar({ product, siteName = 'General Site', isB
   const siteColor = isBicSaving ? '#f59e0b' : getSiteColor('general');
   const [randomSatellites, setRandomSatellites] = useState<any[]>([]);
 
+
+    /* ✅ 安全化（window依存回避 + fallback対応） */
+  const ALL_SATELLITES_SAFE = typeof window !== 'undefined' ? [
+    { name: "家計の守護神", url: "https://h.money.bic-saving.com", icon: "🧼" },
+    { name: "ポイント還元攻略", url: "https://h.point.bic-saving.com", icon: "🏷️" },
+    { name: "新NISA資産運用", url: "https://h.invest.bic-saving.com", icon: "📈" },
+    { name: "ふるさと納税達人", url: "https://h.furusato.bic-saving.com", icon: "🍱" },
+    { name: "固定費削減ハッカー", url: "https://h.life.bic-saving.com", icon: "🛠️" }
+  ] : [];
+
   useEffect(() => {
-    const shuffled = [...ALL_SATELLITES].sort(() => 0.5 - Math.random());
+    const shuffled = [...ALL_SATELLITES_SAFE].sort(() => 0.5 - Math.random());
     setRandomSatellites(shuffled.slice(0, 8));
   }, []);
 

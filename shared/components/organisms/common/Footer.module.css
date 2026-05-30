@@ -151,3 +151,60 @@
     min-height: 250px;
   }
 }
+
+/* =====================================================
+🏛 Footer Foundation
+===================================================== */
+
+.footerGrid {
+  display: grid;
+
+  grid-template-columns: repeat(3, 1fr);
+
+  gap: 32px;
+
+  max-width: 1000px;
+
+  margin: 0 auto 32px auto;
+
+  text-align: left;
+}
+
+.footerColumn h3 {
+  color: #ffffff;
+
+  font-size: 13px;
+
+  margin-bottom: 12px;
+}
+
+.footerColumn a {
+  display: block;
+
+  color: #94a3b8;
+
+  text-decoration: none;
+
+  margin-bottom: 8px;
+
+  font-size: 12px;
+}
+
+.footerColumn a:hover {
+  color: #ffffff;
+}
+
+/* =====================================================
+📱 Mobile
+===================================================== */
+
+@media (max-width: 768px) {
+
+  .footerGrid {
+    grid-template-columns: 1fr;
+
+    gap: 24px;
+
+    text-align: center;
+  }
+}
