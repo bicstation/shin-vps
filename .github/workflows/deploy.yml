@@ -14,7 +14,7 @@ jobs:
     timeout-minutes: 90
 
     env:
-      PROJECT_NAME: shin-vps
+      PROJECT_NAME: shin-prod
       DEPLOY_PATH: /home/maya/shin-vps
 
       BASE_COMPOSE: docker-compose.yml
@@ -145,7 +145,7 @@ jobs:
             echo "📦 Building Containers..."
 
             docker compose \
-              -p shin-vps \
+              -p shin-prod \
               --env-file .env.production \
               -f docker-compose.yml \
               -f docker-compose.prod.yml \
@@ -163,7 +163,7 @@ jobs:
             echo "🚀 Starting Containers..."
 
             docker compose \
-              -p shin-vps \
+              -p shin-prod \
               --env-file .env.production \
               -f docker-compose.yml \
               -f docker-compose.prod.yml \
@@ -181,7 +181,7 @@ jobs:
             echo "📦 Running Migrations..."
 
             docker compose \
-              -p shin-vps \
+              -p shin-prod \
               --env-file .env.production \
               -f docker-compose.yml \
               -f docker-compose.prod.yml \
@@ -198,7 +198,7 @@ jobs:
             echo "🎨 Collecting Static..."
 
             docker compose \
-              -p shin-vps \
+              -p shin-prod \
               --env-file .env.production \
               -f docker-compose.yml \
               -f docker-compose.prod.yml \
@@ -230,7 +230,7 @@ jobs:
             echo "📊 Container Status"
 
             docker compose \
-              -p shin-vps \
+              -p shin-prod \
               --env-file .env.production \
               -f docker-compose.yml \
               -f docker-compose.prod.yml \
