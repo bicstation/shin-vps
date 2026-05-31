@@ -7,8 +7,6 @@
 
 set -e
 
-
-
 # ==========================================================
 # PATH
 # ==========================================================
@@ -181,7 +179,11 @@ run_django import_t_duga || true
 # ==========================================================
 
 log "STEP 02 : IMPORT FANZA"
-run_django import_t_fanza || true
+# run_django import_t_fanza 
+run_django import_t_fanza \
+    --site fanza \
+    --pages 1 \
+    --floor_limit 1 || true
 
 # ==========================================================
 # STEP 03

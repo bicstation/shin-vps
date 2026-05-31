@@ -23,7 +23,7 @@ description: [
   '作品を検索する',
 ],
 
-href: '/videos',
+href: 'https://avflash.xyz',
 
 cta: '動画一覧へ',
 

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # /home/maya/dev/shin-vps/django/api/management/commands/import_t_duga.py
-
+import os
 import json
 import time
 import logging
@@ -35,14 +35,19 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # 1. 設定の読み込み
-        try:
-            config = settings.API_CONFIG['DUGA']
-            DUGA_API_ID = config['API_ID']
-            DUGA_API_KEY = config['API_KEY']
-            DUGA_API_URL = config['API_URL']
-        except (AttributeError, KeyError):
-            self.stderr.write(self.style.ERROR("settings.pyにDUGAのAPI設定が見つかりません。"))
-            return
+        DUGA_API_ID = os.getenv("DUGA_API_ID")
+        DUGA_API_KEY = os.getenv("DUGA_API_KEY")
+        DUGA_API_URL = os.getenv("DUGA_API_URL")
+
+        if not all([
+                DUGA_API_ID,
+                DUGA_API_KEY,
+                DUGA_API_URL,
+            ]):
+                self.stderr.write(
+                    "DUGA API環境変数が設定されていません"
+                )
+                return
 
         start_page = options['start_page']
         limit_pages = options['pages']
