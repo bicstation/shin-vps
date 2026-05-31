@@ -82,7 +82,8 @@ class UnifiedAdultProductListView(generics.ListAPIView):
         else:
             # 🚀 爆速ポイント: 指定なしの場合、Countを使わずフラグで絞り込み
             # これにより DB の Index Scan が走り、ミリ秒単位でレスポンスが返ります
-            qs = qs.filter(has_attributes=True)
+            # qs = qs.filter(has_attributes=True)
+             qs = qs.filter(is_active=True)
             
         return qs.distinct().order_by('-release_date')
 
@@ -105,7 +106,6 @@ class AdultProductRankingAPIView(generics.ListAPIView):
         # 🚀 ここもフラグを利用して集計処理を完全排除
         return AdultProduct.objects.filter(
             is_active=True,
-            has_attributes=True
         ).order_by('-spec_score')[:30]
 
 class ActressSearchAPIView(views.APIView):
@@ -119,22 +119,44 @@ class ActressSearchAPIView(views.APIView):
         ).filter(product_count__gt=0)[:10]
         return Response({"results": [{"id": a.id, "name": a.name} for a in res]})
 
-class AdultSidebarStatsAPIView(views.APIView):
-    """サイドバー用AI属性リスト (高速版)"""
-    permission_classes = [AllowAny]
-    def get(self, request):
-        # サイドバーは属性ごとのカウントが必要なため、ここでは filter Q を使って効率化
-        stats = AdultAttribute.objects.annotate(
-            c=Count('products', filter=Q(products__is_active=True, products__has_attributes=True))
-        ).filter(c__gt=0).order_by('-c')[:20]
+# class AdultSidebarStatsAPIView(views.APIView):
+#     """サイドバー用AI属性リスト (高速版)"""
+#     permission_classes = [AllowAny]
+#     def get(self, request):
+#         # サイドバーは属性ごとのカウントが必要なため、ここでは filter Q を使って効率化
+#         stats = AdultAttribute.objects.annotate(
+#             c=Count('products', filter=Q(products__is_active=True, products__has_attributes=True))
+#         ).filter(c__gt=0).order_by('-c')[:20]
         
-        results = [{
-            "id": a.id, 
-            "name": a.name, 
-            "slug": a.slug if a.slug else str(a.id), 
-            "count": a.c
-        } for a in stats]
-        return Response({"status": "OK", "attributes": results})
+#         results = [{
+#             "id": a.id, 
+#             "name": a.name, 
+#             "slug": a.slug if a.slug else str(a.id), 
+#             "count": a.c
+#         } for a in stats]
+#         return Response({"status": "OK", "attributes": results})
+
+class AdultSidebarStatsAPIView(views.APIView):
+    """AVFLASH Runtime v2 用サイドバー統計"""
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+
+        data = {
+            "products": AdultProduct.objects.count(),
+            "actresses": Actress.objects.count(),
+            "genres": Genre.objects.count(),
+            "makers": Maker.objects.count(),
+            "labels": Label.objects.count(),
+            "series": Series.objects.count(),
+            "directors": Director.objects.count(),
+            "authors": Author.objects.count(),
+        }
+
+        return Response({
+            "status": "OK",
+            "stats": data
+        })
 
 # --------------------------------------------------------------------------
 # 💡 3. ナビゲーション・インデックス

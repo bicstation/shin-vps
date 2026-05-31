@@ -115,3 +115,88 @@ export async function getAdultProductDetail(id: string | number, siteTag: string
 /** 🚀 エイリアス設定 */
 export const fetchAdultProducts = getUnifiedProducts;
 export const fetchAdultProductDetail = getAdultProductDetail;
+
+/**
+ * =====================================================================
+ * 🎯 Adapter Layer (SHIN CORE LINX 2026)
+ * =====================================================================
+ */
+
+export interface ProductCardVM {
+  id: string;
+  title: string;
+  image: string;
+  maker?: string;
+  releaseDate?: string;
+}
+
+export interface ProductDetailVM {
+  title: string;
+  description?: string;
+
+  actresses: string[];
+  genres: string[];
+
+  series?: string;
+  maker?: string;
+  label?: string;
+}
+
+/**
+ * 📦 Product Card ViewModel
+ */
+export function toAdultProductCard(
+  product: AdultProduct
+): ProductCardVM {
+  return {
+    id: String(product.id),
+
+    title: product.title,
+
+    image:
+      product.image_url_list?.[0] ??
+      '/images/common/no-image.jpg',
+
+    maker:
+      product.maker?.name,
+
+    releaseDate:
+      product.release_date ?? undefined,
+  };
+}
+
+/**
+ * 🎯 Product Detail ViewModel
+ */
+export function toAdultProductDetail(
+  product: AdultProduct
+): ProductDetailVM {
+  return {
+    title: product.title,
+
+    description:
+      product.ai_summary ||
+      product.ai_content ||
+      product.title ||
+      '',
+
+    actresses:
+      product.actresses?.map(
+        actress => actress.name
+      ) ?? [],
+
+    genres:
+      product.genres?.map(
+        genre => genre.name
+      ) ?? [],
+
+    series:
+      product.series?.name,
+
+    maker:
+      product.maker?.name,
+
+    label:
+      product.label?.name,
+  };
+}
