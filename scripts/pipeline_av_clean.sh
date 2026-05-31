@@ -165,6 +165,16 @@ run_django() {
 
 log "AVFLASH CLEAN PIPELINE START"
 
+
+# ==========================================================
+# STEP 0-5
+# NORMALIZE 同期
+# ==========================================================
+
+log "STEP 0-5 : NORMALIZE 同期"
+
+run_django sync_fanza_floor_master || true
+
 # ==========================================================
 # STEP 01
 # DUGA RAW IMPORT
@@ -182,9 +192,12 @@ log "STEP 02 : IMPORT FANZA"
 # run_django import_t_fanza 
 run_django import_t_fanza \
     --site fanza \
+#開発用
     --pages 1 \
-    --floor_limit 1 || true
-
+#    --floor_limit 1 || true
+# 本番
+# --pages 5
+    --all-floors
 # ==========================================================
 # STEP 03
 # NORMALIZE

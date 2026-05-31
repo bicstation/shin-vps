@@ -5,6 +5,27 @@ from rest_framework import generics, filters, pagination, views, status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
+AVFLASH_FILTER_V1 = (
+    Q(api_source="DUGA")
+    |
+    Q(
+        api_source="fanza",
+        api_service="digital",
+        floor_code__in=[
+            "videoa",
+            "videoc",
+            "nikkatsu",
+        ]
+    )
+    |
+    Q(
+        api_source="fanza",
+        api_service="monthly",
+        floor_code="vr"
+    )
+)
+
+
 # 🚀 DjangoFilterのインポートエラーを防ぐための安全な処理
 try:
     from django_filters.rest_framework import DjangoFilterBackend
@@ -49,7 +70,14 @@ class UnifiedAdultProductListView(generics.ListAPIView):
         2. 作成済みの複合インデックス (is_active, has_attributes, -release_date) を強制発動
         """
         # 🚀 属性表示に必須の prefetch_related を確実に実行
-        qs = AdultProduct.objects.filter(is_active=True).select_related(
+        # qs = AdultProduct.objects.filter(is_active=True).select_related(
+        #     'maker', 'label', 'series', 'director', 'floor_master'
+        # ).prefetch_related('actresses', 'genres', 'attributes', 'authors')
+        qs = AdultProduct.objects.filter(
+            is_active=True
+        ).filter(
+            AVFLASH_FILTER_V1
+        ).select_related(
             'maker', 'label', 'series', 'director', 'floor_master'
         ).prefetch_related('actresses', 'genres', 'attributes', 'authors')
 
@@ -104,8 +132,13 @@ class AdultProductRankingAPIView(generics.ListAPIView):
     
     def get_queryset(self):
         # 🚀 ここもフラグを利用して集計処理を完全排除
+        # return AdultProduct.objects.filter(
+        #     is_active=True,
+        # ).order_by('-spec_score')[:30]
         return AdultProduct.objects.filter(
-            is_active=True,
+            is_active=True
+        ).filter(
+            AVFLASH_FILTER_V1
         ).order_by('-spec_score')[:30]
 
 class ActressSearchAPIView(views.APIView):
@@ -142,15 +175,52 @@ class AdultSidebarStatsAPIView(views.APIView):
 
     def get(self, request):
 
+        # data = {
+        #     "products": AdultProduct.objects.count(),
+        #     "actresses": Actress.objects.count(),
+        #     "genres": Genre.objects.count(),
+        #     "makers": Maker.objects.count(),
+        #     "labels": Label.objects.count(),
+        #     "series": Series.objects.count(),
+        #     "directors": Director.objects.count(),
+        #     "authors": Author.objects.count(),
+        # }
+        av_qs = AdultProduct.objects.filter(
+            is_active=True
+        ).filter(
+            AVFLASH_FILTER_V1
+        )
+        
         data = {
-            "products": AdultProduct.objects.count(),
-            "actresses": Actress.objects.count(),
-            "genres": Genre.objects.count(),
-            "makers": Maker.objects.count(),
-            "labels": Label.objects.count(),
-            "series": Series.objects.count(),
-            "directors": Director.objects.count(),
-            "authors": Author.objects.count(),
+            "products": av_qs.count(),
+
+            "actresses": Actress.objects.filter(
+                products__in=av_qs
+            ).distinct().count(),
+
+            "genres": Genre.objects.filter(
+                products__in=av_qs
+            ).distinct().count(),
+
+            "makers": Maker.objects.filter(
+                products__in=av_qs
+            ).distinct().count(),
+
+            "labels": Label.objects.filter(
+                products__in=av_qs
+            ).distinct().count(),
+
+            "series": Series.objects.filter(
+                products__in=av_qs
+            ).distinct().count(),
+
+            "directors": Director.objects.filter(
+                products__in=av_qs
+            ).distinct().count(),
+
+            "authors": Author.objects.filter(
+                products__in=av_qs
+            ).distinct().count(),
         }
 
         return Response({
