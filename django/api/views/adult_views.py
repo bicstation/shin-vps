@@ -111,7 +111,7 @@ class UnifiedAdultProductListView(generics.ListAPIView):
             # 🚀 爆速ポイント: 指定なしの場合、Countを使わずフラグで絞り込み
             # これにより DB の Index Scan が走り、ミリ秒単位でレスポンスが返ります
             # qs = qs.filter(has_attributes=True)
-             qs = qs.filter(is_active=True)
+            qs = qs.filter(is_active=True)
             
         return qs.distinct().order_by('-release_date')
 

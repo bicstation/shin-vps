@@ -184,20 +184,89 @@ log "STEP 01 : IMPORT DUGA"
 run_django import_t_duga || true
 
 # ==========================================================
+# FANZA IMPORT SETTINGS
+#
+# pages:
+#   取得ページ数
+#
+#   1  = 開発用 (高速)
+#   5  = 本番運用
+#   10 = 大規模同期
+#
+# all_floors:
+#   FANZA全フロア取得
+#
+#   例:
+#   - video
+#   - amateur
+#   - comic
+#   - doujin
+#   - book
+#   - vr
+#
+# 注意:
+#   pages を増やすと
+#   RawApiData が大量生成される。
+#
+# ==========================================================
+
+FANZA_IMPORT_PAGES=1
+FANZA_IMPORT_ALL_FLOORS=true
+
+# 本番例
+# FANZA_IMPORT_PAGES=5
+
+# ==========================================================
 # STEP 02
 # FANZA RAW IMPORT
+#
+# 目的:
+#   FANZA APIからRawApiDataを取得する。
+#
+# 保存先:
+#   RawApiData
+#
+# 後続処理:
+#
+#   import_t_fanza
+#          ↓
+#   normalize_fanza
+#          ↓
+#   AdultProduct
+#          ↓
+#   Image Runtime
+#
+# 注意:
+#   この段階では AdultProduct は生成されない。
+#
+#   取得のみ実施する。
+#
+# Runtime Layer:
+#   Data Acquisition Layer
+#
 # ==========================================================
 
 log "STEP 02 : IMPORT FANZA"
-# run_django import_t_fanza 
+
 run_django import_t_fanza \
     --site fanza \
-#開発用
     --pages 1 \
-#    --floor_limit 1 || true
-# 本番
-# --pages 5
-    --all-floors
+    || true
+
+# ==========================================================
+# Expected Result
+#
+# RawApiData
+#   +XXXX records
+#
+# AdultProduct
+#   unchanged
+#
+# 次工程:
+#   STEP 03 NORMALIZE
+#
+# ==========================================================
+
 # ==========================================================
 # STEP 03
 # NORMALIZE
@@ -209,40 +278,75 @@ run_django normalize_duga || true
 run_django normalize_fanza || true
 
 # ==========================================================
+# STEP 03-5
+# IMAGE RUNTIME
+#
+# SHIN CORE LINX Runtime Layer
+#
+# Import
+# ↓
+# Normalize
+# ↓
+# Image Runtime
+# ↓
+# Sync Runtime
+# ↓
+# Validation
+#
+# Frontend:
+#   image_valid
+#
+# Backend:
+#   image_status
+#
+# ==========================================================
+
+IMAGE_RUNTIME_LIMIT=500
+IMAGE_RUNTIME_TIMEOUT=10
+
+log "STEP 03-5 : IMAGE RUNTIME"
+
+run_django audit_images \
+    --new-only \
+    --limit "${IMAGE_RUNTIME_LIMIT}" \
+    --timeout "${IMAGE_RUNTIME_TIMEOUT}" \
+    || true
+
+# ==========================================================
 # STEP 04
 # GENRE SYNC
 # ==========================================================
 
-log "STEP 04 : GENRE SYNC"
+# log "STEP 04 : GENRE SYNC"
 
-run_django sync_adult_genres || true
+# run_django sync_adult_genres || true
 
 # ==========================================================
 # STEP 05
 # MAKER SYNC
 # ==========================================================
 
-log "STEP 05 : MAKER SYNC"
+# log "STEP 05 : MAKER SYNC"
 
-run_django sync_adult_makers || true
+# run_django sync_adult_makers || true
 
 # ==========================================================
 # STEP 06
 # SERIES SYNC
 # ==========================================================
 
-log "STEP 06 : SERIES SYNC"
+# log "STEP 06 : SERIES SYNC"
 
-run_django sync_adult_series || true
+# run_django sync_adult_series || true
 
 # ==========================================================
 # STEP 07
 # ACTRESS SYNC
 # ==========================================================
 
-log "STEP 07 : ACTRESS SYNC"
+# log "STEP 07 : ACTRESS SYNC"
 
-run_django sync_adult_actresses || true
+# run_django sync_adult_actresses || true
 
 # ==========================================================
 # STEP 08
@@ -252,7 +356,7 @@ run_django sync_adult_actresses || true
 log "STEP 08 : ATTRIBUTE RUNTIME"
 
 echo "[SKIP]"
-echo "auto_map_adult_attributes"
+echo "auto_map_adult_attributes_v2"
 
 # run_django auto_map_adult_attributes
 
@@ -316,13 +420,26 @@ http://localhost:8083/api/adult/ranking/ \
 echo ""
 echo ""
 
-echo "SIDEBAR STATS"
-curl -s \
-http://localhost:8083/api/adult/sidebar-stats/ \
-| head -c 500
 
-echo ""
-echo ""
+echo
+echo "SIDEBAR STATS"
+
+RESPONSE=$(
+curl -s \
+http://localhost:8083/api/adult/sidebar-stats/
+)
+
+echo "$RESPONSE" | head -c 500
+
+echo
+
+echo "$RESPONSE" | python -m json.tool >/dev/null 2>&1
+
+if [ $? -eq 0 ]; then
+    echo "✅ VALID JSON"
+else
+    echo "❌ INVALID JSON"
+fi
 
 # ==========================================================
 # STEP 13
@@ -333,7 +450,7 @@ log "STEP 13 : VALIDATION"
 
 run_django shell -c "
 
-from api.models import AdultProduct
+from api.models import ( AdultProduct, ImageAudit, )
 
 print()
 print('PRODUCTS')
@@ -348,6 +465,26 @@ AdultProduct.objects.filter(
 has_attributes=True
 ).count()
 )
+
+print()
+print('IMAGE AUDITS')
+
+print(
+ImageAudit.objects.count()
+)
+
+from django.db.models import Count
+from api.models import ImageAudit
+
+print()
+print('IMAGE STATUS')
+
+for row in (
+    ImageAudit.objects
+    .values('image_status')
+    .annotate(total=Count('id'))
+):
+    print(row)
 
 "
 
