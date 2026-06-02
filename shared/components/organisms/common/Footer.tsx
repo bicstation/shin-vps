@@ -19,6 +19,7 @@ export default function Footer() {
       case 'tiper':
         return [
           { label: '🎬 AVFLASH', href: 'https://avflash.xyz' },
+          { label: '🎬 ビックAV動画', href: 'https://bic-erog.com' },
           { label: '🖥️ BICSTATION', href: 'https://bicstation.com' },
           { label: '💰 BIC SAVING', href: 'https://bic-saving.com' },
         ];
@@ -26,6 +27,7 @@ export default function Footer() {
       case 'avflash':
         return [
           { label: '❤️ TIPER', href: 'https://tiper.live' },
+          { label: '🎬 ビックAV動画', href: 'https://bic-erog.com' },
           { label: '🖥️ BICSTATION', href: 'https://bicstation.com' },
           { label: '💰 BIC SAVING', href: 'https://bic-saving.com' },
         ];
@@ -33,11 +35,13 @@ export default function Footer() {
       case 'bicstation':
         return [
           { label: '💰 BIC SAVING', href: 'https://bic-saving.com' },
+          { label: '🎬 SHIN CORE LINX', href: 'https://nabejuku.com' },
         ];
 
       case 'saving':
         return [
           { label: '🖥️ BICSTATION', href: 'https://bicstation.com' },
+          { label: '🎬 SHIN CORE LINX', href: 'https://nabejuku.com' },
         ];
 
       default:

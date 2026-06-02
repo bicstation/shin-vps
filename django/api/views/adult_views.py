@@ -170,62 +170,111 @@ class ActressSearchAPIView(views.APIView):
 #         return Response({"status": "OK", "attributes": results})
 
 class AdultSidebarStatsAPIView(views.APIView):
-    """AVFLASH Runtime v2 用サイドバー統計"""
+    """
+    AVFLASH Runtime v2
+
+    Sidebar Statistics API
+
+    統計の真実は AdultProduct を起点とする。
+
+    related_name に依存しないため、
+    モデル変更や Runtime 改修に強い。
+    """
+
     permission_classes = [AllowAny]
 
     def get(self, request):
 
-        # data = {
-        #     "products": AdultProduct.objects.count(),
-        #     "actresses": Actress.objects.count(),
-        #     "genres": Genre.objects.count(),
-        #     "makers": Maker.objects.count(),
-        #     "labels": Label.objects.count(),
-        #     "series": Series.objects.count(),
-        #     "directors": Director.objects.count(),
-        #     "authors": Author.objects.count(),
-        # }
-        av_qs = AdultProduct.objects.filter(
-            is_active=True
-        ).filter(
-            AVFLASH_FILTER_V1
+        # --------------------------------------------------
+        # AVFLASH Runtime Universe
+        # --------------------------------------------------
+
+        av_qs = (
+            AdultProduct.objects
+            .filter(
+                is_active=True
+            )
+            .filter(
+                AVFLASH_FILTER_V1
+            )
         )
-        
+
+        # --------------------------------------------------
+        # Sidebar Statistics
+        # --------------------------------------------------
+
         data = {
+
+            # 作品数
             "products": av_qs.count(),
 
-            "actresses": Actress.objects.filter(
-                products__in=av_qs
-            ).distinct().count(),
+            # 女優数
+            "actresses": (
+                av_qs
+                .filter(actresses__isnull=False)
+                .values("actresses")
+                .distinct()
+                .count()
+            ),
 
-            "genres": Genre.objects.filter(
-                products__in=av_qs
-            ).distinct().count(),
+            # ジャンル数
+            "genres": (
+                av_qs
+                .filter(genres__isnull=False)
+                .values("genres")
+                .distinct()
+                .count()
+            ),
 
-            "makers": Maker.objects.filter(
-                products__in=av_qs
-            ).distinct().count(),
+            # メーカー数
+            "makers": (
+                av_qs
+                .filter(maker__isnull=False)
+                .values("maker")
+                .distinct()
+                .count()
+            ),
 
-            "labels": Label.objects.filter(
-                products__in=av_qs
-            ).distinct().count(),
+            # レーベル数
+            "labels": (
+                av_qs
+                .filter(label__isnull=False)
+                .values("label")
+                .distinct()
+                .count()
+            ),
 
-            "series": Series.objects.filter(
-                products__in=av_qs
-            ).distinct().count(),
+            # シリーズ数
+            "series": (
+                av_qs
+                .filter(series__isnull=False)
+                .values("series")
+                .distinct()
+                .count()
+            ),
 
-            "directors": Director.objects.filter(
-                products__in=av_qs
-            ).distinct().count(),
+            # 監督数
+            "directors": (
+                av_qs
+                .filter(director__isnull=False)
+                .values("director")
+                .distinct()
+                .count()
+            ),
 
-            "authors": Author.objects.filter(
-                products__in=av_qs
-            ).distinct().count(),
+            # 著者数
+            "authors": (
+                av_qs
+                .filter(authors__isnull=False)
+                .values("authors")
+                .distinct()
+                .count()
+            ),
         }
 
         return Response({
             "status": "OK",
-            "stats": data
+            "stats": data,
         })
 
 # --------------------------------------------------------------------------

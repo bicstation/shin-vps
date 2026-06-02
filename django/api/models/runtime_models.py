@@ -8,7 +8,16 @@ class ImageAudit(models.Model):
     """
     SHIN CORE LINX Image Runtime
 
-    Backend が画像の真実を管理するための監査テーブル。
+    Backend が
+    ユーザーへ提示可能なコンテンツかどうか
+    の真実を管理する Runtime テーブル。
+
+    Backend は画像の存在を保証しない。
+
+    Backend はコンテンツ利用可否を保証する。
+
+    Frontend は image_valid のみを参照し、
+    表示方法は Frontend が決定する。
 
     Frontend は image_valid のみ参照する。
 
@@ -65,7 +74,7 @@ class ImageAudit(models.Model):
     )
 
     # -------------------------------------------------------------------------
-    # Runtime判定
+    # Runtime(Content Availability Authority)
     # -------------------------------------------------------------------------
 
     image_status = models.CharField(
@@ -73,6 +82,8 @@ class ImageAudit(models.Model):
         default="unknown",
         db_index=True,
         help_text=(
+            "Backend Authority 状態。"
+            "ユーザーへ提示可能なコンテンツかを示す。"
             "ok / placeholder / forbidden / "
             "404 / 410 / timeout / http_xxx"
         )
