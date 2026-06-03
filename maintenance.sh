@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -e
+set -euo pipefail
 
 # ==================================================
 # 🌌 SHIN CORE LINX
@@ -17,12 +17,11 @@ echo "============================================================"
 echo ""
 
 # ==================================================
-# Docker Status
+# Docker Status Before
 # ==================================================
 
-echo "📊 Current Docker Usage"
+echo "📊 Docker Usage Before Cleanup"
 docker system df
-
 echo ""
 
 # ==================================================
@@ -30,11 +29,8 @@ echo ""
 # ==================================================
 
 echo "🗑 Removing Stopped Containers"
-
-docker container prune -af
-
+docker container prune -f
 echo "✅ Container Cleanup Complete"
-
 echo ""
 
 # ==================================================
@@ -42,60 +38,59 @@ echo ""
 # ==================================================
 
 echo "🌐 Removing Unused Networks"
-
-docker network prune -af
-
+docker network prune -f
 echo "✅ Network Cleanup Complete"
-
 echo ""
 
 # ==================================================
-# Remove Dangling Images
+# Remove Unused Images
 # ==================================================
 
-echo "🖼 Removing Dangling Images"
-
+echo "🖼 Removing Unused Images"
 docker image prune -af
-
 echo "✅ Image Cleanup Complete"
-
 echo ""
 
 # ==================================================
-# Builder Cache
+# Remove Builder Cache
 # ==================================================
 
 echo "🏗 Cleaning Builder Cache"
 
 docker builder prune -af
 
-echo "✅ Builder Cleanup Complete"
-
+echo "✅ Builder Cache Cleanup Complete"
 echo ""
 
 # ==================================================
-# Disk Usage After Cleanup
+# Docker Status After
 # ==================================================
 
 echo "📊 Docker Usage After Cleanup"
-
 docker system df
-
 echo ""
 
 # ==================================================
-# Container Health
+# Container Health Check
 # ==================================================
 
 echo "🩺 Container Status"
 
-docker compose \
-  -p ${PROJECT_NAME} \
-  --env-file .env.production \
-  -f docker-compose.yml \
-  -f docker-compose.prod.yml \
-  ps
+docker compose 
+-p ${PROJECT_NAME} 
+--env-file .env.production 
+-f docker-compose.yml 
+-f docker-compose.prod.yml 
+ps
 
+echo ""
+
+# ==================================================
+ Running Containers
+# ==================================================
+
+echo "🚀 Running Containers"
+docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Image}}"
 echo ""
 
 # ==================================================
@@ -104,4 +99,4 @@ echo ""
 
 echo "============================================================"
 echo "✅ Weekly Maintenance Complete"
-echo "============================================================"s
+echo "============================================================"
