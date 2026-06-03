@@ -312,6 +312,20 @@ run_django audit_images \
     --timeout "${IMAGE_RUNTIME_TIMEOUT}" \
     || true
 
+
+# ==========================================================
+# STEP 03-6
+# PREVIEW REALITY
+# ==========================================================
+
+log "STEP 03-6 : PREVIEW REALITY"
+
+run_django sync_fanza_preview_reality \
+    --limit 500 \
+    || true
+
+
+
 # ==========================================================
 # STEP 04
 # GENRE SYNC
@@ -355,8 +369,8 @@ run_django audit_images \
 
 log "STEP 08 : ATTRIBUTE RUNTIME"
 
-echo "[SKIP]"
-echo "auto_map_adult_attributes_v2"
+run_django auto_map_adult_attributes_v2 \
+    --limit 500
 
 # run_django auto_map_adult_attributes
 
@@ -367,8 +381,8 @@ echo "auto_map_adult_attributes_v2"
 
 log "STEP 09 : GROUP RUNTIME"
 
-echo "[SKIP]"
-echo "compile_adult_groups"
+run_django compile_adult_runtime \
+    --limit 500
 
 # run_django compile_adult_groups
 
@@ -448,6 +462,7 @@ fi
 
 log "STEP 13 : VALIDATION"
 
+
 run_django shell -c "
 
 from api.models import ( AdultProduct, ImageAudit, )
@@ -485,6 +500,17 @@ for row in (
     .annotate(total=Count('id'))
 ):
     print(row)
+
+print()
+print("HAS ATTRIBUTES")
+
+print(
+    AdultProduct.objects.filter(
+        has_attributes=True
+    ).count()
+)
+
+
 
 "
 

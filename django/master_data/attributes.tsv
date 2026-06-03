@@ -121,3 +121,11 @@ style	中出し	creampie	中出し,生ハメ,ザーメン	1040	1	highlight	0.90	
 style	拘束・SM	sm-bondage	拘束,緊縛,sm,放置	1041	1	highlight	0.88	lock	purple	true
 style	潮吹き	squirting	潮吹き,絶頂,噴射,感度	1042	1	primary	0.82	waves	cyan	true
 style	逆レイ・攻め	female-led	逆レイ,女攻め,騎乗位,逆ナン	1043	1	secondary	0.74	crown	pink	false
+preview	動画プレビューあり	preview-video	video preview,mp4 preview	1050	1	highlight	1.00	play	purple	true
+preview	ポスター画像あり	preview-poster	poster,thumbnail	1051	1	primary	0.90	image	pink	false
+preview	高画質プレビュー	preview-high-quality	1080p,720p,high quality	1052	1	highlight	0.95	monitor	cyan	true
+preview	マルチ画質対応	preview-multi-quality	multi bitrate,multi quality	1053	1	secondary	0.80	layers	blue	false
+preview	自動再生対応	preview-auto-playable	autoplay,preview ready	1054	1	secondary	0.75	play-circle	green	false
+preview_experience	販促情報あり	preview-promotion	promotion,campaign	1060	1	secondary	0.70	badge-dollar-sign	orange	false
+preview_experience	関連作品あり	preview-recommendation	recommend,related	1061	1	secondary	0.72	link	purple	false
+preview_experience	体験充実	preview-rich-experience	rich preview experience	1062	1	highlight	0.95	sparkles	purple	true

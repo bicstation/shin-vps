@@ -77,3 +77,7 @@ from .product import Product
 from .runtime_models import (
     ImageAudit,     # Image Runtime Audit Ledger
 )
+
+from .fanza_sample_movie import (
+    FanzaSampleMovie,   # FANZA Preview Reality Repository
+)

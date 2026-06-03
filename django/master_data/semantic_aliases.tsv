@@ -581,3 +581,7 @@ female-led	逆レイ	category	1	0.82
 female-led	女攻め	category	1	0.88
 female-led	騎乗位	position	1	0.84
 female-led	逆ナン	scene	1	0.78
+gal	ギャル	canonical	1	1.00
+gal	黒ギャル	category	1	0.94
+gal	金髪ギャル	category	1	0.92
+gal	ヤマンバ	category	1	0.88
