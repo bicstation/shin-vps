@@ -250,7 +250,7 @@ log "STEP 02 : IMPORT FANZA"
 
 run_django import_t_fanza \
     --site fanza \
-    --pages 1 \
+    --pages 10 \
     || true
 
 # ==========================================================

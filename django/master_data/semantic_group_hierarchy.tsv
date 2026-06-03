@@ -1,0 +1,15 @@
+parent_group	child_group	sort_order
+
+pc	        hardware	    10
+pc	        experience	    20
+pc	        brand	        30
+
+hardware	gpu	            10
+hardware	cpu	            20
+hardware	memory	        30
+
+adult	    person	        10
+adult	    body	        20
+adult	    play	        30
+adult	    scene	        40
+adult	    experience	    50
