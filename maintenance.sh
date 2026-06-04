@@ -22,7 +22,6 @@ echo ""
 
 echo "📊 Docker Usage Before Cleanup"
 docker system df
-
 echo ""
 
 # ==================================================
@@ -75,11 +74,11 @@ echo ""
 
 echo "🩺 Container Status"
 
-docker compose 
--p ${PROJECT_NAME} 
---env-file .env.production 
--f docker-compose.yml 
--f docker-compose.prod.yml 
+docker compose \
+-p ${PROJECT_NAME} \
+--env-file .env.production \
+-f docker-compose.yml \
+-f docker-compose.prod.yml \
 ps
 
 echo ""
