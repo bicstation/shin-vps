@@ -73,15 +73,10 @@ class Command(BaseCommand):
             adult_types = {
 
                 "body",
-
                 "style",
-
                 "scene",
-
                 "feature",
-
                 "actor_type",
-
                 "video_spec",
 
             }
@@ -161,10 +156,39 @@ class Command(BaseCommand):
                         skipped_count += 1
                         continue
 
+                    
+
+
+
+                    # ---------------------------------------------
+                    # Safe Cast
+                    # ---------------------------------------------
+
+                    try:
+                        order = int(
+                            row.get(
+                                "order",
+                                999,
+                            )
+                        )
+                    except Exception:
+                        order = 999
+
+                    try:
+                        semantic_weight = float(
+                            row.get(
+                                "semantic_weight",
+                                1.0,
+                            )
+                        )
+                    except Exception:
+                        semantic_weight = 1.0
+
                     # ---------------------------------------------
                     # Params
                     # ---------------------------------------------
-
+                        
+                    
                     params = {
 
                         "attr_type": attr_type,
@@ -177,48 +201,32 @@ class Command(BaseCommand):
                             row.get(
                                 "search_keywords",
                                 "",
-                            )
-                            .strip()
+                            ).strip()
                         ),
 
-                        "order": int(
-                            row.get(
-                                "order",
-                                999,
-                            )
-                        ),
+                        "order": order,
 
                         "semantic_role": (
                             row.get(
                                 "semantic_role",
                                 "",
-                            )
-                            .strip()
+                            ).strip()
                         ),
 
-                        "semantic_weight": float(
-
-                            row.get(
-                                "semantic_weight",
-                                1.0,
-                            )
-
-                        ),
+                        "semantic_weight": semantic_weight,
 
                         "icon": (
                             row.get(
                                 "icon",
                                 "",
-                            )
-                            .strip()
+                            ).strip()
                         ),
 
                         "color": (
                             row.get(
                                 "color",
                                 "",
-                            )
-                            .strip()
+                            ).strip()
                         ),
 
                         "is_ranking_enabled": str(
@@ -232,6 +240,78 @@ class Command(BaseCommand):
                             "yes",
                         ),
                     }
+                    
+                    # # ---------------------------------------------
+                    # # Params
+                    # # ---------------------------------------------
+
+                    # params = {
+
+                    #     "attr_type": attr_type,
+
+                    #     "slug": slug,
+
+                    #     "name": name,
+
+                    #     "search_keywords": (
+                    #         row.get(
+                    #             "search_keywords",
+                    #             "",
+                    #         )
+                    #         .strip()
+                    #     ),
+
+                    #     "order": int(
+                    #         row.get(
+                    #             "order",
+                    #             999,
+                    #         )
+                    #     ),
+
+                    #     "semantic_role": (
+                    #         row.get(
+                    #             "semantic_role",
+                    #             "",
+                    #         )
+                    #         .strip()
+                    #     ),
+
+                    #     "semantic_weight": float(
+
+                    #         row.get(
+                    #             "semantic_weight",
+                    #             1.0,
+                    #         )
+
+                    #     ),
+
+                    #     "icon": (
+                    #         row.get(
+                    #             "icon",
+                    #             "",
+                    #         )
+                    #         .strip()
+                    #     ),
+
+                    #     "color": (
+                    #         row.get(
+                    #             "color",
+                    #             "",
+                    #         )
+                    #         .strip()
+                    #     ),
+
+                    #     "is_ranking_enabled": str(
+                    #         row.get(
+                    #             "is_ranking_enabled",
+                    #             "false",
+                    #         )
+                    #     ).lower() in (
+                    #         "1",
+                    #         "true",
+                    #         "yes",
+                    #     ),
+                    # }
 
                     # ---------------------------------------------
                     # Adult

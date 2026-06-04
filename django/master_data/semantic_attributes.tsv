@@ -11,7 +11,6 @@ device	サーバー	device-server	100	0	highlight	0.98	server	darkred	true
 device	ワークステーション	device-workstation	95	0	highlight	0.92	cpu	purple	true
 device	ミニPC	device-mini-pc	75	0	secondary	0.65	box	green	true
 device	モバイルPC	device-mobile-pc	85	0	primary	0.78	smartphone	cyan	true
-type	name	slug	order	is_adult	semantic_role	semantic_weight	icon	color	is_ranking_enabled
 cpu	Core Ultra 9	intel-core-ultra-9	110	0	primary	0.98	cpu	red	true
 cpu	Core Ultra 7	intel-core-ultra-7	105	0	primary	0.92	cpu	orange	true
 cpu	Core Ultra 5	intel-core-ultra-5	100	0	primary	0.88	cpu	yellow	true
