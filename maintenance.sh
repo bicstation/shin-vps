@@ -22,6 +22,7 @@ echo ""
 
 echo "📊 Docker Usage Before Cleanup"
 docker system df
+
 echo ""
 
 # ==================================================
@@ -56,9 +57,7 @@ echo ""
 # ==================================================
 
 echo "🏗 Cleaning Builder Cache"
-
 docker builder prune -af
-
 echo "✅ Builder Cache Cleanup Complete"
 echo ""
 
@@ -86,7 +85,7 @@ ps
 echo ""
 
 # ==================================================
- Running Containers
+# Running Containers
 # ==================================================
 
 echo "🚀 Running Containers"
