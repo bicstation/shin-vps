@@ -8,6 +8,31 @@
 set -e
 
 # ==========================================================
+# CONFIG
+# ==========================================================
+
+# Import
+DUGA_PAGES=10
+FANZA_PAGES=10
+
+# Runtime
+IMAGE_RUNTIME_LIMIT=500
+IMAGE_RUNTIME_TIMEOUT=10
+
+PREVIEW_RUNTIME_LIMIT=500
+
+ATTRIBUTE_RUNTIME_LIMIT=500
+GROUP_RUNTIME_LIMIT=500
+
+# Authority
+AUTHORITY_DIR="/usr/src/app/master_data"
+
+# API
+API_PREVIEW_BYTES=500
+
+DJANGO_CON=shin-local-django-v3-1
+
+# ==========================================================
 # PATH
 # ==========================================================
 
@@ -45,6 +70,7 @@ do
     --local)
 
       RUNTIME="local"
+      DJANGO_CON=shin-local-django-v3-1
       ;;
 
     # ------------------------------------------------------
@@ -54,6 +80,7 @@ do
     --stg)
 
       RUNTIME="stg"
+      DJANGO_CON=shin-stg-django-v3-1
       ;;
 
     # ------------------------------------------------------
@@ -63,6 +90,7 @@ do
     --prod)
 
       RUNTIME="prod"
+      DJANGO_CON=shin-prod-django-v3-1
       ;;
 
     # ------------------------------------------------------
@@ -181,107 +209,62 @@ run_django sync_fanza_floor_master || true
 # ==========================================================
 
 log "STEP 01 : IMPORT DUGA"
+
 run_django import_t_duga \
     --start_page 1 \
-    --pages 10 \
+    --pages "${DUGA_PAGES}" \
     || true
-
-# ==========================================================
-# FANZA IMPORT SETTINGS
-#
-# pages:
-#   取得ページ数
-#
-#   1  = 開発用 (高速)
-#   5  = 本番運用
-#   10 = 大規模同期
-#
-# all_floors:
-#   FANZA全フロア取得
-#
-#   例:
-#   - video
-#   - amateur
-#   - comic
-#   - doujin
-#   - book
-#   - vr
-#
-# 注意:
-#   pages を増やすと
-#   RawApiData が大量生成される。
-#
-# ==========================================================
-
-FANZA_IMPORT_PAGES=1
-FANZA_IMPORT_ALL_FLOORS=true
-
-# 本番例
-# FANZA_IMPORT_PAGES=5
-
-# ==========================================================
-# STEP 02
-# FANZA RAW IMPORT
-#
-# 目的:
-#   FANZA APIからRawApiDataを取得する。
-#
-# 保存先:
-#   RawApiData
-#
-# 後続処理:
-#
-#   import_t_fanza
-#          ↓
-#   normalize_fanza
-#          ↓
-#   AdultProduct
-#          ↓
-#   Image Runtime
-#
-# 注意:
-#   この段階では AdultProduct は生成されない。
-#
-#   取得のみ実施する。
-#
-# Runtime Layer:
-#   Data Acquisition Layer
-#
-# ==========================================================
 
 log "STEP 02 : IMPORT FANZA"
 
 run_django import_t_fanza \
     --site fanza \
-    --pages 10 \
+    --pages "${FANZA_PAGES}" \
     || true
-
-# ==========================================================
-# Expected Result
-#
-# RawApiData
-#   +XXXX records
-#
-# AdultProduct
-#   unchanged
-#
-# 次工程:
-#   STEP 03 NORMALIZE
-#
-# ==========================================================
 
 # ==========================================================
 # STEP 03
 # NORMALIZE
 # ==========================================================
 
-log "STEP 03 : NORMALIZE"
+log "STEP 03-1 : NORMALIZE"
 
 run_django normalize_duga || true
 run_django normalize_fanza || true
 
+
+
+log "STEP 03-2 : AUTHORITY"
+
+
+
+docker cp \
+"${PROJECT_ROOT}/django/master_data/semantic_attributes.tsv" \
+"${DJANGO_CON}:${AUTHORITY_DIR}/semantic_attributes.tsv"
+
+docker cp \
+"${PROJECT_ROOT}/django/master_data/semantic_aliases.tsv" \
+"${DJANGO_CON}:${AUTHORITY_DIR}/semantic_aliases.tsv"
+
+docker cp \
+"${PROJECT_ROOT}/django/master_data/semantic_groups.tsv" \
+"${DJANGO_CON}:${AUTHORITY_DIR}/semantic_groups.tsv"
+
+docker cp \
+"${PROJECT_ROOT}/django/master_data/semantic_group_mappings.tsv" \
+"${DJANGO_CON}:${AUTHORITY_DIR}/semantic_group_mappings.tsv"
+
+docker cp \
+"${PROJECT_ROOT}/django/master_data/semantic_normalization_rules.tsv" \
+"${DJANGO_CON}:${AUTHORITY_DIR}/semantic_normalization_rules.tsv"
+
+
+run_django import_specs \
+"${AUTHORITY_DIR}/semantic_attributes.tsv"
+
+
 # ==========================================================
-# STEP 03-5
+# STEP 04
 # IMAGE RUNTIME
 #
 # SHIN CORE LINX Runtime Layer
@@ -304,10 +287,7 @@ run_django normalize_fanza || true
 #
 # ==========================================================
 
-IMAGE_RUNTIME_LIMIT=500
-IMAGE_RUNTIME_TIMEOUT=10
-
-log "STEP 03-5 : IMAGE RUNTIME"
+log "STEP 04 : IMAGE"
 
 run_django audit_images \
     --new-only \
@@ -315,116 +295,81 @@ run_django audit_images \
     --timeout "${IMAGE_RUNTIME_TIMEOUT}" \
     || true
 
-
 # ==========================================================
-# STEP 03-6
+# STEP 05
 # PREVIEW REALITY
 # ==========================================================
 
-log "STEP 03-6 : PREVIEW REALITY"
+log "STEP 05 : PREVIEW"
 
 run_django sync_fanza_preview_reality \
-    --limit 500 \
+    --limit "${PREVIEW_RUNTIME_LIMIT}" \
     || true
 
 
-
-# ==========================================================
-# STEP 04
-# GENRE SYNC
-# ==========================================================
-
-# log "STEP 04 : GENRE SYNC"
-
-# run_django sync_adult_genres || true
-
-# ==========================================================
-# STEP 05
-# MAKER SYNC
-# ==========================================================
-
-# log "STEP 05 : MAKER SYNC"
-
-# run_django sync_adult_makers || true
-
 # ==========================================================
 # STEP 06
-# SERIES SYNC
-# ==========================================================
-
-# log "STEP 06 : SERIES SYNC"
-
-# run_django sync_adult_series || true
-
-# ==========================================================
-# STEP 07
-# ACTRESS SYNC
-# ==========================================================
-
-# log "STEP 07 : ACTRESS SYNC"
-
-# run_django sync_adult_actresses || true
-
-# ==========================================================
-# STEP 08
 # ATTRIBUTE RUNTIME
 # ==========================================================
 
-log "STEP 08 : ATTRIBUTE RUNTIME"
+
+log "STEP 06 : ATTRIBUTE"
 
 run_django auto_map_adult_attributes_v2 \
-    --limit 500
+    --limit "${ATTRIBUTE_RUNTIME_LIMIT}"
+
+
 
 # run_django auto_map_adult_attributes
 
 # ==========================================================
-# STEP 09
+# STEP 07
 # GROUP RUNTIME
 # ==========================================================
 
-log "STEP 09 : GROUP RUNTIME"
+log "STEP 07 : GROUP"
 
 run_django compile_adult_runtime \
-    --limit 500
+    --limit "${GROUP_RUNTIME_LIMIT}"
 
-# run_django compile_adult_groups
 
 # ==========================================================
-# STEP 10
+# STEP 8
 # SEMANTIC RUNTIME
 # ==========================================================
 
-log "STEP 10 : SEMANTIC RUNTIME"
+log "STEP 08 : SEMANTIC"
 
 echo "[SKIP]"
 echo "build_adult_runtime"
 
-# run_django build_adult_runtime
 
 # ==========================================================
-# STEP 11
+# STEP 09
 # RANKING RUNTIME
 # ==========================================================
 
-log "STEP 11 : RANKING RUNTIME"
+
+log "STEP 09 : RANKING"
 
 echo "[SKIP]"
 echo "update_adult_scores"
 
+
 # run_django update_adult_scores
 
 # ==========================================================
-# STEP 12
+# STEP 10
 # API HEALTH CHECK
 # ==========================================================
 
-log "STEP 12 : API HEALTH CHECK"
+log "STEP 10 : API HEALTH"
 
 echo ""
 echo "UNIFIED PRODUCTS"
 curl -s \
 http://localhost:8083/api/adult/unified-products/ \
-| head -c 500
+| head -c "${API_PREVIEW_BYTES}"
 
 echo ""
 echo ""
@@ -432,11 +377,10 @@ echo ""
 echo "RANKING"
 curl -s \
 http://localhost:8083/api/adult/ranking/ \
-| head -c 500
+| head -c "${API_PREVIEW_BYTES}"
 
 echo ""
 echo ""
-
 
 echo
 echo "SIDEBAR STATS"
@@ -445,6 +389,11 @@ RESPONSE=$(
 curl -s \
 http://localhost:8083/api/adult/sidebar-stats/
 )
+
+curl -s \
+http://localhost:8083/api/adult/sidebar-stats/ \
+| head -c "${API_PREVIEW_BYTES}"
+
 
 echo "$RESPONSE" | head -c 500
 
@@ -459,11 +408,11 @@ else
 fi
 
 # ==========================================================
-# STEP 13
+# STEP 11
 # VALIDATION
 # ==========================================================
 
-log "STEP 13 : VALIDATION"
+log "STEP 11 : VALIDATION"
 
 
 run_django shell -c "
@@ -513,12 +462,10 @@ print(
     ).count()
 )
 
-
-
 "
-
 # ==========================================================
 # COMPLETE
 # ==========================================================
-
+echo"*********************************"
 log "AVFLASH CLEAN PIPELINE COMPLETE"
+echo"*********************************"

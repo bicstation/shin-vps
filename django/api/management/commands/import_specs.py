@@ -1,74 +1,306 @@
 # -*- coding: utf-8 -*-
+
 import csv
 import os
+
 from django.core.management.base import BaseCommand
-# PC用とアダルト用の両方のモデルをインポート
-from api.models import PCAttribute, AdultAttribute 
+
+from api.models import (
+    PCAttribute,
+    AdultAttribute,
+)
+
 
 class Command(BaseCommand):
-    help = '統合属性マスター(TSV)をインポートします（PC用・アダルト用を自動振り分け）'
 
-    def add_arguments(self, parser):
-        parser.add_argument('file_path', type=str)
+    help = (
+        "統合属性マスター(TSV)をインポートします"
+        "（PC用・アダルト用を自動振り分け）"
+    )
 
-    def handle(self, *args, **options):
-        file_path = options['file_path']
-        
+    def add_arguments(
+        self,
+        parser,
+    ):
+        parser.add_argument(
+            "file_path",
+            type=str,
+        )
+
+    def handle(
+        self,
+        *args,
+        **options,
+    ):
+
+        file_path = options["file_path"]
+
         if not os.path.exists(file_path):
-            self.stderr.write(self.style.ERROR(f'ファイルが見つかりません: {file_path}'))
+
+            self.stderr.write(
+                self.style.ERROR(
+                    f"ファイルが見つかりません: {file_path}"
+                )
+            )
             return
 
         try:
-            # 1. 両方のモデルを全クリア（スプレッドシートを正とするため）
+
+            self.stdout.write("")
+            self.stdout.write("=" * 60)
+            self.stdout.write(
+                "IMPORT SPECS"
+            )
+            self.stdout.write("=" * 60)
+
+            # =====================================================
+            # Clear
+            # =====================================================
+
             PCAttribute.objects.all().delete()
             AdultAttribute.objects.all().delete()
-            self.stdout.write(self.style.WARNING('既存の全属性マスターをクリアしました。'))
 
-            # アダルト用モデルの有効なattr_typeをリスト化（モデルのCHOICESに合わせる）
-            adult_types = ['body', 'style', 'scene', 'feature', 'actor_type', 'video_spec']
+            self.stdout.write(
+                self.style.WARNING(
+                    "既存属性マスターをクリアしました"
+                )
+            )
 
-            with open(file_path, 'r', encoding='utf-8') as f:
-                reader = csv.DictReader(f, delimiter='\t')
-                pc_count = 0
-                adult_count = 0
-                processed_slugs = set()
+            # =====================================================
+            # Adult Types
+            # =====================================================
+
+            adult_types = {
+
+                "body",
+
+                "style",
+
+                "scene",
+
+                "feature",
+
+                "actor_type",
+
+                "video_spec",
+
+            }
+
+            # =====================================================
+            # Import
+            # =====================================================
+
+            pc_count = 0
+            adult_count = 0
+            skipped_count = 0
+
+            processed_slugs = set()
+
+            with open(
+                file_path,
+                "r",
+                encoding="utf-8",
+            ) as f:
+
+                reader = csv.DictReader(
+                    f,
+                    delimiter="\t",
+                )
 
                 for row in reader:
-                    # 必須項目チェック
-                    attr_type = row.get('attr_type', '').strip()
-                    slug = row.get('slug', '').strip()
-                    if not slug or not attr_type:
-                        continue
-                    
-                    if slug in processed_slugs:
+
+                    # ---------------------------------------------
+                    # Backward Compatibility
+                    # ---------------------------------------------
+
+                    attr_type = (
+
+                        row.get("type")
+
+                        or row.get("attr_type")
+
+                        or ""
+
+                    ).strip()
+
+                    slug = (
+                        row.get("slug")
+                        or ""
+                    ).strip()
+
+                    name = (
+                        row.get("name")
+                        or ""
+                    ).strip()
+
+                    # ---------------------------------------------
+                    # Validation
+                    # ---------------------------------------------
+
+                    if not slug:
+
+                        skipped_count += 1
                         continue
 
-                    # 共通のパラメータ準備
+                    if not attr_type:
+
+                        skipped_count += 1
+
+                        self.stdout.write(
+
+                            self.style.WARNING(
+                                f"[SKIP] attr_type missing : {slug}"
+                            )
+
+                        )
+
+                        continue
+
+                    if slug in processed_slugs:
+
+                        skipped_count += 1
+                        continue
+
+                    # ---------------------------------------------
+                    # Params
+                    # ---------------------------------------------
+
                     params = {
-                        'attr_type': attr_type,
-                        'slug': slug,
-                        'name': row['name'].strip(),
-                        'search_keywords': row.get('search_keywords', '').strip(),
-                        'order': int(row['order']) if row.get('order') and str(row['order']).isdigit() else 999
+
+                        "attr_type": attr_type,
+
+                        "slug": slug,
+
+                        "name": name,
+
+                        "search_keywords": (
+                            row.get(
+                                "search_keywords",
+                                "",
+                            )
+                            .strip()
+                        ),
+
+                        "order": int(
+                            row.get(
+                                "order",
+                                999,
+                            )
+                        ),
+
+                        "semantic_role": (
+                            row.get(
+                                "semantic_role",
+                                "",
+                            )
+                            .strip()
+                        ),
+
+                        "semantic_weight": float(
+
+                            row.get(
+                                "semantic_weight",
+                                1.0,
+                            )
+
+                        ),
+
+                        "icon": (
+                            row.get(
+                                "icon",
+                                "",
+                            )
+                            .strip()
+                        ),
+
+                        "color": (
+                            row.get(
+                                "color",
+                                "",
+                            )
+                            .strip()
+                        ),
+
+                        "is_ranking_enabled": str(
+                            row.get(
+                                "is_ranking_enabled",
+                                "false",
+                            )
+                        ).lower() in (
+                            "1",
+                            "true",
+                            "yes",
+                        ),
                     }
 
-                    # 2. attr_type に基づいて保存先を分岐
+                    # ---------------------------------------------
+                    # Adult
+                    # ---------------------------------------------
+
                     if attr_type in adult_types:
-                        # アダルト属性モデルへ保存
-                        AdultAttribute.objects.create(**params)
+
+                        AdultAttribute.objects.create(
+                            **params
+                        )
+
                         adult_count += 1
+
                     else:
-                        # それ以外はすべてPC属性モデルへ保存
-                        PCAttribute.objects.create(**params)
+
+                        PCAttribute.objects.create(
+                            **params
+                        )
+
                         pc_count += 1
 
-                    processed_slugs.add(slug)
+                    processed_slugs.add(
+                        slug
+                    )
 
-                self.stdout.write(self.style.SUCCESS(
-                    f'✨ 同期完了！\n'
-                    f'   - PC属性: {pc_count}件\n'
-                    f'   - アダルト属性: {adult_count}件'
-                ))
+            # =====================================================
+            # Summary
+            # =====================================================
+
+            self.stdout.write("")
+            self.stdout.write("=" * 60)
+            self.stdout.write(
+                "IMPORT RESULT"
+            )
+            self.stdout.write("=" * 60)
+
+            self.stdout.write(
+                f"PC Attributes     : {pc_count}"
+            )
+
+            self.stdout.write(
+                f"Adult Attributes  : {adult_count}"
+            )
+
+            self.stdout.write(
+                f"Skipped           : {skipped_count}"
+            )
+
+            self.stdout.write("")
+
+            self.stdout.write(
+                f"PC DB Count       : "
+                f"{PCAttribute.objects.count()}"
+            )
+
+            self.stdout.write(
+                f"Adult DB Count    : "
+                f"{AdultAttribute.objects.count()}"
+            )
+
+            self.stdout.write("")
+            self.stdout.write("=" * 60)
 
         except Exception as e:
-            self.stderr.write(self.style.ERROR(f'エラーが発生しました: {e}'))
+
+            self.stderr.write(
+
+                self.style.ERROR(
+                    f"エラーが発生しました: {e}"
+                )
+
+            )
