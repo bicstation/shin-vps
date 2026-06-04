@@ -69,14 +69,24 @@ def normalize_runtime(
     raw_tokens = []
 
     for key, value in specs.items():
+        
+        # =================================================
+        # STRING
+        # =================================================
+
+        if isinstance(value, str):
+
+            raw_tokens.extend(
+                value.split()
+            )
 
         # =================================================
-        # SKIP SOURCE TEXT
+        # LIST
         # =================================================
 
-        if key == "source_text":
+        elif isinstance(value, list):
 
-            continue
+            raw_tokens.extend(value) 
 
         # =================================================
         # LIST

@@ -29,7 +29,7 @@ class Command(BaseCommand):
         parser.add_argument(
             "--limit",
             type=int,
-            default=500,
+            default=0,
         )
 
         parser.add_argument(
@@ -77,19 +77,45 @@ class Command(BaseCommand):
             load_semantic_master()
         )
 
-        products = (
+        # products = (
 
-            AdultProduct.objects
+        #     AdultProduct.objects
 
-            .filter(
-                is_active=True,
+        #     .filter(
+        #         is_active=True,
+        #     )
+
+        #     .order_by(
+        #         "id"
+        #     )
+
+        # )[offset:offset + limit]
+        
+        if limit <= 0:
+
+            products = (
+                AdultProduct.objects
+                .filter(
+                    is_active=True,
+                )
+                .order_by(
+                    "id"
+                )
             )
 
-            .order_by(
-                "id"
-            )
+        else:
 
-        )[offset:offset + limit]
+            products = (
+                AdultProduct.objects
+                .filter(
+                    is_active=True,
+                )
+                .order_by(
+                    "id"
+                )
+            )[offset:offset + limit]
+        
+        
 
         total = len(products)
 

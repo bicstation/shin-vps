@@ -8,7 +8,9 @@ from api.models import (
     AdultProduct, AdultAttribute, LinkshareProduct, FanzaFloorMaster,
     AdultActressProfile,ImageAudit
 )
-
+from api.utils.semantic.runtime.compile_adult_runtime import (
+    compile_adult_runtime,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -167,6 +169,8 @@ class AdultProductSerializer(serializers.ModelSerializer):
    
     product_url = serializers.CharField(source='affiliate_url', read_only=True)
     rel_score = serializers.IntegerField(read_only=True, required=False)
+    
+    runtime = serializers.SerializerMethodField()
 
     class Meta:
         model = AdultProduct 
@@ -179,7 +183,9 @@ class AdultProductSerializer(serializers.ModelSerializer):
             'sample_movie_url',
             'api_source', 'api_service', 'floor_code', 'floor_master',
             'maker', 'label', 'director', 'series', 'authors', 'genres', 'actresses',
-            'attributes', 'ai_content', 'ai_summary', 'ai_catchcopy',
+            'attributes', 
+            'runtime',
+            'ai_content', 'ai_summary', 'ai_catchcopy',
             'target_segment', 'ai_chat_comments',
             'ai_score_visual', 'ai_score_story', 'ai_score_erotic',
             'score_visual', 'score_story', 'score_erotic', 'score_rarity', 'score_cost_performance', 
@@ -239,3 +245,12 @@ class AdultProductSerializer(serializers.ModelSerializer):
             ret['ai_catchcopy'] = instance.title
 
         return ret
+    
+    def get_runtime(
+        self,
+        obj,
+    ):
+        return compile_adult_runtime(
+            obj,
+            trace_runtime=False,
+        )
