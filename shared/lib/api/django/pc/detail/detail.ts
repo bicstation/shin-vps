@@ -7,9 +7,9 @@
 
 import type {
 
-  PCDetailResponse,
+PCDetailResponse,
 
-  PCProduct,
+PCProduct,
 
 } from './contracts'
 
@@ -19,13 +19,13 @@ import type {
 
 import {
 
-  buildEndpoint,
+buildEndpoint,
 
 } from '../utils/buildEndpoint'
 
 import {
 
-  safeFetch,
+safeFetch,
 
 } from '../utils/safeFetch'
 
@@ -35,7 +35,7 @@ import {
 
 import {
 
-  normalizeDetail,
+normalizeDetail,
 
 } from './normalize'
 
@@ -44,7 +44,7 @@ import {
 ========================================= */
 
 const DETAIL_ENDPOINT =
-  '/general/pc-products'
+'/general/pc-products'
 
 /* =========================================
 🔥 Fetch Detail
@@ -53,61 +53,82 @@ const DETAIL_ENDPOINT =
 export async function
 fetchPCDetail(
 
-  uniqueId: string
+uniqueId: string
 
 ): Promise<PCProduct | null> {
 
-  // ======================================
-  // Empty Guard
-  // ======================================
+// ======================================
+// Empty Guard
+// ======================================
 
-  if (!uniqueId) {
+if (!uniqueId) {
 
-    return null
-  }
 
-  // ======================================
-  // Endpoint
-  // ======================================
+return null
 
-  const endpoint =
 
-    buildEndpoint(
+}
 
-      `${DETAIL_ENDPOINT}/${uniqueId}/`
-    )
+// ======================================
+// Endpoint
+// ======================================
 
-  // ======================================
-  // Fetch
-  // ======================================
+const endpoint =
 
-  const response =
 
-    await safeFetch<PCDetailResponse>(
-      endpoint
-    )
+buildEndpoint(
 
-  // ======================================
-  // Invalid Response
-  // ======================================
+  `${DETAIL_ENDPOINT}/${uniqueId}/`
+)
 
-  if (
-    !response
-    ||
-    !response.success
-    ||
-    !response.product
-  ) {
 
-    return null
-  }
+// ======================================
+// Fetch
+// ======================================
 
-  // ======================================
-  // Normalize
-  // ======================================
+const response =
 
-  return normalizeDetail(
 
-    response.product
-  )
+await safeFetch<PCDetailResponse>(
+  endpoint
+)
+
+
+// ======================================
+// Invalid Response
+// ======================================
+
+if (!response) {
+
+
+return null
+
+
+}
+
+// ======================================
+// Debug
+// ======================================
+
+console.log(
+'🔥 DETAIL ENDPOINT:',
+endpoint
+)
+
+console.log(
+'🔥 DETAIL RESPONSE:',
+response
+)
+
+// ======================================
+// Normalize
+// ======================================
+
+return normalizeDetail(
+
+
+response
+
+
+)
 }

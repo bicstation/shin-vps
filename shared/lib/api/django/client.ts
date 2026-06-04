@@ -5,25 +5,13 @@
  * =====================================================================
  * 🛰️ SHIN CORE LINX｜Unified Django API Client
  * =====================================================================
- *
- * PURPOSE:
- *   - SSR / Server Component internal routing
- *   - Browser public routing
- *   - Runtime-aware API transport layer
- *   - Unified endpoint construction
- *
- * DESIGN:
- *   Browser:
- *     https://api.domain.com/api
- *
- *   SSR:
- *     http://django-v3:8000/api
- *
- * =====================================================================
  */
 
 import API_CONFIG from '../../config/api';
-import { IS_SERVER } from '../../config/api';
+
+import {
+  IS_SERVER,
+} from '../../config/api';
 
 import {
   getSiteMetadata,
@@ -38,12 +26,6 @@ import {
 export const buildApiRoot = (
   manualHost?: string
 ): string => {
-
-  /**
-   * ===============================================================
-   * Runtime-aware transport authority
-   * ===============================================================
-   */
 
   return API_CONFIG.baseUrl
     .replace(/\/+$/, '');
@@ -63,21 +45,22 @@ export const buildApiUrl = (
   const apiRoot =
     buildApiRoot(manualHost);
 
-  /**
-   * Normalize endpoint
-   */
-
   const cleanEndpoint =
     endpoint
       .replace(/^\/+/, '')
       .replace(/\/+$/, '');
 
-  /**
-   * Build
-   */
-
   return `${apiRoot}/${cleanEndpoint}`;
 };
+
+/**
+ * =====================================================================
+ * 🛡️ Legacy Compatibility Alias
+ * =====================================================================
+ */
+
+export const resolveApiUrl =
+  buildApiUrl;
 
 /**
  * =====================================================================
@@ -98,9 +81,7 @@ export const buildQueryString = (
       if (
 
         value !== undefined &&
-
         value !== null &&
-
         value !== ''
 
       ) {
@@ -154,12 +135,6 @@ export const getDjangoHeaders = (
     'Content-Type': 'application/json',
   };
 
-  /**
-   * ===============================================================
-   * SSR Identity Headers
-   * ===============================================================
-   */
-
   if (IS_SERVER) {
 
     headers['x-site-tag'] =
@@ -176,18 +151,6 @@ export const getDjangoHeaders = (
 
     headers['Host'] =
       meta.django_host;
-
-    console.log(
-
-      `📡 [API-IDENTITY] ` +
-
-      `Tag: ${siteTag} | ` +
-
-      `Prefix: ${meta.site_prefix} | ` +
-
-      `Host: ${meta.django_host}`
-
-    );
   }
 
   return headers;
@@ -207,12 +170,6 @@ export async function handleDjangoResponse<T = any>(
 
 ): Promise<T> {
 
-  /**
-   * ===============================================================
-   * Debug Logging
-   * ===============================================================
-   */
-
   if (IS_SERVER) {
 
     const icon =
@@ -221,21 +178,11 @@ export async function handleDjangoResponse<T = any>(
         : '❌';
 
     console.log(
-
       `${icon} [DJANGO-API]`,
-
       response.status,
-
       url
-
     );
   }
-
-  /**
-   * ===============================================================
-   * Error Handling
-   * ===============================================================
-   */
 
   if (!response.ok) {
 
@@ -243,9 +190,7 @@ export async function handleDjangoResponse<T = any>(
       await response.text();
 
     console.error(
-
       '❌ Django API Error:',
-
       {
         status: response.status,
         url,
@@ -258,12 +203,6 @@ export async function handleDjangoResponse<T = any>(
     );
   }
 
-  /**
-   * ===============================================================
-   * Safe JSON Parse
-   * ===============================================================
-   */
-
   try {
 
     return await response.json();
@@ -271,17 +210,22 @@ export async function handleDjangoResponse<T = any>(
   } catch (error) {
 
     console.error(
-
       '❌ JSON Parse Failed:',
-
-      {
-        url,
-      }
+      { url }
     );
 
     throw error;
   }
 }
+
+/**
+ * =====================================================================
+ * 🛡️ Legacy Compatibility Alias
+ * =====================================================================
+ */
+
+export const handleResponseWithDebug =
+  handleDjangoResponse;
 
 /**
  * =====================================================================
@@ -299,23 +243,11 @@ export async function djangoFetch<T = any>(
 
 ): Promise<T> {
 
-  /**
-   * ===============================================================
-   * URL
-   * ===============================================================
-   */
-
   const url =
     buildApiUrl(
       endpoint,
       manualHost
     );
-
-  /**
-   * ===============================================================
-   * Headers
-   * ===============================================================
-   */
 
   const headers = {
 
@@ -328,12 +260,6 @@ export async function djangoFetch<T = any>(
 
   try {
 
-    /**
-     * ===========================================================
-     * Fetch
-     * ===========================================================
-     */
-
     const response =
       await fetch(url, {
 
@@ -344,12 +270,6 @@ export async function djangoFetch<T = any>(
         cache: 'no-store',
       });
 
-    /**
-     * ===========================================================
-     * Handle Response
-     * ===========================================================
-     */
-
     return await handleDjangoResponse<T>(
       response,
       url
@@ -358,9 +278,7 @@ export async function djangoFetch<T = any>(
   } catch (error: any) {
 
     console.error(
-
       '❌ djangoFetch Failed:',
-
       {
         endpoint,
         url,
@@ -384,6 +302,8 @@ const djangoClient = {
 
   buildApiUrl,
 
+  resolveApiUrl,
+
   buildQueryString,
 
   getCurrentSiteMetadata,
@@ -391,6 +311,8 @@ const djangoClient = {
   getDjangoHeaders,
 
   handleDjangoResponse,
+
+  handleResponseWithDebug,
 
   djangoFetch,
 };

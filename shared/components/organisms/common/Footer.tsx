@@ -1,60 +1,117 @@
 'use client';
 
-export default function Footer() {
-  return (
-    <footer
-      style={{
-        marginTop: '40px',
-        padding: '28px 16px',
-        background: '#020617',
-        color: '#94a3b8',
-        textAlign: 'center',
-        fontSize: '12px',
-        lineHeight: 1.8,
-      }}
-    >
+import styles from './Footer.module.css';
+import { getSiteMetadata } from '@/shared/lib/utils/siteConfig';
 
-      {/* 🛡 信頼ブロック */}
-      <div style={{ marginBottom: '18px' }}>
-        <div style={{ color: '#fff', fontWeight: 'bold', marginBottom: '6px' }}>
-          安心してご利用いただけます
+export default function Footer() {
+
+  const hostname =
+    typeof window !== 'undefined'
+      ? window.location.hostname
+      : '';
+
+  const site = getSiteMetadata(hostname);
+
+  const networkLinks = (() => {
+
+    switch (site.site_tag) {
+
+      case 'tiper':
+        return [
+          { label: '🎬 AVFLASH', href: 'https://avflash.xyz' },
+          { label: '🎬 ビックAV動画', href: 'https://bic-erog.com' },
+          { label: '🖥️ BICSTATION', href: 'https://bicstation.com' },
+          { label: '💰 BIC SAVING', href: 'https://bic-saving.com' },
+        ];
+
+      case 'avflash':
+        return [
+          { label: '❤️ TIPER', href: 'https://tiper.live' },
+          { label: '🎬 ビックAV動画', href: 'https://bic-erog.com' },
+          { label: '🖥️ BICSTATION', href: 'https://bicstation.com' },
+          { label: '💰 BIC SAVING', href: 'https://bic-saving.com' },
+        ];
+
+      case 'bicstation':
+        return [
+          { label: '💰 BIC SAVING', href: 'https://bic-saving.com' },
+          { label: '🎬 SHIN CORE LINX', href: 'https://nabejuku.com' },
+        ];
+
+      case 'saving':
+        return [
+          { label: '🖥️ BICSTATION', href: 'https://bicstation.com' },
+          { label: '🎬 SHIN CORE LINX', href: 'https://nabejuku.com' },
+        ];
+
+      default:
+        return [];
+    }
+  })();
+
+  return (
+
+    <footer className={styles.footer}>
+
+      <div className={styles.footerGrid}>
+
+        {/* SITE */}
+        <div>
+          <h3>SITE</h3>
+
+          <a href="/about">サイトについて</a>
+          <a href="/guide">利用ガイド</a>
         </div>
 
-        <div>✔ 掲載商品はすべて公式ショップ</div>
-        <div>✔ 安全な購入リンクのみ使用</div>
-        <div>✔ 無理な販売は行いません</div>
+        {/* NETWORK */}
+        <div>
+          <h3>SHIN NETWORK</h3>
+
+          {networkLinks.map(link => (
+            <a
+              key={link.label}
+              href={link.href}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {link.label}
+            </a>
+          ))}
+        </div>
+
+        {/* SUPPORT */}
+        <div>
+          <h3>SUPPORT</h3>
+
+          <a href="/privacy-policy">
+            プライバシーポリシー
+          </a>
+
+          <a href="/terms">
+            利用規約
+          </a>
+
+          <a href="/contact">
+            お問い合わせ
+          </a>
+        </div>
+
       </div>
 
-      {/* ⚠ 補足 */}
-      <div style={{ fontSize: '11px', marginBottom: '14px' }}>
-        ※在庫状況や価格は変動する場合があります
+      <div className={styles.brand}>
+
+        <span className={styles.brandStrong}>
+          SHIN CORE LINX
+        </span>
+
+        <span className={styles.brandSub}>
+          Knowledge • Discovery • Growth
+        </span>
+
       </div>
 
-      {/* 🧠 ブランド（ここに入れる） */}
-      <div
-        style={{
-          fontSize: '11px',
-          marginBottom: '14px',
-          color: '#64748b',
-          letterSpacing: '0.05em',
-        }}
-      >
-        Powered by <span style={{ color: '#94a3b8' }}>SHIN CORE LINX</span>
-      </div>
-
-      {/* 🔗 最小リンク */}
-      <div style={{ marginBottom: '16px' }}>
-        <a href="/privacy" style={{ marginRight: '12px', textDecoration: 'underline' }}>
-          プライバシーポリシー
-        </a>
-        <a href="/terms" style={{ textDecoration: 'underline' }}>
-          利用規約
-        </a>
-      </div>
-
-      {/* 🏁 コピーライト */}
-      <div style={{ fontSize: '11px', color: '#64748b' }}>
-        © {new Date().getFullYear()} SHIN CORE LINX
+      <div className={styles.copy}>
+        © {new Date().getFullYear()} SHIN CORE LINX NETWORK
       </div>
 
     </footer>

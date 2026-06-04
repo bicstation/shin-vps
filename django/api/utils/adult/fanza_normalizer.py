@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import json
+import traceback
 import logging
 import re
 from django.utils.dateparse import parse_date
@@ -100,6 +101,7 @@ def normalize_fanza_data(raw_instance: RawApiData) -> Tuple[List[Dict[str, Any]]
             
     except Exception as e:
         logger.error(f"RawApiData ID {raw_instance.id} 解析エラー: {e}")
+        traceback.print_exc()
     return [], []
 
 def _parse_scraping_flow(json_data: dict, source: str) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
@@ -203,9 +205,26 @@ def _parse_api_flow(items: list, raw_json: dict, source: str) -> Tuple[List[Dict
         list_price = _safe_int(prices_node.get('list_price'))
         
         # deliveries（配信形式別価格）がある場合、その中の最小値を採用
-        delivery_prices = [_safe_int(d.get('price')) for d in prices_node.get('deliveries', []) if d.get('price')]
+        # delivery_prices = [_safe_int(d.get('price')) for d in prices_node.get('deliveries', []) if d.get('price')]
+        # if delivery_prices:
+        #     price = min(delivery_prices)
+
+        deliveries_node = prices_node.get('deliveries', {})
+
+        if isinstance(deliveries_node, dict):
+            deliveries = deliveries_node.get('delivery', [])
+        else:
+            deliveries = deliveries_node
+
+        delivery_prices = [
+            _safe_int(d.get('price'))
+            for d in deliveries
+            if isinstance(d, dict) and d.get('price')
+        ]
+
         if delivery_prices:
             price = min(delivery_prices)
+
 
         # 4. キャンペーン
         campaign_node = data.get('campaign', {})

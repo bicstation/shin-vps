@@ -1,407 +1,583 @@
-# SHIN CORE LINX｜PC Semantic Commerce API v1
+# SHIN CORE LINX｜Semantic Runtime API Architecture
 
-Version: `semantic_schema_version = 1`
-Base URL:
+## 概要
 
-```txt
+SHIN CORE LINX は、
+従来の「スペック比較サイト」ではなく、
+
+```text
+Semantic Exploration Platform
+```
+
+を目指す。
+
+つまり：
+
+* 単なる商品データ返却
+* 単なる絞り込み
+* 単なるカテゴリ分類
+
+ではなく、
+
+```text
+「人間の目的・意図・体験」
+```
+
+を backend が意味理解し、
+frontend が cinematic に描画する構造。
+
+---
+
+# アーキテクチャ思想
+
+## Backend
+
+```text
+Semantic Authority
+```
+
+責務：
+
+* 意味推論
+* workflow inference
+* semantic scoring
+* exploration graph
+* semantic grouping
+* discovery runtime
+* adaptive runtime generation
+
+---
+
+## Frontend
+
+```text
+Human Experience Renderer
+```
+
+責務：
+
+* UI描画
+* cinematic motion
+* hover interaction
+* rail continuity
+* adaptive layout
+* visual exploration
+
+---
+
+# Core API Structure
+
+Base Endpoint:
+
+```text
 /api/general/
 ```
 
 ---
 
-# 1. Ranking API
+# 1. Ranking Runtime API
 
 ## Endpoint
 
-```txt
-GET /api/general/pc-products/ranking/
+```text
+/api/general/pc-products/ranking/
 ```
 
 ---
 
-# Query Parameters
+## 役割
 
-| Parameter | Type   | Description |
-| --------- | ------ | ----------- |
-| use       | string | ranking用途   |
-
----
-
-# use Values
-
-| Value    | Description |
-| -------- | ----------- |
-| score    | 総合ランキング     |
-| gaming   | ゲーミング重視     |
-| creator  | クリエイター向け    |
-| business | 法人・事務向け     |
-| ai       | AI/NPU重視    |
-
----
-
-# Example
-
-```txt
-GET /api/general/pc-products/ranking/?use=gaming
+```text
+探索入口（Discovery Entry Point）
 ```
 
+ユーザーが最初に世界へ入る場所。
+
 ---
 
-# Response
+## Backend Responsibility
+
+backend が：
+
+* semantic ranking
+* intent weighting
+* workflow relevance
+* exploration continuity
+
+を判断する。
+
+---
+
+## Frontend Responsibility
+
+frontend は：
+
+* rail rendering
+* hover runtime
+* adaptive cards
+* cinematic layout
+
+のみを担当。
+
+---
+
+## Example Payload
 
 ```json
-[
-  {
-    "unique_id": "2557_xxxxx",
-    "name": "Gaming PC",
-    "price": 198000,
-    "spec_score": 92
-  }
-]
+{
+  "semantic_score": 92,
+  "semantic_labels": [
+    "動画編集",
+    "高冷却",
+    "長期運用向け"
+  ],
+  "workflow_tags": [
+    "creator",
+    "streaming"
+  ],
+  "grouped_attributes": {},
+  "semantic_runtime": {}
+}
 ```
 
 ---
 
-# 2. Product Detail API
+# 2. Product Detail Runtime API
 
 ## Endpoint
 
-```txt
-GET /api/general/pc-products/<unique_id>/
+```text
+/api/general/pc-products/<unique_id>/
 ```
 
 ---
 
-# Example
+## 役割
 
-```txt
-GET /api/general/pc-products/2557_per26020a/
+```text
+Semantic Hub
 ```
 
----
+単なる商品詳細ではなく：
 
-# Response Fields
+```text
+「このPCは何者か」
+```
 
-| Field                   | Description             |
-| ----------------------- | ----------------------- |
-| unique_id               | 商品ユニークID                |
-| name                    | 商品名                     |
-| maker                   | メーカー                    |
-| price                   | 価格                      |
-| image_url               | 商品画像                    |
-| description             | 商品説明                    |
-| cpu_model               | CPU                     |
-| gpu_model               | GPU                     |
-| memory_gb               | メモリ                     |
-| storage_gb              | ストレージ                   |
-| spec_score              | 総合性能                    |
-| radar_chart             | レーダーチャート                |
-| ai_summary              | AI要約                    |
-| attributes              | semantic属性一覧            |
-| grouped_attributes      | semantic分類済み属性          |
-| semantic_schema_version | semantic schema version |
+を返す。
 
 ---
 
-# grouped_attributes
+## Backend Responsibility
 
-## Example
+backend は：
+
+* identity inference
+* workflow suitability
+* strengths / weaknesses
+* semantic relationships
+* adaptive runtime
+
+を返す。
+
+---
+
+## Example Payload
 
 ```json
 {
-  "grouped_attributes": {
-    "device": [],
-    "usage": [],
-    "maker": [],
-    "gpu": [],
-    "cpu": [],
-    "memory": []
-  }
+  "identity": {},
+  "semantic_profile": {},
+  "workflow_fit": {},
+  "strengths": [],
+  "weaknesses": [],
+  "recommended_for": [],
+  "semantic_related": []
 }
 ```
 
 ---
 
-# Semantic Attribute Structure
-
-```json
-{
-  "id": 121,
-  "type": "device",
-  "slug": "device-server",
-  "name": "サーバー",
-  "semantic_role": "highlight",
-  "semantic_weight": 0.98,
-  "icon": "server",
-  "color": "darkred"
-}
-```
-
----
-
-# 3. Related Products API
+# 3. Related Runtime API
 
 ## Endpoint
 
-```txt
-GET /api/general/pc-products/<unique_id>/related/
+```text
+/api/general/pc-products/<unique_id>/related/
 ```
 
 ---
 
-# Example
+## 従来ECとの違い
 
-```txt
-GET /api/general/pc-products/2557_per26020a/related/
+普通のEC：
+
+```text
+同カテゴリ商品
+```
+
+SHIN CORE LINX：
+
+```text
+Semantic Continuation
 ```
 
 ---
 
-# Features
+## Backend Responsibility
 
-* semantic recommendation
-* device-aware recommendation
-* explainable recommendation
-* soft semantic fallback
-* similarity scoring
+backend が返すべきもの：
 
----
-
-# Response Additional Fields
-
-| Field              | Description    |
-| ------------------ | -------------- |
-| similarity_score   | semantic類似度    |
-| matched_attributes | 一致したsemantic属性 |
-
----
-
-# Example
-
-```json
-{
-  "similarity_score": 0.75,
-  "matched_attributes": [
-    "device-server",
-    "usage-business",
-    "maker-dell"
-  ]
-}
+```text
+「次に見るべきPC」
 ```
 
----
-
-# Recommendation Logic
-
-## Main Semantic Factors
-
-| Semantic         | Weight |
-| ---------------- | ------ |
-| device           | 0.25   |
-| usage            | 0.20   |
-| gpu              | 0.20   |
-| price similarity | 0.20   |
-| maker            | 0.10   |
-| spec similarity  | 0.10   |
+。
 
 ---
 
-# 4. Sidebar Stats API
+## Semantic Graph Example
+
+```text
+配信向け
+↓
+動画編集向け
+↓
+AI生成向け
+↓
+3D制作向け
+```
+
+これは：
+
+```text
+Workflow Continuity Graph
+```
+
+。
+
+---
+
+# 4. Semantic Discovery Runtime API
 
 ## Endpoint
 
-```txt
-GET /api/general/pc-sidebar-stats/
+```text
+/api/general/semantic/discovery/
 ```
 
 ---
 
-# Response
+## 役割
+
+```text
+Exploration Runtime
+```
+
+。
+
+frontend の cinematic shelves を backend が意味生成する。
+
+---
+
+## Example Payload
 
 ```json
 {
-  "gpu": [],
-  "maker_counts": []
+  "semantic_runtime": "v1",
+  "semantic_authority": "backend",
+  "semantic_shelves": []
 }
 ```
 
 ---
 
-# GPU Structure
+# 5. Semantic Shelves API
+
+## Endpoint
+
+```text
+/api/general/semantic/shelves/
+```
+
+---
+
+## 役割
+
+```text
+Adaptive Exploration Rails
+```
+
+。
+
+例えば：
+
+* Gaming Shelf
+* Creator Shelf
+* AI Workstation Shelf
+* Portable Work Shelf
+
+などを backend が生成。
+
+---
+
+# 6. Semantic Finder API
+
+## Endpoint
+
+```text
+/api/general/finder/
+```
+
+---
+
+## 役割
+
+```text
+Human Intent Navigation
+```
+
+。
+
+従来の：
+
+```text
+Spec Filtering
+```
+
+ではなく、
+
+```text
+「何をしたいか」
+```
+
+で探索する。
+
+---
+
+## Example Payload
 
 ```json
 {
-  "name": "RTX 4070",
-  "slug": "gpu-rtx-4070",
-  "count": 8
+  "intent": "動画編集したい",
+  "semantic_matches": [],
+  "workflow_matches": [],
+  "confidence": 0.92
 }
 ```
 
 ---
 
-# Maker Structure
+# Semantic Backend Core
 
-```json
-{
-  "name": "DELL",
-  "maker": "DELL",
-  "slug": "maker-dell",
-  "count": 290
-}
+## services/semantic/
+
+backend semantic authority の中核。
+
+---
+
+## extractors.py
+
+役割：
+
+```text
+スペック抽出
 ```
 
----
+。
 
-# 5. Semantic Attribute System
+例：
 
-## Semantic Types
-
-| Type         | Description |
-| ------------ | ----------- |
-| device       | 物理カテゴリ      |
-| product_type | 商品カテゴリ      |
-| usage        | 利用用途        |
-| maker        | メーカー        |
-| gpu          | GPU         |
-| cpu          | CPU         |
-| memory       | メモリ         |
-| storage      | ストレージ       |
-| pc_feature   | 特徴          |
+* CPU
+* GPU
+* Memory
+* Refresh Rate
+* Display Type
 
 ---
 
-# device Examples
+## normalizers.py
 
-| Slug               | Meaning   |
-| ------------------ | --------- |
-| device-laptop      | ノートPC     |
-| device-desktop     | デスクトップ    |
-| device-server      | サーバー      |
-| device-workstation | ワークステーション |
-| device-mini-pc     | ミニPC      |
+役割：
 
----
-
-# usage Examples
-
-| Slug           | Meaning |
-| -------------- | ------- |
-| usage-gaming   | ゲーミング   |
-| usage-business | 法人向け    |
-| usage-creator  | クリエイター  |
-| usage-ai       | AI用途    |
-
----
-
-# 6. Semantic Metadata
-
-## semantic_role
-
-| Value     | Meaning |
-| --------- | ------- |
-| primary   | 主要属性    |
-| secondary | 補助属性    |
-| highlight | 強調属性    |
-
----
-
-# semantic_weight
-
-```txt
-0.0 - 1.0
+```text
+意味の正規化
 ```
 
-semantic importance score.
+。
 
----
+例：
 
-# icon
-
-Frontend semantic icon identifier.
-
----
-
-# color
-
-Frontend semantic color identifier.
-
----
-
-# 7. Semantic Architecture Contract
-
-## Backend Responsibilities
-
-Backend is the semantic authority.
-
-Responsible for:
-
-* semantic extraction
-* grouping
-* ordering
-* metadata
-* recommendation scoring
-* semantic similarity
-* semantic filtering
-
----
-
-# Frontend Responsibilities
-
-Frontend is the semantic rendering layer.
-
-Responsible for:
-
-* UI rendering
-* layout
-* cards
-* filters
-* badges
-* semantic visualization
-
----
-
-# 8. Planned APIs
-
-## Finder API
-
-```txt
-GET /api/general/finder/
+```text
+RTX5070
+↓
+high_gpu
 ```
 
-Example:
-
-```txt
-?usage=usage-gaming
-&gpu=gpu-rtx-4070
-&maker=maker-dell
-```
+。
 
 ---
 
-# Compare API
+## product_classifier.py
 
-```txt
-POST /api/general/pc-products/compare/
+役割：
+
+```text
+製品種別判定
 ```
+
+。
+
+例：
+
+* gaming_pc
+* creator_pc
+* monitor
+* workstation
 
 ---
 
-# Attribute List API
+## workflow_inference.py
 
-```txt
-GET /api/general/pc-attributes/
+役割：
+
+```text
+用途推論
 ```
+
+。
+
+例：
+
+* gaming
+* creator
+* streaming
+* ai_generation
 
 ---
 
-# 9. Semantic Schema Versioning
+## semantic_labels.py
 
-All semantic APIs include:
+役割：
 
-```json
-{
-  "semantic_schema_version": 1
-}
+```text
+人間向け意味ラベル生成
 ```
 
-Used for frontend compatibility management.
+。
+
+例：
+
+* 動画編集向け
+* FPS向け
+* 持ち運び重視
+
+---
+
+## semantic_graph.py
+
+役割：
+
+```text
+意味的関連グラフ
+```
+
+。
+
+単なる類似商品ではなく：
+
+```text
+目的地ベース接続
+```
+
+。
+
+---
+
+## semantic_shelves.py
+
+役割：
+
+```text
+探索レール生成
+```
+
+。
+
+---
+
+## runtime_builder.py
+
+役割：
+
+```text
+semantic runtime persistence
+```
+
+。
+
+DBへ semantic_runtime を構築・保存。
+
+---
+
+## semantic_api_service.py
+
+役割：
+
+```text
+Frontend-ready semantic payload generation
+```
+
+。
+
+frontend 用 payload authority。
+
+---
+
+# Semantic Contract Philosophy
+
+## Backend
+
+```text
+Meaning Authority
+```
+
+。
+
+---
+
+## Frontend
+
+```text
+Rendering Authority
+```
+
+。
+
+---
+
+# SHIN CORE LINX の本質
+
+従来：
+
+```text
+Spec Comparison Site
+```
+
+。
+
+現在：
+
+```text
+Semantic Exploration Platform
+```
+
+。
+
+最終的には：
+
+```text
+Human Intent Operating Layer
+```
+
+を目指す。

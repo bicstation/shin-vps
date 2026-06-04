@@ -1,260 +1,359 @@
-// next-bicstation/app/product/[unique_id]/components/recommendation/ProductSimilarUsage.tsx
+// ============================================================================
+// FILE:
+// /home/maya/shin-vps/next-bicstation/app/product/[unique_id]/components/recommendation/ProductSimilarUsage.tsx
+// ============================================================================
 
-import Link
-  from 'next/link'
+'use client'
+
+/* ============================================================================
+🔥 Styles
+============================================================================ */
 
 import styles
-  from './recommendation.module.css'
+from './recommendation.module.css'
+
+/* ============================================================================
+🔥 Props
+============================================================================ */
 
 type Props = {
-  product: any
+
+product: any
+
+related: any[]
 }
 
-/* =========================================
-🔥 HELPERS
-========================================= */
+/* ============================================================================
+🔥 Helpers
+============================================================================ */
 
-function buildSimilarUsage(
-  product: any
+function buildUsageNarratives(
+product: any,
+related: any[]
 ) {
 
-  const text = JSON.stringify(
-    product
-  ).toLowerCase()
+const usages: string[] = []
 
-  const usages = []
+// ==========================================================================
+// RELATED RUNTIME
+// ==========================================================================
 
-  /* ======================================
-  🎮 gaming
-  ====================================== */
+if (
+Array.isArray(
+related
+)
+) {
 
-  if (
-    text.includes('rtx')
-    || text.includes('gaming')
-  ) {
 
-    usages.push({
-      icon: '🎮',
-      title: 'FPS gaming 向け',
-      description:
-        '高fps gaming を重視した人気構成を比較できます。',
-      href:
-        '/ranking/usage-gaming',
-    })
+related.forEach(
+  (
+    item: any
+  ) => {
+
+    const text =
+      JSON.stringify(item)
+        .toLowerCase()
+
+    // ================================================================
+    // AI
+    // ================================================================
+
+    if (
+      text.includes('ai')
+      || text.includes('llm')
+      || text.includes('stable diffusion')
+    ) {
+
+      usages.push(
+        'AI画像生成・ローカルLLM・生成AI workflow に近い構成です'
+      )
+
+    }
+
+    // ================================================================
+    // VIDEO EDIT
+    // ================================================================
+
+    if (
+      text.includes('premiere')
+      || text.includes('davinci')
+      || text.includes('creator')
+      || text.includes('video')
+    ) {
+
+      usages.push(
+        '動画編集・配信・制作workflowとの相性が高い構成です'
+      )
+
+    }
+
+    // ================================================================
+    // GAMING
+    // ================================================================
+
+    if (
+      text.includes('gaming')
+      || text.includes('rtx')
+      || text.includes('geforce')
+    ) {
+
+      usages.push(
+        '高fps gaming・GPU活用・配信向けworkflowに近い構成です'
+      )
+
+    }
+
+    // ================================================================
+    // BUSINESS
+    // ================================================================
+
+    if (
+      text.includes('business')
+      || text.includes('office')
+    ) {
+
+      usages.push(
+        '日常業務・business workflow に適したsemantic runtimeです'
+      )
+
+    }
+
+    // ================================================================
+    // CREATIVE
+    // ================================================================
+
+    if (
+      text.includes('creator')
+      || text.includes('creative')
+    ) {
+
+      usages.push(
+        'クリエイティブ制作やGPU acceleration用途に近いruntimeです'
+      )
+
+    }
 
   }
+)
 
-  /* ======================================
-  🤖 AI
-  ====================================== */
-
-  if (
-    text.includes('rtx')
-    || text.includes('ai')
-  ) {
-
-    usages.push({
-      icon: '🤖',
-      title: 'AI画像生成向け',
-      description:
-        'Stable DiffusionなどAI生成向けのおすすめ構成を比較できます。',
-      href:
-        '/ranking/usage-ai',
-    })
-
-  }
-
-  /* ======================================
-  🎬 creator
-  ====================================== */
-
-  usages.push({
-    icon: '🎬',
-    title: '動画編集向け',
-    description:
-      'Premiere ProやDaVinci Resolve向け構成を比較できます。',
-    href:
-      '/ranking/usage-creator',
-  })
-
-  /* ======================================
-  💰 cost
-  ====================================== */
-
-  usages.push({
-    icon: '💰',
-    title: 'コスパ重視',
-    description:
-      '価格と性能バランスを重視した人気構成を比較できます。',
-    href:
-      '/ranking/cost-performance',
-  })
-
-  return usages.slice(0, 4)
 
 }
 
-/* =========================================
+// ==========================================================================
+// PRODUCT FALLBACK
+// ==========================================================================
+
+if (
+usages.length === 0
+) {
+
+
+const text =
+  JSON.stringify(product)
+    .toLowerCase()
+
+if (
+  text.includes('ai')
+) {
+
+  usages.push(
+    'AI・生成AI workflow に適したGPU runtime構成です'
+  )
+
+}
+
+if (
+  text.includes('gaming')
+) {
+
+  usages.push(
+    'gaming用途や高fps環境に向いたsemantic runtimeです'
+  )
+
+}
+
+if (
+  text.includes('creator')
+) {
+
+  usages.push(
+    '制作・動画編集workflowとの親和性が高い構成です'
+  )
+
+}
+
+if (
+  text.includes('rtx')
+) {
+
+  usages.push(
+    'RTX GPUを活かした高性能workflowに近い構成です'
+  )
+
+}
+
+
+}
+
+// ==========================================================================
+// FINAL FALLBACK
+// ==========================================================================
+
+if (
+usages.length === 0
+) {
+
+
+usages.push(
+  'workflow・用途・semantic runtime が近いPCです'
+)
+
+
+}
+
+// ==========================================================================
+// UNIQUE
+// ==========================================================================
+
+return Array.from(
+new Set(usages)
+).slice(0, 4)
+
+}
+
+/* ============================================================================
 🔥 COMPONENT
-========================================= */
+============================================================================ */
 
 export default function ProductSimilarUsage({
-  product,
+
+product,
+
+related,
+
 }: Props) {
 
-  const usages =
-    buildSimilarUsage(
-      product
-    )
+// ==========================================================================
+// Runtime Narratives
+// ==========================================================================
 
-  if (
-    !usages.length
-  ) {
-    return null
+const usages =
+
+
+buildUsageNarratives(
+  product,
+  related
+)
+
+
+// ==========================================================================
+// EMPTY
+// ==========================================================================
+
+if (
+usages.length === 0
+) {
+
+
+return null
+
+
+}
+
+// ==========================================================================
+// RENDER
+// ==========================================================================
+
+return (
+
+
+<section
+  className={
+    styles.similarUsageSection
   }
+>
 
-  return (
+  {/* ================================================================
+  HEADER
+  ================================================================ */}
 
-    <section
+  <div
+    className={
+      styles.similarUsageHeader
+    }
+  >
+
+    <div
       className={
-        styles.similarUsageSection
+        styles.similarUsageLabel
       }
     >
 
-      {/* ==================================
-      HEADER
-      ================================== */}
+      SIMILAR WORKFLOW
 
-      <div
-        className={
-          styles.similarUsageHeader
-        }
-      >
+    </div>
 
-        <div
-          className={
-            styles.similarUsageLabel
-          }
-        >
-          SIMILAR USAGE
-        </div>
+    <h2
+      className={
+        styles.similarUsageTitle
+      }
+    >
 
-        <h2
-          className={
-            styles.similarUsageTitle
-          }
-        >
-          似た用途の構成を比較する
-        </h2>
+      近いworkflow・用途
 
-        <p
-          className={
-            styles.similarUsageDescription
-          }
-        >
-          同じ用途でも、
-          他の方向性や性能バランスを
-          比較できます。
-        </p>
+    </h2>
 
-      </div>
+    <p
+      className={
+        styles.similarUsageDescription
+      }
+    >
 
-      {/* ==================================
-      GRID
-      ================================== */}
+      semantic runtime・GPU構成・
+      workflow分析をもとに、
+      近い用途を持つ構成を整理しています。
 
-      <div
-        className={
-          styles.similarUsageGrid
-        }
-      >
+    </p>
 
-        {usages.map(
-          (usage) => (
+  </div>
 
-            <Link
-              key={
-                usage.title
-              }
+  {/* ================================================================
+  GRID
+  ================================================================ */}
 
-              href={
-                usage.href
-              }
+  <div
+    className={
+      styles.similarUsageGrid
+    }
+  >
 
-              className={
-                styles.similarUsageCard
-              }
-            >
+    {
+      usages.map(
+        (
+          usage,
+          index
+        ) => (
 
-              {/* ==========================
-              ICON
-              ========================== */}
+          <div
+            key={index}
 
-              <div
-                className={
-                  styles.similarUsageIcon
-                }
-              >
-                {usage.icon}
-              </div>
+            className={
+              styles.similarUsageCard
+            }
+          >
 
-              {/* ==========================
-              CONTENT
-              ========================== */}
+            {usage}
 
-              <div
-                className={
-                  styles.similarUsageContent
-                }
-              >
+          </div>
 
-                <div
-                  className={
-                    styles.similarUsageCardTitle
-                  }
-                >
-                  {usage.title}
-                </div>
+        )
+      )
+    }
 
-                <p
-                  className={
-                    styles.similarUsageCardDescription
-                  }
-                >
-                  {usage.description}
-                </p>
+  </div>
 
-              </div>
+</section>
 
-            </Link>
 
-          )
-        )}
-
-      </div>
-
-      {/* ==================================
-      FOOTER
-      ================================== */}
-
-      <div
-        className={
-          styles.similarUsageFooter
-        }
-      >
-
-        <div
-          className={
-            styles.similarUsageFooterText
-          }
-        >
-          ✔ 同じ用途でも、
-          性能バランスの違いを比較できます。
-        </div>
-
-      </div>
-
-    </section>
-
-  )
+)
 }

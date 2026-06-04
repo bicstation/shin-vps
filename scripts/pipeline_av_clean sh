@@ -1,0 +1,343 @@
+# ==========================================================
+# FILE:
+# /home/maya/shin-vps/scripts/pipeline_av_clean.sh
+# ==========================================================
+
+#!/bin/bash
+
+set -e
+
+
+
+# ==========================================================
+# PATH
+# ==========================================================
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+cd "$PROJECT_ROOT"
+
+
+export PATH=/usr/local/bin:/usr/bin:/bin
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+# ==========================================================
+# Runtime Config
+# ==========================================================
+
+source "$PROJECT_ROOT/.env.pc"
+
+# ==========================================================
+# Runtime Environment
+# ==========================================================
+
+RUNTIME="local"
+
+for ARG in "$@"
+do
+
+  case "$ARG" in
+
+    # ------------------------------------------------------
+    # Local
+    # ------------------------------------------------------
+
+    --local)
+
+      RUNTIME="local"
+      ;;
+
+    # ------------------------------------------------------
+    # Staging
+    # ------------------------------------------------------
+
+    --stg)
+
+      RUNTIME="stg"
+      ;;
+
+    # ------------------------------------------------------
+    # Production
+    # ------------------------------------------------------
+
+    --prod)
+
+      RUNTIME="prod"
+      ;;
+
+    # ------------------------------------------------------
+    # Unknown
+    # ------------------------------------------------------
+
+    *)
+
+      echo "❌ Unknown argument: $ARG"
+
+      echo ""
+      echo "Usage:"
+      echo "  ./pipeline_av_clean.sh --local"
+      echo "  ./pipeline_av_clean.sh --stg"
+      echo "  ./pipeline_av_clean.sh --prod"
+
+      exit 1
+      ;;
+  esac
+
+done
+
+# ==========================================================
+# Environment Mapping
+# ==========================================================
+
+if [ "$RUNTIME" = "local" ]; then
+
+  ENV_FILE=".env.local"
+  COMPOSE_OVERRIDE="docker-compose.local.yml"
+  PROJECT_NAME="shin-local"
+
+elif [ "$RUNTIME" = "stg" ]; then
+
+  ENV_FILE=".env.stg"
+  COMPOSE_OVERRIDE="docker-compose.stg.yml"
+  PROJECT_NAME="shin-stg"
+
+elif [ "$RUNTIME" = "prod" ]; then
+
+  ENV_FILE=".env.production"
+  COMPOSE_OVERRIDE="docker-compose.prod.yml"
+  PROJECT_NAME="shin-prod"
+
+else
+
+  echo "❌ Unknown runtime: $RUNTIME"
+
+  exit 1
+fi
+
+# ==========================================================
+# Runtime Info
+# ==========================================================
+
+echo ""
+echo "=========================================================="
+echo "🌌 SHIN CORE LINX RUNTIME"
+echo "=========================================================="
+echo "RUNTIME: $RUNTIME"
+echo "ENV FILE: $ENV_FILE"
+echo "COMPOSE: $COMPOSE_OVERRIDE"
+echo "=========================================================="
+
+# ==========================================================
+# LOGGER
+# ==========================================================
+
+log() {
+echo ""
+echo "=========================================================="
+echo "$1"
+echo "=========================================================="
+}
+
+# ==========================================================
+# Compose Authority
+# ==========================================================
+COMPOSE_ARGS=(
+    -f "$PROJECT_ROOT/docker-compose.yml"
+    -f "$PROJECT_ROOT/$COMPOSE_OVERRIDE"
+)
+
+compose_exec() {
+    docker compose "${COMPOSE_ARGS[@]}" "$@"
+}
+
+run_django() {
+    compose_exec \
+        -p "$PROJECT_NAME" \
+        exec \
+        -T \
+        "$DJANGO_SERVICE" \
+        python3 manage.py "$@"
+}
+
+# ==========================================================
+# START
+# ==========================================================
+
+log "AVFLASH CLEAN PIPELINE START"
+
+# ==========================================================
+# STEP 01
+# DUGA RAW IMPORT
+# ==========================================================
+
+log "STEP 01 : IMPORT DUGA"
+run_django import_t_duga || true
+
+# ==========================================================
+# STEP 02
+# FANZA RAW IMPORT
+# ==========================================================
+
+log "STEP 02 : IMPORT FANZA"
+run_django import_t_fanza || true
+
+# ==========================================================
+# STEP 03
+# NORMALIZE
+# ==========================================================
+
+log "STEP 03 : NORMALIZE"
+
+run_django normalize_duga || true
+run_django normalize_fanza || true
+
+# ==========================================================
+# STEP 04
+# GENRE SYNC
+# ==========================================================
+
+log "STEP 04 : GENRE SYNC"
+
+run_django sync_adult_genres || true
+
+# ==========================================================
+# STEP 05
+# MAKER SYNC
+# ==========================================================
+
+log "STEP 05 : MAKER SYNC"
+
+run_django sync_adult_makers || true
+
+# ==========================================================
+# STEP 06
+# SERIES SYNC
+# ==========================================================
+
+log "STEP 06 : SERIES SYNC"
+
+run_django sync_adult_series || true
+
+# ==========================================================
+# STEP 07
+# ACTRESS SYNC
+# ==========================================================
+
+log "STEP 07 : ACTRESS SYNC"
+
+run_django sync_adult_actresses || true
+
+# ==========================================================
+# STEP 08
+# ATTRIBUTE RUNTIME
+# ==========================================================
+
+log "STEP 08 : ATTRIBUTE RUNTIME"
+
+echo "[SKIP]"
+echo "auto_map_adult_attributes"
+
+# run_django auto_map_adult_attributes
+
+# ==========================================================
+# STEP 09
+# GROUP RUNTIME
+# ==========================================================
+
+log "STEP 09 : GROUP RUNTIME"
+
+echo "[SKIP]"
+echo "compile_adult_groups"
+
+# run_django compile_adult_groups
+
+# ==========================================================
+# STEP 10
+# SEMANTIC RUNTIME
+# ==========================================================
+
+log "STEP 10 : SEMANTIC RUNTIME"
+
+echo "[SKIP]"
+echo "build_adult_runtime"
+
+# run_django build_adult_runtime
+
+# ==========================================================
+# STEP 11
+# RANKING RUNTIME
+# ==========================================================
+
+log "STEP 11 : RANKING RUNTIME"
+
+echo "[SKIP]"
+echo "update_adult_scores"
+
+# run_django update_adult_scores
+
+# ==========================================================
+# STEP 12
+# API HEALTH CHECK
+# ==========================================================
+
+log "STEP 12 : API HEALTH CHECK"
+
+echo ""
+echo "UNIFIED PRODUCTS"
+curl -s \
+http://localhost:8083/api/adult/unified-products/ \
+| head -c 500
+
+echo ""
+echo ""
+
+echo "RANKING"
+curl -s \
+http://localhost:8083/api/adult/ranking/ \
+| head -c 500
+
+echo ""
+echo ""
+
+echo "SIDEBAR STATS"
+curl -s \
+http://localhost:8083/api/adult/sidebar-stats/ \
+| head -c 500
+
+echo ""
+echo ""
+
+# ==========================================================
+# STEP 13
+# VALIDATION
+# ==========================================================
+
+log "STEP 13 : VALIDATION"
+
+run_django shell -c "
+
+from api.models import AdultProduct
+
+print()
+print('PRODUCTS')
+print(
+AdultProduct.objects.count()
+)
+
+print()
+print('HAS ATTRIBUTES')
+print(
+AdultProduct.objects.filter(
+has_attributes=True
+).count()
+)
+
+"
+
+# ==========================================================
+# COMPLETE
+# ==========================================================
+
+log "AVFLASH CLEAN PIPELINE COMPLETE"

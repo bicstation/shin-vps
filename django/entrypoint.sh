@@ -1,34 +1,55 @@
-#!/bin/bash
-# entrypoint.sh
+#!/bin/sh
 
-# -------------------------------------------------------------
-# 🎯 引数がある場合はそれを実行（デバッグ用 /bin/sh 等のため）
+# =====================================================================
+# 🚀 SHIN CORE LINX｜Django Entrypoint
+# Unified Runtime Edition
+# =====================================================================
+
+set -e
+
+# =====================================================================
+# Debug Mode
+# allow: /bin/sh etc
+# =====================================================================
 if [ $# -gt 0 ] && [ "$1" != "gunicorn" ]; then
     exec "$@"
 fi
-# -------------------------------------------------------------
 
-# 環境変数からホスト名とポートを取得
-DB_HOST=${DB_HOST:-postgres_db_v2}
+# =====================================================================
+# Database Environment
+# =====================================================================
+DB_HOST=${DB_HOST:-postgres-db-v3}
 DB_PORT=${DB_PORT:-5432}
 
-# データベースが利用可能になるまで待機
-echo "Waiting for PostgreSQL at $DB_HOST:$DB_PORT ..."
+# =====================================================================
+# Wait For PostgreSQL
+# =====================================================================
+echo "⏳ Waiting for PostgreSQL at ${DB_HOST}:${DB_PORT}..."
 
-while ! nc -z -w 1 "$DB_HOST" "$DB_PORT"; do 
-    sleep 0.1
+while ! nc -z -w 1 "$DB_HOST" "$DB_PORT"; do
+    sleep 1
 done
 
-echo "PostgreSQL started."
+echo "✅ PostgreSQL started."
 
-# --- 🎯 マイグレーション実行 (新テーブル作成のために復活させます)
-echo "Running migrations..."
+# =====================================================================
+# Django Runtime
+# =====================================================================
+echo "🚀 Running migrations..."
 python manage.py migrate --noinput
 
-# --- 🎯 静的ファイル収集
-echo "Collecting static files..."
+# =====================================================================
+# Static Files
+# =====================================================================
+echo "📦 Collecting static files..."
 python manage.py collectstatic --noinput
 
-# 4. Gunicornの起動
-echo "Starting Gunicorn server..."
-exec gunicorn tiper_api.wsgi:application --bind 0.0.0.0:8000
+# =====================================================================
+# Gunicorn Start
+# =====================================================================
+echo "🔥 Starting Gunicorn..."
+
+exec gunicorn tiper_api.wsgi:application \
+    --bind 0.0.0.0:8000 \
+    --workers 3 \
+    --timeout 120

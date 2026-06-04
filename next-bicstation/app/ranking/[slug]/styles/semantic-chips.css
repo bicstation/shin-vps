@@ -1,0 +1,139 @@
+/* ============================================================================ */
+/* FILE: */
+/* /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/[slug]/styles/semantic-chips.css */
+/* ============================================================================ */
+
+/*
+===============================================================================
+🔥 SHIN CORE LINX
+Semantic Chips Runtime
+===============================================================================
+*/
+
+/* ========================================================================= */
+/* CHIP CONTAINER */
+/* ========================================================================= */
+
+.semanticChips {
+
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 10px;
+}
+
+/* ========================================================================= */
+/* CHIP */
+/* ========================================================================= */
+
+.semanticChip {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  min-height: 36px;
+
+  padding:
+    0 14px;
+
+  border-radius: 999px;
+
+  border:
+    1px solid var(--runtime-border);
+
+  background:
+    rgba(255,255,255,.05);
+
+  backdrop-filter: blur(16px);
+
+  transition:
+    transform .3s ease,
+    border-color .3s ease,
+    background .3s ease,
+    box-shadow .3s ease;
+}
+
+.semanticChip:hover {
+
+  transform:
+    translateY(-2px);
+
+  border-color:
+    var(--runtime-accent);
+
+  background:
+    rgba(255,255,255,.08);
+
+  box-shadow:
+    0 0 30px var(--runtime-glow);
+}
+
+/* ========================================================================= */
+/* ICON */
+/* ========================================================================= */
+
+.semanticChipIcon {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  width: 20px;
+  height: 20px;
+
+  border-radius: 999px;
+
+  color: var(--runtime-accent);
+
+  font-size: 12px;
+
+  line-height: 1;
+}
+
+/* ========================================================================= */
+/* LABEL */
+/* ========================================================================= */
+
+.semanticChipLabel {
+
+  color: white;
+
+  font-size: 12px;
+
+  font-weight: 600;
+
+  line-height: 1;
+
+  letter-spacing: .02em;
+}
+
+/* ========================================================================= */
+/* RESPONSIVE */
+/* ========================================================================= */
+
+@media (max-width: 768px) {
+
+  .semanticChips {
+
+    gap: 8px;
+  }
+
+  .semanticChip {
+
+    min-height: 32px;
+
+    padding:
+      0 12px;
+  }
+
+  .semanticChipLabel {
+
+    font-size: 11px;
+  }
+}

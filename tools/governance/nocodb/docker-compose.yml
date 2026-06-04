@@ -1,0 +1,27 @@
+services:
+
+  nocodb:
+    image: nocodb/nocodb:latest
+
+    container_name: shin-governance-nocodb
+
+    ports:
+      - "8585:8080"
+
+    volumes:
+      - ./data:/usr/app/data
+
+    environment:
+      NC_DB: "pg://shin-local-postgres-db-v3-1:5432?u=tiper_user&p=1492nabe&d=shin_governance"
+
+      NC_ALLOW_LOCAL_HOOKS: "true"
+      NC_ALLOW_LOCAL_CONNECTIONS: "true"
+
+    networks:
+      - shin-local_internal-net
+
+    restart: unless-stopped
+
+networks:
+  shin-local_internal-net:
+    external: true

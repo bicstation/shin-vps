@@ -1,291 +1,379 @@
-// /home/maya/shin-dev/shin-vps/next-bicstation/app/product/[unique_id]/page.tsx
+// ============================================================================
+// FILE:
+// /home/maya/shin-vps/next-bicstation/app/product/[unique_id]/page.tsx
+// ============================================================================
 
-/* eslint-disable @next/next/no-img-element */
-
-import styles
-  from './page.module.css'
-
-/* =========================================
-🔥 Navigation
-========================================= */
-
-import {
-  notFound,
-} from 'next/navigation'
-
-/* =========================================
+/* ============================================================================
 🔥 API
-========================================= */
+============================================================================ */
 
 import {
 
-  fetchPCDetail,
+fetchPCDetail,
 
-  fetchRelatedPC,
+} from '@/shared/lib/api/django/pc/detail/detail'
 
-  fetchSidebar,
+import {
 
-} from '@/shared/lib/api/django/pc'
+fetchRelatedPC,
 
-/* =========================================
-🔥 HERO
-========================================= */
+} from '@/shared/lib/api/django/pc/related/related'
+
+/* ============================================================================
+🔥 Next
+============================================================================ */
+
+import type {
+Metadata,
+} from 'next'
+
+/* ============================================================================
+🔥 Sections
+============================================================================ */
 
 import ProductHeroSection
-  from './section/ProductHeroSection'
-
-/* =========================================
-🔥 CAPABILITY
-========================================= */
-
-import ProductCapabilitySection
-  from './section/ProductCapabilitySection'
-
-/* =========================================
-🔥 TRUST
-========================================= */
-
-import ProductTrustLayer
-  from './section/ProductTrustSection'
-
-/* =========================================
-🔥 SEMANTIC
-========================================= */
+from './section/ProductHeroSection'
 
 import ProductSemanticSection
-  from './section/ProductSemanticSection'
-
-/* =========================================
-🔥 SPEC
-========================================= */
+from './section/ProductSemanticSection'
 
 import ProductSpecSection
-  from './section/ProductSpecSection'
-
-/* =========================================
-🔥 COMPARISON
-========================================= */
+from './section/ProductSpecSection'
 
 import ProductComparisonSection
-  from './section/ProductComparisonSection'
-
-/* =========================================
-🔥 FAQ
-========================================= */
-
-import ProductFaq
-  from './components/faq/ProductFaq'
-
-/* =========================================
-🔥 RECOMMENDATION
-========================================= */
+from './section/ProductComparisonSection'
 
 import ProductRelatedSection
-  from './section/ProductRelatedSection'
-
-/* =========================================
-🔥 CTA
-========================================= */
+from './section/ProductRelatedSection'
 
 import ProductCTASection
-  from './section/ProductCTASection'
+from './section/ProductCTASection'
 
-/* =========================================
-🔥 EMPTY
-========================================= */
+/* ============================================================================
+🔥 Common
+============================================================================ */
 
-import ProductEmpty
-  from './states/ProductEmptyState'
+import ProductBreadcrumb
+from './components/common/ProductBreadcrumb'
 
-/* =========================================
-🔥 ISR
-========================================= */
+/* ============================================================================
+🔥 FAQ
+============================================================================ */
 
-export const revalidate = 60
+import ProductFaq
+from './components/faq/ProductFaq'
 
-/* =========================================
-🔥 TYPES
-========================================= */
+/* ============================================================================
+🔥 States
+============================================================================ */
+
+import ProductEmptyState
+from './states/ProductEmptyState'
+
+/* ============================================================================
+🔥 Props
+============================================================================ */
 
 type Props = {
 
-  params: {
-    unique_id: string
-  }
+params: {
+
+
+unique_id: string
+
+
+}
 }
 
-/* =========================================
-🔥 PAGE
-========================================= */
+/* ============================================================================
+🔥 Metadata
+============================================================================ */
 
-export default async function
-ProductPage({
+export async function generateMetadata({
+params,
+}: Props): Promise<Metadata> {
 
-  params,
+// ==========================================================================
+// Unique ID
+// ==========================================================================
 
+const uniqueId =
+params.unique_id
+
+// ==========================================================================
+// Product
+// ==========================================================================
+
+const product =
+await fetchPCDetail(
+uniqueId
+)
+
+// ==========================================================================
+// Empty
+// ==========================================================================
+
+if (!product) {
+
+
+return {
+
+  title:
+    'PCが見つかりません',
+
+  description:
+    'SHIN CORE LINX',
+}
+
+
+}
+
+// ==========================================================================
+// SEO
+// ==========================================================================
+
+const title =
+
+
+`${product.name} | SHIN CORE LINX`
+
+
+const description =
+
+
+product.ai_summary
+|| `${product.name} の詳細スペック・用途・関連PCを掲載しています。`
+
+
+// ==========================================================================
+// Return
+// ==========================================================================
+
+return {
+
+
+title,
+
+description,
+
+openGraph: {
+
+  title,
+
+  description,
+
+  images: product.image_url
+    ? [
+        {
+          url:
+            product.image_url,
+        },
+      ]
+    : [],
+},
+
+
+}
+}
+
+/* ============================================================================
+🔥 Product Page
+============================================================================ */
+
+export default async function ProductPage({
+params,
 }: Props) {
 
-  // ======================================
-  // Params
-  // ======================================
+// ==========================================================================
+// Unique ID
+// ==========================================================================
 
-  const {
-    unique_id,
-  } = params
+const uniqueId =
+params.unique_id
 
-  // ======================================
-  // Fetch
-  // ======================================
+// ==========================================================================
+// Product Runtime
+// ==========================================================================
 
-  const [
+const product =
+await fetchPCDetail(
+uniqueId
+)
 
-    product,
+// ==========================================================================
+// Related Runtime
+// ==========================================================================
 
-    relatedProducts,
+const related =
+await fetchRelatedPC(
+uniqueId
+)
 
-    sidebar,
+// ==========================================================================
+// Empty
+// ==========================================================================
 
-  ] = await Promise.all([
-
-    fetchPCDetail(
-      unique_id
-    ),
-
-    fetchRelatedPC(
-      unique_id
-    ),
-
-    fetchSidebar(),
-  ])
-
-  // ======================================
-  // Empty
-  // ======================================
-
-  if (!product) {
-
-    return (
-      <ProductEmpty />
-    )
-  }
-
-console.log({
-
-  ProductHeroSection,
-
-  ProductCapabilitySection,
-
-  ProductTrustLayer,
-
-  ProductSemanticSection,
-
-  ProductSpecSection,
-
-  ProductComparisonSection,
-
-  ProductRelatedSection,
-
-  ProductFaq,
-
-  ProductCTASection,
-
-})
+if (!product) {
 
 
+return (
+
+  <ProductEmptyState />
+
+)
 
 
-  // ======================================
-  // Page
-  // ======================================
+}
 
-  return (
+// ==========================================================================
+// JSON-LD
+// ==========================================================================
 
-    <main
-      className={
-        styles.mainWrapper
-      }
-    >
+const productSchema = {
 
-      {/* ==================================
-      HERO
-      ================================== */}
 
-      <ProductHeroSection
-        product={product}
-      />
+'@context':
+  'https://schema.org',
 
-      {/* ==================================
-      CAPABILITY
-      ================================== */}
+'@type':
+  'Product',
 
-      <ProductCapabilitySection
-        product={product}
-      />
+name:
+  product.name,
 
-      {/* ==================================
-      TRUST
-      ================================== */}
+image:
+  product.image_url,
 
-      <ProductTrustLayer
-        product={product}
-      />
+description:
+  product.ai_summary,
 
-      {/* ==================================
-      SEMANTIC
-      ================================== */}
+brand: {
 
-      <ProductSemanticSection
-        product={product}
-      />
+  '@type':
+    'Brand',
 
-      {/* ==================================
-      SPEC
-      ================================== */}
+  name:
+    product.maker_name
+    || product.maker,
+},
 
-      <ProductSpecSection
-        product={product}
-      />
+offers: {
 
-      {/* ==================================
-      COMPARISON
-      ================================== */}
+  '@type':
+    'Offer',
 
-      <ProductComparisonSection
-        product={product}
+  price:
+    product.price,
 
-        sidebar={sidebar}
-      />
+  priceCurrency:
+    'JPY',
 
-      {/* ==================================
-      RELATED
-      ================================== */}
+  availability:
+    'https://schema.org/InStock',
+},
 
-      <ProductRelatedSection
 
-        product={product}
+}
 
-        products={
-          relatedProducts
-        }
-      />
+/* ==========================================================================
+🔥 Render
+========================================================================== */
 
-      {/* ==================================
-      FAQ
-      ================================== */}
+return (
 
-      <ProductFaq
-        product={product}
-      />
 
-      {/* ==================================
-      CTA
-      ================================== */}
+<>
 
-      <ProductCTASection
-        product={product}
-      />
+  {/* ================================================================
+  JSON-LD
+  ================================================================ */}
 
-    </main>
+  <script
+    type="application/ld+json"
 
-  )
+    dangerouslySetInnerHTML={{
+      __html:
+        JSON.stringify(
+          productSchema
+        ),
+    }}
+  />
+
+  {/* ================================================================
+  MAIN
+  ================================================================ */}
+
+  <main>
+
+    {/* ============================================================
+    BREADCRUMB
+    ============================================================ */}
+
+    <ProductBreadcrumb
+      product={product}
+    />
+
+    {/* ============================================================
+    HERO
+    ============================================================ */}
+
+    <ProductHeroSection
+      product={product}
+    />
+
+    {/* ============================================================
+    SEMANTIC
+    ============================================================ */}
+
+    <ProductSemanticSection
+      product={product}
+    />
+
+    {/* ============================================================
+    SPEC
+    ============================================================ */}
+
+    <ProductSpecSection
+      product={product}
+    />
+
+    {/* ============================================================
+    COMPARISON
+    ============================================================ */}
+
+    <ProductComparisonSection
+      product={product}
+    />
+
+    {/* ============================================================
+    RELATED
+    ============================================================ */}
+
+    <ProductRelatedSection
+      product={product}
+      related={related}
+    />
+
+    {/* ============================================================
+    FAQ
+    ============================================================ */}
+
+    <ProductFaq
+      product={product}
+    />
+
+    {/* ============================================================
+    CTA
+    ============================================================ */}
+
+    <ProductCTASection
+      product={product}
+    />
+
+  </main>
+
+</>
+
+
+)
 }

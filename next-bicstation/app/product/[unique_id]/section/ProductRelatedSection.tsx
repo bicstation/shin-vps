@@ -1,20 +1,23 @@
+// ============================================================================
+// FILE:
 // /home/maya/shin-vps/next-bicstation/app/product/[unique_id]/sections/ProductRelatedSection.tsx
+// ============================================================================
 
 /* =========================================
 🔥 Components
 ========================================= */
 
 import ProductRelated
-  from '../components/recommendation/ProductRelated'
+from '../components/recommendation/ProductRelated'
 
 import ProductSimilarUsage
-  from '../components/recommendation/ProductSimilarUsage'
+from '../components/recommendation/ProductSimilarUsage'
 
 import ProductNextIntent
-  from '../components/recommendation/ProductNextIntent'
+from '../components/recommendation/ProductNextIntent'
 
 import RelatedProducts
-  from '../components/recommendation/RelatedProducts'
+from '../components/recommendation/RelatedProducts'
 
 /* =========================================
 🔥 Props
@@ -22,7 +25,9 @@ import RelatedProducts
 
 type Props = {
 
-  product: any
+product: any
+
+related: any[]
 }
 
 /* =========================================
@@ -31,60 +36,71 @@ type Props = {
 
 export default function
 ProductRelatedSection({
-  product,
+
+product,
+
+related,
+
 }: Props) {
 
-  // ======================================
-  // Empty Guard
-  // ======================================
+// ======================================
+// Empty Guard
+// ======================================
 
-  if (!product) {
+if (!product) {
 
-    return null
 
-  }
+return null
 
-  // ======================================
-  // Render
-  // ======================================
 
-  return (
+}
 
-    <section>
+// ======================================
+// Render
+// ======================================
 
-      {/* ============================= */}
-      {/* Related */}
-      {/* ============================= */}
+return (
 
-      <ProductRelated
-        product={product}
-      />
 
-      {/* ============================= */}
-      {/* Similar Usage */}
-      {/* ============================= */}
+<section>
 
-      <ProductSimilarUsage
-        product={product}
-      />
+  {/* ============================= */}
+  {/* Related Narrative */}
+  {/* ============================= */}
 
-      {/* ============================= */}
-      {/* Next Intent */}
-      {/* ============================= */}
+  <ProductRelated
+    product={product}
+    related={related}
+  />
 
-      <ProductNextIntent
-        product={product}
-      />
+  {/* ============================= */}
+  {/* Similar Workflow */}
+  {/* ============================= */}
 
-      {/* ============================= */}
-      {/* Related Products */}
-      {/* ============================= */}
+  <ProductSimilarUsage
+    product={product}
+    related={related}
+  />
 
-      <RelatedProducts
-        product={product}
-      />
+  {/* ============================= */}
+  {/* Next Intent */}
+  {/* ============================= */}
 
-    </section>
+  <ProductNextIntent
+    product={product}
+    related={related}
+  />
 
-  )
+  {/* ============================= */}
+  {/* Exploration Slider */}
+  {/* ============================= */}
+
+  <RelatedProducts
+    related={related}
+  />
+
+</section>
+
+
+)
 }

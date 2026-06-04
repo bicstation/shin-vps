@@ -1,0 +1,454 @@
+/* =========================================================
+🔥 COMMON
+Semantic Primitive Layer
+========================================================= */
+
+/* =========================================================
+🔥 EMPTY
+========================================================= */
+
+.empty {
+  min-height: 60vh;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+}
+
+.emptyCard {
+  width: 100%;
+  max-width: 420px;
+
+  padding:
+    32px;
+
+  border-radius:
+    24px;
+
+  background:
+    rgba(255,255,255,.03);
+
+  border:
+    1px solid rgba(255,255,255,.06);
+
+  backdrop-filter:
+    blur(14px);
+
+  text-align:
+    center;
+}
+
+.emptyTitle {
+  color:
+    #ffffff;
+
+  font-size:
+    22px;
+
+  font-weight:
+    900;
+
+  margin-bottom:
+    12px;
+}
+
+.emptyText {
+  color:
+    rgba(148,163,184,.92);
+
+  font-size:
+    14px;
+
+  line-height:
+    1.8;
+}
+
+/* =========================================================
+🔥 SECTION HEADER
+========================================================= */
+
+.sectionHeader {
+  text-align:
+    center;
+
+  margin-bottom:
+    36px;
+}
+
+/* =========================================================
+🔥 SECTION LABEL
+========================================================= */
+
+.sectionLabel {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  padding:
+    7px 14px;
+
+  border-radius:
+    999px;
+
+  background:
+    rgba(249,115,22,.10);
+
+  border:
+    1px solid rgba(249,115,22,.20);
+
+  color:
+    #fdba74;
+
+  font-size:
+    11px;
+
+  font-weight:
+    800;
+
+  letter-spacing:
+    .12em;
+
+  text-transform:
+    uppercase;
+
+  margin-bottom:
+    18px;
+}
+
+/* =========================================================
+🔥 SECTION TITLE
+========================================================= */
+
+.sectionTitle {
+  color:
+    #ffffff;
+
+  font-size:
+    clamp(2rem, 4vw, 3rem);
+
+  line-height:
+    1.12;
+
+  font-weight:
+    900;
+
+  letter-spacing:
+    -.03em;
+
+  margin-bottom:
+    18px;
+}
+
+/* =========================================================
+🔥 SECTION DESCRIPTION
+========================================================= */
+
+.sectionDescription {
+  max-width:
+    720px;
+
+  margin:
+    0 auto;
+
+  color:
+    rgba(148,163,184,.92);
+
+  font-size:
+    15px;
+
+  line-height:
+    1.9;
+}
+
+/* =========================================================
+🔥 SEMANTIC CARD
+========================================================= */
+
+.semanticCard,
+.semanticCardStrong {
+  position: relative;
+
+  display: flex;
+
+  flex-direction: column;
+
+  justify-content: space-between;
+
+  min-height:
+    220px;
+
+  overflow: hidden;
+
+  padding:
+    24px;
+
+  border-radius:
+    26px;
+
+  text-decoration:
+    none;
+
+  backdrop-filter:
+    blur(14px);
+
+  transition:
+    transform .22s ease,
+    border-color .22s ease,
+    background .22s ease,
+    box-shadow .22s ease;
+}
+
+/* =========================================================
+🔥 NORMAL CARD
+========================================================= */
+
+.semanticCard {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(20,24,34,.92),
+      rgba(12,14,22,.98)
+    );
+
+  border:
+    1px solid rgba(255,255,255,.08);
+}
+
+.semanticCard:hover {
+  transform:
+    translateY(-4px);
+
+  border-color:
+    rgba(255,255,255,.14);
+
+  box-shadow:
+    0 18px 48px rgba(0,0,0,.34);
+}
+
+/* =========================================================
+🔥 STRONG CARD
+========================================================= */
+
+.semanticCardStrong {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(249,115,22,.18),
+      rgba(20,24,34,.96)
+    );
+
+  border:
+    1px solid rgba(249,115,22,.24);
+
+  box-shadow:
+    0 14px 42px rgba(249,115,22,.12);
+}
+
+.semanticCardStrong:hover {
+  transform:
+    translateY(-5px);
+
+  border-color:
+    rgba(249,115,22,.34);
+
+  box-shadow:
+    0 20px 52px rgba(249,115,22,.18);
+}
+
+/* =========================================================
+🔥 CARD TOP
+========================================================= */
+
+.cardTop {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom:
+    20px;
+}
+
+/* =========================================================
+🔥 CARD ICON
+========================================================= */
+
+.cardIcon {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  width:
+    56px;
+
+  height:
+    56px;
+
+  border-radius:
+    18px;
+
+  background:
+    rgba(255,255,255,.05);
+
+  border:
+    1px solid rgba(255,255,255,.08);
+
+  font-size:
+    24px;
+}
+
+/* =========================================================
+🔥 CARD COUNT
+========================================================= */
+
+.cardCount {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  min-width:
+    40px;
+
+  height:
+    40px;
+
+  padding:
+    0 12px;
+
+  border-radius:
+    999px;
+
+  background:
+    rgba(249,115,22,.12);
+
+  border:
+    1px solid rgba(249,115,22,.20);
+
+  color:
+    #fdba74;
+
+  font-size:
+    13px;
+
+  font-weight:
+    800;
+}
+
+/* =========================================================
+🔥 CARD BODY
+========================================================= */
+
+.cardBody {
+  flex: 1;
+}
+
+/* =========================================================
+🔥 CARD TITLE
+========================================================= */
+
+.cardTitle {
+  color:
+    #ffffff;
+
+  font-size:
+    20px;
+
+  font-weight:
+    800;
+
+  line-height:
+    1.45;
+
+  margin-bottom:
+    12px;
+}
+
+/* =========================================================
+🔥 CARD DESCRIPTION
+========================================================= */
+
+.cardDescription {
+  color:
+    rgba(226,232,240,.88);
+
+  font-size:
+    14px;
+
+  line-height:
+    1.9;
+}
+
+/* =========================================================
+🔥 CARD ARROW
+========================================================= */
+
+.cardArrow {
+  margin-top:
+    24px;
+
+  color:
+    #fdba74;
+
+  font-size:
+    18px;
+
+  font-weight:
+    900;
+
+  transition:
+    transform .18s ease,
+    color .18s ease;
+}
+
+.semanticCard:hover .cardArrow,
+.semanticCardStrong:hover .cardArrow {
+  transform:
+    translateX(4px);
+
+  color:
+    #fb923c;
+}
+
+/* =========================================================
+📱 MOBILE
+========================================================= */
+
+@media (max-width: 640px) {
+
+  .sectionHeader {
+    margin-bottom:
+      28px;
+  }
+
+  .sectionTitle {
+    font-size:
+      2rem;
+  }
+
+  .sectionDescription {
+    font-size:
+      14px;
+  }
+
+  .semanticCard,
+  .semanticCardStrong {
+    min-height:
+      auto;
+
+    padding:
+      22px;
+
+    border-radius:
+      22px;
+  }
+
+  .cardTitle {
+    font-size:
+      18px;
+  }
+
+}

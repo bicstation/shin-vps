@@ -1,3 +1,4 @@
+// /home/maya/shin-dev/shin-vps/next-bicstation/app/sitemap.xml/route.ts
 /**
  * =====================================================================
  * 🗺️ BICSTATION Sitemap 生成 (Route Handler)

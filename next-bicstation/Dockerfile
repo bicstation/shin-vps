@@ -1,30 +1,50 @@
 # =====================================================================
-# 🚀 SHIN-VPS NEXT.JS Dockerfile (Node 20 / next-bicstation 専用)
+# 🚀 SHIN-VPS NEXT.JS Dockerfile
+# Node 20 / next-bicstation 専用
 # =====================================================================
 
 # ---------------------------------------------------------------------
 # Stage 1: Builder
 # ---------------------------------------------------------------------
-FROM node:20-slim AS builder 
+FROM node:20-slim AS builder
 
+# =====================================================================
+# 🛡️ Runtime Mode
+# IMPORTANT:
+# Next.js 15 + React 19 requires proper NODE_ENV during build
+# =====================================================================
+ENV NODE_ENV=production
+
+# ---------------------------------------------------------------------
 # Build Args
+# ---------------------------------------------------------------------
 ARG NEXT_PUBLIC_APP_TITLE
 ARG NEXT_PUBLIC_BASE_PATH
 ARG NEXT_PUBLIC_API_URL
 ARG PROJECT_NAME=next-bicstation
 
+# ---------------------------------------------------------------------
+# Public ENV
+# ---------------------------------------------------------------------
 ENV NEXT_PUBLIC_APP_TITLE=$NEXT_PUBLIC_APP_TITLE
 ENV NEXT_PUBLIC_BASE_PATH=$NEXT_PUBLIC_BASE_PATH
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 
+# ---------------------------------------------------------------------
+# Work Directory
+# ---------------------------------------------------------------------
 WORKDIR /app
 
 # ---------------------------------------------------------------------
 # OS Packages
 # ---------------------------------------------------------------------
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends libc6 libstdc++6 fonts-ipafont-gothic && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+    apt-get install -y --no-install-recommends \
+    libc6 \
+    libstdc++6 \
+    fonts-ipafont-gothic && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # ---------------------------------------------------------------------
 # Shared Library
@@ -34,42 +54,70 @@ COPY shared/ ./shared/
 # ---------------------------------------------------------------------
 # Project Source
 # ---------------------------------------------------------------------
-COPY next-bicstation/ ./  
+COPY next-bicstation/ ./
 
 # ---------------------------------------------------------------------
 # Cleanup Cache
 # ---------------------------------------------------------------------
-RUN rm -rf .next .cache node_modules/.cache
+RUN rm -rf \
+    .next \
+    .cache \
+    node_modules/.cache
+
+# ---------------------------------------------------------------------
+# NPM Cache Cleanup
+# ---------------------------------------------------------------------
+RUN npm cache clean --force
 
 # ---------------------------------------------------------------------
 # NPM Install
+# Next15 / React19 Safe Mode
 # ---------------------------------------------------------------------
-RUN npm cache clean --force
-RUN npm install --include=optional --unsafe-perm=true
+RUN npm install \
+    --legacy-peer-deps \
+    --no-audit \
+    --progress=false \
+    --unsafe-perm=true
+
+# ---------------------------------------------------------------------
+# Debug Runtime
+# ---------------------------------------------------------------------
+RUN echo "NODE_ENV=$NODE_ENV"
 
 # ---------------------------------------------------------------------
 # Next.js Build
-# 権限回避版
 # ---------------------------------------------------------------------
 RUN node node_modules/next/dist/bin/next build
 
-# ---------------------------------------------------------------------
+# =====================================================================
 # Stage 2: Runner
-# ---------------------------------------------------------------------
-FROM node:20-slim AS runner 
+# =====================================================================
+FROM node:20-slim AS runner
 
+# =====================================================================
+# Runtime Mode
+# =====================================================================
+ENV NODE_ENV=production
+
+# ---------------------------------------------------------------------
+# Work Directory
+# ---------------------------------------------------------------------
 WORKDIR /app
 
 # ---------------------------------------------------------------------
 # Runtime User
 # ---------------------------------------------------------------------
 RUN addgroup --gid 1001 nodejs || true && \
-    adduser --disabled-password --gecos "" --uid 1001 --gid 1001 nextjs || true
+    adduser \
+    --disabled-password \
+    --gecos "" \
+    --uid 1001 \
+    --gid 1001 \
+    nextjs || true
 
 # ---------------------------------------------------------------------
 # Runtime Environment
 # ---------------------------------------------------------------------
-ENV NODE_ENV=production
 ENV HOSTNAME="0.0.0.0"
 ENV PORT=3000
 ENV NEXT_PUBLIC_BASE_PATH=""
@@ -78,22 +126,40 @@ ENV NEXT_PUBLIC_BASE_PATH=""
 # Standalone Output Copy
 # ---------------------------------------------------------------------
 COPY --from=builder /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./ 
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+COPY --from=builder \
+    --chown=nextjs:nodejs \
+    /app/.next/standalone ./
+
+COPY --from=builder \
+    --chown=nextjs:nodejs \
+    /app/.next/static ./.next/static
 
 # ---------------------------------------------------------------------
 # Flatten Standalone
 # ---------------------------------------------------------------------
 RUN cp -r .next/standalone/* . 2>/dev/null || true
-RUN rm -rf ./next-bicstation ./next-tiper ./next-bic-saving ./next-avflash
 
 # ---------------------------------------------------------------------
-# Runtime User & Port
+# Cleanup
+# ---------------------------------------------------------------------
+RUN rm -rf \
+    ./next-bicstation \
+    ./next-tiper \
+    ./next-bic-saving \
+    ./next-avflash
+
+# ---------------------------------------------------------------------
+# Runtime User
 # ---------------------------------------------------------------------
 USER nextjs
+
+# ---------------------------------------------------------------------
+# Expose Port
+# ---------------------------------------------------------------------
 EXPOSE 3000
 
 # ---------------------------------------------------------------------
-# Start
+# Start Server
 # ---------------------------------------------------------------------
 CMD ["node", "server.js"]

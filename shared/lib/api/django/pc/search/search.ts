@@ -16,30 +16,14 @@ import type {
 } from './contracts'
 
 /* =========================================
-🔥 Query Builder
+🔥 Finder Runtime Bridge
 ========================================= */
 
 import {
 
-  buildSemanticQuery,
+  fetchFinder,
 
-} from './queryBuilder'
-
-/* =========================================
-🔥 Utils
-========================================= */
-
-import {
-
-  buildEndpoint,
-
-} from '../utils/buildEndpoint'
-
-import {
-
-  safeFetch,
-
-} from '../utils/safeFetch'
+} from '../finder'
 
 /* =========================================
 🔥 Normalize
@@ -52,11 +36,34 @@ import {
 } from './normalize'
 
 /* =========================================
-🔥 Endpoint
+🔥 Search Runtime Bridge
 ========================================= */
 
-const SEARCH_ENDPOINT =
-  '/general/pc-search/'
+/**
+ * IMPORTANT:
+ *
+ * This layer now acts as:
+ *
+ * temporary runtime continuity bridge
+ *
+ * Responsibilities:
+ *
+ * - legacy frontend continuity
+ * - runtime migration stabilization
+ * - semantic narrowing bridge continuity
+ *
+ * IMPORTANT:
+ *
+ * Adapter does NOT:
+ *
+ * - generate semantic meaning
+ * - redefine traversal meaning
+ * - fabricate workflow meaning
+ *
+ * Backend remains:
+ *
+ * semantic traversal authority
+ */
 
 /* =========================================
 🔥 Search
@@ -74,44 +81,36 @@ searchPC(
   >
 > {
 
-  // ======================================
-  // Query String
-  // ======================================
+  /* =======================================
+  🔥 Normalize Usage
+  ======================================= */
 
-  const queryString =
+  const usage =
 
-    buildSemanticQuery(
-      query
-    )
+    query?.usage
 
-  // ======================================
-  // Endpoint
-  // ======================================
+      ?.replace(
+        'usage-',
+        ''
+      )
 
-  const endpoint =
-
-    buildEndpoint(
-
-      `${SEARCH_ENDPOINT}${queryString}`
-    )
-
-  // ======================================
-  // Fetch
-  // ======================================
+  /* =======================================
+  🔥 Finder Runtime Bridge
+  ======================================= */
 
   const response =
 
-    await safeFetch<
-      SemanticSearchResponse<
-        SemanticProduct
-      >
-    >(
-      endpoint
-    )
+    await fetchFinder({
 
-  // ======================================
-  // Invalid Response
-  // ======================================
+      usage:
+        usage
+          ? [usage]
+          : [],
+    })
+
+  /* =======================================
+  🔥 Invalid Response
+  ======================================= */
 
   if (!response) {
 
@@ -128,13 +127,32 @@ searchPC(
     }
   }
 
-  // ======================================
-  // Normalize
-  // ======================================
+  /* =======================================
+  🔥 Runtime Bridge Normalize
+  ======================================= */
 
-  return normalizeSemanticSearch(
-    response
-  )
+  return normalizeSemanticSearch({
+
+    success: true,
+
+    results:
+
+      response.results
+      || [],
+
+    total:
+
+      response.meta
+        ?.total_products
+
+      || response.results
+        ?.length
+
+      || 0,
+
+    semantic_schema_version:
+      1,
+  })
 }
 
 /* =========================================

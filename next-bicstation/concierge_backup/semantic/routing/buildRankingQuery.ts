@@ -1,0 +1,32 @@
+// /app/concierge/semantic/routing/buildRankingQuery.ts
+
+/* =========================================
+🔥 CONTRACTS
+========================================= */
+
+import type {
+  SemanticFinderQuery,
+} from '../../contracts/semantic/SemanticFinderQuery'
+
+/* =========================================
+🔥 Build Ranking Query
+========================================= */
+
+export function buildRankingQuery(
+  intent?: Partial<SemanticFinderQuery>
+): SemanticFinderQuery {
+
+  return {
+    usage: intent?.usage,
+    gpu: intent?.gpu,
+    cpu: intent?.cpu,
+    maker: intent?.maker,
+    memory: intent?.memory,
+    storage: intent?.storage,
+    resolution: intent?.resolution,
+    panel: intent?.panel,
+    workload: intent?.workload,
+    ai: intent?.ai,
+    budget: intent?.budget,
+  }
+}

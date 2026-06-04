@@ -1,0 +1,25 @@
+{
+  "timestamp": "2026-05-29T13:50:49.828941",
+  "blog_name": "pc-compass",
+  "rss_count": 15,
+  "article_count": 75,
+  "source_distribution": {
+    "PC": 5,
+    "ITmedia": 15,
+    "Gizmodo": 5,
+    "ASCII": 20,
+    "TechCrunch": 5,
+    "Phile-web": 5,
+    "PC全般、コスパPC、ビジネスPC": 5,
+    "全般、自動化PC、データ防衛": 5,
+    "ビジネスPC、リセールPC（経済）": 5,
+    "ビジネスPC、リセールPC（企業動向）": 5
+  },
+  "top_sources": [
+    "ASCII",
+    "ITmedia",
+    "PC",
+    "Gizmodo",
+    "TechCrunch"
+  ]
+}

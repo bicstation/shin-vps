@@ -6,7 +6,10 @@ from rest_framework import serializers
 from api.models import (
     Maker, Label, Director, Series, Genre, Actress, Author,
     AdultProduct, AdultAttribute, LinkshareProduct, FanzaFloorMaster,
-    AdultActressProfile
+    AdultActressProfile,ImageAudit
+)
+from api.utils.semantic.runtime.compile_adult_runtime import (
+    compile_adult_runtime,
 )
 
 logger = logging.getLogger(__name__)
@@ -158,19 +161,31 @@ class AdultProductSerializer(serializers.ModelSerializer):
     floor_master = FanzaFloorMasterSerializer(read_only=True)
     
     display_id = serializers.CharField(source='product_id_unique', read_only=True)
+    
     thumbnail = serializers.SerializerMethodField()
+    
+    image_valid = serializers.SerializerMethodField()
+    image_status = serializers.SerializerMethodField()
+   
     product_url = serializers.CharField(source='affiliate_url', read_only=True)
     rel_score = serializers.IntegerField(read_only=True, required=False)
+    
+    runtime = serializers.SerializerMethodField()
 
     class Meta:
         model = AdultProduct 
         fields = (
             'id', 'product_id_unique', 'display_id', 'title', 'product_description',
             'release_date', 'affiliate_url', 'product_url', 'price', 
-            'image_url_list', 'thumbnail', 'sample_movie_url',
+            'image_url_list', 'thumbnail',
+            'image_valid',
+            'image_status',
+            'sample_movie_url',
             'api_source', 'api_service', 'floor_code', 'floor_master',
             'maker', 'label', 'director', 'series', 'authors', 'genres', 'actresses',
-            'attributes', 'ai_content', 'ai_summary', 'ai_catchcopy',
+            'attributes', 
+            'runtime',
+            'ai_content', 'ai_summary', 'ai_catchcopy',
             'target_segment', 'ai_chat_comments',
             'ai_score_visual', 'ai_score_story', 'ai_score_erotic',
             'score_visual', 'score_story', 'score_erotic', 'score_rarity', 'score_cost_performance', 
@@ -185,6 +200,31 @@ class AdultProductSerializer(serializers.ModelSerializer):
         if isinstance(imgs, list) and len(imgs) > 0:
             return imgs
         return None
+
+    def get_image_runtime(self, obj):
+
+        return ImageAudit.objects.filter(
+            entity_type="adult_product",
+            entity_id=obj.id
+        ).first()
+        
+    def get_image_valid(self, obj):
+
+        audit = self.get_image_runtime(obj)
+
+        if not audit:
+            return False
+
+        return audit.image_valid
+    
+    def get_image_status(self, obj):
+
+        audit = self.get_image_runtime(obj)
+
+        if not audit:
+            return "unknown"
+
+        return audit.image_status    
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)
@@ -205,3 +245,12 @@ class AdultProductSerializer(serializers.ModelSerializer):
             ret['ai_catchcopy'] = instance.title
 
         return ret
+    
+    def get_runtime(
+        self,
+        obj,
+    ):
+        return compile_adult_runtime(
+            obj,
+            trace_runtime=False,
+        )

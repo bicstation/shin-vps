@@ -70,3 +70,14 @@ from .users import User  # 拡張ユーザーモデル
 # 8. 統合プロダクト（表示用・ランキング基盤）
 # ==============================================================================
 from .product import Product
+
+# ==============================================================================
+# 9. Runtime Infrastructure
+# ==============================================================================
+from .runtime_models import (
+    ImageAudit,     # Image Runtime Audit Ledger
+)
+
+from .fanza_sample_movie import (
+    FanzaSampleMovie,   # FANZA Preview Reality Repository
+)

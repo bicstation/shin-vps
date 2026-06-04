@@ -23,6 +23,8 @@
 
 import API_CONFIG from '../config/api';
 
+
+
 /**
  * =====================================================================
  * 🌍 Runtime-Aware API Base
@@ -220,26 +222,32 @@ export async function register(
   );
 }
 
+
+/**
+ * =====================================================================
+ * 🛡️ Legacy Compatibility Aliases
+ * =====================================================================
+ */
+
+export const loginUser = login;
+export const logoutUser = logout;
+export const registerUser = register;
+
 /**
  * =====================================================================
  * 📦 Unified Auth Export
  * =====================================================================
  */
 
+
 const authUtils = {
 
   getAuthApiBase,
-
   buildAuthUrl,
-
   authFetch,
-
   login,
-
   logout,
-
   fetchCurrentUser,
-
   register,
 };
 

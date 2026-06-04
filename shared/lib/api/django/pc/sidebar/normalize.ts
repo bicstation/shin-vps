@@ -73,6 +73,28 @@ function normalizeAttributes(
 }
 
 /* =========================================
+🔥 Resolve Grouped Items
+========================================= */
+
+function resolveGroupedItems(
+
+  groupedAttributes: any,
+
+  key: string,
+
+): any[] {
+
+  return (
+
+    groupedAttributes?.[key]?.items
+
+    ||
+
+    []
+  )
+}
+
+/* =========================================
 🔥 Normalize Sidebar
 ========================================= */
 
@@ -84,20 +106,88 @@ normalizeSidebar(
 ): SidebarPayload {
 
   // ======================================
-  // Safe Sidebar
+  // Safe Payload
+  // ======================================
+
+  const safePayload =
+
+    payload || {}
+
+  // ======================================
+  // Canonical Sidebar
   // ======================================
 
   const sidebar =
 
-    payload?.sidebar
-    || payload
-    || {}
+    safePayload?.sidebar
+    ||
+
+    safePayload
+
+    ||
+
+    {}
+
+  // ======================================
+  // Grouped Attributes
+  // ======================================
+
+  const groupedAttributes =
+
+    safePayload?.grouped_attributes
+
+    ||
+
+    sidebar?.grouped_attributes
+
+    ||
+
+    {}
+
+  // ======================================
+  // Runtime Debug
+  // ======================================
+
+  console.log(
+
+    '📦 NORMALIZE SIDEBAR',
+
+    {
+
+      hasSidebar:
+        !!sidebar,
+
+      hasGroupedAttributes:
+
+        !!groupedAttributes,
+
+      groupedAttributeKeys:
+
+        Object.keys(
+          groupedAttributes
+        ),
+
+      payloadKeys:
+
+        Object.keys(
+          safePayload
+        ),
+    }
+  )
 
   // ======================================
   // Empty
   // ======================================
 
-  if (!sidebar) {
+  if (
+
+    !sidebar
+
+    &&
+
+    !groupedAttributes
+
+  ) {
 
     return {
 
@@ -126,19 +216,43 @@ normalizeSidebar(
     cpu:
 
       normalizeAttributes(
+
         sidebar?.cpu
+
+        ||
+
+        resolveGroupedItems(
+          groupedAttributes,
+          'cpu',
+        )
       ),
 
     device:
 
       normalizeAttributes(
+
         sidebar?.device
+
+        ||
+
+        resolveGroupedItems(
+          groupedAttributes,
+          'device',
+        )
       ),
 
     gpu:
 
       normalizeAttributes(
+
         sidebar?.gpu
+
+        ||
+
+        resolveGroupedItems(
+          groupedAttributes,
+          'gpu',
+        )
       ),
 
     maker:
@@ -146,25 +260,59 @@ normalizeSidebar(
       normalizeAttributes(
 
         sidebar?.maker
-        || sidebar?.maker_counts
+
+        ||
+
+        sidebar?.maker_counts
+
+        ||
+
+        resolveGroupedItems(
+          groupedAttributes,
+          'maker',
+        )
       ),
 
     memory:
 
       normalizeAttributes(
+
         sidebar?.memory
+
+        ||
+
+        resolveGroupedItems(
+          groupedAttributes,
+          'memory',
+        )
       ),
 
     storage:
 
       normalizeAttributes(
+
         sidebar?.storage
+
+        ||
+
+        resolveGroupedItems(
+          groupedAttributes,
+          'storage',
+        )
       ),
 
     usage:
 
       normalizeAttributes(
+
         sidebar?.usage
+
+        ||
+
+        resolveGroupedItems(
+          groupedAttributes,
+          'usage',
+        )
       ),
   }
 }

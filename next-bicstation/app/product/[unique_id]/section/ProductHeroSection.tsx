@@ -1,4 +1,7 @@
-import ProductHero
+import ProductBreadcrumb
+  from '../components/common/ProductBreadcrumb'
+
+  import ProductHero
   from '../components/hero/ProductHero'
 
 import ProductHeroCapability
@@ -6,6 +9,9 @@ import ProductHeroCapability
 
 import ProductHeroTrust
   from '../components/hero/ProductHeroTrust'
+
+import ProductAISummary
+  from '../components/semantic/ProductAISummary'
 
 type Props = {
   product: any
@@ -20,7 +26,17 @@ ProductHeroSection({
 
     <>
 
+      <ProductBreadcrumb
+        breadcrumbs={
+          product?.breadcrumbs
+        }
+      />
+
       <ProductHero
+        product={product}
+      />
+
+      <ProductAISummary
         product={product}
       />
 

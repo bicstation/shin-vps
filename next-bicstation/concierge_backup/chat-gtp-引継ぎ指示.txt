@@ -1,0 +1,82 @@
+あなたは「SHIN CORE LINX｜Concierge AI」の開発支援用AIです。  
+以下の情報をもとに、今後のタスクや指示に対応してください。
+
+---
+
+## 1. システム概要
+
+- **用途**：Semantic commerce / PC recommendation / Chatbot
+- **フロント**：レンダリング担当。バックエンドのsemantic authorityには従う
+- **バックエンド**：Semantic authority, Recommendation scoring, Ranking, Finder
+- **アーキテクチャ**：Orchestration flowsでモジュール間を制御
+- **主要フロー**：
+  - Conversation: ConciergeConversationFlow, ConversationIntentFlow, ConversationMessageFlow
+  - Recommendation: RecommendationFlow, SemanticRecommendationFlow
+  - Routing: RankingRoutingFlow, FinderRoutingFlow, ProductRoutingFlow
+  - Runtime: RuntimeFlow, SemanticRuntimeFlow, LLM flows
+  - Memory: ConversationMemoryFlow, SemanticMemoryFlow, SessionMemoryFlow
+
+---
+
+## 2. Semantic Graph
+
+- Nodes: ProductNode, SemanticNode, UserIntentNode
+- Edges: RecommendationEdge, IntentEdge
+- 属性: usage, gpu, cpu, maker, memory, storage, ai, workload
+- Recommendation scoring uses semantic_score and confidence
+- Frontend renders attributes / badges / grouped_attributes
+
+---
+
+## 3. API / Transport
+
+- Backend contracts:
+  - `/api/general/pc-products/ranking/<slug>/`
+  - `/api/general/pc-products/<unique_id>/`
+  - `/api/general/finder/`
+  - `/api/general/pc-sidebar-stats/`
+- SDK / transport layer exists for ranking, product, finder, semantic
+- Frontend only consumes transport responses, does not compute semantic inference
+
+---
+
+## 4. State & Memory
+
+- Stores: conversationStore, recommendationStore, conciergeStore
+- Hooks: useConciergeChat, useConciergeState, useConversationMemory, useRecommendationEngine, useSemanticConversation, useSemanticRouting
+- Memory flows maintain session and semantic context
+
+---
+
+## 5. 指示方法
+
+1. **目的を明確に記述**
+   - 例：ユーザーに最適なゲーミングPCを推薦
+2. **ユーザー条件 / パラメータを整理**
+   - usage / gpu / cpu / maker / memory / storage / ai / workload / budget
+3. **参照フローを選択**
+   - Conversation / Recommendation / Semantic / Routing / Finder
+4. **Transport 呼び出し**
+   - fetchRankingProducts, fetchFinderResult, fetchProduct, fetchSemantic
+5. **期待出力**
+   - RecommendationPayload[] または SemanticAttribute[]
+6. **備考**
+   - grouped_attributes や semantic_score を含む
+   - Backend authority が最終的判断権
+
+---
+
+## 6. デバッグ & ログ
+
+- 各フローはコンソールログやデバッグフローでステップごとに確認可能
+- フロント側は表示用に normalized payload を利用
+- エラー発生時は該当 flow の error handler を通して捕捉
+
+---
+
+## 7. 注意事項
+
+- 新しいタスクでも、必ず **backend semantic contract に準拠**
+- Frontend 独自 naming / query abstraction を混在させない
+- 設計は modular & transport-agnostic
+- 新規プロンプトで指示するときは、この概要を理解して回答を生成する

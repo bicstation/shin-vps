@@ -1,0 +1,65 @@
+.compareSection {
+  margin-bottom: 42px;
+}
+
+.compareHeader {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.compareTitle {
+  color: #fff;
+
+  font-size: 28px;
+  font-weight: 900;
+
+  margin-bottom: 10px;
+}
+
+.compareDescription {
+  color: #94a3b8;
+
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.compareGrid {
+  display: grid;
+
+  grid-template-columns: 1fr;
+
+  gap: 24px;
+}
+
+.compareMeta {
+  display: flex;
+  flex-wrap: wrap;
+
+  gap: 10px;
+}
+
+.compareChip,
+.compareChipStrong {
+  padding: 9px 14px;
+
+  border-radius: 999px;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.compareChip {
+  background: rgba(255,255,255,0.04);
+
+  border: 1px solid rgba(255,255,255,0.08);
+
+  color: #cbd5e1;
+}
+
+.compareChipStrong {
+  background: rgba(249,115,22,0.12);
+
+  border: 1px solid rgba(249,115,22,0.24);
+
+  color: #fdba74;
+}

@@ -1,0 +1,570 @@
+/* =========================================================
+🔥 CTA
+Decision Action Layer
+========================================================= */
+
+/* =========================================================
+🔥 BOTTOM CTA
+========================================================= */
+
+.bottomSection {
+  margin-top: 72px;
+
+  margin-bottom: 64px;
+}
+
+/* =========================================================
+🔥 CTA CARD
+========================================================= */
+
+.bottomCard {
+  position: relative;
+
+  overflow: hidden;
+
+  padding:
+    42px 30px;
+
+  border-radius:
+    30px;
+
+  text-align:
+    center;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(10,16,30,.94),
+      rgba(20,28,48,.94)
+    );
+
+  border:
+    1px solid rgba(255,255,255,.08);
+
+  backdrop-filter:
+    blur(16px);
+
+  box-shadow:
+    0 22px 60px rgba(0,0,0,.34);
+}
+
+.bottomCard::before {
+  content: '';
+
+  position: absolute;
+
+  inset: 0;
+
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(56,189,248,.12),
+      transparent 38%
+    );
+
+  pointer-events: none;
+}
+
+/* =========================================================
+🔥 LABEL
+========================================================= */
+
+.bottomLabel {
+  position: relative;
+
+  z-index: 1;
+
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  padding:
+    7px 14px;
+
+  border-radius:
+    999px;
+
+  background:
+    rgba(56,189,248,.08);
+
+  border:
+    1px solid rgba(56,189,248,.18);
+
+  color:
+    rgba(180,220,255,.94);
+
+  font-size:
+    11px;
+
+  font-weight:
+    800;
+
+  letter-spacing:
+    .12em;
+
+  text-transform:
+    uppercase;
+
+  margin-bottom:
+    18px;
+}
+
+/* =========================================================
+🔥 TITLE
+========================================================= */
+
+.bottomTitle {
+  position: relative;
+
+  z-index: 1;
+
+  max-width:
+    760px;
+
+  margin:
+    0 auto 18px;
+
+  color:
+    #ffffff;
+
+  font-size:
+    clamp(2rem, 4vw, 3rem);
+
+  line-height:
+    1.15;
+
+  font-weight:
+    900;
+
+  letter-spacing:
+    -.03em;
+}
+
+/* =========================================================
+🔥 DESCRIPTION
+========================================================= */
+
+.bottomDescription {
+  position: relative;
+
+  z-index: 1;
+
+  max-width:
+    720px;
+
+  margin:
+    0 auto 28px;
+
+  color:
+    rgba(148,163,184,.92);
+
+  font-size:
+    15px;
+
+  line-height:
+    1.9;
+}
+
+/* =========================================================
+🔥 FEATURES
+========================================================= */
+
+.bottomFeatures {
+  position: relative;
+
+  z-index: 1;
+
+  display: flex;
+
+  flex-wrap: wrap;
+
+  align-items: center;
+  justify-content: center;
+
+  gap:
+    10px;
+
+  margin-bottom:
+    30px;
+}
+
+.bottomFeature {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  min-height:
+    40px;
+
+  padding:
+    9px 14px;
+
+  border-radius:
+    999px;
+
+  background:
+    rgba(255,255,255,.05);
+
+  border:
+    1px solid rgba(255,255,255,.08);
+
+  color:
+    rgba(255,255,255,.88);
+
+  font-size:
+    12px;
+
+  font-weight:
+    700;
+
+  backdrop-filter:
+    blur(10px);
+}
+
+/* =========================================================
+🔥 CTA BUTTON
+========================================================= */
+
+.bottomButton {
+  position: relative;
+
+  z-index: 1;
+
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  min-height:
+    56px;
+
+  padding:
+    0 28px;
+
+  border-radius:
+    18px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #f97316,
+      #fb923c
+    );
+
+  color:
+    #ffffff;
+
+  font-size:
+    14px;
+
+  font-weight:
+    800;
+
+  text-decoration:
+    none;
+
+  box-shadow:
+    0 14px 36px rgba(249,115,22,.26);
+
+  transition:
+    transform .2s ease,
+    opacity .2s ease,
+    box-shadow .2s ease;
+}
+
+.bottomButton:hover {
+  transform:
+    translateY(-2px);
+
+  opacity:
+    .96;
+
+  box-shadow:
+    0 18px 42px rgba(249,115,22,.32);
+}
+
+/* =========================================================
+🔥 STICKY CTA
+========================================================= */
+
+.stickyCTA {
+  position: fixed;
+
+  left: 50%;
+  bottom: 14px;
+
+  transform:
+    translateX(-50%);
+
+  width:
+    calc(100% - 24px);
+
+  max-width:
+    720px;
+
+  display: flex;
+
+  gap:
+    12px;
+
+  z-index:
+    999;
+
+  padding:
+    10px;
+
+  border-radius:
+    24px;
+
+  background:
+    rgba(15,23,42,.62);
+
+  border:
+    1px solid rgba(255,255,255,.06);
+
+  backdrop-filter:
+    blur(18px);
+
+  box-shadow:
+    0 18px 48px rgba(0,0,0,.34);
+}
+
+/* =========================================================
+🔥 PRIMARY BUTTON
+========================================================= */
+
+.stickyPrimary {
+  flex: 1;
+
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  min-height:
+    58px;
+
+  padding:
+    14px 20px;
+
+  border-radius:
+    18px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #f97316,
+      #fb923c
+    );
+
+  color:
+    #ffffff;
+
+  font-size:
+    14px;
+
+  font-weight:
+    900;
+
+  letter-spacing:
+    -.01em;
+
+  text-decoration:
+    none;
+
+  box-shadow:
+    0 14px 40px rgba(249,115,22,.28);
+
+  transition:
+    transform .18s ease,
+    opacity .18s ease,
+    box-shadow .18s ease;
+}
+
+.stickyPrimary:hover {
+  transform:
+    translateY(-2px);
+
+  opacity:
+    .96;
+
+  box-shadow:
+    0 18px 48px rgba(249,115,22,.36);
+}
+
+/* =========================================================
+🔥 SECONDARY BUTTON
+========================================================= */
+
+.stickySecondary {
+  flex: 1;
+
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  min-height:
+    58px;
+
+  padding:
+    14px 20px;
+
+  border-radius:
+    18px;
+
+  background:
+    rgba(255,255,255,.05);
+
+  border:
+    1px solid rgba(255,255,255,.08);
+
+  color:
+    #e2e8f0;
+
+  font-size:
+    14px;
+
+  font-weight:
+    800;
+
+  letter-spacing:
+    -.01em;
+
+  text-decoration:
+    none;
+
+  backdrop-filter:
+    blur(12px);
+
+  transition:
+    transform .18s ease,
+    background .18s ease,
+    border-color .18s ease;
+}
+
+.stickySecondary:hover {
+  transform:
+    translateY(-2px);
+
+  background:
+    rgba(255,255,255,.08);
+
+  border-color:
+    rgba(249,115,22,.22);
+}
+
+/* =========================================================
+📱 MOBILE SAFE AREA
+========================================================= */
+
+@supports (
+  padding-bottom:
+  env(safe-area-inset-bottom)
+) {
+
+  .stickyCTA {
+    bottom:
+      calc(
+        14px +
+        env(safe-area-inset-bottom)
+      );
+  }
+
+}
+
+/* =========================================================
+📱 TABLET
+========================================================= */
+
+@media (max-width: 980px) {
+
+  .bottomCard {
+    padding:
+      36px 24px;
+
+    border-radius:
+      26px;
+  }
+
+}
+
+/* =========================================================
+📱 MOBILE
+========================================================= */
+
+@media (max-width: 640px) {
+
+  .bottomSection {
+    margin-top:
+      56px;
+
+    margin-bottom:
+      48px;
+  }
+
+  .bottomCard {
+    padding:
+      32px 20px;
+
+    border-radius:
+      24px;
+  }
+
+  .bottomTitle {
+    font-size:
+      2rem;
+  }
+
+  .bottomDescription {
+    font-size:
+      14px;
+  }
+
+  .bottomFeatures {
+    flex-direction:
+      column;
+
+    align-items:
+      stretch;
+  }
+
+  .bottomFeature {
+    justify-content:
+      center;
+  }
+
+  .bottomButton {
+    width:
+      100%;
+  }
+
+  .stickyCTA {
+    gap:
+      10px;
+
+    padding:
+      8px;
+
+    border-radius:
+      20px;
+  }
+
+  .stickyPrimary,
+  .stickySecondary {
+    min-height:
+      54px;
+
+    font-size:
+      13px;
+
+    border-radius:
+      16px;
+
+    padding:
+      12px 14px;
+  }
+
+}

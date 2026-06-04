@@ -1,0 +1,13 @@
+platform: livedoor
+
+posting:
+enabled: true
+cooldown: 30
+
+style:
+longform: true
+html_support: high
+human_feel: medium
+
+cta:
+enabled: true

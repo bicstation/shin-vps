@@ -14,14 +14,17 @@ CURRENT_USER=$USER
 if [[ "$CURRENT_HOSTNAME" == *"x162-43"* ]] || [[ "$CURRENT_HOSTNAME" == "maya" && "$CURRENT_HOSTNAME" != "Marya" ]]; then
     IS_VPS=true; ENV_TYPE="PRODUCTION (VPS)"; COMPOSE_FILE="docker-compose.prod.yml"; COLOR="\e[32m"
     DEFAULT_BASE="http://$(hostname -I | awk '{print $1}'):8083"
+    NEXT_CON="shin-prod-next-bicstation-v3"
+    NEXT_SIN="shin-prod"
+    DJANGO_CON="django-v3"
 else
     IS_VPS=false; ENV_TYPE="LOCAL (Development)"; COMPOSE_FILE="docker-compose.yml"; COLOR="\e[36m"
     DEFAULT_BASE="http://api-tiper-host:8083"
+    NEXT_CON="shin-local-next-bicstation-v3"
+    DJANGO_CON="django-v3"
+    NEXT_SIN="shin-local"
 fi
 
-# コンテナ名設定
-DJANGO_CON="django-v3"
-NEXT_CON="next-bicstation-v3"
 
 # 装飾
 RESET="\e[0m"; RED="\e[31m"; YELLOW="\e[33m"; BLUE="\e[34m"; MAGENTA="\e[35m"; CYAN="\e[36m"; BOLD="\e[1m"; GREEN="\e[32m"
@@ -34,9 +37,40 @@ declare -A MID_MAP
 MID_MAP["nec"]="2780"; MID_MAP["sony"]="2980"; MID_MAP["fmv"]="2543"; MID_MAP["dynabook"]="36508"; MID_MAP["hp"]="35909"; MID_MAP["dell"]="2557"; MID_MAP["asus"]="43708"; MID_MAP["norton"]="24732"; MID_MAP["mcafee"]="3388"; MID_MAP["kingsoft"]="24623"; MID_MAP["cyberlink"]="36855"; MID_MAP["trendmicro"]="24501"; MID_MAP["sourcenext"]="2633"; MID_MAP["edion"]="43098"; MID_MAP["kojima"]="13993"; MID_MAP["sofmap"]="37641"; MID_MAP["bic_sofmap"]="43262"; MID_MAP["recollect"]="43860"; MID_MAP["ioplazy"]="24172"; MID_MAP["eizo"]="3256"
 
 # --- 3. 共通実行関数 ---
-run_django() { docker compose -f "$PROJECT_ROOT/$COMPOSE_FILE" exec -T "$DJANGO_CON" python3 manage.py "$@"; }
-run_django_raw() { docker compose -f "$PROJECT_ROOT/$COMPOSE_FILE" exec -T "$DJANGO_CON" "$@"; }
-run_next() { docker compose -f "$PROJECT_ROOT/$COMPOSE_FILE" exec -T "$NEXT_CON" "$@"; }
+# run_django() { docker compose -f "$PROJECT_ROOT/$COMPOSE_FILE" exec -T "$DJANGO_CON" python3 manage.py "$@"; }
+# run_django_raw() { docker compose -f "$PROJECT_ROOT/$COMPOSE_FILE" exec -T "$DJANGO_CON" "$@"; }
+# run_next() { docker compose -f "$PROJECT_ROOT/$COMPOSE_FILE" exec -T "$NEXT_CON" "$@"; }
+
+
+# --- 3. Compose Authority 統合 ---
+if [[ "$IS_VPS" == true ]]; then
+    COMPOSE_ARGS=(
+        -f "$PROJECT_ROOT/docker-compose.yml"
+        -f "$PROJECT_ROOT/docker-compose.prod.yml"
+    )
+else
+    COMPOSE_ARGS=(
+        -f "$PROJECT_ROOT/docker-compose.yml"
+        -f "$PROJECT_ROOT/docker-compose.local.yml"
+    )
+fi
+
+compose_exec() {
+    docker compose "${COMPOSE_ARGS[@]}" "$@"
+}
+
+# --- 4. 共通実行関数 ---
+run_django() {
+    compose_exec -p "$NEXT_SIN" exec -T "$DJANGO_CON" python3 manage.py "$@"
+}
+
+run_django_raw() {
+    compose_exec -p "$NEXT_SIN" exec -T "$DJANGO_CON" "$@"
+}
+
+run_next() {
+    compose_exec -p "$NEXT_SIN" exec -T "$NEXT_CON" "$@"
+}
 
 # --- 4. 拡張機能 ---
 

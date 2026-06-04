@@ -1,0 +1,181 @@
+/*  /home/maya/shin-vps/next-bicstation/app/concierge/orchestration/layout/ConciergeLayout.module.css*/
+
+/* =========================================
+🔥 Concierge Layout
+========================================= */
+
+.layout {
+
+  width: 100%;
+  min-height: 100vh;
+
+  display: flex;
+  flex-direction: column;
+
+  background:
+    linear-gradient(
+
+      180deg,
+
+      #060816 0%,
+      #0b1020 100%
+
+    );
+
+  color: #ffffff;
+}
+
+/* =========================================
+🔥 Header
+========================================= */
+
+.header {
+
+  width: 100%;
+
+  position: sticky;
+  top: 0;
+  z-index: 50;
+
+  backdrop-filter: blur(12px);
+
+  background:
+    rgba(10, 14, 28, 0.72);
+
+  border-bottom:
+    1px solid
+    rgba(255,255,255,0.06);
+
+  padding:
+    16px 24px;
+}
+
+/* =========================================
+🔥 Body
+========================================= */
+
+.body {
+
+  flex: 1;
+
+  width: 100%;
+  max-width: 1600px;
+
+  margin: 0 auto;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    360px;
+
+  gap: 24px;
+
+  padding:
+    24px;
+}
+
+/* =========================================
+🔥 Main
+========================================= */
+
+.main {
+
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 24px;
+}
+
+/* =========================================
+🔥 Sidebar
+========================================= */
+
+.sidebar {
+
+  position: sticky;
+  top: 96px;
+
+  height: fit-content;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 20px;
+}
+
+/* =========================================
+🔥 Footer
+========================================= */
+
+.footer {
+
+  width: 100%;
+
+  border-top:
+    1px solid
+    rgba(255,255,255,0.06);
+
+  background:
+    rgba(255,255,255,0.02);
+
+  padding:
+    20px 24px;
+
+  margin-top: 32px;
+}
+
+/* =========================================
+🔥 Responsive
+========================================= */
+
+@media (
+  max-width: 1200px
+) {
+
+  .body {
+
+    grid-template-columns:
+      1fr;
+
+  }
+
+  .sidebar {
+
+    position: relative;
+    top: 0;
+
+  }
+}
+
+@media (
+  max-width: 768px
+) {
+
+  .header {
+
+    padding:
+      14px 16px;
+  }
+
+  .body {
+
+    gap: 20px;
+
+    padding:
+      16px;
+  }
+
+  .main {
+
+    gap: 20px;
+  }
+
+  .footer {
+
+    padding:
+      16px;
+  }
+}

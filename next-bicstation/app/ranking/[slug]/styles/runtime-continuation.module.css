@@ -1,0 +1,454 @@
+/* ============================================================================ */
+/* FILE: */
+/* /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/[slug]/styles/runtime-continuation.module.css */
+/* ============================================================================ */
+
+/*
+===============================================================================
+🔥 SHIN CORE LINX
+Runtime Continuation Experience
+===============================================================================
+*/
+
+/* ========================================================================= */
+/* SECTION */
+/* ========================================================================= */
+
+.runtimeContinuation {
+
+  position: relative;
+
+  overflow: hidden;
+
+  isolation: isolate;
+
+  margin-bottom: 120px;
+
+  border-radius: 44px;
+
+  border:
+    1px solid rgba(255,255,255,.08);
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,.06),
+      rgba(255,255,255,.02)
+    );
+
+  backdrop-filter: blur(34px);
+
+  box-shadow:
+    0 40px 120px rgba(0,0,0,.40);
+
+  padding: 56px;
+
+  transition:
+    transform .45s ease,
+    border-color .35s ease,
+    box-shadow .45s ease,
+    background .35s ease;
+}
+
+.runtimeContinuation::before {
+
+  content: '';
+
+  position: absolute;
+
+  inset: 0;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,255,255,.05),
+      transparent 42%
+    );
+
+  pointer-events: none;
+}
+
+.runtimeContinuation:hover {
+
+  transform:
+    translateY(-4px);
+
+  border-color:
+    rgba(255,255,255,.16);
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,.08),
+      rgba(255,255,255,.03)
+    );
+
+  box-shadow:
+    0 0 100px rgba(99,102,241,.10),
+    0 50px 140px rgba(0,0,0,.44);
+}
+
+/* ========================================================================= */
+/* GLOW */
+/* ========================================================================= */
+
+.runtimeContinuationGlowBackground {
+
+  position: absolute;
+
+  inset: -220px;
+
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(99,102,241,.18),
+      transparent 68%
+    );
+
+  filter: blur(80px);
+
+  opacity: .9;
+
+  pointer-events: none;
+}
+
+/* ========================================================================= */
+/* HEADER */
+/* ========================================================================= */
+
+.runtimeContinuationHeader {
+
+  position: relative;
+
+  z-index: 2;
+
+  margin-bottom: 48px;
+}
+
+/* ========================================================================= */
+/* EYEBROW */
+/* ========================================================================= */
+
+.runtimeContinuationEyebrow {
+
+  margin-bottom: 18px;
+
+  color:
+    #94a3b8;
+
+  font-size: 12px;
+
+  font-weight: 800;
+
+  letter-spacing: .24em;
+
+  text-transform: uppercase;
+}
+
+/* ========================================================================= */
+/* TITLE */
+/* ========================================================================= */
+
+.runtimeContinuationTitle {
+
+  margin-bottom: 18px;
+
+  color: white;
+
+  font-size: clamp(36px, 5vw, 72px);
+
+  line-height: .96;
+
+  font-weight: 900;
+
+  letter-spacing: -.08em;
+
+  text-wrap: balance;
+}
+
+/* ========================================================================= */
+/* DESCRIPTION */
+/* ========================================================================= */
+
+.runtimeContinuationDescription {
+
+  max-width: 760px;
+
+  color:
+    #dbe4f0;
+
+  font-size: 16px;
+
+  line-height: 1.9;
+}
+
+/* ========================================================================= */
+/* GRID */
+/* ========================================================================= */
+
+.runtimeContinuationGrid {
+
+  position: relative;
+
+  z-index: 2;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(0,1fr)
+    );
+
+  gap: 28px;
+}
+
+/* ========================================================================= */
+/* CARD */
+/* ========================================================================= */
+
+.runtimeContinuationCard {
+
+  position: relative;
+
+  overflow: hidden;
+
+  isolation: isolate;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 18px;
+
+  min-height: 260px;
+
+  padding: 32px;
+
+  border-radius: 32px;
+
+  border:
+    1px solid rgba(255,255,255,.08);
+
+  background:
+    rgba(255,255,255,.04);
+
+  backdrop-filter: blur(18px);
+
+  text-decoration: none;
+
+  transition:
+    transform .4s ease,
+    border-color .35s ease,
+    background .35s ease,
+    box-shadow .4s ease;
+}
+
+.runtimeContinuationCard::before {
+
+  content: '';
+
+  position: absolute;
+
+  inset: 0;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,255,255,.04),
+      transparent 42%
+    );
+
+  pointer-events: none;
+}
+
+.runtimeContinuationCard:hover {
+
+  transform:
+    translateY(-8px);
+
+  border-color:
+    rgba(255,255,255,.18);
+
+  background:
+    rgba(255,255,255,.06);
+
+  box-shadow:
+    0 0 80px rgba(99,102,241,.12),
+    0 34px 90px rgba(0,0,0,.34);
+}
+
+/* ========================================================================= */
+/* CARD GLOW */
+/* ========================================================================= */
+
+.runtimeContinuationCardGlow {
+
+  position: absolute;
+
+  inset: -120px;
+
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(99,102,241,.16),
+      transparent 70%
+    );
+
+  filter: blur(50px);
+
+  opacity: .9;
+
+  pointer-events: none;
+}
+
+/* ========================================================================= */
+/* CARD TITLE */
+/* ========================================================================= */
+
+.runtimeContinuationCardTitle {
+
+  position: relative;
+
+  z-index: 2;
+
+  color: white;
+
+  font-size: 30px;
+
+  line-height: 1.12;
+
+  font-weight: 900;
+
+  letter-spacing: -.05em;
+
+  text-wrap: balance;
+}
+
+/* ========================================================================= */
+/* CARD DESCRIPTION */
+/* ========================================================================= */
+
+.runtimeContinuationCardDescription {
+
+  position: relative;
+
+  z-index: 2;
+
+  flex: 1;
+
+  color:
+    #dbe4f0;
+
+  font-size: 15px;
+
+  line-height: 1.9;
+}
+
+/* ========================================================================= */
+/* ACTION */
+/* ========================================================================= */
+
+.runtimeContinuationAction {
+
+  position: relative;
+
+  z-index: 2;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  color: white;
+
+  font-size: 14px;
+
+  font-weight: 900;
+
+  letter-spacing: .04em;
+
+  transition:
+    transform .3s ease,
+    opacity .3s ease;
+}
+
+.runtimeContinuationCard:hover
+.runtimeContinuationAction {
+
+  transform:
+    translateX(4px);
+
+  opacity: .96;
+}
+
+/* ========================================================================= */
+/* RESPONSIVE */
+/* ========================================================================= */
+
+@media (max-width: 1200px) {
+
+  .runtimeContinuationGrid {
+
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0,1fr)
+      );
+  }
+}
+
+@media (max-width: 768px) {
+
+  .runtimeContinuation {
+
+    margin-bottom: 80px;
+
+    border-radius: 30px;
+
+    padding: 28px;
+  }
+
+  .runtimeContinuationHeader {
+
+    margin-bottom: 32px;
+  }
+
+  .runtimeContinuationGrid {
+
+    grid-template-columns:
+      1fr;
+
+    gap: 22px;
+  }
+
+  .runtimeContinuationTitle {
+
+    font-size: 42px;
+  }
+
+  .runtimeContinuationDescription {
+
+    font-size: 14px;
+  }
+
+  .runtimeContinuationCard {
+
+    min-height: auto;
+
+    padding: 24px;
+
+    border-radius: 24px;
+  }
+
+  .runtimeContinuationCardTitle {
+
+    font-size: 24px;
+  }
+
+  .runtimeContinuationCardDescription {
+
+    font-size: 14px;
+  }
+}

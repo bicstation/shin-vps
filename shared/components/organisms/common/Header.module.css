@@ -23,8 +23,17 @@
 }
 
 /* 🎨 背景バリエーション */
-.generalBg { background: #ffffff; color: #1a1a1a; }
-.adultBg { background: #0a0a0a; color: #ffffff; border-bottom-color: #333 !important; }
+.generalBg {
+  background: #0a0a0a;
+  color: #ffffff;
+  border-bottom: 1px solid #333;
+}
+
+.adultBg {
+  background: #0a0a0a;
+  color: #ffffff;
+  border-bottom: 1px solid #333;
+}
 
 /* 🌟 コンテナ：左右 4% 余白（layout.module.cssと同期） */
 .container {
@@ -81,40 +90,50 @@
 .arrow { font-size: 0.6rem; opacity: 0.5; transition: transform 0.3s; }
 .navGroup:hover .arrow { transform: rotate(180deg); }
 
-/* 🔽 ドロップダウン本体 */
+
+/* 🔽 Unified Dropdown */
+
 .dropdown {
   position: absolute;
   top: 70px;
   left: 50%;
   transform: translateX(-50%);
-  min-width: 190px;
-  background: white;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  min-width: 200px;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45);
   border-radius: 0 0 12px 12px;
   padding: 10px 0;
   z-index: 1010;
   animation: slideDown 0.2s ease-out;
 }
 
-.adultBg .dropdown { background: #1a1a1a; border: 1px solid #333; }
-
 .dropdownItem {
-  padding: 12px 20px;
   display: block;
-  color: #444;
+  width: 100%;
+  white-space: nowrap;
+  padding: 8px 12px;
+  color: #cccccc;
   text-decoration: none;
   font-size: 0.85rem;
   font-weight: 600;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
+  border-radius: 8px;
 }
-
-.adultBg .dropdownItem { color: #ccc; }
 
 .dropdownItem:hover {
-  background: #f8f9fa;
+  background: #252525;
+  color: #ffffff;
   padding-left: 25px;
 }
-.adultBg .dropdownItem:hover { background: #252525; color: #fff; }
+
+/* 🔽 ドロップダウン本体 */
+
+/* .adultBg .dropdown { background: #1a1a1a; border: 1px solid #333; }
+.adultBg .dropdownItem { color: #ccc; }
+.adultBg .dropdownItem:hover { background: #252525; color: #fff; } */
 
 /* 🔐 認証・アクション */
 .authSection {
@@ -175,6 +194,14 @@
   overflow: hidden;
   transition: height 0.3s ease;
   z-index: 999;
+}
+
+.loginLink {
+  color: #ffffff;
+}
+
+.loginLink {
+  color: #ffffff;
 }
 
 /* ---------------------------------------------------------------------

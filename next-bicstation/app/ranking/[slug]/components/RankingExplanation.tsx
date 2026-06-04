@@ -1,4 +1,4 @@
-// /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/[type]/components/RankingExplanation.tsx
+// /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/[slug]/components/RankingExplanation.tsx
 
 /* eslint-disable @next/next/no-img-element */
 // @ts-nocheck

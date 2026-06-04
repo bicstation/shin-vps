@@ -19,7 +19,7 @@ export default function Header() {
     useEffect(() => {
         const identifier = typeof window !== 'undefined' ? window.location.hostname : '';
         const meta = getSiteMetadata(identifier);
-        
+       
         setSite(meta || {
             site_name: 'BIC STATION',
             site_tag: 'bicstation',
@@ -77,20 +77,56 @@ export default function Header() {
     const isAdult = site.site_group === 'adult';
     const siteNameRaw = (site.site_name || "").toString();
 
-    const dynamicGuideLinks = site.site_tag === 'saving' ? [
-        { label: '💳 クレジットカード', href: '/guide/card' },
-        { label: '📈 証券・FX口座', href: '/guide/broker' },
-        { label: '📱 格安SIM比較', href: '/guide/sim' },
-    ] : site.site_tag === 'bicstation' ? [
-        { label: '🔥 BTOセール比較', href: '/guide/bto' },
-        { label: '📊 パーツ別コスパ表', href: '/guide/parts' },
-        { label: '🛒 周辺機器・底値', href: '/guide/peripherals' }
-    ] : [];
+    console.log('🔥 [HEADER SITE]', {
+        site_tag: site?.site_tag,
+        site_group: site?.site_group,
+        site_name: site?.site_name,
+    });
+
+    const dynamicGuideLinks =
+
+        site.site_tag === 'tiper' ? [
+            { label: '🥇❤️ 出会いを探す', href: '/guide/matching' },
+            { label: '🥈💬 会話を楽しむ', href: '/guide/chat-lady' },
+            { label: '🥉💼 副業を始める', href: '/guide/live-chat' },
+            { label: '🎬 新着動画', href: 'https://avflash.xyz/videos/latest' },
+            { label: '🔥 人気ランキング', href: 'https://avflash.xyz/ranking' },
+            { label: '🔎 ジャンル検索', href: 'https://avflash.xyz/genres' },
+        ]
+
+        : site.site_tag === 'avflash' ? [
+            { label: '🥇❤️ 出会いを探す', href: 'https://tiper.live/guide/matching' },
+            { label: '🥈💬 会話を楽しむ', href: 'https://tiper.live/guide/chat-lady' },
+            { label: '🥉💼 副業を始める', href: 'https://tiper.live/guide/live-chat' },
+            { label: '🎬 新着動画', href: '/videos/latest' },
+            { label: '🔥 人気ランキング', href: '/ranking' },
+            { label: '🔎 ジャンル検索', href: '/genres' },
+        ]
+
+        : site.site_tag === 'saving' ? [
+            { label: '💳 クレジットカード', href: '/guide/card' },
+            { label: '📈 証券・FX口座', href: '/guide/broker' },
+            { label: '📱 格安SIM比較', href: '/guide/sim' },
+        ]
+
+        : site.site_tag === 'bicstation' ? [
+            { label: '🧭 自分に合うPCを探す', href: '/pc-finder' },
+            { label: '🎮 ゲーム向けPC', href: '/ranking/usage-gaming' },
+            { label: '🤖 AI向けPC', href: '/ranking/usage-ai' },
+            { label: '🔍 目的から探す', href: '/discover/' },
+            { label: '📚 全PC一覧', href: '/catalog' },
+            { label: '🔥 セール情報', href: '/guide/bto' },
+            { label: '📊 コスパ比較', href: '/guide/parts' },
+            { label: '🛒 周辺機器', href: '/guide/peripherals' },
+        ]
+
+        : [];
 
     const supportLinks = [
         { label: isAdult ? '🍷 AIソムリエ相談' : '🤖 AIコンシェルジュ', href: '/concierge' },
-        ...dynamicGuideLinks,
+
         { label: '---', href: '#' },
+
         { label: 'ℹ️ 運営者情報', href: '/about' },
         { label: '📏 ガイドライン', href: '/guideline' },
         { label: '🛡️ プライバシーポリシー', href: '/privacy-policy' },
@@ -99,26 +135,97 @@ export default function Header() {
         { label: '📧 お問い合わせ', href: '/contact' }
     ];
 
-    const menuConfig = {
-        col1: {
-            title: '🔍 コンテンツ',
-            links: [
-                { label: 'PC性能診断', href: '/pc-finder' },
-                { label: 'おすすめPC', href: '/ranking/popularity' }
-            ]
-        },
-        col2: {
-            title: '📦 ツール',
-            links: [
-                { label: 'AI性能比較', href: '/ranking' },
-                { label: 'データベース', href: '/catalog' }
-            ]
-        },
-        col3: {
-            title: '✨ ガイド',
-            links: supportLinks
-        }
-    };
+    let menuConfig;
+
+    switch (site.site_tag) {
+
+        case 'tiper':
+            menuConfig = {
+                col1: {
+                    title: '🎯 人つながり',
+                    links: dynamicGuideLinks.slice(0, 3)
+                },
+                col2: {
+                    title: '🚀 動画発見',
+                    links: dynamicGuideLinks.slice(3, 6)
+                },
+                col3: {
+                    title: '🛟 サポート',
+                    links: supportLinks
+                }
+            };
+            break;
+
+        case 'avflash':
+            menuConfig = {
+                col1: {
+                    title: '🎬 人つながり',
+                    links: dynamicGuideLinks.slice(0, 3)
+                },
+                col2: {
+                    title: '📂 ジャンル発見',
+                    links: dynamicGuideLinks.slice(3, 6)
+                },
+                col3: {
+                    title: '🛟 サポート',
+                    links: supportLinks
+                }
+            };
+            break;
+
+        case 'saving':
+            menuConfig = {
+                col1: {
+                    title: '💰 節約',
+                    links: dynamicGuideLinks
+                },
+                col2: {
+                    title: '📈 比較',
+                    links: []
+                },
+                col3: {
+                    title: '🛟 サポート',
+                    links: supportLinks
+                }
+            };
+            break;
+
+        case 'bicstation':
+            menuConfig = {
+                col1: {
+                    title: '🔍 コンテンツ',
+                    links: dynamicGuideLinks.slice(0, 4)
+                },
+                col2: {
+                    title: '📦 ツール',
+                    links: dynamicGuideLinks.slice(4, 8)
+                },
+                col3: {
+                    title: '✨ ガイド',
+                    links: supportLinks
+                }
+            };
+            break;
+
+        default:
+            menuConfig = {
+                col1: {
+                    title: '🏠 ホーム',
+                    links: [
+                        { label: 'トップページ', href: '/' }
+                    ]
+                },
+                col2: {
+                    title: '📚 コンテンツ',
+                    links: []
+                },
+                col3: {
+                    title: 'ℹ️ サポート',
+                    links: supportLinks
+                }
+        };
+    }
+
 
     return (
         <header 

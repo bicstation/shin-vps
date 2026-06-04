@@ -1,219 +1,222 @@
-/* eslint-disable @next/next/no-img-element */
-// @ts-nocheck
+// ============================================================================
+// FILE:
+// /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/[slug]/page.tsx
+// ============================================================================
 
-import styles
-  from './page.module.css'
-
-/* =========================================
-🔥 API
-========================================= */
+import type {
+  Metadata,
+} from 'next'
 
 import {
-  fetchRankingProducts,
-} from '@/shared/lib/api/django/pc'
+  fetchSemanticRankingRuntime,
+} from '@/shared/lib/api/django/pc/ranking/fetchSemanticRankingRuntime'
 
-/* =========================================
-🔥 ORCHESTRATION
-========================================= */
+import {
+  RankingRuntime,
+  RuntimeDebug,
+  RuntimeSchema,
+} from './components'
 
-import RankingLayout
-  from './orchestration/RankingLayout'
+import styles from './RankingSlugPage.module.css'
 
-import RankingSemanticFlow
-  from './orchestration/RankingSemanticFlow'
-
-import RankingConversionFlow
-  from './orchestration/RankingConversionFlow'
-
-/* =========================================
-🔥 EMPTY
-========================================= */
-
-import RankingEmpty
-  from './components/RankingEmpty'
-
-/* =========================================
-🔥 TYPES
-========================================= */
-
-type Props = {
-
-  params: {
+type PageProps = {
+  params: Promise<{
     slug: string
+  }>
+
+  searchParams: Promise<{
+    debug?: string
+  }>
+}
+
+/* ============================================================================
+🔥 Metadata Runtime Bridge
+============================================================================ */
+
+export async function
+generateMetadata({
+
+  params,
+
+}: {
+  params: Promise<{
+    slug: string
+  }>
+}): Promise<Metadata> {
+
+  /* ==========================================================================
+  🔥 Params
+  ========================================================================== */
+
+  const { slug } =
+    await params
+
+  /* ==========================================================================
+  🔥 Runtime Fetch
+  ========================================================================== */
+
+  const runtime =
+    await fetchSemanticRankingRuntime(
+      slug
+    )
+
+  const seo =
+    runtime?.seo || {}
+
+  /* ==========================================================================
+  🔥 Metadata
+  ========================================================================== */
+
+  return {
+
+    title:
+      seo?.title
+      || 'PCランキング',
+
+    description:
+      seo?.description
+      || 'おすすめPCランキング',
+
+    alternates: {
+
+      canonical:
+        seo?.canonical
+        || `/ranking/${slug}/`,
+    },
+
+    openGraph: {
+
+      title:
+        seo?.openGraph?.title
+        || seo?.title,
+
+      description:
+        seo?.openGraph?.description
+        || seo?.description,
+
+      url:
+        seo?.canonical
+        || `/ranking/${slug}/`,
+
+      siteName:
+        'SHIN CORE LINX',
+
+      images:
+
+        Array.isArray(
+          seo?.openGraph?.images
+        )
+
+          ? seo.openGraph.images
+
+          : [],
+
+      locale:
+        'ja_JP',
+
+      type:
+        'website',
+    },
+
+    twitter: {
+
+      card:
+        'summary_large_image',
+
+      title:
+        seo?.twitter?.title
+        || seo?.title,
+
+      description:
+        seo?.twitter?.description
+        || seo?.description,
+
+      images:
+
+        Array.isArray(
+          seo?.twitter?.images
+        )
+
+          ? seo.twitter.images
+
+          : [],
+    },
+
+    keywords:
+
+      Array.isArray(
+        seo?.keywords
+      )
+
+        ? seo.keywords
+
+        : [],
   }
 }
 
-/* =========================================
-🔥 ISR
-========================================= */
+/* ============================================================================
+🔥 Ranking Slug Page
+============================================================================ */
 
-export const revalidate = 60
-
-/* =========================================
-🔥 PAGE
-========================================= */
-
-export default async function
-RankingPage({
+export default async function RankingSlugPage({
   params,
-}: Props) {
+  searchParams,
+}: PageProps) {
 
-  // ======================================
-  // PARAMS
-  // ======================================
+  /* ==========================================================================
+  🔥 Params
+  ========================================================================== */
 
-  const slug =
+  const { slug } =
+    await params
 
-    params?.slug
-    || 'score'
+  const { debug } =
+    await searchParams
 
-  // ======================================
-  // FETCH
-  // ======================================
+  /* ==========================================================================
+  🔥 Runtime Fetch
+  ========================================================================== */
 
-  let products = []
-
-  try {
-
-    const result =
-
-      await fetchRankingProducts(
-        slug
-      )
-
-    products =
-
-      result?.products
-      || []
-
-  } catch (error) {
-
-    console.error(
-      '🔥 Ranking Fetch Error'
+  const runtime =
+    await fetchSemanticRankingRuntime(
+      slug
     )
 
-    console.error(
-      error
-    )
-  }
-
-  // ======================================
-  // DEBUG
-  // ======================================
-
-  console.log(
-    '\n🔥 ====================================='
-  )
-
-  console.log(
-    '🔥 RANKING DETAIL PAGE'
-  )
-
-  console.log({
-
-    slug,
-
-    productCount:
-      products?.length
-      || 0,
-
-    firstProduct:
-
-      products?.[0]
-      ? {
-
-          unique_id:
-            products[0]
-              ?.unique_id,
-
-          name:
-            products[0]
-              ?.name,
-
-          maker:
-            products[0]
-              ?.maker,
-
-        }
-
-      : null,
-
-  })
-
-  console.log(
-    '🔥 COMPONENTS'
-  )
-
-  console.log({
-
-    RankingLayout,
-
-    RankingSemanticFlow,
-
-    RankingConversionFlow,
-
-    RankingEmpty,
-
-  })
-
-  console.log(
-    '🔥 =====================================\n'
-  )
-
-  // ======================================
-  // EMPTY
-  // ======================================
-
-  if (
-    !products?.length
-  ) {
-
-    return (
-      <RankingEmpty />
-    )
-  }
-
-  // ======================================
-  // PAGE
-  // ======================================
+  /* ==========================================================================
+  🔥 Render
+  ========================================================================== */
 
   return (
 
-    <main
-      className={
-        styles.page
-      }
-    >
+    <main className={styles.page}>
 
-      <RankingLayout>
+      {/* ================================================================
+      Runtime Schema Injection
+      ================================================================ */}
 
-        {/* ==================================
-        SEMANTIC FLOW
-        semantic discovery layer
-        ================================== */}
+      <RuntimeSchema
+        schemas={runtime?.schemas}
+      />
 
-        <RankingSemanticFlow
+      {/* ================================================================
+      Runtime Experience
+      ================================================================ */}
 
-          slug={slug}
+      <RankingRuntime
+        runtime={runtime}
+      />
 
-          products={products}
+      {/* ================================================================
+      Debug
+      ================================================================ */}
 
+      {debug === '1' && (
+
+        <RuntimeDebug
+          runtime={runtime}
         />
 
-        {/* ==================================
-        CONVERSION FLOW
-        recommendation / commerce layer
-        ================================== */}
-
-        <RankingConversionFlow
-
-          slug={slug}
-
-          products={products}
-
-        />
-
-      </RankingLayout>
+      )}
 
     </main>
 

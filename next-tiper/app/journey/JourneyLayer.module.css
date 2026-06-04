@@ -1,0 +1,237 @@
+/* =============================================================================
+
+* Journey Layer
+* ============================================================================= */
+
+.journeyLayer {
+margin: 0 0 80px;
+}
+
+.journeyHeader {
+display: flex;
+justify-content: space-between;
+align-items: flex-end;
+
+margin-bottom: 32px;
+padding-bottom: 12px;
+
+border-bottom: 1px solid rgba(255,255,255,0.05);
+
+position: relative;
+}
+
+.journeyHeader::after {
+content: "";
+
+position: absolute;
+bottom: -1px;
+left: 0;
+
+width: 120px;
+height: 2px;
+
+background: #e94560;
+box-shadow: 0 0 12px #e94560;
+}
+
+.journeyHeading {
+font-size: 16px;
+font-weight: 900;
+letter-spacing: 0.3em;
+
+color: #ffffff;
+
+text-transform: uppercase;
+font-family: 'JetBrains Mono', monospace;
+}
+
+.journeyDescription {
+margin-top: 12px;
+
+color: #94a3b8;
+
+font-size: 14px;
+line-height: 1.7;
+}
+
+/* =============================================================================
+
+* Grid
+* ============================================================================= */
+
+.nodeGrid {
+display: grid;
+
+grid-template-columns:
+repeat(
+auto-fit,
+minmax(260px, 1fr)
+);
+
+gap: 24px;
+}
+
+/* =============================================================================
+
+* Node
+* ============================================================================= */
+
+.node {
+position: relative;
+
+background:
+linear-gradient(
+180deg,
+rgba(255,255,255,0.03),
+rgba(255,255,255,0.01)
+);
+
+border:
+1px solid
+rgba(255,255,255,0.08);
+
+padding: 24px;
+
+transition:
+transform 0.25s ease,
+border-color 0.25s ease,
+box-shadow 0.25s ease;
+
+overflow: hidden;
+}
+
+.node::before {
+content: "";
+
+position: absolute;
+top: 0;
+left: 0;
+
+width: 100%;
+height: 1px;
+
+background:
+linear-gradient(
+90deg,
+#e94560,
+transparent
+);
+}
+
+.node:hover {
+transform:
+translateY(-4px);
+
+border-color:
+rgba(233,69,96,0.4);
+
+box-shadow:
+0 0 20px
+rgba(233,69,96,0.15);
+}
+
+/* =============================================================================
+
+* Labels
+* ============================================================================= */
+
+.nodeLabel {
+display: inline-block;
+
+margin-bottom: 12px;
+padding: 3px 8px;
+
+font-size: 10px;
+font-weight: 900;
+
+letter-spacing: 0.2em;
+
+color: #e94560;
+
+border:
+1px solid
+rgba(233,69,96,0.3);
+
+background:
+rgba(233,69,96,0.08);
+
+font-family:
+'JetBrains Mono',
+monospace;
+}
+
+.nodeTitle {
+color: #ffffff;
+
+font-size: 22px;
+font-weight: 900;
+
+margin-bottom: 16px;
+}
+
+.nodeList {
+list-style: none;
+
+padding: 0;
+margin: 0 0 24px;
+}
+
+.nodeList li {
+color: #94a3b8;
+
+font-size: 14px;
+
+line-height: 1.8;
+}
+
+/* =============================================================================
+
+* CTA
+* ============================================================================= */
+
+.nodeAction {
+display: inline-flex;
+align-items: center;
+
+gap: 8px;
+
+font-family:
+'JetBrains Mono',
+monospace;
+
+font-size: 12px;
+font-weight: 800;
+
+letter-spacing: 0.12em;
+
+color: #e94560;
+
+text-decoration: none;
+
+transition: 0.2s ease;
+}
+
+.nodeAction:hover {
+color: #ffffff;
+}
+
+/* =============================================================================
+
+* Mobile
+* ============================================================================= */
+
+@media (max-width: 768px) {
+
+.journeyLayer {
+margin-bottom: 60px;
+}
+
+.node {
+padding: 20px;
+}
+
+.nodeTitle {
+font-size: 20px;
+}
+
+}

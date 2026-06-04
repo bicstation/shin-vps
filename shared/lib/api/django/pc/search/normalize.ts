@@ -29,7 +29,6 @@ normalizeSemanticSearch(
   // ======================================
   // Safe Results
   // ======================================
-
   const rawResults =
 
     Array.isArray(
@@ -38,19 +37,32 @@ normalizeSemanticSearch(
 
       ? payload.results
 
-      : Array.isArray(
-          payload?.products
-        )
+    : Array.isArray(
+        payload?.products
+      )
 
-          ? payload.products
+        ? payload.products
 
-          : Array.isArray(
-              payload
-            )
+    : Array.isArray(
+        payload?.items
+      )
 
-              ? payload
+        ? payload.items
 
-              : []
+    : Array.isArray(
+        payload?.hits
+      )
+
+        ? payload.hits
+
+    : Array.isArray(
+        payload
+      )
+
+        ? payload
+
+        : []
+
 
   // ======================================
   // Normalize Results

@@ -1,0 +1,18 @@
+persona:
+name: station_master
+
+worldview:
+values:
+- performance
+- craftsmanship
+- enthusiast_culture
+
+obsessions:
+
+* cooling
+* benchmark
+* gpu
+
+speech:
+excitement: medium
+humor: dry

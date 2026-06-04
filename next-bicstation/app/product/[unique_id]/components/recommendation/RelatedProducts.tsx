@@ -1,556 +1,287 @@
-// /app/product/[unique_id]/components/recommendation/RelatedProducts.tsx
+// ============================================================================
+// FILE:
+// /home/maya/shin-vps/next-bicstation/app/product/[unique_id]/components/recommendation/RelatedProducts.tsx
+// ============================================================================
 
-import Link
-  from 'next/link'
+'use client'
 
-/* =========================================
+/* ============================================================================
+🔥 Components
+============================================================================ */
+
+import ProductExplorationCard
+from './ProductExplorationCard'
+
+import ProductRelationReasons
+from './ProductRelationReasons'
+
+/* ============================================================================
 🔥 Styles
-========================================= */
+============================================================================ */
 
 import styles
-  from './RelatedProducts.module.css'
+from './RelatedProducts.module.css'
 
-/* =========================================
-🔥 Types
-========================================= */
+/* ============================================================================
+🔥 Props
+============================================================================ */
 
 type Props = {
 
-  product: any
+  related: any[]
 
-  products: any[]
+  continuationRuntime?: any
+
+  traversalEdges?: any[]
+
 }
 
-/* =========================================
-🔥 Match Reason
-========================================= */
 
-function formatMatchReason(
-  reasons: any
-): string[] {
+/* ============================================================================
+🔥 COMPONENT
+============================================================================ */
 
-  let list: string[] = []
-
-  // ======================================
-  // Normalize
-  // ======================================
-
-  if (
-    Array.isArray(reasons)
-  ) {
-
-    list = reasons
-
-  } else if (
-    typeof reasons ===
-    'string'
-  ) {
-
-    list =
-      reasons
-        .split(',')
-        .map(v => v.trim())
-  }
-
-  // ======================================
-  // Semantic Map
-  // ======================================
-
-  const map:
-    Record<
-      string,
-      string
-    > = {
-
-    price:
-      '同価格帯で比較しやすい',
-
-    gpu:
-      '近いGPU性能構成',
-
-    usage:
-      '似た用途に向いている',
-
-    creator:
-      '制作向け構成が近い',
-
-    gaming:
-      'ゲーム用途が近い',
-
-    balance:
-      '全体バランスが近い',
-  }
-
-  return list
-    .map(
-      key => map[key]
-    )
-    .filter(Boolean)
-}
-
-/* =========================================
-🔥 Similarity Badge
-========================================= */
-
-function SimilarityBadge({
-  index,
-}: {
-  index: number
-}) {
-
-  if (index === 0) {
-
-    return (
-
-      <div
-        className={
-          styles.topBadge
-        }
-      >
-
-        TOP MATCH
-
-      </div>
-
-    )
-  }
-
-  return (
-
-    <div
-      className={
-        styles.badge
-      }
-    >
-
-      SIMILAR
-
-    </div>
-
-  )
-}
-
-/* =========================================
-🔥 Empty
-========================================= */
-
-function EmptyState() {
-
-  return (
-
-    <div
-      className={
-        styles.empty
-      }
-    >
-
-      <p
-        className={
-          styles.emptyText
-        }
-      >
-
-        関連するおすすめ構成はまだありません
-
-      </p>
-
-    </div>
-
-  )
-}
-
-/* =========================================
-🔥 Semantic Groups
-========================================= */
-
-function SemanticGroups({
-  grouped,
-}: {
-  grouped?: Record<
-    string,
-    any[]
-  >
-}) {
-
-  if (!grouped) {
-
-    return null
-  }
-
-  const entries =
-
-    Object.entries(
-      grouped
-    )
-
-  if (!entries.length) {
-
-    return null
-  }
-
-  return (
-
-    <div
-      className={
-        styles.semanticGroups
-      }
-    >
-
-      {entries
-        .slice(0, 2)
-        .map(([
-
-          group,
-
-          attrs,
-
-        ]) => (
-
-          <div
-            key={group}
-
-            className={
-              styles.semanticGroup
-            }
-          >
-
-            {/* ===================== */}
-            {/* Group */}
-            {/* ===================== */}
-
-            <div
-              className={
-                styles.semanticGroupTitle
-              }
-            >
-
-              {group}
-
-            </div>
-
-            {/* ===================== */}
-            {/* Chips */}
-            {/* ===================== */}
-
-            <div
-              className={
-                styles.semanticChipList
-              }
-            >
-
-              {(attrs || [])
-                .slice(0, 3)
-                .map(attr => (
-
-                  <div
-                    key={
-                      attr.slug
-                    }
-
-                    className={
-                      styles.semanticChip
-                    }
-                  >
-
-                    {attr.name}
-
-                  </div>
-
-                ))}
-
-            </div>
-
-          </div>
-
-        ))}
-
-    </div>
-
-  )
-}
-
-/* =========================================
-🔥 Component
-========================================= */
-
-export default function
-RelatedProducts({
-
-  product,
-
-  products,
-
+export default function RelatedProducts({
+related,
 }: Props) {
 
-  // ======================================
-  // Safety
-  // ======================================
+// ==========================================================================
+// RELATED PRODUCTS
+// ==========================================================================
 
-  if (
-    !product
-  ) {
+const relatedProducts =
 
-    return null
+
+Array.isArray(
+  related
+)
+  ? related
+  : []
+
+
+// ==========================================================================
+// DEBUG
+// ==========================================================================
+
+console.log(
+'🔥 RELATED RUNTIME:',
+relatedProducts
+)
+
+// ==========================================================================
+// EMPTY
+// ==========================================================================
+
+if (
+relatedProducts.length === 0
+) {
+
+
+return null
+
+
+}
+
+// ==========================================================================
+// Render
+// ==========================================================================
+
+return (
+
+
+<section
+  className={
+    styles.relatedProductsSection
   }
 
-  // ======================================
-  // Empty
-  // ======================================
+  id="related"
+>
 
-  if (
-    !products?.length
-  ) {
+  {/* ================================================================
+  HEADER
+  ================================================================ */}
 
-    return (
-      <EmptyState />
-    )
-  }
+  <div
+    className={
+      styles.relatedProductsHeader
+    }
+  >
 
-  // ======================================
-  // Render
-  // ======================================
-
-  return (
-
-    <section
+    <div
       className={
-        styles.section
+        styles.relatedProductsLabel
       }
     >
 
-      {/* ==================================
-      Header
-      ================================== */}
+      <div>
 
-      <div
-        className={
-          styles.header
-        }
-      >
-
-        <div
-          className={
-            styles.label
-          }
-        >
-
-          Semantic Recommendation
-
-        </div>
-
-        <h2
-          className={
-            styles.title
-          }
-        >
-
-          似た用途でおすすめの構成
-
-        </h2>
-
-        <p
-          className={
-            styles.description
-          }
-        >
-
-          用途・性能バランス・
-          semantic intent が近い
-          おすすめ構成を表示しています。
-
-        </p>
+        SEMANTIC CONTINUITY
 
       </div>
 
-      {/* ==================================
-      Grid
-      ================================== */}
+      {
 
-      <div
-        className={
-          styles.grid
-        }
-      >
+        traversalEdges?.length > 0 && (
 
-        {products
-          .slice(0, 8)
-          .map((
+          <div>
 
-            p: any,
+            {traversalEdges.length}
+            semantic edges active
 
-            index: number
+          </div>
+        )
+      }
 
-          ) => {
+      {
 
-            const title =
+        continuationRuntime
+          ?.workflow_continuity && (
 
-              p.shortTitle
-              || p.name
-              || 'おすすめPC'
+          <div>
 
-            const image =
+            workflow continuity active
 
-              p.image_url
-              || '/no-image.png'
+          </div>
+        )
+      }
 
-            const price =
+    </div>
 
-              typeof p.price ===
-              'number'
+    <h2
+      className={
+        styles.relatedProductsTitle
+      }
+    >
 
-                ? `¥${p.price.toLocaleString()}`
+      関連するPCを探索する
 
-                : null
+    </h2>
 
-            const reasons =
+    <p
+      className={
+        styles.relatedProductsDescription
+      }
+    >
 
-              formatMatchReason(
-                p.match_reason
-              )
+      workflow・semantic runtime・
+      GPU構成・用途分析をもとに、
+      近い方向性を持つPCを探索できます。
 
-            const grouped =
+    </p>
 
-              p.grouped_attributes
-              || {}
+  </div>
 
-            return (
+  {/* ================================================================
+  HORIZONTAL SLIDER
+  ================================================================ */}
+  <div
+    className={
+      styles.relatedProductsSlider
+    }
+  >
 
-              <Link
-                key={
-                  p.unique_id
+    {
+      relatedProducts.map(
+        (
+          relatedProduct: any,
+          index: number,
+        ) => {
+
+          // ==========================================================
+          // Traversal Edge
+          // ==========================================================
+
+          const traversalEdge =
+
+            Array.isArray(
+              traversalEdges
+            )
+
+              ? traversalEdges[index]
+
+              : null
+
+          return (
+
+            <div
+              key={
+                relatedProduct?.unique_id
+              }
+
+              className={
+                styles.relatedProductsItem
+              }
+            >
+
+              {/* ======================================================
+              EXPLORATION CARD
+              ====================================================== */}
+
+              <ProductExplorationCard
+                product={
+                  relatedProduct
                 }
+              />
 
-                href={
-                  `/product/${p.unique_id}`
-                }
+              {/* ======================================================
+              CONTINUATION RUNTIME
+              ====================================================== */}
 
-                className={
-                  styles.card
-                }
-              >
+              {
 
-                {/* ================= */}
-                {/* Image */}
-                {/* ================= */}
+                traversalEdge && (
 
-                <div
-                  className={
-                    styles.imageWrap
-                  }
-                >
+                  <div>
 
-                  <img
-                    src={image}
+                    <div>
 
-                    alt={title}
+                      {
+                        traversalEdge
+                          ?.edge_type
+                      }
 
-                    className={
-                      styles.image
-                    }
-                  />
+                    </div>
 
-                  <div
-                    className={
-                      styles.imageOverlay
-                    }
-                  />
+                    <div>
 
-                  <div
-                    className={
-                      styles.badgeWrap
-                    }
-                  >
+                      {
+                        traversalEdge
+                          ?.workflow_relation
+                      }
 
-                    <SimilarityBadge
-                      index={index}
-                    />
+                    </div>
 
                   </div>
+                )
+              }
 
-                </div>
+              {/* ======================================================
+              RELATION REASONS
+              ====================================================== */}
 
-                {/* ================= */}
-                {/* Content */}
-                {/* ================= */}
+              <ProductRelationReasons
+                product={
+                  relatedProduct
+                }
 
-                <div
-                  className={
-                    styles.content
-                  }
-                >
+                related={
+                  relatedProducts
+                }
+              />
 
-                  {price && (
+            </div>
+          )
+        }
+      )
+    }
 
-                    <div
-                      className={
-                        styles.price
-                      }
-                    >
+  </div>
 
-                      {price}
 
-                    </div>
 
-                  )}
 
-                  <h3
-                    className={
-                      styles.cardTitle
-                    }
-                  >
+</section>
 
-                    {title}
 
-                  </h3>
-
-                  {reasons.length > 0 && (
-
-                    <div
-                      className={
-                        styles.reasonList
-                      }
-                    >
-
-                      {reasons.map((
-
-                        reason,
-
-                        idx
-
-                      ) => (
-
-                        <div
-                          key={idx}
-
-                          className={
-                            styles.reasonChip
-                          }
-                        >
-
-                          {reason}
-
-                        </div>
-
-                      ))}
-
-                    </div>
-
-                  )}
-
-                  <SemanticGroups
-                    grouped={grouped}
-                  />
-
-                </div>
-
-              </Link>
-
-            )
-          })}
-
-      </div>
-
-    </section>
-
-  )
+)
 }

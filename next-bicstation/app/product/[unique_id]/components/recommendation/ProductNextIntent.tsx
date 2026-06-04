@@ -1,260 +1,348 @@
-// next-bicstation/app/product/[unique_id]/components/recommendation/ProductNextIntent.tsx
+// ============================================================================
+// FILE:
+// /home/maya/shin-vps/next-bicstation/app/product/[unique_id]/components/recommendation/ProductNextIntent.tsx
+// ============================================================================
 
-import Link
-  from 'next/link'
+'use client'
+
+/* ============================================================================
+🔥 Styles
+============================================================================ */
 
 import styles
-  from './recommendation.module.css'
+from './recommendation.module.css'
+
+/* ============================================================================
+🔥 Props
+============================================================================ */
 
 type Props = {
-  product: any
+
+product: any
+
+related: any[]
 }
 
-/* =========================================
+/* ============================================================================
 🔥 HELPERS
-========================================= */
+============================================================================ */
 
-function buildNextIntents(
-  product: any
+function buildNextIntent(
+product: any,
+related: any[]
 ) {
 
-  const text = JSON.stringify(
-    product
-  ).toLowerCase()
+const intents: string[] = []
 
-  const intents = []
+// ==========================================================================
+// RELATED RUNTIME
+// ==========================================================================
 
-  /* ======================================
-  🎮 gaming
-  ====================================== */
+if (
+Array.isArray(
+related
+)
+) {
 
-  if (
-    text.includes('rtx')
-    || text.includes('gaming')
-  ) {
 
-    intents.push({
-      icon: '🎮',
-      title: 'FPS重視で探したい',
-      description:
-        '高fps gaming をさらに重視した構成を比較できます。',
-      href:
-        '/ranking/usage-gaming',
-    })
+related.forEach(
+  (
+    item: any
+  ) => {
+
+    const text =
+      JSON.stringify(item)
+        .toLowerCase()
+
+    // ================================================================
+    // AI
+    // ================================================================
+
+    if (
+      text.includes('ai')
+      || text.includes('llm')
+      || text.includes('stable diffusion')
+    ) {
+
+      intents.push(
+        'AI画像生成・ローカルLLM用途への探索を広げられます'
+      )
+
+    }
+
+    // ================================================================
+    // CREATOR
+    // ================================================================
+
+    if (
+      text.includes('creator')
+      || text.includes('premiere')
+      || text.includes('davinci')
+    ) {
+
+      intents.push(
+        '動画編集やクリエイティブ workflow へ拡張できます'
+      )
+
+    }
+
+    // ================================================================
+    // GAMING
+    // ================================================================
+
+    if (
+      text.includes('gaming')
+      || text.includes('geforce')
+      || text.includes('rtx')
+    ) {
+
+      intents.push(
+        '高fps gaming や配信用途へ探索を広げられます'
+      )
+
+    }
+
+    // ================================================================
+    // BUSINESS
+    // ================================================================
+
+    if (
+      text.includes('business')
+      || text.includes('office')
+    ) {
+
+      intents.push(
+        'ビジネス用途や日常workflow向け構成も探索できます'
+      )
+
+    }
 
   }
+)
 
-  /* ======================================
-  🤖 AI
-  ====================================== */
-
-  if (
-    text.includes('rtx')
-    || text.includes('ai')
-  ) {
-
-    intents.push({
-      icon: '🤖',
-      title: 'AI用途を重視したい',
-      description:
-        'Stable DiffusionなどのAI生成向け構成を比較できます。',
-      href:
-        '/ranking/usage-ai',
-    })
-
-  }
-
-  /* ======================================
-  🎬 creator
-  ====================================== */
-
-  intents.push({
-    icon: '🎬',
-    title: '動画編集も重視したい',
-    description:
-      'Premiere Proや動画編集向け構成を比較できます。',
-    href:
-      '/ranking/usage-creator',
-  })
-
-  /* ======================================
-  💰 cost
-  ====================================== */
-
-  intents.push({
-    icon: '💰',
-    title: 'コスパ重視で探したい',
-    description:
-      '価格と性能バランスを重視した人気構成を比較できます。',
-    href:
-      '/ranking/cost-performance',
-  })
-
-  return intents.slice(0, 4)
 
 }
 
-/* =========================================
+// ==========================================================================
+// PRODUCT FALLBACK
+// ==========================================================================
+
+if (
+intents.length === 0
+) {
+
+
+const text =
+  JSON.stringify(product)
+    .toLowerCase()
+
+if (
+  text.includes('business')
+) {
+
+  intents.push(
+    '次は動画編集・制作向けPCもおすすめです'
+  )
+
+}
+
+if (
+  text.includes('creator')
+  || text.includes('premiere')
+  || text.includes('davinci')
+) {
+
+  intents.push(
+    '生成AI・ローカルAI用途への拡張も可能です'
+  )
+
+}
+
+if (
+  text.includes('gaming')
+  || text.includes('geforce')
+  || text.includes('rtx')
+) {
+
+  intents.push(
+    '高性能GPUを活かした配信・動画編集にも向いています'
+  )
+
+}
+
+if (
+  text.includes('ai')
+  || text.includes('rtx')
+) {
+
+  intents.push(
+    'AI画像生成やLLM用途の探索にも繋がります'
+  )
+
+}
+
+
+}
+
+// ==========================================================================
+// FINAL FALLBACK
+// ==========================================================================
+
+if (
+intents.length === 0
+) {
+
+
+intents.push(
+  '用途を広げながら次のPC探索へ進めます'
+)
+
+
+}
+
+// ==========================================================================
+// UNIQUE
+// ==========================================================================
+
+return Array.from(
+new Set(intents)
+).slice(0, 4)
+
+}
+
+/* ============================================================================
 🔥 COMPONENT
-========================================= */
+============================================================================ */
 
 export default function ProductNextIntent({
-  product,
+
+product,
+
+related,
+
 }: Props) {
 
-  const intents =
-    buildNextIntents(
-      product
-    )
+// ==========================================================================
+// Intent Runtime
+// ==========================================================================
 
-  if (
-    !intents.length
-  ) {
-    return null
+const intents =
+
+
+buildNextIntent(
+  product,
+  related
+)
+
+
+// ==========================================================================
+// EMPTY
+// ==========================================================================
+
+if (
+intents.length === 0
+) {
+
+
+return null
+
+
+}
+
+// ==========================================================================
+// RENDER
+// ==========================================================================
+
+return (
+
+
+<section
+  className={
+    styles.nextIntentSection
   }
+>
 
-  return (
+  {/* ================================================================
+  HEADER
+  ================================================================ */}
 
-    <section
+  <div
+    className={
+      styles.nextIntentHeader
+    }
+  >
+
+    <div
       className={
-        styles.nextIntentSection
+        styles.nextIntentLabel
       }
     >
 
-      {/* ==================================
-      HEADER
-      ================================== */}
+      NEXT EXPLORATION
 
-      <div
-        className={
-          styles.nextIntentHeader
-        }
-      >
+    </div>
 
-        <div
-          className={
-            styles.nextIntentLabel
-          }
-        >
-          NEXT COMPARISON
-        </div>
+    <h2
+      className={
+        styles.nextIntentTitle
+      }
+    >
 
-        <h2
-          className={
-            styles.nextIntentTitle
-          }
-        >
-          次に比較したい方向性
-        </h2>
+      次に探索したい用途
 
-        <p
-          className={
-            styles.nextIntentDescription
-          }
-        >
-          「このPCだけ」で終わらず、
-          他の用途や重視ポイントも
-          比較できます。
-        </p>
+    </h2>
 
-      </div>
+    <p
+      className={
+        styles.nextIntentDescription
+      }
+    >
 
-      {/* ==================================
-      GRID
-      ================================== */}
+      semantic runtime をもとに、
+      workflow・用途・GPU構成の近い
+      次の探索方向を整理しています。
 
-      <div
-        className={
-          styles.nextIntentGrid
-        }
-      >
+    </p>
 
-        {intents.map(
-          (intent) => (
+  </div>
 
-            <Link
-              key={
-                intent.title
-              }
+  {/* ================================================================
+  GRID
+  ================================================================ */}
 
-              href={
-                intent.href
-              }
+  <div
+    className={
+      styles.nextIntentGrid
+    }
+  >
 
-              className={
-                styles.nextIntentCard
-              }
-            >
+    {
+      intents.map(
+        (
+          intent,
+          index
+        ) => (
 
-              {/* ==========================
-              ICON
-              ========================== */}
+          <div
+            key={index}
 
-              <div
-                className={
-                  styles.nextIntentIcon
-                }
-              >
-                {intent.icon}
-              </div>
+            className={
+              styles.nextIntentCard
+            }
+          >
 
-              {/* ==========================
-              CONTENT
-              ========================== */}
+            {intent}
 
-              <div
-                className={
-                  styles.nextIntentContent
-                }
-              >
+          </div>
 
-                <div
-                  className={
-                    styles.nextIntentCardTitle
-                  }
-                >
-                  {intent.title}
-                </div>
+        )
+      )
+    }
 
-                <p
-                  className={
-                    styles.nextIntentCardDescription
-                  }
-                >
-                  {intent.description}
-                </p>
+  </div>
 
-              </div>
+</section>
 
-            </Link>
 
-          )
-        )}
-
-      </div>
-
-      {/* ==================================
-      FOOTER
-      ================================== */}
-
-      <div
-        className={
-          styles.nextIntentFooter
-        }
-      >
-
-        <div
-          className={
-            styles.nextIntentFooterText
-          }
-        >
-          ✔ comparison continuation により、
-          自分に合う構成をさらに探しやすくしています。
-        </div>
-
-      </div>
-
-    </section>
-
-  )
+)
 }

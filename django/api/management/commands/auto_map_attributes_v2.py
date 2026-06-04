@@ -1,514 +1,471 @@
-from collections import defaultdict
-from pathlib import Path
+# =========================================================
+# FILE:
+# api/management/commands/auto_map_attributes_v2.py
+# =========================================================
 
-from django.core.management.base import BaseCommand
-from django.db import transaction
-
-from api.models import PCProduct, PCAttribute
-
-from api.utils.attribute_loader import (
-    sync_attributes_from_tsv
+from django.core.management.base import (
+    BaseCommand,
 )
 
-from api.utils.attribute_matcher import (
-    match_attribute
+from api.models import (
+    PCProduct,
+)
+
+from api.utils.semantic.authority.loader import (
+    load_semantic_master,
+)
+
+from api.utils.semantic.extraction.extract_pc_specs import (
+    extract_pc_specs,
+)
+
+from api.utils.semantic.authority.normalization import (
+    normalize_runtime,
+)
+
+from api.utils.semantic.authority.aliases import (
+    resolve_alias_runtime,
+)
+
+from api.utils.semantic.traversal.detect_usage import (
+    detect_usage_runtime,
+)
+
+from api.utils.semantic.traversal.detect_memory import (
+    detect_memory_runtime,
+)
+
+from api.utils.semantic.traversal.detect_storage import (
+    detect_storage_runtime,
+)
+
+from api.utils.semantic.traversal.detect_features import (
+    detect_features_runtime,
+)
+
+from api.utils.semantic.traversal.compile_workflows import (
+    compile_workflow_runtime,
+)
+
+from api.utils.semantic.runtime.persist_runtime import (
+    persist_runtime,
+)
+
+from api.utils.semantic.runtime.runtime_log import (
+    runtime_log,
 )
 
 
 # =========================================================
-# Memory 判定
+# COMMAND
 # =========================================================
-def detect_memory_attr(memory_gb, get):
 
-    memory_gb = memory_gb or 0
-
-    if memory_gb >= 64:
-        return get("mem-64gb-plus")
-
-    elif memory_gb >= 32:
-        return get("mem-32gb")
-
-    elif memory_gb >= 16:
-        return get("mem-16gb")
-
-    elif memory_gb >= 8:
-        return get("mem-8gb")
-
-    return None
-
-
-# =========================================================
-# Storage 判定
-# =========================================================
-def detect_storage_attr(storage_gb, get):
-
-    storage_gb = storage_gb or 0
-
-    if storage_gb >= 2000:
-        return get("ssd-2tb-plus")
-
-    elif storage_gb >= 1000:
-        return get("ssd-1tb")
-
-    elif storage_gb >= 512:
-        return get("ssd-512gb")
-
-    elif storage_gb >= 256:
-        return get("ssd-256gb")
-
-    return None
-
-
-# =========================================================
-# Weight Feature 判定
-# =========================================================
-def detect_pc_feature(weight_kg, get):
-
-    weight_kg = weight_kg or 0
-
-    # 超軽量
-    if (
-        weight_kg > 0
-        and weight_kg < 1.0
-    ):
-        return get("feat-weight-1kg")
-
-    # 軽量
-    elif (
-        weight_kg >= 1.0
-        and weight_kg <= 1.5
-    ):
-        return get("feat-weight-1-5kg")
-
-    # 標準
-    elif (
-        weight_kg > 1.5
-        and weight_kg <= 2.0
-    ):
-        return get("feat-weight-2kg")
-
-    return None
-
-
-# =========================================================
-# Usage 判定
-# =========================================================
-def detect_usage(
-    p,
-    get,
-    cpu_attr,
-    gpu_attr
-):
-
-    combined_text = " ".join([
-
-        p.name or "",
-        p.description or "",
-        p.cpu_model or "",
-        p.gpu_model or "",
-
-    ]).lower()
-
-    scores = {}
-
-    usage_attrs = PCAttribute.objects.filter(
-        attr_type="usage"
-    )
-
-    for usage in usage_attrs:
-
-        scores[usage.slug] = 0
-
-        keywords = (
-            usage.search_keywords or ""
-        ).split(",")
-
-        for kw in keywords:
-
-            kw = kw.strip().lower()
-
-            if not kw:
-                continue
-
-            if kw in combined_text:
-                scores[usage.slug] += 3
-
-    # =====================================================
-    # GPU補正
-    # =====================================================
-    gpu_score = (
-        gpu_attr.order
-        if gpu_attr
-        else 0
-    )
-
-    if gpu_score >= 90:
-
-        scores["usage-gaming"] += 3
-
-    elif gpu_score >= 80:
-
-        scores["usage-gaming"] += 2
-        scores["usage-creator"] += 1
-
-    elif gpu_score <= 10:
-
-        scores["usage-business"] += 2
-
-    # =====================================================
-    # CPU補正
-    # =====================================================
-    if cpu_attr:
-
-        if cpu_attr.slug in [
-
-            "intel-core-ultra-9",
-            "intel-core-i9",
-            "amd-ryzen-9",
-
-        ]:
-
-            scores["usage-creator"] += 2
-            scores["usage-ai"] += 1
-
-        elif cpu_attr.slug in [
-
-            "intel-core-ultra-7",
-            "intel-core-i7",
-            "amd-ryzen-7",
-
-        ]:
-
-            scores["usage-creator"] += 1
-
-        elif cpu_attr.slug in [
-
-            "intel-low-end",
-            "intel-core-i3",
-
-        ]:
-
-            scores["usage-business"] += 2
-            scores["usage-budget"] += 1
-
-    # =====================================================
-    # 空安全化
-    # =====================================================
-    if not scores:
-        return None
-
-    # =====================================================
-    # Best Usage
-    # =====================================================
-    best_slug = max(
-        scores,
-        key=scores.get
-    )
-
-    return get(best_slug)
-
-
-# =========================================================
-# Command
-# =========================================================
 class Command(BaseCommand):
 
-    help = "PC属性 自動マッピング V2（TSV完全版）"
+    help = (
+        "Compile semantic runtime v2"
+    )
 
-    def handle(self, *args, **options):
+    # =====================================================
+    # HANDLE
+    # =====================================================
 
-        self.stdout.write(
-            "🚀 属性V2 TSV START"
+    def handle(
+
+        self,
+
+        *args,
+
+        **options,
+
+    ):
+
+        # =================================================
+        # LOAD AUTHORITY
+        # =================================================
+
+        semantic_master = (
+            load_semantic_master()
         )
 
         # =================================================
-        # TSV同期
+        # PRODUCTS
         # =================================================
-        BASE_DIR = Path("/usr/src/app")
 
-        tsv_path = (
-            BASE_DIR
-            / "master_data"
-            / "attributes.tsv"
+        products = (
+            PCProduct.objects
+            .filter(
+                is_active=True,
+            )
+            .order_by("id")
         )
 
-        result = sync_attributes_from_tsv(
-            tsv_path
-        )
-
-        self.stdout.write(
-
-            f"📥 TSV Sync: "
-            f"created={result['created']} "
-            f"updated={result['updated']}"
-        )
+        total = products.count()
 
         # =================================================
-        # Attribute Map
+        # SUMMARY
         # =================================================
-        attrs = PCAttribute.objects.all()
 
-        attr_map = {
-            a.slug: a
-            for a in attrs
+        summary = {
+
+            "total": 0,
+
+            "ai": 0,
+
+            "gaming": 0,
+
+            "creator": 0,
+
+            "business": 0,
+
+            "errors": 0,
         }
 
-        def get(slug):
-            return attr_map.get(slug)
-
-        total_attrs = 0
-
-        type_counts = defaultdict(int)
-
-        product_count = 0
-
         # =================================================
-        # MAIN LOOP
+        # LOOP
         # =================================================
-        with transaction.atomic():
 
-            for p in PCProduct.objects.all():
+        for index, product in enumerate(
 
-                product_count += 1
+            products,
 
-                new_attrs = []
-                
-                # =========================================================
-                # GPU
-                # =========================================================
-                gpu_attr = match_attribute(
-                    p.gpu_model,
-                    "gpu"
-                )
+            start=1,
 
-                # fallback 廃止
-                # semantic truth 優先
+        ):
 
-                if gpu_attr:
-
-                    new_attrs.append(
-                        gpu_attr
-                    )
-
-                    type_counts["gpu"] += 1
-
-
-                # =========================================================
-                # CPU
-                # =========================================================
-                cpu_attr = match_attribute(
-                    p.cpu_model,
-                    "cpu"
-                )
-
-                # fallback 廃止
-                # semantic truth 優先
-
-                if cpu_attr:
-
-                    new_attrs.append(
-                        cpu_attr
-                    )
-
-                    type_counts["cpu"] += 1
-
+            try:
 
                 # =========================================
-                # Maker
+                # PRODUCT
                 # =========================================
-                maker_text = " ".join([
 
-                    p.maker or "",
-                    p.name or "",
-                    p.description or "",
+                print()
 
-                ]).lower()
-
-                maker_attr = match_attribute(
-                    maker_text,
-                    "maker"
+                print(
+                    "=" * 56
                 )
 
-                if maker_attr:
-
-                    new_attrs.append(
-                        maker_attr
-                    )
-
-                    type_counts["maker"] += 1
-
-                    # =====================================
-                    # Normalize maker column
-                    # =====================================
-                    if (
-                        not p.maker
-                        or
-                        p.maker == "unknown"
-                    ):
-
-                        p.maker = maker_attr.name
-
-
-                # =========================================================
-                # Memory
-                # =========================================================
-                memory_attr = detect_memory_attr(
-                    p.memory_gb,
-                    get
+                print(
+                    f"PRODUCT [{index}/{total}]"
                 )
 
-                if memory_attr:
-
-                    new_attrs.append(
-                        memory_attr
-                    )
-
-                    type_counts["memory"] += 1
-
-
-                # =========================================================
-                # Storage
-                # =========================================================
-                storage_attr = detect_storage_attr(
-                    p.storage_gb,
-                    get
+                print(
+                    "=" * 56
                 )
 
-                if storage_attr:
-
-                    new_attrs.append(
-                        storage_attr
-                    )
-
-                    type_counts["storage"] += 1
-
-
-                # =========================================================
-                # PC Feature
-                # =========================================================
-                pc_feature_attr = detect_pc_feature(
-
-                    getattr(
-                        p,
-                        "weight_kg",
-                        0
-                    ),
-
-                    get
+                print(
+                    product.name
                 )
-
-                if pc_feature_attr:
-
-                    new_attrs.append(
-                        pc_feature_attr
-                    )
-
-                    type_counts["pc_feature"] += 1
-
-
-                # =========================================================
-                # Usage
-                # =========================================================
-                usage_attr = detect_usage(
-                    p,
-                    get,
-                    cpu_attr,
-                    gpu_attr
-                )
-
-                if usage_attr:
-
-                    new_attrs.append(
-                        usage_attr
-                    )
-
-                    type_counts["usage"] += 1
 
                 # =========================================
-                # Device
+                # EXTRACTION
                 # =========================================
-                device_text = " ".join([
 
-                    p.name or "",
-                    p.description or "",
-                    p.cpu_model or "",
-                    p.gpu_model or "",
-
-                ]).lower()
-
-                device_attr = match_attribute(
-                    device_text,
-                    "device"
+                specs = extract_pc_specs(
+                    product
                 )
 
-                if device_attr:
+                runtime_log(
+                    False,
+                    "SPECS",
+                    specs,
+                )
 
-                    new_attrs.append(
-                        device_attr
+                # =========================================
+                # NORMALIZE
+                # =========================================
+
+                normalized_tokens = (
+                    normalize_runtime(
+                        specs,
+                        semantic_master,
                     )
-
-                    type_counts["device"] += 1
-
-
-                # =========================================================
-                # Duplicate Safe
-                # =========================================================
-                unique_attrs = []
-
-                seen = set()
-
-                for a in new_attrs:
-
-                    if not a:
-                        continue
-
-                    if a.id in seen:
-                        continue
-
-                    seen.add(a.id)
-
-                    unique_attrs.append(a)
-
-                # =========================================================
-                # Save
-                # =========================================================
-                p.attributes.set(
-                    unique_attrs
                 )
 
-                # =====================================
-                # Save normalized fields
-                # =====================================
-                p.save(
-                    update_fields=[
-                        "maker"
-                    ]
+                runtime_log(
+                    False,
+                    "NORMALIZED",
+                    normalized_tokens,
                 )
 
-                total_attrs += len(
-                    unique_attrs
+                # =========================================
+                # ALIASES
+                # =========================================
+
+                semantic_attributes = (
+                    resolve_alias_runtime(
+                        normalized_tokens,
+                        semantic_master,
+                    )
+                )
+
+                # =========================================
+                # EXTRA DETECT
+                # =========================================
+
+                semantic_attributes += (
+                    detect_memory_runtime(
+                        specs
+                    )
+                )
+
+                semantic_attributes += (
+                    detect_storage_runtime(
+                        specs
+                    )
+                )
+
+                semantic_attributes += (
+                    detect_features_runtime(
+                        specs
+                    )
+                )
+
+                semantic_attributes = list(
+                    set(
+                        semantic_attributes
+                    )
+                )
+
+                runtime_log(
+                    False,
+                    "ATTRIBUTES",
+                    semantic_attributes,
+                )
+
+                # =========================================
+                # GROUP TRAVERSAL
+                # =========================================
+
+                semantic_groups = (
+                    detect_usage_runtime(
+                        {
+                            "semantic_attributes":
+                                semantic_attributes
+                        },
+                        semantic_master,
+                    )
+                )
+
+                runtime_log(
+                    False,
+                    "GROUPS",
+                    semantic_groups,
+                )
+
+                # =========================================
+                # WORKFLOW
+                # =========================================
+
+                workflow_runtime = (
+                    compile_workflow_runtime(
+                        semantic_groups,
+                        semantic_master,
+                    )
+                )
+
+                workflow_tags = (
+                    workflow_runtime.get(
+                        "workflow_tags",
+                        []
+                    )
+                )
+
+                semantic_labels = (
+                    workflow_runtime.get(
+                        "semantic_labels",
+                        []
+                    )
+                )
+
+                runtime_log(
+                    False,
+                    "WORKFLOW",
+                    workflow_runtime,
+                )
+
+                # =========================================
+                # RUNTIME
+                # =========================================
+
+                semantic_runtime = {
+
+                    "runtime_mode":
+                        "production",
+
+                    "specs":
+                        specs,
+
+                    "normalized_tokens":
+                        normalized_tokens,
+
+                    "semantic_attributes":
+                        semantic_attributes,
+
+                    "semantic_groups":
+                        semantic_groups,
+
+                    "workflow_tags":
+                        workflow_tags,
+
+                    "semantic_labels":
+                        semantic_labels,
+                }
+
+                # =========================================
+                # PERSIST
+                # =========================================
+
+                persist_runtime(
+
+                    product,
+
+                    semantic_runtime,
+
+                )
+
+                # =========================================
+                # SUMMARY
+                # =========================================
+
+                summary["total"] += 1
+
+                if (
+
+                    "usage-ai"
+
+                    in
+
+                    workflow_tags
+
+                ):
+
+                    summary["ai"] += 1
+
+                if (
+
+                    "usage-gaming"
+
+                    in
+
+                    workflow_tags
+
+                ):
+
+                    summary["gaming"] += 1
+
+                if (
+
+                    "usage-creator"
+
+                    in
+
+                    workflow_tags
+
+                ):
+
+                    summary["creator"] += 1
+
+                if (
+
+                    "usage-business"
+
+                    in
+
+                    workflow_tags
+
+                ):
+
+                    summary["business"] += 1
+
+                # =========================================
+                # DONE
+                # =========================================
+
+                print()
+
+                print(
+                    "=" * 56
+                )
+
+                print(
+                    f"DONE [{index}/{total}]"
+                )
+
+                print(
+                    "=" * 56
+                )
+
+                print({
+
+                    "product":
+                        product.name,
+
+                    "workflow":
+                        workflow_tags,
+
+                    "attributes":
+                        len(
+                            semantic_attributes
+                        ),
+                })
+
+            except Exception as error:
+
+                summary["errors"] += 1
+
+                print()
+
+                print(
+                    "=" * 56
+                )
+
+                print(
+                    "RUNTIME ERROR"
+                )
+
+                print(
+                    "=" * 56
+                )
+
+                print(
+                    str(error)
                 )
 
         # =================================================
-        # LOG
+        # SUMMARY
         # =================================================
-        self.stdout.write(
 
-            self.style.SUCCESS(
-                "✅ DONE"
-            )
+        print()
+
+        print(
+            "=" * 56
         )
 
-        self.stdout.write(
-            f"📦 Products: {product_count}"
+        print(
+            "SEMANTIC SUMMARY"
         )
 
-        self.stdout.write(
-            f"🏷 Total Attributes: {total_attrs}"
+        print(
+            "=" * 56
         )
 
-        for k, v in type_counts.items():
+        print(summary)
 
-            self.stdout.write(
-                f"  - {k}: {v}"
-            )
+        print()
+
+        print(
+            "=" * 56
+        )
+
+        print(
+            "AUTO MAP ATTRIBUTES V2"
+        )
+
+        print(
+            "=" * 56
+        )
+
+        print(
+            "COMPLETED"
+        )

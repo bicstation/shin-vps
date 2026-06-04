@@ -154,13 +154,50 @@ def pc_sidebar_stats(request):
     # =====================================================
     # grouped sidebar
     # =====================================================
-    sidebar = defaultdict(list)
+    sidebar = {}
 
     seen_gpu = set()
 
     for attr in attrs:
 
         key = attr.attr_type
+
+        # =================================================
+        # Initialize Semantic Group
+        # =================================================
+        if key not in sidebar:
+
+            sidebar[key] = {
+
+                "meta": {
+
+                    "name":
+                        key.replace(
+                            "_",
+                            " "
+                        ).title(),
+
+                    "short_name":
+                        key.upper(),
+
+                    "description":
+                        f"{key.replace('_', ' ').title()}別",
+
+                    "icon":
+                        attr.icon,
+
+                    "color":
+                        attr.color,
+
+                    "semantic_role":
+                        attr.semantic_role,
+
+                    "semantic_weight":
+                        attr.semantic_weight,
+                },
+
+                "items": []
+            }
 
         # -------------------------------------------------
         # GPU normalize
@@ -184,7 +221,7 @@ def pc_sidebar_stats(request):
 
             seen_gpu.add(slug)
 
-            sidebar[key].append({
+            sidebar[key]["items"].append({
 
                 "name":
                     clean_name,
@@ -213,7 +250,7 @@ def pc_sidebar_stats(request):
         # -------------------------------------------------
         # generic semantic attributes
         # -------------------------------------------------
-        sidebar[key].append({
+        sidebar[key]["items"].append({
 
             "name":
                 attr.name,
@@ -237,13 +274,28 @@ def pc_sidebar_stats(request):
                 attr.semantic_weight,
         })
 
+
     # =====================================================
     # limit
     # =====================================================
     result = {}
 
-    for key, values in sidebar.items():
+    for key, value in sidebar.items():
 
-        result[key] = values[:10]
+        result[key] = {
 
-    return Response(result)
+            "meta":
+                value["meta"],
+
+            "items":
+                value["items"][:10]
+        }
+
+    return Response({
+
+        "success": True,
+
+        "grouped_attributes":
+            result
+    })
+    

@@ -100,6 +100,8 @@ export default function ProductCompactSpec({
     return null
   }
 
+  console.log(product)
+
   return (
 
     <section

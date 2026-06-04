@@ -1,0 +1,139 @@
+/* ============================================================================
+🔥 SHIN CORE LINX
+Breadcrumb Runtime Styles
+FILE:
+next-bicstation/app/product/[unique_id]/components/common/breadcrumb.module.css
+============================================================================ */
+
+/* ============================================================================
+🔥 ROOT
+============================================================================ */
+
+.breadcrumb {
+
+  display: flex;
+
+  flex-wrap: wrap;
+
+  align-items: center;
+
+  gap: 10px;
+
+  margin-bottom: 28px;
+
+  padding:
+    14px 18px;
+
+  border-radius: 18px;
+
+  background:
+    rgba(255,255,255,.03);
+
+  border:
+    1px solid rgba(255,255,255,.06);
+
+  backdrop-filter:
+    blur(12px);
+}
+
+/* ============================================================================
+🔥 ITEM
+============================================================================ */
+
+.breadcrumbItem {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  min-height: 32px;
+}
+
+/* ============================================================================
+🔥 LINK
+============================================================================ */
+
+.breadcrumbLink {
+
+  color:
+    #94a3b8;
+
+  font-size: 13px;
+
+  font-weight: 700;
+
+  text-decoration: none;
+
+  transition:
+    color .18s ease,
+    opacity .18s ease;
+}
+
+.breadcrumbLink:hover {
+
+  color:
+    #ffffff;
+
+  opacity: .92;
+}
+
+/* ============================================================================
+🔥 CURRENT
+============================================================================ */
+
+.breadcrumbCurrent {
+
+  color:
+    #ffffff;
+
+  font-size: 13px;
+
+  font-weight: 800;
+
+  line-height: 1.6;
+}
+
+/* ============================================================================
+🔥 SEPARATOR
+============================================================================ */
+
+.breadcrumbSeparator {
+
+  color:
+    rgba(255,255,255,.28);
+
+  font-size: 12px;
+
+  font-weight: 700;
+}
+
+/* ============================================================================
+🔥 MOBILE
+============================================================================ */
+
+@media (max-width: 640px) {
+
+  .breadcrumb {
+
+    gap: 8px;
+
+    padding:
+      12px 14px;
+
+    border-radius: 14px;
+  }
+
+  .breadcrumbItem {
+
+    gap: 8px;
+  }
+
+  .breadcrumbLink,
+  .breadcrumbCurrent {
+
+    font-size: 12px;
+  }
+
+}

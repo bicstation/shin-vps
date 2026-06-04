@@ -1,4 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
+// /home/maya/shin-vps/next-tiper/app/layout.tsx
+
 
 import React, { Suspense } from "react";
 import type { Metadata } from "next";

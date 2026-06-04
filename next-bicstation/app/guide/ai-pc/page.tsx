@@ -1,6 +1,6 @@
 // /home/maya/shin-vps/next-bicstation/app/guide/ai-pc/page.tsx
 
-// /home/maya/shin-vps/next-bicstation/app/guide/ai-pc/page.tsx
+
 
 import Link
   from 'next/link'

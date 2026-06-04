@@ -1,0 +1,55 @@
+/* /app/concierge/sections/chat/components/ChatMessage.module.css */
+
+.messageWrapper {
+  display: flex;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.user {
+  justify-content: flex-end;
+}
+
+.assistant {
+  justify-content: flex-start;
+}
+
+.messageBubble {
+  max-width: 78%;
+
+  padding: 0.9rem 1rem;
+
+  border-radius: 16px;
+
+  line-height: 1.6;
+  font-size: 0.95rem;
+
+  word-break: break-word;
+  white-space: pre-wrap;
+
+  backdrop-filter: blur(10px);
+}
+
+.user .messageBubble {
+  background: #4dabf7;
+  color: #ffffff;
+
+  border-bottom-right-radius: 6px;
+}
+
+.assistant .messageBubble {
+  background: rgba(255, 255, 255, 0.06);
+  color: #f5f5f5;
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  border-bottom-left-radius: 6px;
+}
+
+.timestamp {
+  margin-top: 0.4rem;
+
+  font-size: 0.72rem;
+
+  opacity: 0.55;
+}

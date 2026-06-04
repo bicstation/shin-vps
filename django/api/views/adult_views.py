@@ -5,6 +5,27 @@ from rest_framework import generics, filters, pagination, views, status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
+AVFLASH_FILTER_V1 = (
+    Q(api_source="DUGA")
+    |
+    Q(
+        api_source="fanza",
+        api_service="digital",
+        floor_code__in=[
+            "videoa",
+            "videoc",
+            "nikkatsu",
+        ]
+    )
+    |
+    Q(
+        api_source="fanza",
+        api_service="monthly",
+        floor_code="vr"
+    )
+)
+
+
 # 🚀 DjangoFilterのインポートエラーを防ぐための安全な処理
 try:
     from django_filters.rest_framework import DjangoFilterBackend
@@ -49,7 +70,14 @@ class UnifiedAdultProductListView(generics.ListAPIView):
         2. 作成済みの複合インデックス (is_active, has_attributes, -release_date) を強制発動
         """
         # 🚀 属性表示に必須の prefetch_related を確実に実行
-        qs = AdultProduct.objects.filter(is_active=True).select_related(
+        # qs = AdultProduct.objects.filter(is_active=True).select_related(
+        #     'maker', 'label', 'series', 'director', 'floor_master'
+        # ).prefetch_related('actresses', 'genres', 'attributes', 'authors')
+        qs = AdultProduct.objects.filter(
+            is_active=True
+        ).filter(
+            AVFLASH_FILTER_V1
+        ).select_related(
             'maker', 'label', 'series', 'director', 'floor_master'
         ).prefetch_related('actresses', 'genres', 'attributes', 'authors')
 
@@ -82,7 +110,8 @@ class UnifiedAdultProductListView(generics.ListAPIView):
         else:
             # 🚀 爆速ポイント: 指定なしの場合、Countを使わずフラグで絞り込み
             # これにより DB の Index Scan が走り、ミリ秒単位でレスポンスが返ります
-            qs = qs.filter(has_attributes=True)
+            # qs = qs.filter(has_attributes=True)
+            qs = qs.filter(is_active=True)
             
         return qs.distinct().order_by('-release_date')
 
@@ -103,9 +132,13 @@ class AdultProductRankingAPIView(generics.ListAPIView):
     
     def get_queryset(self):
         # 🚀 ここもフラグを利用して集計処理を完全排除
+        # return AdultProduct.objects.filter(
+        #     is_active=True,
+        # ).order_by('-spec_score')[:30]
         return AdultProduct.objects.filter(
-            is_active=True,
-            has_attributes=True
+            is_active=True
+        ).filter(
+            AVFLASH_FILTER_V1
         ).order_by('-spec_score')[:30]
 
 class ActressSearchAPIView(views.APIView):
@@ -119,22 +152,130 @@ class ActressSearchAPIView(views.APIView):
         ).filter(product_count__gt=0)[:10]
         return Response({"results": [{"id": a.id, "name": a.name} for a in res]})
 
-class AdultSidebarStatsAPIView(views.APIView):
-    """サイドバー用AI属性リスト (高速版)"""
-    permission_classes = [AllowAny]
-    def get(self, request):
-        # サイドバーは属性ごとのカウントが必要なため、ここでは filter Q を使って効率化
-        stats = AdultAttribute.objects.annotate(
-            c=Count('products', filter=Q(products__is_active=True, products__has_attributes=True))
-        ).filter(c__gt=0).order_by('-c')[:20]
+# class AdultSidebarStatsAPIView(views.APIView):
+#     """サイドバー用AI属性リスト (高速版)"""
+#     permission_classes = [AllowAny]
+#     def get(self, request):
+#         # サイドバーは属性ごとのカウントが必要なため、ここでは filter Q を使って効率化
+#         stats = AdultAttribute.objects.annotate(
+#             c=Count('products', filter=Q(products__is_active=True, products__has_attributes=True))
+#         ).filter(c__gt=0).order_by('-c')[:20]
         
-        results = [{
-            "id": a.id, 
-            "name": a.name, 
-            "slug": a.slug if a.slug else str(a.id), 
-            "count": a.c
-        } for a in stats]
-        return Response({"status": "OK", "attributes": results})
+#         results = [{
+#             "id": a.id, 
+#             "name": a.name, 
+#             "slug": a.slug if a.slug else str(a.id), 
+#             "count": a.c
+#         } for a in stats]
+#         return Response({"status": "OK", "attributes": results})
+
+class AdultSidebarStatsAPIView(views.APIView):
+    """
+    AVFLASH Runtime v2
+
+    Sidebar Statistics API
+
+    統計の真実は AdultProduct を起点とする。
+
+    related_name に依存しないため、
+    モデル変更や Runtime 改修に強い。
+    """
+
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+
+        # --------------------------------------------------
+        # AVFLASH Runtime Universe
+        # --------------------------------------------------
+
+        av_qs = (
+            AdultProduct.objects
+            .filter(
+                is_active=True
+            )
+            .filter(
+                AVFLASH_FILTER_V1
+            )
+        )
+
+        # --------------------------------------------------
+        # Sidebar Statistics
+        # --------------------------------------------------
+
+        data = {
+
+            # 作品数
+            "products": av_qs.count(),
+
+            # 女優数
+            "actresses": (
+                av_qs
+                .filter(actresses__isnull=False)
+                .values("actresses")
+                .distinct()
+                .count()
+            ),
+
+            # ジャンル数
+            "genres": (
+                av_qs
+                .filter(genres__isnull=False)
+                .values("genres")
+                .distinct()
+                .count()
+            ),
+
+            # メーカー数
+            "makers": (
+                av_qs
+                .filter(maker__isnull=False)
+                .values("maker")
+                .distinct()
+                .count()
+            ),
+
+            # レーベル数
+            "labels": (
+                av_qs
+                .filter(label__isnull=False)
+                .values("label")
+                .distinct()
+                .count()
+            ),
+
+            # シリーズ数
+            "series": (
+                av_qs
+                .filter(series__isnull=False)
+                .values("series")
+                .distinct()
+                .count()
+            ),
+
+            # 監督数
+            "directors": (
+                av_qs
+                .filter(director__isnull=False)
+                .values("director")
+                .distinct()
+                .count()
+            ),
+
+            # 著者数
+            "authors": (
+                av_qs
+                .filter(authors__isnull=False)
+                .values("authors")
+                .distinct()
+                .count()
+            ),
+        }
+
+        return Response({
+            "status": "OK",
+            "stats": data,
+        })
 
 # --------------------------------------------------------------------------
 # 💡 3. ナビゲーション・インデックス

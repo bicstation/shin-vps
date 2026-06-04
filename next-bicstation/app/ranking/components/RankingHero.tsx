@@ -1,213 +1,244 @@
-import Link
-  from 'next/link'
+// ============================================================================
+// FILE:
+// /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/components/RankingHero.tsx
+// ============================================================================
 
-import styles
-  from '../page.module.css'
+'use client'
 
-/* =========================================
-🔥 Semantic Label
-========================================= */
+import styles from '../RankingPage.module.css'
 
-export type SemanticLabel = {
-
-  name: string
-
-  slug: string
+type Props = {
+  activeGroup?: string | null
 }
 
-/* =========================================
-🔥 Props
-========================================= */
+/* ============================================================================
+🔥 Hero Floating Labels
+============================================================================ */
 
-type RankingHeroProps = {
+const HERO_FLOATING_LABELS: Record<
+  string,
+  {
+    top: string
+    middle: string
+    bottom: string
+  }
+> = {
 
-  title?: string
+  gpu: {
+    top: 'RTX',
+    middle: 'AI GPU',
+    bottom: 'Gaming',
+  },
 
-  description?: string
+  cpu: {
+    top: 'Core Ultra',
+    middle: 'Ryzen AI',
+    bottom: 'Compute',
+  },
 
-  semanticLabels?: SemanticLabel[]
+  usage: {
+    top: 'Gaming',
+    middle: 'Creator',
+    bottom: 'Business',
+  },
+
+  maker: {
+    top: 'ASUS',
+    middle: 'MSI',
+    bottom: 'DELL',
+  },
+
+  device: {
+    top: 'Laptop',
+    middle: 'Desktop',
+    bottom: 'WS',
+  },
+
 }
 
-/* =========================================
+/* ============================================================================
+🔥 Hero Runtime Copy
+============================================================================ */
+
+const HERO_COPY: Record<
+  string,
+  {
+    eyebrow: string
+    title: string
+    description: string
+  }
+> = {
+
+  gpu: {
+
+    eyebrow:
+      'GPU PERFORMANCE RUNTIME',
+
+    title:
+      'GPU性能から\n未来のPCを探索',
+
+    description:
+      'RTX・AI・クリエイターGPUを中心に、\nsemantic performance runtime として比較探索。',
+
+  },
+
+  cpu: {
+
+    eyebrow:
+      'CPU PERFORMANCE RUNTIME',
+
+    title:
+      'CPU性能とAI処理能力を探索',
+
+    description:
+      'Core Ultra・Ryzen AIなど、\n次世代CPU performance runtime を可視化。',
+
+  },
+
+  usage: {
+
+    eyebrow:
+      'USAGE DISCOVERY RUNTIME',
+
+    title:
+      '用途から\n理想のPCを発見',
+
+    description:
+      'Gaming・Creator・Business向けPCを、\nsemantic UX runtime として探索。',
+
+  },
+
+}
+
+/* ============================================================================
 🔥 Ranking Hero
-========================================= */
+============================================================================ */
 
 export default function RankingHero({
+  activeGroup,
+}: Props) {
 
-  title =
-    '用途から最適なPCを探す',
+  const heroCopy =
+    HERO_COPY[
+      activeGroup || ''
+    ]
 
-  description =
-    'ゲーム・AI画像生成・動画編集など、やりたいことから最適なPCを比較できます。',
-
-  semanticLabels = [],
-
-}: RankingHeroProps) {
-
-  // ======================================
-  // Normalize
-  // ======================================
-
-  const normalizedLabels =
-
-    Array.isArray(
-      semanticLabels
-    )
-
-      ? semanticLabels.filter(
-          item => (
-
-            !!item?.name
-            &&
-            !!item?.slug
-
-          )
-        )
-
-      : []
-
-  // ======================================
-  // Unique
-  // ======================================
-
-  const uniqueLabels =
-
-    Array.from(
-
-      new Map(
-
-        normalizedLabels.map(
-          item => ([
-            item.slug,
-            item,
-          ])
-        )
-
-      ).values()
-
-    )
-
-  // ======================================
-  // Render
-  // ======================================
+  const floating =
+    HERO_FLOATING_LABELS[
+      activeGroup || ''
+    ]
 
   return (
 
-    <section
-      className={
-        styles.hero
-      }
-    >
+    <section className={styles.hero}>
 
-      {/* ================================= */}
-      {/* Background Glow */}
-      {/* ================================= */}
+      {/* Background */}
+      <div className={styles.heroNoise} />
 
-      <div
-        className={
-          styles.heroGlow
-        }
-      />
+      <div className={styles.heroGlow} />
 
-      {/* ================================= */}
+      {/* Runtime Orb */}
+      <div className={styles.heroEnergyCore} />
+
       {/* Inner */}
-      {/* ================================= */}
+      <div className={styles.heroInner}>
 
-      <div
-        className={
-          styles.heroInner
-        }
-      >
+        {/* Badge */}
+        <div className={styles.heroBadge}>
 
-        {/* =============================== */}
-        {/* Label */}
-        {/* =============================== */}
+          <div className={styles.heroBadgeDot} />
 
-        <div
-          className={
-            styles.heroLabel
-          }
-        >
-
-          AI PC RANKING
+          SHIN CORE LINX
 
         </div>
 
-        {/* =============================== */}
-        {/* Title */}
-        {/* =============================== */}
+        {/* Content */}
+        <div className={styles.heroContent}>
 
-        <h1
-          className={
-            styles.heroTitle
-          }
-        >
+          {/* ============================================================
+          LEFT
+          ============================================================ */}
 
-          {title}
+          <div className={styles.heroLeft}>
 
-        </h1>
+            <div className={styles.heroEyebrow}>
 
-        {/* =============================== */}
-        {/* Description */}
-        {/* =============================== */}
+              {heroCopy?.eyebrow
+                || 'SEMANTIC DISCOVERY RUNTIME'}
 
-        <p
-          className={
-            styles.heroDescription
-          }
-        >
+            </div>
 
-          {description}
+            <h1 className={styles.heroTitle}>
 
-        </p>
-
-        {/* =============================== */}
-        {/* Semantic Chips */}
-        {/* =============================== */}
-
-        {!!uniqueLabels.length && (
-
-          <div
-            className={
-              styles.heroSemanticRow
-            }
-          >
-
-            {uniqueLabels.map(
-              (
-                item,
-                index
-              ) => (
-
-                <Link
-
-                  key={
-                    item.slug
-                    || index
-                  }
-
-                  href={
-                    `/ranking/${item.slug}`
-                  }
-
-                  className={
-                    styles.heroSemanticChip
-                  }
-                >
-
-                  {item.name}
-
-                </Link>
-
+              {(heroCopy?.title
+                ||
+                'あなたに最適な\nPCカテゴリを探索'
               )
-            )}
+                .split('\n')
+                .map((line) => (
+                  <div key={line}>
+                    {line}
+                  </div>
+                ))}
+
+            </h1>
+
+            <p className={styles.heroDescription}>
+
+              {(heroCopy?.description
+                ||
+                'semantic ontology runtime を、人間中心UXへ翻訳。'
+              )
+                .split('\n')
+                .map((line) => (
+                  <div key={line}>
+                    {line}
+                  </div>
+                ))}
+
+            </p>
 
           </div>
 
-        )}
+          {/* ============================================================
+          RIGHT
+          ============================================================ */}
+
+          <div className={styles.heroOrbArea}>
+
+            {/* Orb */}
+            <div className={styles.heroOrb} />
+
+            <div className={styles.heroOrbRing} />
+
+            <div className={styles.heroOrbRing2} />
+
+            {/* Floating Labels */}
+            <div className={styles.heroFloating}>
+
+              {floating?.top || 'Gaming'}
+
+            </div>
+
+            <div className={styles.heroFloating2}>
+
+              {floating?.middle || 'AI'}
+
+            </div>
+
+            <div className={styles.heroFloating3}>
+
+              {floating?.bottom || 'Creator'}
+
+            </div>
+
+          </div>
+
+        </div>
 
       </div>
 
     </section>
+
   )
 }

@@ -1,539 +1,908 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # ==============================================================================
-# 🚀 SHIN CORE LINX｜ADVANCED DEPLOY SCRIPT v10 FINAL STABLE
+# 🚀 SHIN CORE LINX｜UNIFIED RUNTIME ORCHESTRATOR v14
+# Multi-Universe Runtime Operations Authority
 # ==============================================================================
 #
-# ■ Multi Domain Infrastructure
-# ■ LOCAL / SIM / PROD
-# ■ WSL2 + Docker Desktop Stable Edition
-# ■ Parallel Next.js Build Support
-# ■ Django Core First Architecture
-# ■ Compose Managed Network Edition
+# Philosophy:
+#
+# - compose = runtime topology
+# - env = runtime universe identity
+# - script = runtime orchestration authority
+#
+# Supported Runtime Universes:
+#
+#   --local
+#   --stg
+#   --prod
+#
+# ==============================================================================
+#
+# IMPORTANT:
+#
+# Some legacy tooling still depends on:
+#
+#   .env
+#
+# Therefore runtime-specific env files are temporarily mirrored.
+#
+# Future Target:
+#
+#   eliminate root .env dependency
 #
 # ==============================================================================
 
 set -e
 
+# ==============================================================================
+# Paths
+# ==============================================================================
+
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-PROJECT_NAME="shin-vps"
+BASE_COMPOSE="$SCRIPT_DIR/docker-compose.yml"
 
-# ------------------------------------------------------------------------------
-# ■ Compose Files
-# ------------------------------------------------------------------------------
+LOCAL_COMPOSE="$SCRIPT_DIR/docker-compose.local.yml"
 
-LOCAL_FILE="$SCRIPT_DIR/docker-compose.yml"
+STG_COMPOSE="$SCRIPT_DIR/docker-compose.stg.yml"
 
-SIM_FILE="$SCRIPT_DIR/docker-compose.sim.yml"
+PROD_COMPOSE="$SCRIPT_DIR/docker-compose.prod.yml"
 
-PROD_FILE="$SCRIPT_DIR/docker-compose.prod.yml"
+# ==============================================================================
+# ENV Files
+# ==============================================================================
 
-# ------------------------------------------------------------------------------
-# ■ ENV Files
-# ------------------------------------------------------------------------------
+ENV_LOCAL="$SCRIPT_DIR/.env.local"
 
-ENV_FILE_LOCAL="$SCRIPT_DIR/.env.local"
+ENV_STG="$SCRIPT_DIR/.env.stg"
 
-ENV_FILE_SIM="$SCRIPT_DIR/.env.production"
+ENV_PROD="$SCRIPT_DIR/.env.production"
 
-ENV_FILE_PROD="$SCRIPT_DIR/.env.production"
+ENV_ROOT="$SCRIPT_DIR/.env"
 
-ENV_FILE_ROOT="$SCRIPT_DIR/.env"
+# ==============================================================================
+# Runtime Defaults
+# ==============================================================================
 
-# ------------------------------------------------------------------------------
-# ■ Runtime
-# ------------------------------------------------------------------------------
-
-INPUT_SERVICE=""
-
-BUILD_ARGS=""
-
-FORCE_ENV=""
+ENV_TYPE="LOCAL"
 
 MODE="up"
 
 SHOW_LOGS=false
 
+FOLLOW_LOGS=false
+
+NO_CACHE=false
+
+PARALLEL=false
+
 PRUNE=false
-
-RESTART=false
-
-SHELL=false
-
-STATUS=false
 
 RESET_DB=false
 
-DEPLOY=false
+RESTART=false
 
-PARALLEL_BUILD=false
+STATUS=false
 
-SUFFIX="-v3"
+SHELL_MODE=false
 
-# ------------------------------------------------------------------------------
-# ■ BuildKit
-# ------------------------------------------------------------------------------
+EXEC_MODE=false
+
+MIGRATE=false
+
+COLLECTSTATIC=false
+
+STOP=false
+
+PULL=false
+
+INPUT_SERVICE=""
+
+EXEC_COMMAND=""
+
+# ==============================================================================
+# BuildKit
+# ==============================================================================
 
 export DOCKER_BUILDKIT=1
 
-# ------------------------------------------------------------------------------
-# ■ Help
-# ------------------------------------------------------------------------------
+# ==============================================================================
+# Help
+# ==============================================================================
 
 show_help() {
 
 echo ""
-echo "🚀 SHIN CORE LINX DEPLOY SCRIPT v10"
-echo "======================================================"
+
+echo "============================================================================"
+
+echo "🚀 SHIN CORE LINX｜UNIFIED RUNTIME ORCHESTRATOR"
+
+echo "============================================================================"
 
 echo ""
-echo "📌 起動"
-echo "------------------------------------------------------"
 
-echo "■ Local Development"
+echo "🌍 ENVIRONMENTS"
+
+echo "----------------------------------------------------------------------------"
+
+echo "  --local        Local development runtime"
+
+echo "  --stg          Staging runtime"
+
+echo "  --prod         Production runtime"
+
+echo ""
+
+echo "🚀 BASIC OPERATIONS"
+
+echo "----------------------------------------------------------------------------"
+
 echo "  ./rebuild.sh --local"
 
-echo ""
-echo "■ Production Simulation"
-echo "  ./rebuild.sh --sim"
+echo "  ./rebuild.sh --stg"
 
-echo ""
-echo "■ Production"
 echo "  ./rebuild.sh --prod"
 
 echo ""
-echo "📌 Parallel Build"
-echo "------------------------------------------------------"
 
-echo "  ./rebuild.sh --sim --parallel"
+echo "🔨 BUILD"
+
+echo "----------------------------------------------------------------------------"
+
+echo "  ./rebuild.sh --build-only --prod"
+
+echo "  ./rebuild.sh --stg --parallel"
+
+echo "  ./rebuild.sh --prod --no-cache"
 
 echo ""
-echo "📌 Build Only"
-echo "------------------------------------------------------"
 
-echo "  ./rebuild.sh --build-only --sim"
+echo "📦 CONTAINERS"
+
+echo "----------------------------------------------------------------------------"
+
+echo "  ./rebuild.sh --down --prod"
+
+echo "  ./rebuild.sh --restart --stg"
+
+echo "  ./rebuild.sh --stop --local"
 
 echo ""
-echo "📌 Logs"
-echo "------------------------------------------------------"
+
+echo "📜 LOGS"
+
+echo "----------------------------------------------------------------------------"
 
 echo "  ./rebuild.sh --logs"
 
+echo "  ./rebuild.sh --logs django-v3"
+
+echo "  ./rebuild.sh --follow-logs django-v3"
+
 echo ""
-echo "📌 Status"
-echo "------------------------------------------------------"
+
+echo "🐚 SHELL"
+
+echo "----------------------------------------------------------------------------"
+
+echo "  ./rebuild.sh --shell django-v3"
+
+echo "  ./rebuild.sh --shell postgres-db-v3"
+
+echo ""
+
+echo "⚙️ DJANGO"
+
+echo "----------------------------------------------------------------------------"
+
+echo "  ./rebuild.sh --migrate"
+
+echo "  ./rebuild.sh --collectstatic"
+
+echo ""
+
+echo "🛢 DATABASE"
+
+echo "----------------------------------------------------------------------------"
+
+echo "  ./rebuild.sh --reset-db --stg"
+
+echo ""
+
+echo "📊 STATUS"
+
+echo "----------------------------------------------------------------------------"
 
 echo "  ./rebuild.sh --status"
 
 echo ""
-echo "📌 Reset DB"
-echo "------------------------------------------------------"
 
-echo "  ./rebuild.sh --reset-db --sim"
+echo "🧹 CLEANUP"
 
-echo ""
-echo "📌 Clean Build"
-echo "------------------------------------------------------"
+echo "----------------------------------------------------------------------------"
 
 echo "  ./rebuild.sh --clean"
 
 echo ""
+
+echo "============================================================================"
+
+echo ""
+
 exit 0
+
 }
 
-# ------------------------------------------------------------------------------
-# ■ Args
-# ------------------------------------------------------------------------------
+# ==============================================================================
+# Args
+# ==============================================================================
 
-for arg in "$@"; do
+while [[ $# -gt 0 ]]; do
 
-case "$arg" in
+case "$1" in
 
 --help)
+
 show_help
+
 ;;
 
 --local)
-FORCE_ENV="LOCAL"
+
+ENV_TYPE="LOCAL"
+
+shift
+
 ;;
 
---sim)
-FORCE_ENV="SIM"
+--stg)
+
+ENV_TYPE="STG"
+
+shift
+
 ;;
 
 --prod)
-FORCE_ENV="PROD"
+
+ENV_TYPE="PROD"
+
+shift
+
 ;;
 
 --parallel)
-PARALLEL_BUILD=true
+
+PARALLEL=true
+
+shift
+
 ;;
 
 --no-cache)
-BUILD_ARGS="--no-cache"
+
+NO_CACHE=true
+
+shift
+
 ;;
 
 --clean)
+
 PRUNE=true
+
+shift
+
 ;;
 
 --logs)
+
 SHOW_LOGS=true
+
+if [[ -n "$2" && "$2" != --* ]]; then
+
+INPUT_SERVICE="$2"
+
+shift
+
+fi
+
+shift
+
 ;;
 
---restart)
-RESTART=true
-;;
+--follow-logs)
 
---shell)
-SHELL=true
+FOLLOW_LOGS=true
+
+if [[ -n "$2" && "$2" != --* ]]; then
+
+INPUT_SERVICE="$2"
+
+shift
+
+fi
+
+shift
+
 ;;
 
 --down)
+
 MODE="down"
+
+shift
+
+;;
+
+--stop)
+
+STOP=true
+
+shift
+
+;;
+
+--restart)
+
+RESTART=true
+
+shift
+
 ;;
 
 --build-only)
-MODE="build"
-;;
 
---up-only)
-MODE="up_only"
+MODE="build"
+
+shift
+
 ;;
 
 --status)
+
 STATUS=true
+
+shift
+
 ;;
 
 --reset-db)
+
 RESET_DB=true
+
+shift
+
 ;;
 
---deploy)
-DEPLOY=true
+--shell)
+
+SHELL_MODE=true
+
+if [[ -n "$2" ]]; then
+
+INPUT_SERVICE="$2"
+
+shift
+
+fi
+
+shift
+
 ;;
 
--*)
-echo "❌ Unknown option: $arg"
-exit 1
+--exec)
+
+EXEC_MODE=true
+
+INPUT_SERVICE="$2"
+
+EXEC_COMMAND="$3"
+
+shift 3
+
+;;
+
+--migrate)
+
+MIGRATE=true
+
+shift
+
+;;
+
+--collectstatic)
+
+COLLECTSTATIC=true
+
+shift
+
 ;;
 
 *)
-INPUT_SERVICE="$arg"
+
+echo "❌ Unknown option: $1"
+
+exit 1
+
 ;;
 
 esac
 
 done
 
-# ------------------------------------------------------------------------------
-# ■ Environment Detect
-# ------------------------------------------------------------------------------
-
-detect_env() {
-
-if [ "$FORCE_ENV" = "PROD" ]; then
-echo "PROD"
-return
-fi
-
-if [ "$FORCE_ENV" = "SIM" ]; then
-echo "SIM"
-return
-fi
-
-if [ "$FORCE_ENV" = "LOCAL" ]; then
-echo "LOCAL"
-return
-fi
-
-echo "LOCAL"
-}
-
-ENV_TYPE=$(detect_env)
-
-# ------------------------------------------------------------------------------
-# ■ Compose / ENV Select
-# ------------------------------------------------------------------------------
+# ==============================================================================
+# Runtime Universe Select
+# ==============================================================================
 
 if [ "$ENV_TYPE" = "PROD" ]; then
 
-COMPOSE_FILE="$PROD_FILE"
+OVERRIDE_COMPOSE="$PROD_COMPOSE"
 
-ENV_FILE="$ENV_FILE_PROD"
+ENV_FILE="$ENV_PROD"
 
-elif [ "$ENV_TYPE" = "SIM" ]; then
+PROJECT_NAME="shin-prod"
 
-COMPOSE_FILE="$SIM_FILE"
+elif [ "$ENV_TYPE" = "STG" ]; then
 
-ENV_FILE="$ENV_FILE_SIM"
+OVERRIDE_COMPOSE="$STG_COMPOSE"
+
+ENV_FILE="$ENV_STG"
+
+PROJECT_NAME="shin-stg"
 
 else
 
-COMPOSE_FILE="$LOCAL_FILE"
+OVERRIDE_COMPOSE="$LOCAL_COMPOSE"
 
-ENV_FILE="$ENV_FILE_LOCAL"
+ENV_FILE="$ENV_LOCAL"
+
+PROJECT_NAME="shin-local"
 
 fi
 
-# ------------------------------------------------------------------------------
-# ■ Info
-# ------------------------------------------------------------------------------
+# ==============================================================================
+# Runtime Validation
+# ==============================================================================
 
-echo ""
-echo "🌍 ENV: $ENV_TYPE"
+if [ ! -f "$BASE_COMPOSE" ]; then
 
-echo "📄 COMPOSE: $COMPOSE_FILE"
+echo "❌ BASE COMPOSE NOT FOUND"
 
-echo "📦 ENV FILE: $ENV_FILE"
+exit 1
 
-echo ""
+fi
 
-# ------------------------------------------------------------------------------
-# ■ ENV Check
-# ------------------------------------------------------------------------------
+if [ ! -f "$OVERRIDE_COMPOSE" ]; then
+
+echo "❌ OVERRIDE COMPOSE NOT FOUND"
+
+exit 1
+
+fi
 
 if [ ! -f "$ENV_FILE" ]; then
 
 echo "❌ ENV FILE NOT FOUND"
 
-echo "$ENV_FILE"
+exit 1
+
+fi
+
+# ==============================================================================
+# Runtime ENV Export
+# ==============================================================================
+#
+# IMPORTANT:
+#
+# Docker Compose build.args interpolation may occur
+# before runtime compose evaluation.
+#
+# Therefore runtime env is exported into shell authority.
+#
+# ==============================================================================
+
+set -a
+
+source "$ENV_FILE"
+
+set +a
+
+# ==============================================================================
+# Production Safety Guard
+# ==============================================================================
+
+if [ "$ENV_TYPE" = "PROD" ]; then
+
+echo ""
+
+echo "⚠️ PRODUCTION RUNTIME"
+
+echo ""
+
+read -p "Continue? (yes/no): " confirm
+
+if [ "$confirm" != "yes" ]; then
+
+echo "❌ Operation cancelled"
 
 exit 1
 
 fi
 
-# ------------------------------------------------------------------------------
-# ■ ENV Sync
-# ------------------------------------------------------------------------------
+fi
 
-echo "📦 Sync ENV → .env"
+# ==============================================================================
+# Runtime Banner
+# ==============================================================================
 
-cp "$ENV_FILE" "$ENV_FILE_ROOT"
+echo ""
 
-# ------------------------------------------------------------------------------
-# ■ Status
-# ------------------------------------------------------------------------------
+echo "============================================================"
+
+echo "🚀 SHIN CORE LINX｜ACTIVE RUNTIME UNIVERSE"
+
+echo "============================================================"
+
+echo ""
+
+echo "🌍 ENVIRONMENT : $ENV_TYPE"
+
+echo "📦 PROJECT     : $PROJECT_NAME"
+
+echo "📄 ENV FILE    : $ENV_FILE"
+
+echo "🧠 COMPOSE     : $OVERRIDE_COMPOSE"
+
+echo ""
+
+echo "============================================================"
+
+echo ""
+
+# ==============================================================================
+# Legacy ENV Compatibility Bridge
+# ==============================================================================
+#
+# IMPORTANT:
+#
+# Some legacy tooling still depends on:
+#
+#   .env
+#
+# Therefore runtime-specific env files are mirrored.
+#
+# Future target:
+#
+#   eliminate root .env dependency
+#
+# ==============================================================================
+
+echo "🔄 Applying Legacy ENV Compatibility Bridge"
+
+cp "$ENV_FILE" "$ENV_ROOT"
+
+# ==============================================================================
+# Runtime Trace
+# ==============================================================================
+
+echo "$ENV_TYPE" > .runtime-universe
+
+echo "$PROJECT_NAME" > .runtime-project
+
+# ==============================================================================
+# Compose Command
+# ==============================================================================
+
+COMPOSE_CMD="docker compose \
+-p $PROJECT_NAME \
+--env-file $ENV_FILE \
+-f $BASE_COMPOSE \
+-f $OVERRIDE_COMPOSE"
+
+# ==============================================================================
+# Status
+# ==============================================================================
 
 if [ "$STATUS" = true ]; then
 
-docker compose \
--p $PROJECT_NAME \
---env-file "$ENV_FILE" \
--f "$COMPOSE_FILE" \
-ps
+eval "$COMPOSE_CMD ps"
 
 exit 0
 
 fi
 
-# ------------------------------------------------------------------------------
-# ■ Reset DB
-# ------------------------------------------------------------------------------
+# ==============================================================================
+# Shell
+# ==============================================================================
 
-if [ "$RESET_DB" = true ]; then
+if [ "$SHELL_MODE" = true ]; then
 
-echo "⚠️ WARNING: DB完全削除"
-
-read -p "Type 'YES' to continue: " confirm
-
-if [ "$confirm" != "YES" ]; then
-
-echo "❌ Canceled"
-
-exit 1
-
-fi
-
-docker compose \
--p $PROJECT_NAME \
---env-file "$ENV_FILE" \
--f "$COMPOSE_FILE" \
-down -v
-
-docker volume prune -f
-
-echo "✅ DB RESET COMPLETE"
+eval "$COMPOSE_CMD exec $INPUT_SERVICE bash"
 
 exit 0
 
 fi
 
-# ------------------------------------------------------------------------------
-# ■ Clean
-# ------------------------------------------------------------------------------
+# ==============================================================================
+# Exec
+# ==============================================================================
+
+if [ "$EXEC_MODE" = true ]; then
+
+eval "$COMPOSE_CMD exec $INPUT_SERVICE $EXEC_COMMAND"
+
+exit 0
+
+fi
+
+# ==============================================================================
+# Logs
+# ==============================================================================
+
+if [ "$SHOW_LOGS" = true ]; then
+
+eval "$COMPOSE_CMD logs $INPUT_SERVICE"
+
+exit 0
+
+fi
+
+if [ "$FOLLOW_LOGS" = true ]; then
+
+eval "$COMPOSE_CMD logs -f $INPUT_SERVICE"
+
+exit 0
+
+fi
+
+# ==============================================================================
+# Restart
+# ==============================================================================
+
+if [ "$RESTART" = true ]; then
+
+echo ""
+
+echo "🔄 RESTARTING RUNTIME"
+
+echo ""
+
+eval "$COMPOSE_CMD restart"
+
+exit 0
+
+fi
+
+# ==============================================================================
+# Stop
+# ==============================================================================
+
+if [ "$STOP" = true ]; then
+
+echo ""
+
+echo "🛑 STOPPING RUNTIME"
+
+echo ""
+
+eval "$COMPOSE_CMD stop"
+
+exit 0
+
+fi
+
+# ==============================================================================
+# Down
+# ==============================================================================
+
+if [ "$MODE" = "down" ]; then
+
+echo ""
+
+echo "🧹 SHUTTING DOWN RUNTIME"
+
+echo ""
+
+eval "$COMPOSE_CMD down --remove-orphans"
+
+exit 0
+
+fi
+
+# ==============================================================================
+# Cleanup
+# ==============================================================================
 
 if [ "$PRUNE" = true ]; then
 
-echo "🚨 CLEAN BUILD"
+echo ""
+
+echo "🧹 CLEANING DOCKER SYSTEM"
+
+echo ""
 
 docker system prune -af
 
 docker builder prune -af
 
-rm -rf ~/.npm
+fi
+
+# ==============================================================================
+# Build Args
+# ==============================================================================
+
+BUILD_ARGS=""
+
+if [ "$NO_CACHE" = true ]; then
+
+BUILD_ARGS="--no-cache"
 
 fi
 
-# ------------------------------------------------------------------------------
-# ■ Down
-# ------------------------------------------------------------------------------
-
-if [ "$MODE" = "down" ]; then
-
-docker compose \
--p $PROJECT_NAME \
---env-file "$ENV_FILE" \
--f "$COMPOSE_FILE" \
-down --remove-orphans
-
-exit 0
-
-fi
-
-# ------------------------------------------------------------------------------
-# ■ Build Service
-# ------------------------------------------------------------------------------
-
-build_service() {
-
-SERVICE_NAME=$1
+# ==============================================================================
+# Build
+# ==============================================================================
 
 echo ""
-echo "======================================================"
-echo "🚀 BUILD: $SERVICE_NAME"
-echo "======================================================"
 
-docker compose \
--p $PROJECT_NAME \
---env-file "$ENV_FILE" \
--f "$COMPOSE_FILE" \
-build $BUILD_ARGS $SERVICE_NAME
-}
+echo "============================================================"
 
-# ------------------------------------------------------------------------------
-# ■ Django Build
-# ------------------------------------------------------------------------------
+echo "🧠 BUILD DJANGO"
+
+echo "============================================================"
 
 echo ""
-echo "🧠 BUILD DJANGO CORE"
 
-build_service django-v3
+eval "$COMPOSE_CMD build $BUILD_ARGS django-v3"
 
-# ------------------------------------------------------------------------------
-# ■ Next.js Build
-# ------------------------------------------------------------------------------
-
-if [ "$PARALLEL_BUILD" = true ]; then
+NEXT_SERVICES="next-bicstation-v3 next-bic-saving-v3 next-tiper-v3 next-avflash-v3"
 
 echo ""
-echo "⚡ PARALLEL NEXT BUILD MODE"
 
-docker compose \
--p $PROJECT_NAME \
---env-file "$ENV_FILE" \
--f "$COMPOSE_FILE" \
-build \
-$BUILD_ARGS \
---parallel \
-next-bicstation-v3 \
-next-bic-saving-v3 \
-next-tiper-v3 \
-next-avflash-v3
+echo "============================================================"
+
+echo "🎬 BUILD NEXT FRONTENDS"
+
+echo "============================================================"
+
+echo ""
+
+if [ "$PARALLEL" = true ]; then
+
+eval "$COMPOSE_CMD build $BUILD_ARGS --parallel $NEXT_SERVICES"
 
 else
 
-echo ""
-echo "🔨 SERIAL NEXT BUILD MODE"
+for service in $NEXT_SERVICES
+do
 
-build_service next-bicstation-v3
-build_service next-bic-saving-v3
-build_service next-tiper-v3
-build_service next-avflash-v3
+echo ""
+
+echo "🚀 BUILDING: $service"
+
+echo ""
+
+eval "$COMPOSE_CMD build $BUILD_ARGS $service"
+
+done
 
 fi
 
-# ------------------------------------------------------------------------------
-# ■ Build Only
-# ------------------------------------------------------------------------------
+# ==============================================================================
+# Build Only
+# ==============================================================================
 
 if [ "$MODE" = "build" ]; then
 
 echo ""
+
 echo "✅ BUILD COMPLETE"
+
+echo ""
 
 exit 0
 
 fi
 
-# ------------------------------------------------------------------------------
-# ■ Up
-# ------------------------------------------------------------------------------
+# ==============================================================================
+# Start Runtime
+# ==============================================================================
 
 echo ""
-echo "🚀 START CONTAINERS"
 
-docker compose \
--p $PROJECT_NAME \
---env-file "$ENV_FILE" \
--f "$COMPOSE_FILE" \
-up -d --remove-orphans
+echo "============================================================"
+
+echo "🚀 START RUNTIME"
+
+echo "============================================================"
+
+echo ""
+
+eval "$COMPOSE_CMD up -d --remove-orphans"
 
 sleep 5
 
-# ------------------------------------------------------------------------------
-# ■ Migration
-# ------------------------------------------------------------------------------
+# ==============================================================================
+# Django Commands
+# ==============================================================================
 
-if docker ps | grep -q "django$SUFFIX"; then
+if [ "$MIGRATE" = true ]; then
 
 echo ""
-echo "📦 Running migrations..."
 
-docker compose \
--p $PROJECT_NAME \
---env-file "$ENV_FILE" \
--f "$COMPOSE_FILE" \
-exec -T django$SUFFIX \
-python manage.py migrate --noinput
+echo "⚙️ DJANGO MIGRATE"
+
+echo ""
+
+eval "$COMPOSE_CMD exec django-v3 python manage.py migrate --noinput"
 
 fi
 
-# ------------------------------------------------------------------------------
-# ■ Status
-# ------------------------------------------------------------------------------
+if [ "$COLLECTSTATIC" = true ]; then
 
 echo ""
-echo "📊 CONTAINER STATUS"
 
-docker compose \
--p $PROJECT_NAME \
---env-file "$ENV_FILE" \
--f "$COMPOSE_FILE" \
-ps
-
-# ------------------------------------------------------------------------------
-# ■ Logs
-# ------------------------------------------------------------------------------
-
-if [ "$SHOW_LOGS" = true ]; then
+echo "📦 DJANGO COLLECTSTATIC"
 
 echo ""
-echo "📜 STREAM LOGS"
 
-docker compose \
--p $PROJECT_NAME \
---env-file "$ENV_FILE" \
--f "$COMPOSE_FILE" \
-logs -f
+eval "$COMPOSE_CMD exec django-v3 python manage.py collectstatic --noinput"
 
 fi
 
-# ------------------------------------------------------------------------------
-# ■ Done
-# ------------------------------------------------------------------------------
+# ==============================================================================
+# Reset Database
+# ==============================================================================
+
+if [ "$RESET_DB" = true ]; then
 
 echo ""
-echo "✅ SHIN CORE LINX DEPLOY COMPLETE"
+
+echo "⚠️ RESET DATABASE REQUESTED"
+
+echo ""
+
+echo "This operation is not yet automated."
+
+echo "Please execute manually."
+
+fi
+
+# ==============================================================================
+# Final Status
+# ==============================================================================
+
+echo ""
+
+echo "============================================================"
+
+echo "📡 FINAL RUNTIME STATUS"
+
+echo "============================================================"
+
+echo ""
+
+eval "$COMPOSE_CMD ps"
+
+echo ""
+
+echo "============================================================"
+
+echo "✅ SHIN CORE LINX RUNTIME READY"
+
+echo "============================================================"
+
+echo ""
+
+echo "🌌 Universe : $ENV_TYPE"
+
+echo "📦 Project  : $PROJECT_NAME"
+
+echo ""
+
+echo "============================================================"
+
 echo ""

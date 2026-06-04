@@ -1,205 +1,399 @@
-// next-bicstation/app/product/[unique_id]/components/hero/ProductHeroTrust.tsx
+// ============================================================================
+// FILE:
+// /home/maya/shin-vps/next-bicstation/app/product/[unique_id]/components/recommendation/ProductRelated.tsx
+// ============================================================================
+
+'use client'
+
+/* ============================================================================
+🔥 Styles
+============================================================================ */
 
 import styles
-  from './recommendation.module.css'
+from './recommendation.module.css'
+
+/* ============================================================================
+🔥 Props
+============================================================================ */
 
 type Props = {
-  product: any
+
+product: any
+
+related: any[]
 }
 
-/* =========================================
+/* ============================================================================
 🔥 HELPERS
-========================================= */
+============================================================================ */
 
-function buildTrustBadges(
-  product: any
+function buildRelatedNarratives(
+product: any,
+related: any[]
 ) {
 
-  const text = JSON.stringify(
-    product
-  ).toLowerCase()
+const narratives: string[] = []
 
-  const badges = []
+// ==========================================================================
+// RELATED RUNTIME
+// ==========================================================================
 
-  /* ======================================
-  🎮 gaming
-  ====================================== */
+if (
+Array.isArray(
+related
+)
+) {
 
-  if (
-    text.includes('rtx')
-    || text.includes('gaming')
-    || text.includes('geforce')
-  ) {
 
-    badges.push(
-      '🎮 FPS gaming 対応'
-    )
+related.forEach(
+  (
+    item: any
+  ) => {
+
+    // ================================================================
+    // recommendation_reason
+    // ================================================================
+
+    if (
+      item?.recommendation_reason
+    ) {
+
+      narratives.push(
+        item.recommendation_reason
+      )
+
+    }
+
+    // ================================================================
+    // matched_attributes
+    // ================================================================
+
+    if (
+      Array.isArray(
+        item?.matched_attributes
+      )
+    ) {
+
+      const matchedText =
+
+        item.matched_attributes
+          .map(
+            (
+              attr: any
+            ) => {
+
+              if (
+                typeof attr === 'string'
+              ) {
+
+                return attr
+              }
+
+              return (
+                attr?.label
+                || attr?.name
+                || ''
+              )
+
+            }
+          )
+          .filter(Boolean)
+          .slice(0, 3)
+          .join('・')
+
+      if (
+        matchedText
+      ) {
+
+        narratives.push(
+
+          `${matchedText} の semantic runtime が近い構成です。`
+
+        )
+
+      }
+
+    }
+
+    // ================================================================
+    // grouped_attributes
+    // ================================================================
+
+    if (
+      item?.grouped_attributes
+    ) {
+
+      const groupedText =
+        JSON.stringify(
+          item.grouped_attributes
+        ).toLowerCase()
+
+      // ==============================================================
+      // AI
+      // ==============================================================
+
+      if (
+        groupedText.includes('ai')
+      ) {
+
+        narratives.push(
+          'AI画像生成やローカルLLM用途で近いworkflowを持っています。'
+        )
+
+      }
+
+      // ==============================================================
+      // GAMING
+      // ==============================================================
+
+      if (
+        groupedText.includes('gaming')
+      ) {
+
+        narratives.push(
+          '高fps gaming やGPU活用用途に近い構成です。'
+        )
+
+      }
+
+      // ==============================================================
+      // CREATOR
+      // ==============================================================
+
+      if (
+        groupedText.includes('creator')
+        || groupedText.includes('video')
+      ) {
+
+        narratives.push(
+          '動画編集・配信・制作workflowで近いsemantic構成です。'
+        )
+
+      }
+
+    }
 
   }
+)
 
-  /* ======================================
-  🤖 AI
-  ====================================== */
-
-  if (
-    text.includes('rtx')
-    || text.includes('ai')
-  ) {
-
-    badges.push(
-      '🤖 AI画像生成対応'
-    )
-
-  }
-
-  /* ======================================
-  🎬 creator
-  ====================================== */
-
-  if (
-    text.includes('creator')
-    || text.includes('premiere')
-    || text.includes('davinci')
-  ) {
-
-    badges.push(
-      '🎬 動画編集向け'
-    )
-
-  }
-
-  /* ======================================
-  🧠 multitask
-  ====================================== */
-
-  if (
-    text.includes('32gb')
-    || text.includes('64gb')
-  ) {
-
-    badges.push(
-      '🧠 長く使いやすい'
-    )
-
-  }
-
-  /* ======================================
-  ⚡ default
-  ====================================== */
-
-  badges.push(
-    '⚡ 初心者にも人気'
-  )
-
-  return badges.slice(0, 5)
 
 }
 
-/* =========================================
-🔥 COMPONENT
-========================================= */
+// ==========================================================================
+// PRODUCT FALLBACK
+// ==========================================================================
 
-export default function ProductHeroTrust({
-  product,
+if (
+narratives.length === 0
+) {
+
+
+const text =
+  JSON.stringify(product)
+    .toLowerCase()
+
+if (
+  text.includes('rtx')
+) {
+
+  narratives.push(
+    'RTX GPU を活かした高性能workflowに近い構成です。'
+  )
+
+}
+
+if (
+  text.includes('gaming')
+) {
+
+  narratives.push(
+    'gaming用途や高fps環境に近いruntimeを持っています。'
+  )
+
+}
+
+if (
+  text.includes('creator')
+) {
+
+  narratives.push(
+    '制作・編集workflowとの相性が高いsemantic構成です。'
+  )
+
+}
+
+if (
+  text.includes('ai')
+) {
+
+  narratives.push(
+    'AI画像生成や生成AI用途に適したruntime構成です。'
+  )
+
+}
+
+
+}
+
+// ==========================================================================
+// FINAL FALLBACK
+// ==========================================================================
+
+if (
+narratives.length === 0
+) {
+
+
+narratives.push(
+  '利用用途・workflow・semantic runtime が近いPCです。'
+)
+
+
+}
+
+// ==========================================================================
+// UNIQUE
+// ==========================================================================
+
+return Array.from(
+new Set(narratives)
+).slice(0, 4)
+
+}
+
+/* ============================================================================
+🔥 COMPONENT
+============================================================================ */
+
+export default function ProductRelated({
+
+product,
+
+related,
+
 }: Props) {
 
-  const badges =
-    buildTrustBadges(
-      product
-    )
+// ==========================================================================
+// Narrative Runtime
+// ==========================================================================
 
-  if (
-    !badges.length
-  ) {
-    return null
+const narratives =
+
+
+buildRelatedNarratives(
+  product,
+  related
+)
+
+
+// ==========================================================================
+// EMPTY
+// ==========================================================================
+
+if (
+narratives.length === 0
+) {
+
+
+return null
+
+
+}
+
+// ==========================================================================
+// RENDER
+// ==========================================================================
+
+return (
+
+
+<section
+  className={
+    styles.relatedSection
   }
+>
 
-  return (
+  {/* ================================================================
+  HEADER
+  ================================================================ */}
 
-    <section
+  <div
+    className={
+      styles.relatedHeader
+    }
+  >
+
+    <div
       className={
-        styles.heroTrustSection
+        styles.relatedLabel
       }
     >
 
-      {/* ==================================
-      HEADER
-      ================================== */}
+      SEMANTIC RELATION
 
-      <div
-        className={
-          styles.heroTrustHeader
-        }
-      >
+    </div>
 
-        <div
-          className={
-            styles.heroTrustLabel
-          }
-        >
-          TRUST SIGNALS
-        </div>
+    <h2
+      className={
+        styles.relatedTitle
+      }
+    >
 
-        <h2
-          className={
-            styles.heroTrustTitle
-          }
-        >
-          このPCが選ばれやすい理由
-        </h2>
+      このPCと近い構成
 
-      </div>
+    </h2>
 
-      {/* ==================================
-      BADGES
-      ================================== */}
+    <p
+      className={
+        styles.relatedDescription
+      }
+    >
 
-      <div
-        className={
-          styles.heroTrustGrid
-        }
-      >
+      semantic runtime・workflow・
+      GPU構成・用途分析をもとに、
+      近い方向性を持つPCを整理しています。
 
-        {badges.map(
-          (badge) => (
+    </p>
 
-            <div
-              key={badge}
+  </div>
 
-              className={
-                styles.heroTrustBadge
-              }
-            >
-              {badge}
-            </div>
+  {/* ================================================================
+  GRID
+  ================================================================ */}
 
-          )
-        )}
+  <div
+    className={
+      styles.relatedNarratives
+    }
+  >
 
-      </div>
+    {
+      narratives.map(
+        (
+          narrative,
+          index
+        ) => (
 
-      {/* ==================================
-      FOOTER
-      ================================== */}
+          <div
+            key={index}
 
-      <div
-        className={
-          styles.heroTrustFooter
-        }
-      >
+            className={
+              styles.relatedNarrativeCard
+            }
+          >
 
-        <div
-          className={
-            styles.heroTrustFooterText
-          }
-        >
-          ✔ gaming・AI・creator用途など、
-          実利用ベースで評価しています。
-        </div>
+            {narrative}
 
-      </div>
+          </div>
 
-    </section>
+        )
+      )
+    }
 
-  )
+  </div>
+
+</section>
+
+
+)
 }

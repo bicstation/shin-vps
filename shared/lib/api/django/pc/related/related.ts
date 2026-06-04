@@ -100,6 +100,8 @@ fetchRelatedPC(
     return []
   }
 
+  console.log(endpoint)
+
   // ======================================
   // Normalize
   // ======================================

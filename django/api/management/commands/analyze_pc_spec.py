@@ -1,395 +1,437 @@
-# -*- coding: utf-8 -*-
+# =========================================================
+# SHIN CORE LINX
+# analyze_pc_spec.py
+# parallel semantic runtime analyzer
+# centralized observability integrated
+# =========================================================
 
-import json
-import requests
-import re
-import os
-import time
-import itertools
-import threading
-
-from datetime import datetime
 from concurrent.futures import (
+
     ThreadPoolExecutor,
-    as_completed
+
+    as_completed,
 )
 
-from django.core.management.base import BaseCommand
-from django.utils import timezone
-from django.db.models import Q
+from django.core.management.base import (
+    BaseCommand
+)
 
-from api.models.pc_products import (
+from api.models import (
     PCProduct
 )
 
-# =========================================================
-# API KEY
-# =========================================================
-API_KEYS = []
-
-for i in range(10):
-
-    key = os.getenv(
-        f"GEMINI_API_KEY_{i}"
-    )
-
-    if key:
-        API_KEYS.append(key)
-
-GENERAL_KEY = os.getenv(
-    "GEMINI_API_KEY"
+from api.utils.semantic.runtime.runtime_log import (
+    runtime_log,
 )
 
-if (
-    GENERAL_KEY
-    and GENERAL_KEY not in API_KEYS
-):
-    API_KEYS.append(GENERAL_KEY)
-
-VALID_KEYS = [
-
-    k for k in API_KEYS
-    if k and len(k) > 10
-
-]
-
-
-# =========================================================
-# Thread Safe Key Rotation
-# =========================================================
-class ThreadSafeIter:
-
-    def __init__(self, it):
-
-        self.it = it
-
-        self.lock = threading.Lock()
-
-    def __iter__(self):
-
-        return self
-
-    def __next__(self):
-
-        with self.lock:
-
-            return next(self.it)
-
-
-key_cycle = ThreadSafeIter(
-    itertools.cycle(VALID_KEYS)
+from api.utils.semantic.runtime.compile_semantic_runtime import (
+    compile_semantic_runtime
 )
 
 
 # =========================================================
-# Rate Limit
+# COMMAND
 # =========================================================
-MAX_WORKERS = (
-    len(VALID_KEYS)
-    if len(VALID_KEYS) > 0
-    else 1
-)
 
-SAFE_KEY_RPM = 6
-
-SAFE_TOTAL_RPM = (
-    len(VALID_KEYS)
-    * SAFE_KEY_RPM
-)
-
-INTERVAL = (
-
-    60 / SAFE_TOTAL_RPM
-
-    if SAFE_TOTAL_RPM > 0
-
-    else 2.0
-)
-
-
-# =========================================================
-# Prompt Path
-# =========================================================
-BASE_DIR = os.path.dirname(
-    os.path.abspath(__file__)
-)
-
-PROMPT_BASE_DIR = os.path.join(
-    BASE_DIR,
-    "prompt"
-)
-
-
-# =========================================================
-# Command
-# =========================================================
 class Command(BaseCommand):
 
     help = (
-        "Gemini AI による "
-        "PCスペック解析"
+        "Analyze PC semantic runtime"
     )
 
     # =====================================================
-    # Arguments
+    # ARGUMENTS
     # =====================================================
-    def add_arguments(self, parser):
 
-        parser.add_argument(
-            'unique_id',
-            type=str,
-            nargs='?'
-        )
+    def add_arguments(
 
-        parser.add_argument(
-            '--limit',
-            type=int,
-            default=1
-        )
-
-        parser.add_argument(
-            '--maker',
-            type=str
-        )
-
-        parser.add_argument(
-            '--model',
-            type=str
-        )
-
-        parser.add_argument(
-            '--force',
-            action='store_true'
-        )
-
-        parser.add_argument(
-            '--null-only',
-            action='store_true'
-        )
-
-        parser.add_argument(
-            '--update-all',
-            action='store_true'
-        )
-
-    # =====================================================
-    # Load Prompt
-    # =====================================================
-    def load_prompt_file(
         self,
-        filename
+
+        parser,
     ):
 
-        path = os.path.join(
-            PROMPT_BASE_DIR,
-            filename
+        # =================================================
+        # LIMIT
+        # =================================================
+
+        parser.add_argument(
+
+            "--limit",
+
+            type=int,
+
+            default=10,
+
+            help=(
+                "Limit number of products"
+            ),
         )
+
+        # =================================================
+        # FORCE
+        # =================================================
+
+        parser.add_argument(
+
+            "--force",
+
+            action="store_true",
+
+            help=(
+                "Force runtime rebuild"
+            ),
+        )
+
+        # =================================================
+        # NEEDS RUNTIME
+        # =================================================
+
+        parser.add_argument(
+
+            "--needs-runtime",
+
+            action="store_true",
+
+            help=(
+                "Analyze products requiring semantic runtime"
+            ),
+        )
+
+        # =================================================
+        # SKIP EXTRACTION
+        # =================================================
+
+        parser.add_argument(
+
+            "--skip-extraction",
+
+            action="store_true",
+
+            help=(
+                "Reuse existing extracted specs"
+            ),
+        )
+
+        # =================================================
+        # TRACE RUNTIME
+        # =================================================
+
+        parser.add_argument(
+
+            "--trace-runtime",
+
+            action="store_true",
+
+            help=(
+                "Enable semantic runtime observability"
+            ),
+        )
+
+        # =================================================
+        # PARALLEL WORKERS
+        # =================================================
+
+        parser.add_argument(
+
+            "--workers",
+
+            type=int,
+
+            default=4,
+
+            help=(
+                "Parallel semantic workers"
+            ),
+        )
+
+    # =====================================================
+    # PRODUCT PROCESSOR
+    # =====================================================
+
+    def process_product(
+
+        self,
+
+        product,
+
+        total,
+
+        index,
+
+        force,
+
+        skip_extraction,
+
+        trace_runtime,
+
+        needs_runtime,
+    ):
 
         try:
 
-            with open(
-                path,
-                'r',
-                encoding='utf-8'
-            ) as f:
+            runtime_log(
 
-                return f.read()
+                True,
 
-        except FileNotFoundError:
+                f"PRODUCT [{index}/{total}]",
 
-            return ""
+                product.name,
+            )
+
+            # =============================================
+            # EXISTING
+            # =============================================
+
+            runtime_log(
+
+                trace_runtime,
+
+                "EXISTING CPU",
+
+                product.cpu_model,
+            )
+
+            runtime_log(
+
+                trace_runtime,
+
+                "EXISTING GPU",
+
+                product.gpu_model,
+            )
+
+            runtime_log(
+
+                trace_runtime,
+
+                "EXISTING MEMORY",
+
+                product.memory_gb,
+            )
+
+            # =============================================
+            # SKIP
+            # =============================================
+
+            if (
+
+                product.semantic_runtime_compiled
+                and not force
+                and not needs_runtime
+
+            ):
+
+                runtime_log(
+
+                    True,
+
+                    "SKIPPED",
+
+                    product.name,
+                )
+
+                return
+
+            # =============================================
+            # COMPILE
+            # =============================================
+
+            runtime_result = (
+                compile_semantic_runtime(
+
+                    product=product,
+
+                    skip_extraction=skip_extraction,
+
+                    trace_runtime=trace_runtime,
+                )
+            )
+
+            # =============================================
+            # SAVE
+            # =============================================
+
+            product.semantic_runtime = (
+                runtime_result
+            )
+
+            product.semantic_runtime_compiled = True
+
+            product.save()
+
+            # =============================================
+            # SUCCESS
+            # =============================================
+
+            runtime_log(
+
+                True,
+
+                "PERSISTED",
+
+                product.name,
+            )
+
+        except Exception as e:
+
+            runtime_log(
+
+                True,
+
+                "RUNTIME ERROR",
+
+                str(e),
+            )
 
     # =====================================================
-    # Maker Prompt Mapping
+    # HANDLE
     # =====================================================
-    def get_maker_slug(
+
+    def handle(
+
         self,
-        maker_name
+
+        *args,
+
+        **options,
     ):
 
-        if not maker_name:
-            return "standard"
-
-        m = str(
-            maker_name
-        ).lower()
-
-        mapping = {
-
-            'fmv': 'fmv',
-            'fujitsu': 'fmv',
-            '富士通': 'fmv',
-
-            'dynabook': 'dynabook',
-
-            'asus': 'asus',
-
-            'hp': 'hp',
-
-            'dell': 'dell',
-
-            'lenovo': 'lenovo',
-
-            'mouse': 'mouse',
-
-            'nec': 'nec',
-
-            'ark': 'ark',
-        }
-
-        for k, v in mapping.items():
-
-            if k in m:
-                return v
-
-        return "standard"
-
-    # =====================================================
-    # Main
-    # =====================================================
-    def handle(self, *args, **options):
-
-        if not VALID_KEYS:
-
-            self.stdout.write(
-
-                self.style.ERROR(
-                    "❌ APIキー未設定"
-                )
-            )
-
-            return
-
-        query = PCProduct.objects.all()
-
-        # =================================================
-        # Query Mode
-        # =================================================
-        if options['update_all']:
-
-            self.stdout.write(
-
-                self.style.WARNING(
-                    "⚠️ update_all mode"
-                )
-            )
-
-        elif options['null_only']:
-
-            query = query.filter(
-                last_spec_parsed_at__isnull=True
-            )
-
-        elif not options['force']:
-
-            query = query.filter(
-
-                Q(
-                    last_spec_parsed_at__isnull=True
-                )
-
-                |
-
-                Q(score_cpu=0)
-
-                |
-
-                Q(score_ai=0)
-            )
-
-        # =================================================
-        # Filters
-        # =================================================
-        if options['unique_id']:
-
-            query = query.filter(
-                unique_id=options['unique_id']
-            )
-
-        elif options['maker']:
-
-            query = query.filter(
-                maker__icontains=options['maker']
-            )
-
-        products = list(
-            query[:options['limit']]
+        limit = options.get(
+            "limit"
         )
 
-        if not products:
-
-            self.stdout.write(
-
-                self.style.WARNING(
-                    "🔎 対象製品なし"
-                )
-            )
-
-            return
-
-        model_id = (
-
-            options['model']
-
-            or
-
-            (
-                self.load_prompt_file(
-                    'ai_models.txt'
-                )
-                .split('\n')[0]
-                .strip()
-            )
-
-            or
-
-            "gemma-3-27b-it"
+        force = options.get(
+            "force"
         )
 
-        self.stdout.write(
-
-            self.style.SUCCESS(
-
-                f"🚀 解析開始: "
-                f"{len(products)} 件"
-
-            )
+        needs_runtime = options.get(
+            "needs_runtime"
         )
 
-        self.counter = 0
+        skip_extraction = options.get(
+            "skip_extraction"
+        )
+
+        trace_runtime = options.get(
+            "trace_runtime"
+        )
+
+        workers = options.get(
+            "workers"
+        )
+
+        # =================================================
+        # QUERYSET
+        # =================================================
+
+        queryset = (
+            PCProduct.objects.all()
+        )
+
+        # =================================================
+        # NEEDS RUNTIME
+        # =================================================
+
+        if needs_runtime:
+
+            queryset = queryset.filter(
+
+                semantic_runtime_compiled=False
+            )
+
+        # =================================================
+        # LIMIT
+        # =================================================
+
+        queryset = list(
+
+            queryset.order_by(
+                "-id"
+            )[:limit]
+        )
+
+        total = len(queryset)
+
+        # =================================================
+        # START
+        # =================================================
+
+        runtime_log(
+
+            True,
+
+            "SEMANTIC RUNTIME ANALYSIS",
+
+            {
+
+                "products":
+                    total,
+
+                "workers":
+                    workers,
+
+                "force":
+                    force,
+
+                "needs_runtime":
+                    needs_runtime,
+
+                "skip_extraction":
+                    skip_extraction,
+
+                "trace_runtime":
+                    trace_runtime,
+            },
+        )
+
+        # =================================================
+        # PARALLEL EXECUTION
+        # =================================================
 
         with ThreadPoolExecutor(
-            max_workers=MAX_WORKERS
+
+            max_workers=workers
+
         ) as executor:
 
-            future_to_product = {}
+            futures = []
 
-            for i, product in enumerate(products):
+            for index, product in enumerate(
 
-                if i > 0:
-                    time.sleep(INTERVAL)
+                queryset,
 
-                self.counter += 1
+                start=1,
+            ):
 
                 future = executor.submit(
 
-                    self.analyze_product,
+                    self.process_product,
 
                     product,
 
-                    model_id,
+                    total,
 
-                    self.counter,
+                    index,
 
-                    len(products)
+                    force,
+
+                    skip_extraction,
+
+                    trace_runtime,
+
+                    needs_runtime,
                 )
 
-                future_to_product[
+                futures.append(
                     future
-                ] = product
+                )
+
+            # =============================================
+            # WAIT
+            # =============================================
 
             for future in as_completed(
-                future_to_product
+                futures
             ):
 
                 try:
@@ -398,536 +440,22 @@ class Command(BaseCommand):
 
                 except Exception as e:
 
-                    p = future_to_product[
-                        future
-                    ]
+                    runtime_log(
 
-                    self.stdout.write(
+                        True,
 
-                        self.style.ERROR(
+                        "THREAD ERROR",
 
-                            f"❌ "
-                            f"{p.unique_id}: "
-                            f"{str(e)}"
-
-                        )
+                        str(e),
                     )
-
-    # =====================================================
-    # Analyze Product
-    # =====================================================
-    def analyze_product(
-        self,
-        product,
-        model_id,
-        count,
-        total,
-        retry_count=0
-    ):
-
-        current_api_key = next(
-            key_cycle
-        )
 
         # =================================================
-        # Prompt
+        # DONE
         # =================================================
-        base_pc_prompt = (
 
-            self.load_prompt_file(
-                'analyze_pc_prompt.txt'
-            )
+        runtime_log(
 
-            or
+            True,
 
-            (
-                "メーカー:{maker}\n"
-                "製品名:{name}\n"
-                "価格:{price}\n"
-                "説明:{description}\n"
-            )
+            "SEMANTIC RUNTIME COMPLETED",
         )
-
-        maker_slug = self.get_maker_slug(
-            product.maker
-        )
-
-        brand_rules = (
-
-            self.load_prompt_file(
-
-                f"analyze_{maker_slug}_prompt.txt"
-
-            )
-
-            or
-
-            self.load_prompt_file(
-                'analyze_pc_prompt.txt'
-            )
-        )
-
-        # =================================================
-        # JSON Structure
-        # =================================================
-        structure_instruction = """
-必ずJSONを返してください
-"""
-
-        formatted_base = (
-
-            base_pc_prompt
-
-            .replace(
-                "{maker}",
-                str(product.maker)
-            )
-
-            .replace(
-                "{name}",
-                str(product.name)
-            )
-
-            .replace(
-                "{price}",
-                f"{product.price or 0:,}"
-            )
-
-            .replace(
-                "{description}",
-                str(product.description or "")
-            )
-        )
-
-        full_prompt = f"""
-
-{formatted_base}
-
-ブランド別ルール:
-{brand_rules}
-
-{structure_instruction}
-
-"""
-
-        api_url = (
-
-            "https://generativelanguage.googleapis.com/"
-            f"v1beta/models/{model_id}:generateContent"
-            f"?key={current_api_key}"
-        )
-
-        try:
-
-            response = requests.post(
-
-                api_url,
-
-                json={
-
-                    "contents": [
-
-                        {
-                            "parts": [
-                                {
-                                    "text": full_prompt
-                                }
-                            ]
-                        }
-                    ],
-
-                    "generationConfig": {
-                        "temperature": 0.2
-                    }
-                },
-
-                timeout=120
-            )
-
-            # =============================================
-            # Retry
-            # =============================================
-            if response.status_code in [
-
-                429,
-                500,
-                503,
-                504
-
-            ]:
-
-                if retry_count < 3:
-
-                    time.sleep(20)
-
-                    return self.analyze_product(
-
-                        product,
-                        model_id,
-                        count,
-                        total,
-                        retry_count + 1
-                    )
-
-                return
-
-            response.raise_for_status()
-
-            res_json = response.json()
-
-            full_text = (
-
-                res_json['candidates'][0]
-                ['content']['parts'][0]['text']
-
-            )
-
-            # =============================================
-            # JSON Parse
-            # =============================================
-            spec_data = {}
-
-            spec_match = re.search(
-
-                r'\[SPEC_JSON\](.*?)\[/SPEC_JSON\]',
-
-                full_text,
-
-                re.DOTALL
-            )
-
-            if spec_match:
-
-                try:
-
-                    clean_json = re.sub(
-
-                        r'//.*',
-
-                        '',
-
-                        spec_match.group(1).strip()
-                    )
-
-                    spec_data = json.loads(
-
-                        clean_json
-                        .replace('、', ',')
-                        .replace('：', ':')
-
-                    )
-
-                except Exception:
-
-                    pass
-
-            # =============================================
-            # Summary
-            # =============================================
-            summary_match = re.search(
-
-                r'\[SUMMARY_DATA\](.*?)\[/SUMMARY_DATA\]',
-
-                full_text,
-
-                re.DOTALL
-            )
-
-            summary_text = (
-
-                summary_match.group(0).strip()
-
-                if summary_match
-
-                else ""
-            )
-
-            # =============================================
-            # Clean Body
-            # =============================================
-            clean_body = re.sub(
-
-                r'\[SPEC_JSON\].*?\[/SPEC_JSON\]',
-
-                '',
-
-                full_text,
-
-                flags=re.DOTALL
-            )
-
-            clean_body = re.sub(
-
-                r'\[SUMMARY_DATA\].*?\[/SUMMARY_DATA\]',
-
-                '',
-
-                clean_body,
-
-                flags=re.DOTALL
-            )
-
-            clean_body = (
-
-                clean_body
-
-                .replace('<h2>', '## ')
-                .replace('</h2>', '\n')
-
-                .replace('<h3>', '### ')
-                .replace('</h3>', '\n')
-
-                .replace('<p>', '')
-                .replace('</p>', '\n')
-
-                .strip()
-            )
-
-            # =============================================
-            # Safe Int
-            # =============================================
-            def safe_int(
-                val,
-                default=0
-            ):
-
-                try:
-
-                    if isinstance(val, bool):
-
-                        return int(val)
-
-                    num = re.sub(
-
-                        r'[^0-9]',
-
-                        '',
-
-                        str(val)
-                    )
-
-                    return (
-                        int(num)
-                        if num
-                        else default
-                    )
-
-                except Exception:
-
-                    return default
-
-            # =============================================
-            # Weight Parse
-            # =============================================
-            weight_text = " ".join([
-
-                product.name or "",
-                product.description or "",
-                spec_data.get(
-                    "display_info",
-                    ""
-                ),
-
-            ])
-
-            weight_match = re.search(
-
-                r'(\d+(?:\.\d+)?)\s*kg',
-
-                weight_text.lower()
-            )
-
-            if weight_match:
-
-                try:
-
-                    product.weight_kg = float(
-                        weight_match.group(1)
-                    )
-
-                except Exception:
-
-                    product.weight_kg = None
-
-            # =============================================
-            # DB Save
-            # =============================================
-            new_title = spec_data.get(
-                'seo_title'
-            )
-
-            if (
-                new_title
-                and len(new_title) > 10
-            ):
-
-                product.name = new_title
-
-            # =============================================
-            # Spec Fields
-            # =============================================
-            product.cpu_model = spec_data.get(
-                'cpu_model',
-                product.cpu_model
-            )
-
-            product.gpu_model = spec_data.get(
-                'gpu_model',
-                product.gpu_model
-            )
-
-            product.memory_gb = safe_int(
-
-                spec_data.get(
-                    'memory_gb'
-                ),
-
-                product.memory_gb
-            )
-
-            product.storage_gb = safe_int(
-
-                spec_data.get(
-                    'storage_gb'
-                ),
-
-                product.storage_gb
-            )
-
-            product.display_info = spec_data.get(
-
-                'display_info',
-
-                product.display_info
-            )
-
-            product.npu_tops = safe_int(
-
-                spec_data.get(
-                    'npu_tops'
-                ),
-
-                product.npu_tops
-            )
-
-            product.target_segment = spec_data.get(
-
-                'target_segment',
-
-                product.target_segment
-            )
-
-            # =============================================
-            # AI判定
-            # =============================================
-            product.is_ai_pc = spec_data.get(
-                'is_ai_pc',
-                False
-            )
-
-            # =============================================
-            # Scores
-            # =============================================
-            product.score_cpu = safe_int(
-                spec_data.get('score_cpu'),
-                0
-            )
-
-            product.score_gpu = safe_int(
-                spec_data.get('score_gpu'),
-                0
-            )
-
-            product.score_cost = safe_int(
-                spec_data.get('score_cost'),
-                0
-            )
-
-            product.score_portable = safe_int(
-                spec_data.get('score_portable'),
-                0
-            )
-
-            product.score_ai = safe_int(
-                spec_data.get('score_ai'),
-                0
-            )
-
-            # =============================================
-            # Meta
-            # =============================================
-            product.site_prefix = 'bicstation'
-
-            product.is_active = True
-
-            product.is_posted = True
-
-            product.stock_status = "在庫あり"
-
-            # =============================================
-            # Spec Score
-            # =============================================
-            ai_spec_score = safe_int(
-                spec_data.get(
-                    'spec_score'
-                ),
-                0
-            )
-
-            product.spec_score = (
-
-                ai_spec_score
-
-                if ai_spec_score > 0
-
-                else (
-
-                    product.score_cpu
-                    + product.score_gpu
-                    + product.score_ai
-
-                ) // 3
-            )
-
-            # =============================================
-            # AI Content
-            # =============================================
-            product.ai_summary = summary_text
-
-            product.ai_content = clean_body
-
-            product.last_spec_parsed_at = (
-                timezone.now()
-            )
-
-            # =============================================
-            # SAVE
-            # =============================================
-            product.save()
-
-            # =============================================
-            # LOG
-            # =============================================
-            self.stdout.write(
-
-                self.style.SUCCESS(
-
-                    f" ✅ 更新完了 "
-                    f"({count}/{total}) "
-                    f"{product.unique_id}"
-
-                )
-            )
-
-        except Exception as e:
-
-            self.stdout.write(
-
-                self.style.ERROR(
-
-                    f"❌ 解析失敗 "
-                    f"({product.unique_id}): "
-                    f"{str(e)}"
-
-                )
-            )
