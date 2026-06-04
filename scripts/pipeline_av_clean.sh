@@ -181,7 +181,10 @@ run_django sync_fanza_floor_master || true
 # ==========================================================
 
 log "STEP 01 : IMPORT DUGA"
-run_django import_t_duga || true
+run_django import_t_duga \
+    --start_page 1 \
+    --pages 10 \
+    || true
 
 # ==========================================================
 # FANZA IMPORT SETTINGS
