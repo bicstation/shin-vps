@@ -1,5 +1,7 @@
 // @ts-nocheck
 
+import Link from 'next/link';
+
 import {
   getUnifiedProducts,
   toAdultProductCard,
@@ -10,11 +12,25 @@ import AdultProductExplorerCard
 
 import styles from './page.module.css';
 
-export default async function RankingPage() {
+interface Props {
+  params: Promise<{
+    slug: string;
+  }>;
+}
+
+export default async function GenrePage({
+  params,
+}: Props) {
+
+  const { slug } =
+    await params;
+
+  const genre =
+    decodeURIComponent(slug);
 
   //
-  // 暫定ランキング
-  // Backend Ranking API完成後に差し替え
+  // 将来
+  // genre filter対応
   //
 
   const result =
@@ -33,36 +49,33 @@ export default async function RankingPage() {
   return (
     <div className={styles.page}>
 
-      <header className={styles.header}>
+      <div className={styles.header}>
+
+        <Link
+          href="/genre"
+          className={styles.backLink}
+        >
+          ← ジャンル一覧へ戻る
+        </Link>
 
         <h1 className={styles.title}>
-          人気作品ランキング
+          {genre}
         </h1>
 
         <p className={styles.description}>
-          今注目されている作品をチェックできます。
+          「{genre}」作品一覧
         </p>
 
-      </header>
+      </div>
 
       <div className={styles.grid}>
 
         {products.map(
-          (product, index) => (
-            <div
+          (product) => (
+            <AdultProductExplorerCard
               key={product.id}
-              className={styles.rankItem}
-            >
-
-              <div className={styles.rankBadge}>
-                #{index + 1}
-              </div>
-
-              <AdultProductExplorerCard
-                product={product}
-              />
-
-            </div>
+              product={product}
+            />
           )
         )}
 

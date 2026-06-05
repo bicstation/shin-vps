@@ -1,0 +1,66 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.title {
+  margin: 0;
+}
+
+.description {
+  opacity: 0.8;
+}
+
+.searchSection {
+  width: 100%;
+}
+
+.searchForm {
+  display: flex;
+  gap: 1rem;
+}
+
+.input {
+  flex: 1;
+  min-height: 48px;
+  padding: 0 1rem;
+}
+
+.button {
+  min-width: 120px;
+}
+
+.quickLinks {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.links {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(220px, 1fr)
+    );
+
+  gap: 1rem;
+}
+
+.linkCard {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 120px;
+
+  text-decoration: none;
+}

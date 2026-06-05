@@ -94,30 +94,112 @@ Explorer
 ===================================== */
 
 .explorer {
-padding: 0 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
 }
 
 .explorerGrid {
-display: grid;
-grid-template-columns: repeat(4, 1fr);
-gap: 1rem;
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(0, 1fr)
+    );
+
+  gap: 1.5rem;
 }
 
 .explorerCard {
-display: block;
-padding: 1.5rem;
-border-radius: 16px;
-text-decoration: none;
+  position: relative;
+
+  min-height: 260px;
+
+  display: flex;
+  align-items: flex-end;
+
+  overflow: hidden;
+
+  border-radius: 20px;
+
+  background-size: cover;
+  background-position: center;
+
+  text-decoration: none;
+
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.explorerCard:hover {
+  transform: translateY(-6px);
+
+  box-shadow:
+    0 20px 40px
+    rgba(0,0,0,0.35);
+}
+
+.explorerCard:hover img {
+  transform: scale(1.05);
+  transition: all 0.3s ease;
+}
+
+.explorerOverlay {
+  position: absolute;
+  inset: 0;
+
+  background:
+    linear-gradient(
+      to top,
+      rgba(0,0,0,0.88),
+      rgba(0,0,0,0.15)
+    );
+}
+
+.explorerContent {
+  position: relative;
+
+  z-index: 2;
+
+  width: 100%;
+
+  padding: 1.5rem;
 }
 
 .explorerCardTitle {
-margin: 0;
-font-size: 1.1rem;
+  margin: 0;
+
+  font-size: 1.4rem;
+  font-weight: 700;
+
+  color: #fff;
 }
 
 .explorerCardDescription {
-margin-top: 0.75rem;
-line-height: 1.6;
+  margin-top: 0.75rem;
+
+  line-height: 1.6;
+
+  color:
+    rgba(
+      255,
+      255,
+      255,
+      0.85
+    );
+}
+
+.explorerArrow {
+  display: inline-flex;
+
+  margin-top: 1rem;
+
+  font-size: 1.4rem;
+  font-weight: 700;
+
+  color: #ff4d4f;
 }
 
 /* =====================================
@@ -234,4 +316,24 @@ padding: 3rem 1rem;
 .heroTitle {
 font-size: 2rem;
 }
+}
+
+@media (max-width: 1100px) {
+
+  .explorerGrid {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+
+}
+
+@media (max-width: 768px) {
+
+  .explorerGrid {
+    grid-template-columns: 1fr;
+  }
+
 }
