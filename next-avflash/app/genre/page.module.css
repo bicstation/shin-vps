@@ -1,0 +1,185 @@
+/* =========================================================
+   GENRE PAGE
+   ========================================================= */
+
+.page {
+  display: flex;
+  flex-direction: column;
+
+  gap: 3rem;
+
+  width: 100%;
+}
+
+/* =========================================================
+   Header
+   ========================================================= */
+
+.header {
+  display: flex;
+  flex-direction: column;
+
+  gap: 1rem;
+}
+
+.title {
+  margin: 0;
+
+  font-size: 2.5rem;
+  font-weight: 700;
+
+  color: #ffffff;
+}
+
+.description {
+  margin: 0;
+
+  font-size: 1rem;
+  line-height: 1.8;
+
+  color: rgba(255,255,255,0.75);
+
+  max-width: 700px;
+}
+
+/* =========================================================
+   Genre Grid
+   ========================================================= */
+
+.grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(0, 1fr)
+    );
+
+  gap: 1.5rem;
+}
+
+/* =========================================================
+   Genre Card
+   ========================================================= */
+
+.card {
+  position: relative;
+
+  min-height: 280px;
+
+  border-radius: 20px;
+
+  overflow: hidden;
+
+  display: flex;
+  align-items: flex-end;
+
+  background-size: cover;
+  background-position: center;
+
+  text-decoration: none;
+
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-6px);
+
+  box-shadow:
+    0 20px 40px
+    rgba(0,0,0,0.35);
+}
+
+/* =========================================================
+   Overlay
+   ========================================================= */
+
+.overlay {
+  position: absolute;
+
+  inset: 0;
+
+  background:
+    linear-gradient(
+      to top,
+      rgba(0,0,0,0.90),
+      rgba(0,0,0,0.15)
+    );
+}
+
+/* =========================================================
+   Content
+   ========================================================= */
+
+.content {
+  position: relative;
+
+  z-index: 2;
+
+  width: 100%;
+
+  padding: 1.75rem;
+}
+
+.cardTitle {
+  margin: 0;
+
+  color: #ffffff;
+
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+.cardDescription {
+  margin-top: 0.75rem;
+
+  color:
+    rgba(
+      255,
+      255,
+      255,
+      0.85
+    );
+
+  line-height: 1.7;
+
+  font-size: 0.95rem;
+}
+
+/* =========================================================
+   Responsive
+   ========================================================= */
+
+@media (max-width: 1100px) {
+
+  .grid {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+
+}
+
+@media (max-width: 768px) {
+
+  .page {
+    gap: 2rem;
+  }
+
+  .title {
+    font-size: 2rem;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .card {
+    min-height: 240px;
+  }
+
+}

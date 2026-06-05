@@ -284,6 +284,8 @@ SEMANTIC_FILES=(
   "semantic_groups.tsv"
 
   "semantic_group_mappings.tsv"
+  
+  "semantic_attributes.tsv"
 )
 
 for FILE in "${SEMANTIC_FILES[@]}"
