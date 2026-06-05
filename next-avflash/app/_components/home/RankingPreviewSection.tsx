@@ -2,30 +2,30 @@ import Link from 'next/link';
 import styles from './home.module.css';
 
 type Props = {
-products: any[];
+products?: any[];
 };
 
-export function LatestProductsSection({
-products,
+export function RankingPreviewSection({
+products = [],
 }: Props) {
-return ( <section className={styles.latestProducts}>
+return ( <section className={styles.rankingPreview}>
 
 
   <div className={styles.sectionHeader}>
 
     <h2 className={styles.sectionTitle}>
-      最近追加された作品
+      今人気の作品
     </h2>
 
     <p className={styles.sectionDescription}>
-      新しく追加された作品をチェックできます。
+      多くのユーザーに選ばれている作品です。
     </p>
 
   </div>
 
   <div className={styles.productGrid}>
 
-    {products.map((product) => (
+    {products.slice(0, 5).map((product) => (
       <Link
         key={product.id}
         href={`/adults/${product.id}`}
@@ -61,10 +61,10 @@ return ( <section className={styles.latestProducts}>
   <div className={styles.sectionFooter}>
 
     <Link
-      href="/adults"
+      href="/ranking"
       className={styles.sectionMore}
     >
-      すべての作品を見る
+      ランキングをもっと見る
     </Link>
 
   </div>

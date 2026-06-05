@@ -32,8 +32,20 @@ export default function AdultProductGallery({ images, title, apiSource, sampleMo
   // --- 🖼️ 1. 画像最適化ロジック (DUGA/FANZAの両方の複雑なパターンに対応) ---
   const displayThumbnails = useMemo(() => {
     if (!images || !Array.isArray(images)) return [];
+
+    //
+    // Safe Images
+    //
+
+    const safeImages = Array.isArray(images)
+      ? images.filter(
+          (img) =>
+            typeof img === 'string' &&
+            img.trim() !== ''
+        )
+      : [];
     
-    let processed = images.map((img) => {
+    let processed = safeImages.map((img) => {
       if (!img) return null;
 
       // ✅ DUGA修正:
@@ -100,7 +112,9 @@ export default function AdultProductGallery({ images, title, apiSource, sampleMo
         <div className={styles.imageContainer}>
           {isVideoActive ? (
             <div className="relative w-full h-full bg-black flex items-center justify-center">
-              {isFanza && currentContent.includes('dmm.co.jp') ? (
+              {isFanza &&
+                typeof currentContent === 'string' &&
+                currentContent.includes('dmm.co.jp') ? (
                 /* FANZAプレイヤー (iFrame) */
                 <iframe
                   src={currentContent}

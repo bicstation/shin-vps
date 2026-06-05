@@ -1,14 +1,9 @@
-// app/_components/home/index.ts
+export { HeroSection } from './HeroSection';
 
-export { default as HeroSection }
-  from './HeroSection';
+export { ExplorerEntrySection } from './ExplorerEntrySection';
 
-export { default as StatsSection }
-  from './StatsSection';
+export { LatestProductsSection } from './LatestProductsSection';
 
-export { default as LatestProductsSection }
-  from './LatestProductsSection';
+export { RankingPreviewSection } from './RankingPreviewSection';
 
-export { default as ExplorerEntrySection }
-  from './ExplorerEntrySection';
-
+export { StatsSection } from './StatsSection';

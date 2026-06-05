@@ -27,7 +27,12 @@ export async function getAdultNavigationFloors(params: any = {}, host: string = 
   const query = new URLSearchParams(cleanParams).toString();
   
   // 2. 接続先 URL の解決 (siteTag をリレー)
-  const targetUrl = resolveApiUrl(`adult/navigation/floors/?${query}`, siteTag);
+  // const targetUrl = resolveApiUrl(`adult/navigation/floors/?${query}`, siteTag);
+  const targetUrl =
+  resolveApiUrl(
+    `adult/floor-navigation/?${query}`,
+    siteTag
+  );
   
   try {
     const res = await fetch(targetUrl, { 

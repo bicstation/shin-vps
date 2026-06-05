@@ -1,72 +1,67 @@
-// app/_components/home/StatsSection.tsx
-
 import styles from './home.module.css';
 
-interface Props {
-  products: number;
-  actresses?: number;
-  genres?: number;
-  series?: number;
-}
+type Props = {
+products: number;
+actresses?: number;
+series?: number;
+};
 
-export default function StatsSection({
-  products,
-  actresses,
-  genres,
-  series,
+export function StatsSection({
+products,
+actresses = 0,
+series = 0,
 }: Props) {
-  return (
-    <section className={styles.homeSection}>
-      <div className={styles.statsGrid}>
+return ( <section className={styles.stats}>
 
-        <div className={styles.statCard}>
-          <span className={styles.statValue}>
-            {products.toLocaleString()}
-          </span>
 
-          <span className={styles.statLabel}>
-            登録作品
-          </span>
-        </div>
+  <div className={styles.sectionHeader}>
 
-        {actresses !== undefined && (
-          <div className={styles.statCard}>
-            <span className={styles.statValue}>
-              {actresses.toLocaleString()}
-            </span>
+    <h2 className={styles.sectionTitle}>
+      AVFLASHについて
+    </h2>
 
-            <span className={styles.statLabel}>
-              女優
-            </span>
-          </div>
-        )}
+    <p className={styles.sectionDescription}>
+      多くの作品情報を掲載しています。
+    </p>
 
-        {genres !== undefined && (
-          <div className={styles.statCard}>
-            <span className={styles.statValue}>
-              {genres.toLocaleString()}
-            </span>
+  </div>
 
-            <span className={styles.statLabel}>
-              ジャンル
-            </span>
-          </div>
-        )}
+  <div className={styles.statsGrid}>
 
-        {series !== undefined && (
-          <div className={styles.statCard}>
-            <span className={styles.statValue}>
-              {series.toLocaleString()}
-            </span>
-
-            <span className={styles.statLabel}>
-              シリーズ
-            </span>
-          </div>
-        )}
-
+    <div className={styles.statCard}>
+      <div className={styles.statValue}>
+        {products.toLocaleString()}
       </div>
-    </section>
-  );
-}
 
+      <div className={styles.statLabel}>
+        掲載作品数
+      </div>
+    </div>
+
+    <div className={styles.statCard}>
+      <div className={styles.statValue}>
+        {actresses.toLocaleString()}
+      </div>
+
+      <div className={styles.statLabel}>
+        出演者数
+      </div>
+    </div>
+
+    <div className={styles.statCard}>
+      <div className={styles.statValue}>
+        {series.toLocaleString()}
+      </div>
+
+      <div className={styles.statLabel}>
+        シリーズ数
+      </div>
+    </div>
+
+  </div>
+
+</section>
+
+
+);
+}

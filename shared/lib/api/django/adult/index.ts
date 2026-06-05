@@ -3,3 +3,4 @@ export * from './products';
 export * from './taxonomy';
 export * from './navigation';
 export * from './semantic';
+export * from './sidebar';

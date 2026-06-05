@@ -1,25 +1,47 @@
-// app/_components/home/HeroSection.tsx
-
+import Link from 'next/link';
 import styles from './home.module.css';
 
-export default function HeroSection() {
-  return (
-    <section className={styles.hero}>
-      <div className={styles.inner}>
-        <h1 className={styles.title}>
-          AVFLASH
-        </h1>
+export function HeroSection() {
+return ( <section className={styles.hero}>
 
-        <p className={styles.catchcopy}>
-          次に見る作品を見つけよう
-        </p>
 
-        <p className={styles.description}>
-          13,000作品以上のアーカイブから
-          気になる作品を探せます。
-        </p>
-      </div>
-    </section>
-  );
+  <div className={styles.heroContent}>
+
+    <span className={styles.heroLabel}>
+      AVFLASH
+    </span>
+
+    <h1 className={styles.heroTitle}>
+      あなたに合う作品を見つけよう
+    </h1>
+
+    <p className={styles.heroDescription}>
+      人気作品や新着作品から、
+      気になる作品を簡単に探せます。
+    </p>
+
+    <div className={styles.heroActions}>
+
+      <Link
+        href="/adults"
+        className={styles.primaryButton}
+      >
+        作品を探す
+      </Link>
+
+      <Link
+        href="/ranking"
+        className={styles.secondaryButton}
+      >
+        人気作品を見る
+      </Link>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+);
 }
-

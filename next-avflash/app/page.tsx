@@ -12,40 +12,52 @@ import {
   StatsSection,
   LatestProductsSection,
   ExplorerEntrySection,
+  RankingPreviewSection,
 } from './_components/home';
 
 import styles from './page.module.css';
 
 export default async function HomePage() {
 
-  const result = await getUnifiedProducts(
-    {
-      page_size: 12,
-    },
-    'avflash'
-  );
+  //
+  // Latest Products
+  //
 
-  const products =
-    result?.results?.map(
+  const latestResult =
+    await getUnifiedProducts(
+      {
+        page_size: 12,
+      },
+      'avflash'
+    );
+
+  const latestProducts =
+    latestResult?.results?.map(
       toAdultProductCard
     ) ?? [];
 
   return (
     <div className={styles.page}>
 
+      {/* AVFLASHとは何か */}
       <HeroSection />
 
-      <StatsSection
-        products={result?.count ?? 0}
-      />
-
-      <LatestProductsSection
-        products={products}
-      />
-
+      {/* 次の行動を選ぶ */}
       <ExplorerEntrySection />
+
+      {/* 最新作品 */}
+      <LatestProductsSection
+        products={latestProducts}
+      />
+
+      {/* 人気作品導線 */}
+      <RankingPreviewSection />
+
+      {/* 信頼補強 */}
+      <StatsSection
+        products={latestResult?.count ?? 0}
+      />
 
     </div>
   );
 }
-

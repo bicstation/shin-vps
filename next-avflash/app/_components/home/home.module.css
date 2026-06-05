@@ -1,185 +1,237 @@
-css
-/* =========================================================
-   AVFLASH Home Experience Layer
-   ========================================================= */
+/* =====================================
+Home Layout
+===================================== */
 
-.homeSection {
-  margin-bottom: 64px;
+.page {
+display: flex;
+flex-direction: column;
+gap: 4rem;
 }
 
-/* =========================================================
-   Hero
-   ========================================================= */
-
-.hero {
-  padding: 60px 0;
-}
-
-.heroInner {
-  max-width: 900px;
-}
-
-.heroTitle {
-  margin: 0 0 16px;
-
-  font-size: 3rem;
-  font-weight: 800;
-  line-height: 1.1;
-
-  color: #ffffff;
-}
-
-.heroCatch {
-  margin: 0 0 16px;
-
-  font-size: 1.4rem;
-  font-weight: 600;
-
-  color: #f8fafc;
-}
-
-.heroDescription {
-  margin: 0;
-
-  font-size: 1rem;
-  line-height: 1.8;
-
-  color: #94a3b8;
-}
-
-/* =========================================================
-   Stats
-   ========================================================= */
-
-.statsGrid {
-  display: grid;
-
-  grid-template-columns:
-    repeat(auto-fit, minmax(180px, 1fr));
-
-  gap: 20px;
-}
-
-.statCard {
-  padding: 24px;
-
-  border-radius: 16px;
-
-  background: #111111;
-
-  border: 1px solid rgba(255,255,255,0.05);
-}
-
-.statValue {
-  display: block;
-
-  font-size: 1.8rem;
-  font-weight: 700;
-
-  color: #ffffff;
-}
-
-.statLabel {
-  display: block;
-
-  margin-top: 8px;
-
-  color: #94a3b8;
-}
-
-/* =========================================================
-   Section Header
-   ========================================================= */
+/* =====================================
+Shared Section
+===================================== */
 
 .sectionHeader {
-  margin-bottom: 24px;
+margin-bottom: 1.5rem;
 }
 
 .sectionTitle {
-  margin: 0 0 8px;
-
-  font-size: 2rem;
-  font-weight: 700;
-
-  color: #ffffff;
+font-size: 1.75rem;
+font-weight: 700;
+margin: 0;
 }
 
 .sectionDescription {
-  margin: 0;
-
-  color: #94a3b8;
-
-  line-height: 1.6;
+margin-top: 0.5rem;
+opacity: 0.8;
 }
 
-/* =========================================================
-   Product Grid
-   ========================================================= */
+.sectionFooter {
+margin-top: 2rem;
+text-align: center;
+}
+
+.sectionMore {
+text-decoration: none;
+font-weight: 600;
+}
+
+/* =====================================
+Hero
+===================================== */
+
+.hero {
+padding: 5rem 1rem;
+}
+
+.heroContent {
+max-width: 960px;
+margin: 0 auto;
+text-align: center;
+}
+
+.heroLabel {
+display: inline-block;
+margin-bottom: 1rem;
+font-size: 0.875rem;
+font-weight: 700;
+letter-spacing: 0.08em;
+}
+
+.heroTitle {
+font-size: clamp(2rem, 5vw, 4rem);
+font-weight: 800;
+line-height: 1.2;
+margin: 0;
+}
+
+.heroDescription {
+max-width: 640px;
+margin: 1.5rem auto 0;
+font-size: 1.1rem;
+line-height: 1.8;
+}
+
+.heroActions {
+display: flex;
+justify-content: center;
+gap: 1rem;
+flex-wrap: wrap;
+margin-top: 2rem;
+}
+
+.primaryButton,
+.secondaryButton {
+padding: 0.875rem 1.5rem;
+border-radius: 12px;
+text-decoration: none;
+font-weight: 700;
+}
+
+/* =====================================
+Explorer
+===================================== */
+
+.explorer {
+padding: 0 1rem;
+}
+
+.explorerGrid {
+display: grid;
+grid-template-columns: repeat(4, 1fr);
+gap: 1rem;
+}
+
+.explorerCard {
+display: block;
+padding: 1.5rem;
+border-radius: 16px;
+text-decoration: none;
+}
+
+.explorerCardTitle {
+margin: 0;
+font-size: 1.1rem;
+}
+
+.explorerCardDescription {
+margin-top: 0.75rem;
+line-height: 1.6;
+}
+
+/* =====================================
+Latest Products
+===================================== */
+
+.latestProducts {
+padding: 0 1rem;
+}
+
+/* =====================================
+Ranking Preview
+===================================== */
+
+.rankingPreview {
+padding: 0 1rem;
+}
+
+/* =====================================
+Product Grid
+===================================== */
 
 .productGrid {
-  display: grid;
-
-  grid-template-columns:
-    repeat(auto-fill, minmax(320px, 1fr));
-
-  gap: 24px;
+display: grid;
+grid-template-columns: repeat(4, 1fr);
+gap: 1.5rem;
 }
 
-/* =========================================================
-   Explorer Entry
-   ========================================================= */
-
-.explorerEntry {
-  text-align: center;
+.productCard {
+display: block;
+text-decoration: none;
 }
 
-.explorerButton {
-  display: inline-flex;
-
-  align-items: center;
-  justify-content: center;
-
-  padding: 14px 28px;
-
-  border-radius: 12px;
-
-  background: #2563eb;
-
-  color: #ffffff;
-
-  font-weight: 600;
-
-  transition: opacity 0.2s ease;
+.productImage img {
+width: 100%;
+height: auto;
+display: block;
+border-radius: 12px;
 }
 
-.explorerButton:hover {
-  opacity: 0.9;
+.productBody {
+padding-top: 0.75rem;
 }
 
-/* =========================================================
-   Mobile
-   ========================================================= */
-
-@media (max-width: 768px) {
-
-  .hero {
-    padding: 40px 0;
-  }
-
-  .heroTitle {
-    font-size: 2rem;
-  }
-
-  .heroCatch {
-    font-size: 1.1rem;
-  }
-
-  .sectionTitle {
-    font-size: 1.5rem;
-  }
-
-  .productGrid {
-    grid-template-columns: 1fr;
-  }
+.productTitle {
+margin: 0;
+font-size: 1rem;
+line-height: 1.5;
 }
 
+.productMeta {
+margin-top: 0.5rem;
+opacity: 0.75;
+font-size: 0.9rem;
+}
+
+/* =====================================
+Stats
+===================================== */
+
+.stats {
+padding: 0 1rem 4rem;
+}
+
+.statsGrid {
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 1rem;
+}
+
+.statCard {
+text-align: center;
+padding: 2rem 1rem;
+border-radius: 16px;
+}
+
+.statValue {
+font-size: 2rem;
+font-weight: 800;
+}
+
+.statLabel {
+margin-top: 0.5rem;
+opacity: 0.75;
+}
+
+/* =====================================
+Responsive
+===================================== */
+
+@media (max-width: 1024px) {
+
+.explorerGrid,
+.productGrid {
+grid-template-columns: repeat(2, 1fr);
+}
+
+.statsGrid {
+grid-template-columns: 1fr;
+}
+}
+
+@media (max-width: 640px) {
+
+.explorerGrid,
+.productGrid {
+grid-template-columns: 1fr;
+}
+
+.hero {
+padding: 3rem 1rem;
+}
+
+.heroTitle {
+font-size: 2rem;
+}
+}

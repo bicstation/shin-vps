@@ -47,15 +47,42 @@ export async function getUnifiedProducts(params: any = {}, host: string = '') {
     const hardenedResults = (Array.isArray(rawResults) ? rawResults : []).map((item: any) => {
       // 🛡️ [重要] プロパティごとの null ガード
       // ここで toString().toLowerCase() 等が後続（コンポーネント側）で呼ばれても死なないようにする
+
       return {
         ...item,
-        id: (item.id || item.product_id || "").toString(),
-        brand: (item.brand || "FANZA").toString(), // 大文字小文字化はコンポーネントに任せるか、ここでする
+
+        // Frontend公開ID
+        id: (
+          item.product_id_unique ||
+          item.id ||
+          item.product_id ||
+          ""
+        ).toString(),
+
+        // Backend契約保持
+        product_id_unique: (
+          item.product_id_unique ||
+          ""
+        ).toString(),
+
+        brand: (item.brand || "FANZA").toString(),
         site_tag: (item.site_tag || siteTag).toString(),
         title: item.title || "No Title",
-        // 画像URLが空の場合のフォールバック
-        image: item.image_url || item.main_image || "/images/common/no-image.jpg"
+
+        image:
+          item.image_url ||
+          item.main_image ||
+          "/images/common/no-image.jpg"
       };
+      // return {
+      //   ...item,
+      //   id: (item.id || item.product_id || "").toString(),
+      //   brand: (item.brand || "FANZA").toString(), // 大文字小文字化はコンポーネントに任せるか、ここでする
+      //   site_tag: (item.site_tag || siteTag).toString(),
+      //   title: item.title || "No Title",
+      //   // 画像URLが空の場合のフォールバック
+      //   image: item.image_url || item.main_image || "/images/common/no-image.jpg"
+      // };
     });
     
     return { 
@@ -71,11 +98,26 @@ export async function getUnifiedProducts(params: any = {}, host: string = '') {
 /**
  * 🎯 製品詳細取得
  */
-export async function getAdultProductDetail(id: string | number, siteTag: string = 'avflash'): Promise<AdultProduct | null> {
+export async function getAdultProductDetail(
+  productIdUnique: string,
+  siteTag: string = 'avflash'
+): Promise<AdultProduct | null> {
   // 🛡️ id が undefined や 'main' (ルーティングミス) の場合は即終了
-  if (!id || id === 'main' || id === 'undefined') return null;
+
+  if (
+    !productIdUnique ||
+    productIdUnique === 'main' ||
+    productIdUnique === 'undefined'
+  ) {
+    return null;
+  }
   
-  const targetUrl = resolveApiUrl(`adult/products/${id}/?site=${siteTag}`, siteTag);
+  // const targetUrl = resolveApiUrl(`adult/products/${id}/?site=${siteTag}`, siteTag);
+  const targetUrl =
+  resolveApiUrl(
+    `adult/products/${productIdUnique}/?site=${siteTag}`,
+    siteTag
+  );
   
   try {
     const res = await fetch(targetUrl, { 
@@ -98,16 +140,26 @@ export async function getAdultProductDetail(id: string | number, siteTag: string
       return null;
     }
 
-    // 🛡️ 詳細データもプロパティを安全化
     return {
       ...product,
-      id: product.id?.toString() || id.toString(),
+
+      id: (
+        product.product_id_unique ||
+        productIdUnique
+      ).toString(),
+
+      product_id_unique: (
+        product.product_id_unique ||
+        productIdUnique
+      ).toString(),
+
       brand: (product.brand || "FANZA").toString(),
+
       title: product.title || "No Title"
-    } as AdultProduct;
+    };
 
   } catch (error) {
-    console.error(`🚨 [Adult-Detail] FETCH_FAILED [${id}]:`, error);
+    console.error(`🚨 [Adult-Detail] FETCH_FAILED [${productIdUnique}]:`, error);
     return null; 
   }
 }
@@ -149,12 +201,17 @@ export function toAdultProductCard(
   product: AdultProduct
 ): ProductCardVM {
   return {
-    id: String(product.id),
+    id:
+      product.product_id_unique ||
+      String(product.id || ''),
 
-    title: product.title,
+    title:
+      product.title,
 
     image:
-      product.image_url_list?.[0] ??
+      product.image_url_list?.[0] ||
+      product.image_url ||
+      product.main_image ||
       '/images/common/no-image.jpg',
 
     maker:
