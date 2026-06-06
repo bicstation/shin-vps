@@ -8,11 +8,13 @@ from api.models import (
     PCProduct,
 )
 
-from api.utils.semantic.extraction.extract_adult_reality import (  extract_adult_reality,)
-from api.utils.semantic.authority.loader import (   load_semantic_master,)
-from api.utils.semantic.authority.normalization import (    normalize_runtime,)
-from api.utils.semantic.authority.aliases import (    resolve_alias_runtime,)
+from api.utils.semantic.extraction.extract_adult_reality import ( extract_adult_reality,)
+from api.utils.semantic.authority.loader import ( load_semantic_master,)
+from api.utils.semantic.authority.normalization import ( normalize_runtime,)
+from api.utils.semantic.authority.aliases import ( resolve_alias_runtime,)
 from api.utils.semantic.extraction.extract_pc_specs import ( extract_pc_specs, )
+from api.utils.semantic.traversal.detect_usage import ( detect_usage_runtime, )
+from api.utils.semantic.traversal.compile_workflows import ( compile_workflow_runtime, )
 
 class Command(BaseCommand):
 
@@ -152,6 +154,24 @@ class Command(BaseCommand):
             )
         )
 
+        semantic_groups = (
+            detect_usage_runtime(
+                {
+                    "semantic_attributes":
+                        semantic_attributes
+                },
+                semantic_master,
+            )
+        )
+
+        workflow_runtime = (
+            compile_workflow_runtime(
+                semantic_groups,
+                semantic_master,
+            )
+        )
+
+
         # =================================================
         # OUTPUT
         # =================================================
@@ -238,4 +258,26 @@ class Command(BaseCommand):
         self.stdout.write("")
         self.stdout.write("=" * 60)
 
+        # =============================================
+        # GROUPS
+        # =============================================
+        
+        self.stdout.write("")
+        self.stdout.write("-" * 60)
+        self.stdout.write("GROUPS")
+        self.stdout.write("-" * 60)
 
+        for group in semantic_groups:
+            self.stdout.write(group)
+
+        # =============================================
+        # WORKFLOWS
+        # =============================================
+
+        self.stdout.write("")
+        self.stdout.write("-" * 60)
+        self.stdout.write("WORKFLOWS")
+        self.stdout.write("-" * 60)
+
+        for workflow in workflow_runtime["workflow_tags"]:
+            self.stdout.write(workflow)

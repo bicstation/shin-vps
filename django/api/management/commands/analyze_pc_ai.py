@@ -236,6 +236,15 @@ class Command(BaseCommand):
             product.memory_gb = safe_int(spec_data.get('memory_gb'))
             product.storage_gb = safe_int(spec_data.get('storage_gb'))
             product.display_info = spec_data.get('display_info')
+            
+            import pprint
+
+            print()
+            print("========== SPEC DATA ==========")
+            pprint.pprint(spec_data)
+            print("===============================")
+            print()
+            
                         
             product.save()
             

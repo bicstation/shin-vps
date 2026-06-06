@@ -603,3 +603,18 @@ big-breasts	豊満	body_shape	1	0.72
 big-breasts	グラマー	body_shape	1	0.7
 chubby	肉感	body_shape	1	0.82
 female-led	痴女	role	1	0.88
+amd-ryzen-3	ryzen 3	canonical	0	1
+amd-ryzen-3	ryzen3	marketing	0	0.95
+amd-ryzen-5	ryzen 5	canonical	0	1
+amd-ryzen-5	ryzen5	marketing	0	0.95
+amd-ryzen-7	ryzen 7	canonical	0	1
+amd-ryzen-7	ryzen7	marketing	0	0.95
+gpu-amd-graphics	radeon	canonical	0	1
+mem-8gb	8gb	canonical	0	1
+mem-16gb	16gb	canonical	0	1
+mem-32gb	32gb	canonical	0	1
+mem-64gb-plus	64gb	canonical	0	1
+ssd-256gb	256gb	canonical	0	1
+ssd-512gb	512gb	canonical	0	1
+ssd-1tb	1tb	canonical	0	1
+ssd-2tb	2tb	canonical	0	1

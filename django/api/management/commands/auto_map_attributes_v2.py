@@ -183,7 +183,7 @@ class Command(BaseCommand):
                 )
 
                 runtime_log(
-                    False,
+                    True,
                     "NORMALIZED",
                     normalized_tokens,
                 )
@@ -228,7 +228,7 @@ class Command(BaseCommand):
                 )
 
                 runtime_log(
-                    False,
+                    True,
                     "ATTRIBUTES",
                     semantic_attributes,
                 )
@@ -248,7 +248,7 @@ class Command(BaseCommand):
                 )
 
                 runtime_log(
-                    False,
+                    True,
                     "GROUPS",
                     semantic_groups,
                 )
