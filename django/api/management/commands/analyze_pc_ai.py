@@ -61,7 +61,17 @@ class Command(BaseCommand):
         else:
             query = PCProduct.objects.all()
             if not force:
-                query = query.filter(Q(last_spec_parsed_at__isnull=True) | Q(spec_score=0))
+                query = query.filter(
+                    Q(cpu_model__isnull=True) |
+                    Q(cpu_model="") |
+
+                    Q(memory_gb=0) |
+
+                    Q(storage_gb=0) |
+
+                    Q(display_info__isnull=True) |
+                    Q(display_info="")
+                )
             products = query[:limit]
 
         if not products.exists():

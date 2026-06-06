@@ -31,3 +31,6 @@ device-mini	usage-mobile	10
 device-workstation	usage-creator	25
 device-workstation	usage-ai	20
 maker-gaming	usage-gaming	20
+gpu-professional	usage-ai	25
+monitor-oled	usage-ai	10
+storage-fast	usage-ai	10

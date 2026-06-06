@@ -62,10 +62,25 @@ class Command(BaseCommand):
             query = PCProduct.objects.all()
             
             if not force:
+
                 query = query.filter(
-                    ai_summary__isnull=True
+                    Q(ai_summary__isnull=True)
+                    |
+                    Q(ai_summary="")
                 )
 
+                query = query.exclude(
+                    cpu_model=""
+                )
+
+                query = query.exclude(
+                    memory_gb=0
+                )
+
+                query = query.exclude(
+                    storage_gb=0
+                )
+ 
             products = query[:limit]
 
         if not products.exists():
@@ -96,7 +111,8 @@ class Command(BaseCommand):
 
         # model_id = "gemma-4-31b-it"
         # model_id = "gemini-2.5-flash"
-        model_id = "gemma-4-31b-it"
+        # model_id = "gemma-4-31b-it"
+        model_id = "gemini-2.5-flash-lite"
         api_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_id}:generateContent?key={api_key}"
 
 
@@ -106,38 +122,23 @@ class Command(BaseCommand):
         self.stdout.write(f"📤 解析中 ({count}/{total}): モデル名({model_id})  {product.name} (Key: {api_key[:8]}...)")
         
         full_prompt = f"""
-        あなたはJSON生成APIです。
+        PCスペックから要約を作成せよ。
 
-        説明禁止
-        解説禁止
-        思考禁止
-        Markdown禁止
+        返答はJSONのみ。
 
-        次のJSONのみ出力せよ。
-
-        ###JSON_START###
         {{
-        "summary":"",
-        "target_user":"",
-        "strengths":[],
-        "weaknesses":[],
-        "usage_tags":[]
+            "summary":"",
+            "target_user":"",
+            "strengths":[],
+            "weaknesses":[],
+            "usage_tags":[]
         }}
-        ###JSON_END###
 
         CPU:{product.cpu_model}
         GPU:{product.gpu_model}
-        MEMORY:{product.memory_gb}GB
-        STORAGE:{product.storage_gb}GB
+        MEMORY:{product.memory_gb}
+        STORAGE:{product.storage_gb}
         DISPLAY:{product.display_info}
-
-        出力は必ず
-
-        ###JSON_START###
-        JSON
-        ###JSON_END###
-
-        のみ。
         """
         
 
@@ -149,8 +150,6 @@ class Command(BaseCommand):
                 response = requests.post(api_url, json={
                     "contents": [{"parts": [{"text": full_prompt}]}],
                     "generationConfig": {
-                        "temperature": 0.2,
-                        # 必要に応じて response_mime_type を指定可能（今回はテキスト内にJSON混在なのでそのままで運用）
                         "temperature": 0,
                         "responseMimeType": "application/json"
                     }
@@ -178,18 +177,19 @@ class Command(BaseCommand):
         try:
             result = response.json()
             full_text = result['candidates'][0]['content']['parts'][0]['text']
-            print("\n========== SUMMARY RAW ==========")
-            print(full_text)
-            print("================================\n")
+            # print("\n========== SUMMARY RAW ==========")
+            # print(full_text)
+            # print("================================\n")
   
             # --- データ抽出 ---
+  
             json_match = re.search(
-                r'###JSON_START###\s*(\{.*?\})\s*###JSON_END###',
-                full_text,
-                re.DOTALL
+                r'\{[\s\S]*\}',
+                full_text
             )
 
             if not json_match:
+
                 self.stdout.write(
                     self.style.WARNING(
                         f"JSON取得失敗: {product.unique_id}"
@@ -203,8 +203,9 @@ class Command(BaseCommand):
                 return
 
             try:
+
                 summary_data = json.loads(
-                    json_match.group(1)
+                    json_match.group(0)
                 )
 
             except Exception as e:
@@ -215,9 +216,9 @@ class Command(BaseCommand):
                     )
                 )
 
-                print("\n===== JSON =====")
-                print(json_match.group(1))
-                print("================\n")
+                print("\n===== JSON候補 =====")
+                print(json_match.group(0))
+                print("===================\n")
 
                 return
             
@@ -225,6 +226,16 @@ class Command(BaseCommand):
            
             product.is_active = True
             product.is_posted = True
+            
+            product.weaknesses = json.dumps(
+                summary_data.get("weaknesses", []),
+                ensure_ascii=False
+            )
+
+            product.usage_tags = json.dumps(
+                summary_data.get("usage_tags", []),
+                ensure_ascii=False
+            )
             
             product.ai_summary = summary_data.get("summary")
             product.target_user = summary_data.get("target_user")

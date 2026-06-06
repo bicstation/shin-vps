@@ -83,4 +83,8 @@ def load_semantic_master():
         "group_mappings": load_tsv(
             "semantic_group_mappings.tsv"
         ),
+        
+        "workflow_mappings": load_tsv(
+            "semantic_workflow_mappings.tsv"
+        ),
     }
