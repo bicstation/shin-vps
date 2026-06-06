@@ -281,65 +281,50 @@ class PCProduct(models.Model):
     semantic_runtime = models.JSONField(
 
         default=dict,
-
         blank=True,
-
         verbose_name="Semantic Runtime Payload"
     )
 
     semantic_schema_version = models.CharField(
 
         max_length=20,
-
         default="v3",
-
         db_index=True,
-
         verbose_name="Semantic Schema Version"
     )
 
     semantic_runtime_compiled = models.BooleanField(
 
         default=False,
-
         db_index=True,
-
         verbose_name="Semantic Runtime Compiled"
     )
 
     semantic_updated_at = models.DateTimeField(
 
         null=True,
-
         blank=True,
-
         verbose_name="Semantic Updated At"
     )
 
     workflow_tags = models.JSONField(
 
         default=list,
-
         blank=True,
-
         verbose_name="Workflow Tags"
     )
 
     semantic_labels = models.JSONField(
 
         default=list,
-
         blank=True,
-
         verbose_name="Semantic Labels"
     )
 
     runtime_profiles = models.JSONField(
 
         default=list,
-
         blank=True,
-
         verbose_name="Runtime Profiles"
     )
     
@@ -366,6 +351,11 @@ class PCProduct(models.Model):
 
     spec_score = models.IntegerField(default=0, verbose_name="総合評価スコア(0-100)")
     ai_summary = models.CharField(max_length=500, null=True, blank=True, verbose_name="AI記事要約/メタ情報")
+    target_user = models.TextField( blank=True, null=True, verbose_name="AI判定ターゲットユーザー詳細")
+    strengths = models.JSONField( default=list, blank=True, verbose_name="AI判定強みポイント")
+    weaknesses = models.JSONField( default=list, blank=True, verbose_name="AI判定弱みポイント")
+    usage_tags = models.JSONField( default=list, blank=True, verbose_name="AI判定使用タグ")
+    
     last_spec_parsed_at = models.DateTimeField(null=True, blank=True, verbose_name="スペック解析実行日")
 
     class Meta:

@@ -1,54 +1,94 @@
+# explain_product.py 修正版（モデル切替対応）
 # -*- coding: utf-8 -*-
 
 from django.core.management.base import BaseCommand
 
 from api.models import (
-AdultProduct,
+    AdultProduct,
+    PCProduct,
 )
 
-from api.utils.semantic.extraction.extract_adult_reality import (
-extract_adult_reality,
-)
-
-from api.utils.semantic.authority.loader import (
-load_semantic_master,
-)
-
-from api.utils.semantic.authority.normalization import (
-normalize_runtime,
-)
-
-from api.utils.semantic.authority.aliases import (
-resolve_alias_runtime,
-)
+from api.utils.semantic.extraction.extract_adult_reality import (  extract_adult_reality,)
+from api.utils.semantic.authority.loader import (   load_semantic_master,)
+from api.utils.semantic.authority.normalization import (    normalize_runtime,)
+from api.utils.semantic.authority.aliases import (    resolve_alias_runtime,)
+from api.utils.semantic.extraction.extract_pc_specs import ( extract_pc_specs, )
 
 class Command(BaseCommand):
 
     help = "Explain Product Semantic Runtime"
 
+    # =====================================================
+    # ARGUMENTS
+    # =====================================================
+
     def add_arguments(self, parser):
+
+        parser.add_argument(
+            "model",
+            choices=[
+                "adult",
+                "pc",
+            ],
+        )
 
         parser.add_argument(
             "product_id",
             type=int,
         )
 
+    # =====================================================
+    # HANDLE
+    # =====================================================
+
     def handle(self, *args, **options):
+
+        model_name = options["model"]
 
         product_id = options["product_id"]
 
-        product = (
-            AdultProduct.objects
-            .prefetch_related(
-                "genres",
-                "attributes",
-                "actresses",
+        # =================================================
+        # MODEL SELECT
+        # =================================================
+
+        if model_name == "adult":
+
+            product = (
+                AdultProduct.objects
+                .prefetch_related(
+                    "genres",
+                    "attributes",
+                    "actresses",
+                )
+                .filter(
+                    id=product_id,
+                )
+                .first()
             )
-            .filter(
-                id=product_id,
+
+        elif model_name == "pc":
+
+            product = (
+                PCProduct.objects
+                .filter(
+                    id=product_id,
+                )
+                .first()
             )
-            .first()
-        )
+
+        else:
+
+            self.stdout.write(
+                self.style.ERROR(
+                    "Invalid model"
+                )
+            )
+
+            return
+
+        # =================================================
+        # NOT FOUND
+        # =================================================
 
         if not product:
 
@@ -57,17 +97,40 @@ class Command(BaseCommand):
                     "Product not found"
                 )
             )
+
             return
+
+        # =================================================
+        # AUTHORITY
+        # =================================================
 
         semantic_master = (
             load_semantic_master()
         )
 
-        reality = (
-            extract_adult_reality(
-                product,
-            )
-        )
+        # =================================================
+        # REALITY
+        # =================================================
+        
+        if model_name == "adult": 
+            reality = ( 
+                extract_adult_reality( 
+                    product 
+                ) 
+            ) 
+        elif model_name == "pc": 
+            reality = (
+                extract_pc_specs( 
+                    product 
+                ) 
+            ) 
+        else: 
+            reality = {}
+
+
+        # =================================================
+        # NORMALIZATION
+        # =================================================
 
         normalized_tokens = (
             normalize_runtime(
@@ -77,6 +140,10 @@ class Command(BaseCommand):
             )
         )
 
+        # =================================================
+        # RESOLVE
+        # =================================================
+
         semantic_attributes = (
             resolve_alias_runtime(
                 normalized_tokens,
@@ -85,6 +152,10 @@ class Command(BaseCommand):
             )
         )
 
+        # =================================================
+        # OUTPUT
+        # =================================================
+
         self.stdout.write("")
         self.stdout.write("=" * 60)
         self.stdout.write("PRODUCT EXPLAIN")
@@ -92,35 +163,36 @@ class Command(BaseCommand):
 
         self.stdout.write("")
         self.stdout.write(
+            f"MODEL : {model_name}"
+        )
+
+        self.stdout.write(
             f"ID : {product.id}"
         )
 
-        self.stdout.write(
-            f"TITLE : {product.title}"
-        )
-
-        self.stdout.write(
-            f"SOURCE : {product.api_source}"
-        )
-
-        # =====================================
-        # GENRES
-        # =====================================
-
-        self.stdout.write("")
-        self.stdout.write("-" * 60)
-        self.stdout.write("GENRES")
-        self.stdout.write("-" * 60)
-
-        for genre in product.genres.all():
+        if model_name == "adult":
 
             self.stdout.write(
-                genre.name
+                f"TITLE : {product.title}"
             )
 
-        # =====================================
+            self.stdout.write(
+                f"SOURCE : {product.api_source}"
+            )
+
+        elif model_name == "pc":
+
+            self.stdout.write(
+                f"NAME : {product.name}"
+            )
+            
+            self.stdout.write( 
+                f"UNIQUE_ID : {product.unique_id}" 
+            )
+
+        # =============================================
         # REALITY
-        # =====================================
+        # =============================================
 
         self.stdout.write("")
         self.stdout.write("-" * 60)
@@ -133,9 +205,9 @@ class Command(BaseCommand):
                 f"{key}: {value}"
             )
 
-        # =====================================
+        # =============================================
         # NORMALIZED
-        # =====================================
+        # =============================================
 
         self.stdout.write("")
         self.stdout.write("-" * 60)
@@ -148,9 +220,9 @@ class Command(BaseCommand):
                 str(token)
             )
 
-        # =====================================
-        # RESOLVED
-        # =====================================
+        # =============================================
+        # ATTRIBUTES
+        # =============================================
 
         self.stdout.write("")
         self.stdout.write("-" * 60)
@@ -163,21 +235,7 @@ class Command(BaseCommand):
                 slug
             )
 
-        # =====================================
-        # DB ATTACHED
-        # =====================================
-
-        self.stdout.write("")
-        self.stdout.write("-" * 60)
-        self.stdout.write("DB ATTACHED")
-        self.stdout.write("-" * 60)
-
-        for attr in product.attributes.all():
-
-            self.stdout.write(
-                attr.slug
-            )
-
         self.stdout.write("")
         self.stdout.write("=" * 60)
+
 

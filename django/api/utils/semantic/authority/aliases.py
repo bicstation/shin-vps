@@ -170,16 +170,12 @@ def resolve_alias_runtime(
         if not attribute_slug:
 
             continue
-
+        
         # =================================================
         # TOKEN MATCH
         # =================================================
 
         for token in normalized_tokens:
-
-            # =============================================
-            # EXACT MATCH
-            # =============================================
 
             if token == alias:
 
@@ -196,28 +192,30 @@ def resolve_alias_runtime(
                     semantic_attributes.append(
                         attribute_slug
                     )
+ 
 
+ 
                 continue
 
             # =============================================
             # SUBSTRING MATCH
             # =============================================
 
-            if alias in token:
+            # if alias in token:
 
-                if (
+            #     if (
 
-                    attribute_slug
+            #         attribute_slug
 
-                    not in
+            #         not in
 
-                    blocked_attributes
+            #         blocked_attributes
 
-                ):
+            #     ):
 
-                    semantic_attributes.append(
-                        attribute_slug
-                    )
+            #         semantic_attributes.append(
+            #             attribute_slug
+            #         )
 
     # =====================================================
     # UNIQUE

@@ -1,3 +1,4 @@
+# /home/maya/shin-dev/shin-vps/django/api/management/commands/analyze_pc_ai.py
 # -*- coding: utf-8 -*-
 import json
 import requests
@@ -25,7 +26,9 @@ API_KEYS = [
     os.getenv("GEMINI_API_KEY_10"),
 ]
 ACTIVE_KEYS = [k for k in API_KEYS if k]
-MAX_WORKERS = len(ACTIVE_KEYS) if ACTIVE_KEYS else 1
+# MAX_WORKERS = len(ACTIVE_KEYS) if ACTIVE_KEYS else 1
+# MAX_WORKERS = 5
+MAX_WORKERS = min( 4,len(ACTIVE_KEYS) )
 BASE_PROMPT_DIR = os.path.join(os.path.dirname(__file__), 'prompt')
 
 class Command(BaseCommand):
@@ -89,7 +92,7 @@ class Command(BaseCommand):
 
         # model_id = "gemma-4-31b-it"
         # model_id = "gemini-2.5-flash"
-        model_id = "gemma4-31b-it"
+        model_id = "gemma-4-31b-it"
         api_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_id}:generateContent?key={api_key}"
 
 
@@ -97,44 +100,45 @@ class Command(BaseCommand):
             time.sleep(delay)
 
         self.stdout.write(f"📤 解析中 ({count}/{total}): モデル名({model_id})  {product.name} (Key: {api_key[:8]}...)")
-
-        base_pc_prompt = self.load_prompt('analyze_pc_prompt.txt')
-        mouse_rules = self.load_prompt('analyze_mouse_prompt.txt')
-        brand_rules = mouse_rules if "mouse" in product.name.lower() or product.maker == "MouseComputer" else "【標準ルール】正確に解析してください。"
-
-        full_prompt = f"""
-{base_pc_prompt.format(maker=product.maker, name=product.name, price=product.price, description=product.description)}
-
-【追加命令：詳細スペック抽出】
-以下のJSONを必ず [SPEC_JSON] {{...}} [/SPEC_JSON] の形式で含めてください。
-また、ランキング用に5つの評価軸（1-100）を厳格に採点してください。
-※JSONの内部にコメント（// や /* */）は絶対に含めないでください。
-
-{{
-    "memory_gb": 整数, 
-    "storage_gb": 整数, 
-    "npu_tops": 小数,
-    "cpu_model": "...", 
-    "gpu_model": "...",
-    "cpu_socket": "...", 
-    "chipset": "...", 
-    "ram_type": "...",
-    "power_wattage": 整数,
-    "display_info": "...", 
-    "target_segment": "...",
-    "is_ai_pc": boolean,
-    "score_cpu": 1-100,
-    "score_gpu": 1-100,
-    "score_cost": 1-100,
-    "score_portable": 1-100,
-    "score_ai": 1-100
-}}
-
-ブランド固有ルール:
-{brand_rules}
-"""
-
         
+        description_text = (
+            product.description or ""
+        )[:1000]
+        
+        full_prompt = f"""
+        製品情報
+
+        メーカー:
+        {product.maker}
+
+        商品名:
+        {product.name}
+
+        説明:
+        {description_text}
+
+        以下のJSONのみ返せ
+
+        開始文字:
+        ###JSON_START###
+
+        終了文字:
+        ###JSON_END###
+
+        {{
+        "cpu_model":"",
+        "gpu_model":"",
+        "memory_gb":0,
+        "storage_gb":0,
+        "display_info":"",
+        "is_ai_pc":false
+        }}
+
+        説明文禁止
+        Markdown禁止
+        JSON以外禁止
+        """
+
         max_retries = 3
         attempt = 0
         
@@ -169,66 +173,75 @@ class Command(BaseCommand):
         try:
             result = response.json()
             full_text = result['candidates'][0]['content']['parts'][0]['text']
+            # print("\n========== GEMMA RAW ==========")
+            # print(full_text[:3000])
+            # print("================================\n")
 
             # --- データ抽出 ---
-            spec_data = {}
-            spec_match = re.search(r'\[SPEC_JSON\](.*?)\[/SPEC_JSON\]', full_text, re.DOTALL)
-            if spec_match:
-                try:
-                    # // コメント削除の危険な正規表現を廃止し、そのままパース（プロンプトで禁止化）
-                    spec_data = json.loads(spec_match.group(1).strip())
-                except Exception as json_err:
-                    self.stdout.write(self.style.WARNING(f"⚠️ JSONパース失敗 ({product.unique_id}): {str(json_err)}"))
+            json_blocks = re.findall(
+                r'\{[\s\S]*?\}',
+                full_text
+            )
 
+            spec_data = {}
+
+            for block in reversed(json_blocks):
+
+                try:
+                    spec_data = json.loads(block)
+                    break
+
+                except Exception:
+                    continue           
+            
+            
             def safe_int(val, default=0):
                 try: return int(re.sub(r'[^0-9]', '', str(val)))
                 except: return default
-
-            # --- スコア算出・ランキング反映 ---
-            s_cpu = safe_int(spec_data.get('score_cpu'))
-            s_gpu = safe_int(spec_data.get('score_gpu'))
-            s_cost = safe_int(spec_data.get('score_cost'))
-            s_port = safe_int(spec_data.get('score_portable'))
-            s_ai = safe_int(spec_data.get('score_ai'))
             
-            avg_score = int((s_cpu + s_gpu + s_cost + s_port + s_ai) / 5)
-            
-            self.stdout.write("")
+            cpu_model = spec_data.get("cpu_model", "").strip()
 
-            self.stdout.write( f"CPU     : {spec_data.get('cpu_model')}" )
-            self.stdout.write( f"GPU     : {spec_data.get('gpu_model')}" )
-            self.stdout.write( f"MEMORY  : {spec_data.get('memory_gb')}" )
-            self.stdout.write( f"STORAGE : {spec_data.get('storage_gb')}")
-            self.stdout.write( f"DISPLAY : {spec_data.get('display_info')}")
-            self.stdout.write( f"AI_PC   : {spec_data.get('is_ai_pc')}" )
-            self.stdout.write( f"SCORE   : {avg_score}")
-            self.stdout.write("")
+            if not cpu_model:
+                self.stdout.write(
+                    self.style.WARNING(
+                        f"⚠️ スペック取得失敗: {product.unique_id}"
+                    )
+                )
+                return
+            
+            if (
+                not spec_data.get("cpu_model")
+                and not spec_data.get("gpu_model")
+            ):
+                return
             
             # DB保存
-            product.score_cpu = s_cpu
-            product.score_gpu = s_gpu
-            product.score_cost = s_cost
-            product.score_portable = s_port
-            product.score_ai = s_ai
-            product.spec_score = avg_score
-            
+           
             product.is_active = True
             product.is_posted = True
             
-            product.ai_content = full_text
+            # product.ai_content = full_text
             product.cpu_model = spec_data.get('cpu_model')
             product.gpu_model = spec_data.get('gpu_model')
             product.memory_gb = safe_int(spec_data.get('memory_gb'))
             product.storage_gb = safe_int(spec_data.get('storage_gb'))
-            product.cpu_socket = spec_data.get('cpu_socket')
-            product.motherboard_chipset = spec_data.get('chipset')
-            product.ram_type = spec_data.get('ram_type')
-            product.power_recommendation = safe_int(spec_data.get('power_wattage'))
-            
-            product.last_spec_parsed_at = timezone.now()
+            product.display_info = spec_data.get('display_info')
+                        
             product.save()
             
-            self.stdout.write(self.style.SUCCESS(f" ✅ 完了: {product.unique_id} [Score: {avg_score}]"))
+            self.stdout.write(self.style.SUCCESS(f" ✅ DB保存完了({count}/{total}): {product.unique_id} [CPU: {product.cpu_model} GPU: {product.gpu_model}]"))
+
+            # --- スコア算出・ランキング反映 ---          
+            self.stdout.write(
+                f"[{product.unique_id}] "
+                f"CPU:{spec_data.get('cpu_model')} | "
+                f"GPU:{spec_data.get('gpu_model')} | "
+                f"MEM:{spec_data.get('memory_gb')}GB | "
+                f"SSD:{spec_data.get('storage_gb')}GB | "
+                f"AI:{spec_data.get('is_ai_pc')}"
+            )
+            self.stdout.write("--------------------------------------------------------------")
+
 
         except Exception as e:
             self.stdout.write(self.style.ERROR(f"❌ 解析データ処理失敗 ({product.unique_id}): {str(e)}"))
