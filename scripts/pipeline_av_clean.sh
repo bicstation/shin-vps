@@ -264,6 +264,16 @@ run_django import_specs \
 
 
 # ==========================================================
+# STEP 03-3
+# SEMANTIC AUTHORITY GUARDIAN
+# ==========================================================
+
+log "STEP 03-3 : GUARDIAN"
+
+run_django audit_semantic_universe
+
+
+# ==========================================================
 # STEP 04
 # IMAGE RUNTIME
 #

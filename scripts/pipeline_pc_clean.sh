@@ -15,10 +15,10 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 # Runtime Variables
 # ==========================================================
 
-AI_SPEC_LIMIT=300
-AI_SUMMARY_LIMIT=300
-AI_SEMANTIC_LIMIT=300
-IMAGE_CACHE_LIMIT=500
+AI_SPEC_LIMIT=30
+AI_SUMMARY_LIMIT=30
+AI_SEMANTIC_LIMIT=30
+IMAGE_CACHE_LIMIT=50
 
 # ==========================================================
 # Project Root Topology
@@ -229,7 +229,7 @@ log "🚀 START SHIN CORE LINX SEMANTIC PIPELINE 12 Components"
 # ①  01 Import Raw API Data
 # ==========================================================
 
-log "📡 (01/12) Import Linkshare API"
+log "📡 (01/11) Import Linkshare API"
 
 run_django import_linkshare_api --mid 35909
 run_django import_linkshare_api --mid 2557
@@ -241,7 +241,7 @@ run_django import_linkshare_api --mid 43708
 # ② 02 Reset Stock
 # ==========================================================
 
-log "🧹 (02/12) Reset Product Stock"
+log "🧹 (02/11) Reset Product Stock"
 
 run_django reset_pc_stock
 
@@ -249,7 +249,7 @@ run_django reset_pc_stock
 # ③ 03 Transform → PCProduct
 # ==========================================================
 
-log "🔄 (03/12) Transform Raw → PCProduct"
+log "🔄 (03/11) Transform Raw → PCProduct"
 
 run_django migrate_linkshare_to_pc
 
@@ -257,7 +257,7 @@ run_django migrate_linkshare_to_pc
 # ④ 04-1 AI SPEC COMPLETION
 # ==========================================================
 
-log "🤖 (04-1/13) AI Spec Completion"
+log "🤖 (04-1/11) AI Spec Completion"
 
 run_django analyze_pc_ai \
   --limit $AI_SPEC_LIMIT
@@ -266,7 +266,7 @@ run_django analyze_pc_ai \
 # ④ 04-2 AI SUMMARY
 # ==========================================================
 
-log "📝 (04-2/13) AI Summary Generation"
+log "📝 (04-2/11) AI Summary Generation"
 
 run_django analyze_pc_ai_summary \
   --limit $AI_SUMMARY_LIMIT
@@ -276,7 +276,7 @@ run_django analyze_pc_ai_summary \
 # ==========================================================
 
 
-log "🧠 (04-3/13) Semantic Analyze"
+log "🧠 (04-3/11) Semantic Analyze"
 
 run_django analyze_pc_spec \
   --limit $AI_SEMANTIC_LIMIT \
@@ -286,7 +286,7 @@ run_django analyze_pc_spec \
 # ⑤ 05-1 Attribute TSV Sync
 # ==========================================================
 
-log "🏷️ (05-1/12) Sync Attribute Master"
+log "🏷️ (05-1/11) Sync Attribute Master"
 
 $COMPOSE cp \
   "$PROJECT_ROOT/django/master_data/attributes.tsv" \
@@ -302,7 +302,7 @@ run_django sync_master_attributes
 # ⑥ 05-2 Semantic TSV Sync
 # ==========================================================
 
-log "🧠 (05-2/12) Sync Semantic Master"
+log "🧠 (05-2/11) Sync Semantic Master"
 
 SEMANTIC_FILES=(
 
@@ -329,39 +329,50 @@ do
 
 done
 
+
 # ==========================================================
 # ⑦ 06 Attribute Auto Mapping
 # ==========================================================
 
-log "🔗 (06/12) Auto Map Semantic Attributes"
+log "🔗 (06/11) Auto Map Semantic Attributes"
 run_django auto_map_attributes_v2
 
+
 # ==========================================================
-# ⑧ 07 Product Score Runtime
+# ⑥ 07 Guardian Audit
 # ==========================================================
 
-log "📊 (07/12) Update Product Scores"
+log "🛡️ (07/11) Semantic Authority Guardian"
+
+run_django audit_semantic_universe
+
+
+# ==========================================================
+# ⑧ 08 Product Score Runtime
+# ==========================================================
+
+log "📊 (08/11) Update Product Scores"
 run_django update_product_scores
 
 # ==========================================================
-# ⑨ 08 Semantic Runtime Build
+# ⑨ 09 Semantic Runtime Build
 # ==========================================================
 
-log "🚀 (08/12) Build Semantic Runtime"
+log "🚀 (09/11) Build Semantic Runtime"
 run_django rebuild_semantic_runtime
 
 # ==========================================================
-# ⑩ 09 Image Cache
+# ⑩ 10 Image Cache
 # ==========================================================
 
-log "🖼️ (09/12)  Cache Product Images"
+log "🖼️ (10/11)  Cache Product Images"
 run_django fetch_product_images --limit $IMAGE_CACHE_LIMIT
 
 # ==========================================================
-# ⑪ 10 Internal Semantic API Health Check
+# ⑪ 11 Internal Semantic API Health Check
 # ==========================================================
 
-log "📈 (10/12) Semantic Runtime Health Check"
+log "📈 (11/11) Semantic Runtime Health Check"
 
 # ----------------------------------------------------------
 # Ranking Runtime
@@ -388,7 +399,7 @@ check_api \
 # ⑫ 11 Semantic Runtime Validation
 # ==========================================================
 
-log "🧠 (11/12) Validate Semantic Runtime"
+log "🧠 (11/11) Validate Semantic Runtime"
 
 run_django shell -c "
 
@@ -408,7 +419,7 @@ if count <= 0:
 # ⑬ 12 Semantic Related Validation
 # ==========================================================
 
-log "🔗 (12/12) Validate Semantic Related"
+log "🔗 (12/11) Validate Semantic Related"
 
 run_django shell -c "
 
