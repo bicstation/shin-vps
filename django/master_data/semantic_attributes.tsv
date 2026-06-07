@@ -44,22 +44,22 @@ gpu	Intel Arc Graphics	gpu-intel-arc	50	0	supportive	0.55	gpu	cyan	true
 gpu	Intel Graphics (内蔵)	gpu-intel-graphics	5	0	supportive	0.15	gpu	gray	true
 gpu	AMD Radeon Graphics (内蔵)	gpu-amd-graphics	5	0	supportive	0.18	gpu	gray	true
 gpu_type	プロ向け	gpu-professional	45	0	highlight	0.72	briefcase	darkblue	true
-vram	24GB以上	vram-24gb-plus	24gb,24gb gddr6,24gb gddr6x,24gb vram	100	0	highlight	0.98	memory	red	true
-vram	16GB	vram-16gb	16gb gddr6,16gb gddr6x	90	0	primary	0.90	memory	orange	true
-vram	12GB	vram-12gb	12gb gddr6,12gb gddr6x	80	0	primary	0.82	memory	yellow	true
-vram	8GB	vram-8gb	8gb gddr6,8gb gddr6x	70	0	secondary	0.70	memory	green	true
-vram	6GB	vram-6gb	6gb gddr6	60	0	secondary	0.58	memory	blue	true
-vram	4GB以下	vram-4gb	4gb,2gb	50	0	supportive	0.35	memory	gray	true
-memory	64GB以上（超大容量）	mem-64gb-plus	64gbメモリ,64 gb ram,128gb	100	0	highlight	0.96	memory	red	true
-memory	32GB（大容量）	mem-32gb	32gbメモリ,32 gb ram,16gbx2	90	0	primary	0.88	memory	orange	true
-memory	16GB（標準）	mem-16gb	16gbメモリ,16 gb ram,8gbx2	80	0	secondary	0.72	memory	yellow	false
-memory	8GB（最低限）	mem-8gb	8gbメモリ,8 gb ram,4gbx2	70	0	supportive	0.45	memory	blue	false
-storage	2TB以上（超大容量）	ssd-2tb-plus	2tb ssd,4tb ssd,8tb ssd,nvme 2tb	100	0	highlight	0.94	hard-drive	red	true
-storage	1TB（大容量）	ssd-1tb	1tb ssd,nvme 1tb,1tb nvme,pcie 1tb	90	0	primary	0.84	hard-drive	orange	true
-storage	512GB（標準）	ssd-512gb	512gb ssd,512 gb ssd	80	0	secondary	0.68	hard-drive	yellow	false
-storage	256GB（最低限）	ssd-256gb	256gb ssd,256 gb ssd	70	0	supportive	0.40	hard-drive	blue	false
-storage_type	NVMe SSD	storage-nvme	nvme,m.2 nvme,pci express ssd	50	0	highlight	0.78	cpu	purple	true
-storage_type	SATA SSD	storage-sata	sata ssd,2.5インチ ssd	40	0	secondary	0.50	hard-drive	gray	true
+vram	24GB以上	vram-24gb-plus	100	0	highlight	0.98	memory	red	TRUE
+vram	16GB	vram-16gb	90	0	primary	0.9	memory	orange	TRUE
+vram	12GB	vram-12gb	80	0	primary	0.82	memory	yellow	TRUE
+vram	8GB	vram-8gb	70	0	secondary	0.7	memory	green	TRUE
+vram	6GB	vram-6gb	60	0	secondary	0.58	memory	blue	TRUE
+vram	4GB以下	vram-4gb	50	0	supportive	0.35	memory	gray	TRUE
+memory	64GB以上（超大容量）	mem-64gb-plus	100	0	highlight	0.96	memory	red	TRUE
+memory	32GB（大容量）	mem-32gb	90	0	primary	0.88	memory	orange	TRUE
+memory	16GB（標準）	mem-16gb	80	0	secondary	0.72	memory	yellow	FALSE
+memory	8GB（最低限）	mem-8gb	70	0	supportive	0.45	memory	blue	FALSE
+storage	2TB以上（超大容量）	ssd-2tb-plus	100	0	highlight	0.94	hard-drive	red	TRUE
+storage	1TB（大容量）	ssd-1tb	90	0	primary	0.84	hard-drive	orange	TRUE
+storage	512GB（標準）	ssd-512gb	80	0	secondary	0.68	hard-drive	yellow	FALSE
+storage	256GB（最低限）	ssd-256gb	70	0	supportive	0.4	hard-drive	blue	FALSE
+storage_type	NVMe SSD	storage-nvme	50	0	highlight	0.78	cpu	purple	TRUE
+storage_type	SATA SSD	storage-sata	40	0	secondary	0.5	hard-drive	gray	TRUE
 usage	ゲーミングPC	usage-gaming	711	0	highlight	0.98	gamepad	red	true
 usage	クリエイター向け	usage-creator	712	0	highlight	0.92	pen-tool	purple	true
 usage	ビジネス・法人向け	usage-business	713	0	primary	0.75	briefcase	blue	true

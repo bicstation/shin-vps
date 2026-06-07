@@ -291,7 +291,7 @@ class Command(BaseCommand):
                     f"✅ "
                     f"({count}/{total}) "
                     f"{product.unique_id}"
-                    f"{product.title}"
+                    f"{product.name}"
 
                 )
 
