@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# /home/maya/shin-vps/django/api/services/semantic/v2/compiler/relation_compiler.py
 
 """
 SHIN CORE LINX
@@ -9,11 +10,9 @@ Authority Runtime
 ↓
 Relation Runtime
 
-TSV Relation Authority
-
-NO HARDCODED SHELVES
-NO HARDCODED WORKFLOWS
-NO HARDCODED GRAPH
+NO HARDCODED RULES
+NO WORKFLOW LOGIC
+NO SHELF LOGIC
 """
 
 from api.services.semantic.v2.authority.authority_runtime import (
@@ -33,20 +32,24 @@ def safe_str(value):
     return str(value).strip()
 
 
+# ==========================================================
+# INDEX
+# ==========================================================
+
 def index_attributes(attributes):
 
     result = {}
 
     for row in attributes:
 
-        attribute = safe_str(
-            row.get("attribute")
+        slug = safe_str(
+            row.get("slug")
         )
 
-        if not attribute:
+        if not slug:
             continue
 
-        result[attribute] = row
+        result[slug] = row
 
     return result
 
@@ -57,20 +60,20 @@ def index_groups(groups):
 
     for row in groups:
 
-        group = safe_str(
-            row.get("group")
+        slug = safe_str(
+            row.get("group_slug")
         )
 
-        if not group:
+        if not slug:
             continue
 
-        result[group] = row
+        result[slug] = row
 
     return result
 
 
 # ==========================================================
-# RELATION COMPILER
+# COMPILE
 # ==========================================================
 
 def compile_relations():
@@ -110,32 +113,32 @@ def compile_relations():
 
     for mapping in mappings:
 
-        group_name = safe_str(
+        group_slug = safe_str(
 
             mapping.get(
-                "group"
+                "group_slug"
             )
         )
 
-        attribute_name = safe_str(
+        attribute_slug = safe_str(
 
             mapping.get(
-                "attribute"
+                "attribute_slug"
             )
         )
 
-        if not group_name:
+        if not group_slug:
             continue
 
-        if not attribute_name:
+        if not attribute_slug:
             continue
 
         group_row = group_index.get(
-            group_name
+            group_slug
         )
 
         attribute_row = attribute_index.get(
-            attribute_name
+            attribute_slug
         )
 
         if not group_row:
@@ -144,26 +147,26 @@ def compile_relations():
         if not attribute_row:
             continue
 
-        relation = {
+        relations.append({
 
             # ======================================
             # Identity
             # ======================================
 
+            "group_slug":
+                group_slug,
+
+            "attribute_slug":
+                attribute_slug,
+
+            # ======================================
+            # Authority
+            # ======================================
+
             "group":
-                group_name,
-
-            "attribute":
-                attribute_name,
-
-            # ======================================
-            # Source
-            # ======================================
-
-            "group_row":
                 group_row,
 
-            "attribute_row":
+            "attribute":
                 attribute_row,
 
             # ======================================
@@ -172,17 +175,13 @@ def compile_relations():
 
             "relation_type":
                 "group_contains_attribute",
-        }
-
-        relations.append(
-            relation
-        )
+        })
 
     return relations
 
 
 # ==========================================================
-# GROUP CENTRIC VIEW
+# GROUP VIEW
 # ==========================================================
 
 def compile_group_relations():
@@ -191,34 +190,40 @@ def compile_group_relations():
         compile_relations()
     )
 
-    groups = {}
+    result = {}
 
     for relation in relations:
 
-        group = relation["group"]
+        group_slug = relation[
+            "group_slug"
+        ]
 
-        if group not in groups:
+        if group_slug not in result:
 
-            groups[group] = {
+            result[group_slug] = {
 
                 "group":
-                    group,
+                    relation["group"],
 
                 "attributes": [],
             }
 
-        groups[group][
+        result[
+            group_slug
+        ][
             "attributes"
         ].append(
 
-            relation["attribute"]
+            relation[
+                "attribute"
+            ]
         )
 
-    return groups
+    return result
 
 
 # ==========================================================
-# ATTRIBUTE CENTRIC VIEW
+# ATTRIBUTE VIEW
 # ==========================================================
 
 def compile_attribute_relations():
@@ -227,34 +232,36 @@ def compile_attribute_relations():
         compile_relations()
     )
 
-    attributes = {}
+    result = {}
 
     for relation in relations:
 
-        attribute = relation[
-            "attribute"
+        attribute_slug = relation[
+            "attribute_slug"
         ]
 
-        if attribute not in attributes:
+        if attribute_slug not in result:
 
-            attributes[attribute] = {
+            result[attribute_slug] = {
 
                 "attribute":
-                    attribute,
+                    relation["attribute"],
 
                 "groups": [],
             }
 
-        attributes[
-            attribute
+        result[
+            attribute_slug
         ][
             "groups"
         ].append(
 
-            relation["group"]
+            relation[
+                "group"
+            ]
         )
 
-    return attributes
+    return result
 
 
 # ==========================================================
@@ -267,6 +274,14 @@ def build_relation_runtime():
         compile_relations()
     )
 
+    groups = (
+        compile_group_relations()
+    )
+
+    attributes = (
+        compile_attribute_relations()
+    )
+
     return {
 
         "runtime":
@@ -275,14 +290,23 @@ def build_relation_runtime():
         "relation_count":
             len(relations),
 
+        "group_count":
+            len(groups),
+
+        "attribute_count":
+            len(attributes),
+
         "relations":
             relations,
 
         "groups":
-            compile_group_relations(),
+            groups,
 
         "attributes":
-            compile_attribute_relations(),
+            attributes,
+
+        "ready":
+            True,
     }
 
 
@@ -311,16 +335,12 @@ if __name__ == "__main__":
 
     print(
         "Groups:",
-        len(
-            runtime["groups"]
-        )
+        runtime["group_count"]
     )
 
     print(
         "Attributes:",
-        len(
-            runtime["attributes"]
-        )
+        runtime["attribute_count"]
     )
 
     print()

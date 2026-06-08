@@ -1,22 +1,21 @@
 # -*- coding: utf-8 -*-
+# /home/maya/shin-vps/django/api/services/semantic/v2/graph/semantic_graph_builder.py
 
 """
 SHIN CORE LINX
 
 Semantic Graph Builder V2
 
-TSV Authority
+TSV
 ↓
 Relation Runtime
 ↓
-Traversal Runtime
+Semantic Graph
 
-Graph is NOT authority.
-
-Graph is a derived runtime.
+NO WORKFLOW RULES
+NO PRODUCT RULES
+NO HARD CODE
 """
-
-from collections import defaultdict
 
 from api.services.semantic.v2.compiler.relation_compiler import (
     build_relation_runtime,
@@ -27,13 +26,73 @@ from api.services.semantic.v2.compiler.relation_compiler import (
 # NODE
 # ==========================================================
 
-def create_node_id(node_type, value):
+def build_group_node(group):
 
-    return f"{node_type}:{value}"
+    return {
+
+        "node_id":
+            group["group_slug"],
+
+        "node_type":
+            "group",
+
+        "label":
+            group.get(
+                "group_name"
+            ),
+
+        "data":
+            group,
+    }
+
+
+def build_attribute_node(attribute):
+
+    return {
+
+        "node_id":
+            attribute["slug"],
+
+        "node_type":
+            "attribute",
+
+        "label":
+            attribute.get(
+                "name"
+            ),
+
+        "data":
+            attribute,
+    }
 
 
 # ==========================================================
-# GRAPH BUILD
+# EDGE
+# ==========================================================
+
+def build_relation_edge(relation):
+
+    return {
+
+        "source":
+            relation[
+                "group_slug"
+            ],
+
+        "target":
+            relation[
+                "attribute_slug"
+            ],
+
+        "edge_type":
+            relation[
+                "relation_type"
+            ],
+    }
+
+
+# ==========================================================
+# MAIN
 # ==========================================================
 
 def build_semantic_graph():
@@ -42,93 +101,51 @@ def build_semantic_graph():
         build_relation_runtime()
     )
 
-    relations = runtime.get(
-        "relations",
-        []
-    )
-
     nodes = {}
-
     edges = []
 
-    adjacency = defaultdict(set)
+    # ======================================================
+    # Relations
+    # ======================================================
 
-    reverse_adjacency = defaultdict(set)
+    for relation in runtime.get(
+        "relations",
+        []
+    ):
 
-    for relation in relations:
-
-        group = relation.get(
+        group = relation[
             "group"
-        )
+        ]
 
-        attribute = relation.get(
+        attribute = relation[
             "attribute"
+        ]
+
+        group_node = (
+            build_group_node(
+                group
+            )
         )
 
-        if not group:
-            continue
-
-        if not attribute:
-            continue
-
-        group_node = create_node_id(
-            "group",
-            group
+        attribute_node = (
+            build_attribute_node(
+                attribute
+            )
         )
 
-        attribute_node = create_node_id(
-            "attribute",
-            attribute
-        )
+        nodes[
+            group_node["node_id"]
+        ] = group_node
 
-        # =====================================
-        # Nodes
-        # =====================================
+        nodes[
+            attribute_node["node_id"]
+        ] = attribute_node
 
-        nodes[group_node] = {
+        edges.append(
 
-            "node_type":
-                "group",
-
-            "name":
-                group,
-        }
-
-        nodes[attribute_node] = {
-
-            "node_type":
-                "attribute",
-
-            "name":
-                attribute,
-        }
-
-        # =====================================
-        # Edge
-        # =====================================
-
-        edge = {
-
-            "source":
-                group_node,
-
-            "target":
-                attribute_node,
-
-            "relation":
-                "contains",
-        }
-
-        edges.append(edge)
-
-        adjacency[group_node].add(
-            attribute_node
-        )
-
-        reverse_adjacency[
-            attribute_node
-        ].add(
-            group_node
+            build_relation_edge(
+                relation
+            )
         )
 
     return {
@@ -136,180 +153,64 @@ def build_semantic_graph():
         "runtime":
             "semantic_graph_v2",
 
+        "node_count":
+            len(nodes),
+
+        "edge_count":
+            len(edges),
+
         "nodes":
-            nodes,
+            list(
+                nodes.values()
+            ),
 
         "edges":
             edges,
 
-        "adjacency":
-            adjacency,
-
-        "reverse_adjacency":
-            reverse_adjacency,
+        "ready":
+            True,
     }
 
 
 # ==========================================================
-# GROUP -> ATTRIBUTES
+# LOOKUP
 # ==========================================================
 
-def group_attributes():
-
-    graph = (
-        build_semantic_graph()
-    )
-
-    adjacency = graph[
-        "adjacency"
-    ]
-
-    result = {}
-
-    for node in adjacency:
-
-        if not node.startswith(
-            "group:"
-        ):
-            continue
-
-        group_name = node.replace(
-            "group:",
-            ""
-        )
-
-        attributes = []
-
-        for target in adjacency[node]:
-
-            attributes.append(
-
-                target.replace(
-                    "attribute:",
-                    ""
-                )
-            )
-
-        result[group_name] = sorted(
-            attributes
-        )
-
-    return result
-
-
-# ==========================================================
-# ATTRIBUTE -> GROUPS
-# ==========================================================
-
-def attribute_groups():
-
-    graph = (
-        build_semantic_graph()
-    )
-
-    reverse_graph = graph[
-        "reverse_adjacency"
-    ]
-
-    result = {}
-
-    for node in reverse_graph:
-
-        if not node.startswith(
-            "attribute:"
-        ):
-            continue
-
-        attribute_name = node.replace(
-            "attribute:",
-            ""
-        )
-
-        groups = []
-
-        for source in reverse_graph[node]:
-
-            groups.append(
-
-                source.replace(
-                    "group:",
-                    ""
-                )
-            )
-
-        result[attribute_name] = sorted(
-            groups
-        )
-
-    return result
-
-
-# ==========================================================
-# TRAVERSAL
-# ==========================================================
-
-def discover_related_groups(
-    attribute_name
-):
-
-    mapping = (
-        attribute_groups()
-    )
-
-    return mapping.get(
-        attribute_name,
-        []
-    )
-
-
-def discover_group_attributes(
-    group_name
-):
-
-    mapping = (
-        group_attributes()
-    )
-
-    return mapping.get(
-        group_name,
-        []
-    )
-
-
-# ==========================================================
-# FULL RUNTIME
-# ==========================================================
-
-def build_graph_runtime():
-
-    graph = (
-        build_semantic_graph()
-    )
+def graph_node_index(graph):
 
     return {
 
-        "runtime":
-            "graph_runtime_v2",
+        node["node_id"]: node
 
-        "node_count":
-            len(
-                graph["nodes"]
-            ),
-
-        "edge_count":
-            len(
-                graph["edges"]
-            ),
-
-        "groups":
-            group_attributes(),
-
-        "attributes":
-            attribute_groups(),
-
-        "graph":
-            graph,
+        for node in graph.get(
+            "nodes",
+            []
+        )
     }
+
+
+def graph_edges_for_node(
+
+    graph,
+    node_id
+):
+
+    result = []
+
+    for edge in graph.get(
+        "edges",
+        []
+    ):
+
+        if edge["source"] == node_id:
+
+            result.append(edge)
+
+        elif edge["target"] == node_id:
+
+            result.append(edge)
+
+    return result
 
 
 # ==========================================================
@@ -318,39 +219,26 @@ def build_graph_runtime():
 
 if __name__ == "__main__":
 
-    runtime = (
-        build_graph_runtime()
+    graph = (
+        build_semantic_graph()
     )
 
     print()
+
     print("=" * 60)
-    print("GRAPH RUNTIME V2")
+    print("SEMANTIC GRAPH V2")
     print("=" * 60)
 
     print()
 
     print(
         "Nodes:",
-        runtime["node_count"]
+        graph["node_count"]
     )
 
     print(
         "Edges:",
-        runtime["edge_count"]
-    )
-
-    print(
-        "Groups:",
-        len(
-            runtime["groups"]
-        )
-    )
-
-    print(
-        "Attributes:",
-        len(
-            runtime["attributes"]
-        )
+        graph["edge_count"]
     )
 
     print()

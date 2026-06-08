@@ -1,33 +1,16 @@
-from rest_framework.decorators import (
-    api_view,
-    permission_classes
-)
-
-from rest_framework.permissions import (
-    AllowAny
-)
-
-from rest_framework.response import (
-    Response
-)
-
-from api.models import (
-    PCProduct
-)
-
-from api.serializers.pc_product_serializer import (
-    PCProductSerializer
-)
-
-from api.services.semantic.semantic_api_service import (
-
+from rest_framework.decorators import (  api_view,  permission_classes )
+from rest_framework.permissions import (  AllowAny  )
+from rest_framework.response import ( Response  )
+from api.models import (  PCProduct  )
+from api.serializers.pc_product_serializer import (  PCProductSerializer  )
+from api.services.semantic.semantic_api_service import ( 
     build_semantic_product_payload,
     build_semantic_related_products,
     build_semantic_shelf_payload,
     build_semantic_discovery_payload,
     build_semantic_workflow_payload,
 )
-
+from api.services.semantic.v2.discovery_runtime_v2 import ( build_discovery_runtime_v2 )
 
 # =========================================================
 # 🥇 Ranking API
@@ -263,6 +246,20 @@ def get_related_pc_products(
 # =========================================================
 # 🎬 Semantic Discovery Runtime API
 # =========================================================
+# @api_view(["GET"])
+# @permission_classes([AllowAny])
+# def semantic_discovery_runtime(
+#     request
+# ):
+
+#     payload = (
+#         build_semantic_discovery_payload()
+#     )
+
+#     return Response(
+#         payload
+#     )
+
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def semantic_discovery_runtime(
@@ -270,12 +267,13 @@ def semantic_discovery_runtime(
 ):
 
     payload = (
-        build_semantic_discovery_payload()
+        build_discovery_runtime_v2()
     )
 
     return Response(
         payload
     )
+
 
 
 # =========================================================

@@ -1,365 +1,245 @@
 # -*- coding: utf-8 -*-
+# /home/maya/shin-vps/django/api/services/semantic/v2/shelves/shelf_builder.py
 
 """
 SHIN CORE LINX
 
-Shelf Builder V2
+Shelf Runtime V2
 
-Authority Runtime
+Traversal Runtime
 ↓
-Relation Runtime
+Group Aggregation
 ↓
 Shelf Runtime
 
-NO HARDCODED SHELVES
+NO HARDCODE
+
+Shelf Authority
+=
+semantic_groups.tsv
 """
 
 from collections import defaultdict
 
-from api.services.semantic.v2.compiler.relation_compiler import (
-    build_relation_runtime,
+from api.services.semantic.v2.traversal.traversal_builder import (
+    build_traversal_runtime,
 )
 
-
-# ==========================================================
-# CONSTANTS
-# ==========================================================
-
-DEFAULT_LIMIT = 12
-
-
-# ==========================================================
-# UTIL
-# ==========================================================
-
-def safe_str(value):
-
-    if value is None:
-        return ""
-
-    return str(value).strip()
-
-
-def safe_int(value):
-
-    try:
-        return int(value)
-
-    except Exception:
-        return 0
+from api.services.semantic.v2.authority.authority_runtime import (
+    build_authority_runtime,
+)
 
 
 # ==========================================================
 # GROUP INDEX
 # ==========================================================
 
-def build_group_index(runtime):
+def build_group_index(groups):
 
-    result = {}
+    return {
 
-    groups = runtime.get(
-        "groups",
-        []
-    )
+        group["group_slug"]: group
 
-    if isinstance(groups, dict):
-
-        for group_name, payload in groups.items():
-
-            result[group_name] = payload
-
-    else:
-
-        for row in groups:
-
-            group_name = safe_str(
-                row.get("group")
-            )
-
-            if not group_name:
-                continue
-
-            result[group_name] = row
-
-    return result
+        for group in groups
+    }
 
 
 # ==========================================================
-# ATTRIBUTE INDEX
+# SHELF
 # ==========================================================
 
-def build_attribute_index(runtime):
+def build_group_shelf(
 
-    result = {}
+    group,
 
-    attributes = runtime.get(
-        "attributes",
-        []
-    )
-
-    if isinstance(attributes, dict):
-
-        for attribute_name, payload in attributes.items():
-
-            result[attribute_name] = payload
-
-    else:
-
-        for row in attributes:
-
-            attribute_name = safe_str(
-                row.get("attribute")
-            )
-
-            if not attribute_name:
-                continue
-
-            result[attribute_name] = row
-
-    return result
-
-
-# ==========================================================
-# SHELF PAYLOAD
-# ==========================================================
-
-def build_shelf_payload(
-
-    shelf_type,
-    title,
-    description,
-    attributes,
+    products
 ):
 
     return {
 
         "shelf_type":
-            shelf_type,
+            group["group_slug"],
 
         "title":
-            title,
-
-        "description":
-            description,
-
-        "attribute_count":
-            len(attributes),
-
-        "attributes":
-            sorted(
-                attributes
+            group.get(
+                "group_name"
             ),
 
-        "ui_mode":
-            "exploration",
+        "parent_group":
+            group.get(
+                "parent_group"
+            ),
 
-        "next_shelves":
-            [],
+        "icon":
+            group.get(
+                "icon"
+            ),
+
+        "color":
+            group.get(
+                "color"
+            ),
+
+        "product_count":
+            len(products),
+
+        "products":
+            products,
     }
-
-
-# ==========================================================
-# SHELF FROM GROUP
-# ==========================================================
-
-def build_shelf_from_group(
-
-    group_name,
-
-    group_row,
-
-    attributes,
-):
-
-    title = (
-
-        group_row.get(
-            "title"
-        )
-
-        or
-
-        group_row.get(
-            "display_name"
-        )
-
-        or
-
-        group_name
-    )
-
-    description = (
-
-        group_row.get(
-            "description"
-        )
-
-        or
-        ""
-    )
-
-    return build_shelf_payload(
-
-        shelf_type=group_name,
-
-        title=title,
-
-        description=description,
-
-        attributes=attributes,
-    )
-
-
-# ==========================================================
-# SHELF CONNECTIONS
-# ==========================================================
-
-def build_shelf_connections(shelves):
-
-    shelf_names = [
-
-        shelf["shelf_type"]
-
-        for shelf in shelves
-    ]
-
-    for index, shelf in enumerate(
-        shelves
-    ):
-
-        next_shelves = []
-
-        if index + 1 < len(
-            shelf_names
-        ):
-
-            next_shelves.append(
-                shelf_names[
-                    index + 1
-                ]
-            )
-
-        shelf[
-            "next_shelves"
-        ] = next_shelves
-
-    return shelves
 
 
 # ==========================================================
 # MAIN
 # ==========================================================
 
-def build_shelves():
+def build_shelf_runtime():
 
-    runtime = (
-        build_relation_runtime()
+    authority = (
+        build_authority_runtime()
     )
 
-    groups = build_group_index(
-        runtime
+    traversal = (
+        build_traversal_runtime()
     )
 
-    relations = runtime.get(
-        "relations",
+    group_index = (
+
+        build_group_index(
+
+            authority[
+                "groups"
+            ]
+        )
+    )
+
+    shelves = defaultdict(
+        list
+    )
+
+    # ======================================================
+    # Product
+    # ======================================================
+
+    for product in traversal.get(
+        "products",
         []
-    )
-
-    shelf_attributes = (
-        defaultdict(list)
-    )
-
-    # ==========================================
-    # Group -> Attribute
-    # ==========================================
-
-    for relation in relations:
-
-        group_name = relation.get(
-            "group"
-        )
-
-        attribute_name = relation.get(
-            "attribute"
-        )
-
-        if not group_name:
-            continue
-
-        if not attribute_name:
-            continue
-
-        shelf_attributes[
-            group_name
-        ].append(
-            attribute_name
-        )
-
-    shelves = []
-
-    # ==========================================
-    # Shelf Generation
-    # ==========================================
-
-    for group_name in sorted(
-
-        shelf_attributes.keys()
     ):
 
-        group_row = groups.get(
-            group_name,
-            {}
+        for group_slug in product.get(
+            "matched_groups",
+            []
+        ):
+
+            shelves[
+                group_slug
+            ].append({
+
+                "product_id":
+                    product[
+                        "product_id"
+                    ],
+
+                "unique_id":
+                    product[
+                        "unique_id"
+                    ],
+            })
+
+    # ======================================================
+    # Shelf Build
+    # ======================================================
+
+    shelf_payload = []
+
+    for group_slug, products in (
+
+        shelves.items()
+    ):
+
+        group = group_index.get(
+            group_slug
         )
 
-        shelf = (
-            build_shelf_from_group(
+        if not group:
+            continue
 
-                group_name,
+        shelf_payload.append(
 
-                group_row,
+            build_group_shelf(
 
-                shelf_attributes[
-                    group_name
-                ],
+                group,
+
+                products
             )
         )
 
-        shelves.append(
-            shelf
-        )
+    # ======================================================
+    # Sort
+    # ======================================================
 
-    shelves = (
-        build_shelf_connections(
-            shelves
-        )
-    )
+    shelf_payload = sorted(
 
-    return shelves
+        shelf_payload,
 
+        key=lambda x:
+            x[
+                "product_count"
+            ],
 
-# ==========================================================
-# DISCOVERY RUNTIME
-# ==========================================================
-
-def build_discovery_shelves():
-
-    shelves = (
-        build_shelves()
+        reverse=True
     )
 
     return {
 
         "runtime":
-            "discovery_shelves_v2",
+            "shelf_runtime_v2",
 
         "shelf_count":
             len(
-                shelves
+                shelf_payload
             ),
 
         "shelves":
-            shelves,
+            shelf_payload,
+
+        "ready":
+            True,
     }
+
+
+# ==========================================================
+# LOOKUP
+# ==========================================================
+
+def get_shelf(
+
+    shelf_slug
+):
+
+    runtime = (
+        build_shelf_runtime()
+    )
+
+    for shelf in runtime.get(
+        "shelves",
+        []
+    ):
+
+        if (
+
+            shelf[
+                "shelf_type"
+            ]
+
+            ==
+
+            shelf_slug
+
+        ):
+
+            return shelf
+
+    return None
 
 
 # ==========================================================
@@ -369,19 +249,19 @@ def build_discovery_shelves():
 if __name__ == "__main__":
 
     runtime = (
-        build_discovery_shelves()
+        build_shelf_runtime()
     )
 
     print()
 
     print("=" * 60)
-    print("DISCOVERY SHELVES V2")
+    print("SHELF RUNTIME V2")
     print("=" * 60)
 
     print()
 
     print(
-        "Shelf Count:",
+        "Shelves:",
         runtime[
             "shelf_count"
         ]
@@ -391,17 +271,15 @@ if __name__ == "__main__":
 
     for shelf in runtime[
         "shelves"
-    ]:
+    ][:10]:
 
         print(
-            shelf["title"]
-        )
 
-        print(
-            "Attributes:",
             shelf[
-                "attribute_count"
+                "title"
+            ],
+
+            shelf[
+                "product_count"
             ]
         )
-
-        print()

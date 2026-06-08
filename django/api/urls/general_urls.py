@@ -2,7 +2,6 @@
 # /home/maya/dev/shin-vps/django/api/urls/general_urls.py
 
 from django.urls import path
-
 from api.views import general_views
 
 # ==========================================================
@@ -17,26 +16,6 @@ from api.views.pc_stats_view import (
 # General Views
 # ==========================================================
 
-# from api.views.general_views import (
-
-#     # ======================================================
-#     # Legacy Runtime
-#     # ======================================================
-#     PCProductRankingView,
-
-#     PCProductListAPIView,
-
-#     # ======================================================
-#     # Semantic Runtime
-#     # ======================================================
-#     pc_product_detail,
-
-#     get_related_pc_products,
-
-#     semantic_discovery_runtime,
-
-#     semantic_shelves,
-# )
 
 from api.views.general_views import (
 
@@ -61,6 +40,21 @@ from api.views.finder_views import (
     SemanticFinderView
 )
 
+from api.views.finder_v2_view import (
+    semantic_finder_v2,
+)
+
+from api.views.ranking_v2_view import (
+    semantic_ranking_v2,
+)
+
+from api.views.product_detail_v2_view import (
+    semantic_product_detail_v2,
+)
+
+from api.views.related_v2_view import (
+    semantic_related_v2,
+)
 
 # ==============================================================================
 # 🚀 APP NAMESPACE
@@ -84,6 +78,14 @@ urlpatterns = [
         SemanticFinderView.as_view(),
         name="semantic_finder",
     ),
+
+
+    path(
+        "semantic/finder/",
+        semantic_finder_v2,
+        name="semantic_finder_v2",
+    ),
+
 
     # ==========================================================================
     # 🧠 Semantic Grouped Attributes
@@ -133,6 +135,12 @@ urlpatterns = [
         name="pc_product_ranking_slug",
     ),
 
+    path(
+        "semantic/ranking/<slug:group_slug>/",
+        semantic_ranking_v2,
+        name="semantic_ranking_v2",
+    ),
+
     # ==========================================================================
     # 📦 PC Product List
     # ==========================================================================
@@ -154,7 +162,11 @@ urlpatterns = [
         get_related_pc_products,
         name="related_pc_products",
     ),
-
+    path(
+        "semantic/product/<slug:unique_id>/related/",
+        semantic_related_v2,
+        name="semantic_related_v2",
+    ),
     # ==========================================================================
     # 📄 Product Detail Runtime
     # IMPORTANT:
@@ -165,6 +177,12 @@ urlpatterns = [
         "pc-products/<str:unique_id>/",
         pc_product_detail,
         name="pc_product_detail",
+    ),
+    
+    path(
+        "semantic/product/<slug:unique_id>/",
+        semantic_product_detail_v2,
+        name="semantic_product_detail_v2",
     ),
 
     # ==========================================================================
