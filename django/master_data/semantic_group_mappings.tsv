@@ -129,3 +129,8 @@ storage-standard	ssd-256gb
 storage-standard	storage-sata
 test-group	gpu-rtx-5090
 test-group	usage-business
+usage-ai	cpu-npu
+storage-standard	storage-basic
+memory-entry	memory-basic
+usage-budget	usage-student
+usage-business	basic_computing
