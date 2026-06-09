@@ -72,7 +72,27 @@ class PCSpecService:
 
         )
 
-        result = (
+        # result = (
+
+        #     self.client.generate(
+        #         prompt
+        #     )
+
+        # )
+
+        # if not result:
+        #     return None
+
+        # return (
+
+        #     self.parser.parse(
+        #         result
+        #     )
+
+        # )
+        
+        
+        result_bundle = (
 
             self.client.generate(
                 prompt
@@ -80,14 +100,19 @@ class PCSpecService:
 
         )
 
-        if not result:
+        spec_result = (
+            self.parser.parse(
+                result_bundle["response"]
+            )
+        )
 
+        if not result:
             return None
 
-        return (
 
-            self.parser.parse(
-                result
-            )
-
-        )
+        return {
+            "spec_result": spec_result,
+            "attempts": result_bundle["attempts"],
+            "model": result_bundle["model"],
+            "api_key_index": result_bundle["api_key_index"],
+        }

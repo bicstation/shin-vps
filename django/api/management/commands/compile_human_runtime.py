@@ -1,35 +1,14 @@
 # -*- coding: utf-8 -*-
 
 import json
-
-from concurrent.futures import (
-    ThreadPoolExecutor,
-    as_completed,
-)
-
-from django.core.management.base import (
-    BaseCommand,
-)
-
-from django.db import (
-    close_old_connections,
-)
-
-from django.db.models import (
-    Q,
-)
-
-from api.models.pc_products import (
-    PCProduct,
-)
-
-from api.services.ai.services.pc_summary_service import (
-    PCSummaryService,
-)
-
+from concurrent.futures import ( ThreadPoolExecutor, as_completed, )
+from django.core.management.base import ( BaseCommand, )
+from django.db import ( close_old_connections, )
+from django.db.models import (  Q, )
+from api.models.pc_products import ( PCProduct, )
+from api.services.ai.services.pc_summary_service import ( PCSummaryService, )
 
 MAX_WORKERS = 1
-
 
 class Command(BaseCommand):
 

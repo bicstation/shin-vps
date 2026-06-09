@@ -237,6 +237,8 @@ run_django import_linkshare_api --mid 2543
 run_django import_linkshare_api --mid 36508
 run_django import_linkshare_api --mid 43708
 
+break
+
 # ==========================================================
 # ② 02 Reset Stock
 # ==========================================================
@@ -259,7 +261,7 @@ run_django migrate_linkshare_to_pc
 
 log "🤖 (04-1/11) AI Spec Completion"
 
-run_django analyze_pc_ai \
+run_django compile_spec_runtime \
   --limit $AI_SPEC_LIMIT
 
 # ==========================================================
@@ -268,7 +270,7 @@ run_django analyze_pc_ai \
 
 log "📝 (04-2/11) AI Summary Generation"
 
-run_django analyze_pc_ai_summary \
+run_django compile_human_runtime \
   --limit $AI_SUMMARY_LIMIT
 
 # ==========================================================
@@ -278,7 +280,7 @@ run_django analyze_pc_ai_summary \
 
 log "🧠 (04-3/11) Semantic Analyze"
 
-run_django analyze_pc_spec \
+run_django compile_semantic_runtime \
   --limit $AI_SEMANTIC_LIMIT \
   --needs-runtime
 
@@ -335,7 +337,7 @@ done
 # ==========================================================
 
 log "🔗 (06-1/11) Complile Sematic Runtime"
-run_django compile_semantic_runtime_v2
+run_django compile_semantic_authority
 
 
 

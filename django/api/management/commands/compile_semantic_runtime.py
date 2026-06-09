@@ -5,29 +5,11 @@
 # centralized observability integrated
 # =========================================================
 
-from concurrent.futures import (
-
-    ThreadPoolExecutor,
-
-    as_completed,
-)
-
-from django.core.management.base import (
-    BaseCommand
-)
-
-from api.models import (
-    PCProduct
-)
-
-from api.utils.semantic.runtime.runtime_log import (
-    runtime_log,
-)
-
-from api.utils.semantic.runtime.compile_semantic_runtime import (
-    compile_semantic_runtime
-)
-
+from concurrent.futures import ( ThreadPoolExecutor, as_completed, )
+from django.core.management.base import ( BaseCommand)
+from api.models import ( PCProduct )
+from api.utils.semantic.runtime.runtime_log import ( runtime_log, )
+from api.utils.semantic.runtime.compile_semantic_runtime import (  compile_semantic_runtime )
 
 # =========================================================
 # COMMAND

@@ -251,7 +251,17 @@ class GeminiClient:
 
                     )
 
-                return result
+                return {
+
+                    "response": result,
+
+                    "attempts": attempt + 1,
+
+                    "model": self.model_name,
+
+                    "api_key_index": self.key_index,
+
+                }
 
             except Exception as e:
 
