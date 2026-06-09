@@ -4,7 +4,8 @@
 # =========================================================
 
 from django.utils import timezone
-
+from api.models import (  PCAttribute,)
+from api.utils.semantic.runtime.runtime_log import ( runtime_log,)
 
 # =========================================================
 # PERSIST RUNTIME
@@ -156,6 +157,46 @@ def persist_runtime(
 
     product.semantic_updated_at = (
         timezone.now()
+    )
+
+    # =========================================
+    # ATTRIBUTE ATTACH
+    # =========================================
+
+    product.attributes.clear()
+
+    attribute_objects = (
+
+        PCAttribute.objects
+
+        .filter(
+            slug__in=semantic_attributes
+        )
+
+    )
+
+    if attribute_objects.exists():
+
+        product.attributes.add(
+            *attribute_objects
+        )
+
+    runtime_log(
+
+        False,
+
+        "ATTRIBUTE_ATTACH",
+
+        {
+
+            "product_id":
+                product.id,
+
+            "attached":
+                attribute_objects.count(),
+
+        },
+
     )
 
     # =====================================================

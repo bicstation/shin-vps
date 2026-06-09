@@ -15,10 +15,10 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 # Runtime Variables
 # ==========================================================
 
-AI_SPEC_LIMIT=30
-AI_SUMMARY_LIMIT=30
-AI_SEMANTIC_LIMIT=30
-IMAGE_CACHE_LIMIT=50
+AI_SPEC_LIMIT=2000
+AI_SUMMARY_LIMIT=2000
+AI_SEMANTIC_LIMIT=2000
+IMAGE_CACHE_LIMIT=2000
 
 # ==========================================================
 # Project Root Topology
@@ -334,7 +334,12 @@ done
 # ⑦ 06 Attribute Auto Mapping
 # ==========================================================
 
-log "🔗 (06/11) Auto Map Semantic Attributes"
+log "🔗 (06-1/11) Complile Sematic Runtime"
+run_django compile_semantic_runtime_v2
+
+
+
+log "🔗 (06-2/11) Auto Map Semantic Attributes"
 run_django auto_map_attributes_v2
 
 
