@@ -5,84 +5,35 @@
 
 import time
 
-from concurrent.futures import (
-    ThreadPoolExecutor,
-    as_completed,
-)
-
-from django.core.management.base import (
-    BaseCommand,
-)
-
-from django.db import (
-    close_old_connections,
-)
-
-from django.db.models import (
-    Q,
-)
-
-from api.models.pc_products import (
-    PCProduct,
-)
-
-from api.services.ai.runtime.ai_runtime import (
-    AIRuntime,
-)
-
-from api.services.ai.services.pc_spec_service import (
-    PCSpecService,
-)
-
-from api.services.ai.services.spec_runtime_persist_service import (
-    SpecRuntimePersistService,
-)
-
+from concurrent.futures import ( ThreadPoolExecutor, as_completed, )
+from django.core.management.base import ( BaseCommand, )
+from django.db import ( close_old_connections, )
+from django.db.models import ( Q, )
+from api.models.pc_products import ( PCProduct, )
+from api.services.ai.runtime.ai_runtime import ( AIRuntime, )
+from api.services.ai.services.pc_spec_service import ( PCSpecService, )
+from api.services.ai.services.spec_runtime_persist_service import ( SpecRuntimePersistService, )
 
 class Command(BaseCommand):
 
-    help = (
-        "Compile Spec Runtime"
-    )
+    help = ( "Compile Spec Runtime" )
 
     # =====================================================
     # INIT
     # =====================================================
 
-    def __init__(
+    def __init__( self, *args, **kwargs, ):
 
-        self,
+        super().__init__( *args, **kwargs, )
 
-        *args,
-
-        **kwargs,
-
-    ):
-
-        super().__init__(
-            *args,
-            **kwargs,
-        )
-
-        self.spec_service = (
-            PCSpecService()
-        )
-
-        self.persist_service = (
-            SpecRuntimePersistService()
-        )
+        self.spec_service = ( PCSpecService() )
+        self.persist_service = ( SpecRuntimePersistService() )
 
     # =====================================================
     # ARGUMENTS
     # =====================================================
 
-    def add_arguments(
-
-        self,
-
-        parser,
-
-    ):
+    def add_arguments( self, parser, ):
 
         parser.add_argument(
             "unique_id",
@@ -193,7 +144,7 @@ class Command(BaseCommand):
 
                             f"❌ "
                             f"{product.unique_id} "
-                            f"{str(e)}"
+                            # f"{str(e)}"
 
                         )
 
@@ -354,7 +305,6 @@ class Command(BaseCommand):
                     f"MODEL   : {bundle['model']}\n"
                     f"KEY     : {bundle['api_key_index']}\n"
                     f"TIME    : {elapsed} sec\n"
-                    f"RETRY   : {bundle['attempts']}\n"
 
                     "\n"
 

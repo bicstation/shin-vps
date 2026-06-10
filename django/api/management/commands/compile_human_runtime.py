@@ -340,7 +340,7 @@ class Command(BaseCommand):
                     f"MODEL   : {bundle['model']}\n"
                     f"KEY     : {bundle['api_key_index']}\n"
                     f"TIME    : {bundle['elapsed']} sec\n"
-                    f"RETRY   : {bundle['attempts']}\n"
+                    # f"RETRY   : {bundle['attempts']}\n"
                     "\n"
                     f"TARGET  : {result.target_user}\n"
                     f"TAGS    : {', '.join(result.usage_tags)}\n"

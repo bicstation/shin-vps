@@ -27,18 +27,3 @@ GEMMA_41B = (
     "gemma-4-31b-it"
 )
 
-# =========================================================
-# DEFAULT
-# =========================================================
-
-DEFAULT_SUMMARY_MODEL = (
-    GEMMA_41B
-)
-
-DEFAULT_COMPARISON_MODEL = (
-    GEMMA_41B
-)
-
-DEFAULT_SPEC_MODEL = (
-    GEMINI_FLASH 
-)

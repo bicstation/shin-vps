@@ -4,9 +4,65 @@
 # =========================================================
 
 import os
-
+from api.services.ai.constants.models import (
+    GEMINI_FLASH,
+    GEMMA_41B,
+)
 
 class AIRuntime:
+    
+    # =====================================================
+    # GEMINI API KEY数
+    # =====================================================
+
+    GEMINI_KEY_COUNT = 10
+
+    # =====================================================
+    # 並列実行ワーカー数
+    # =====================================================
+
+    MAX_WORKERS = 2
+
+    # =====================================================
+    # リトライ回数
+    # =====================================================
+
+    MAX_RETRIES = 3
+
+    # =====================================================
+    # API通信タイムアウト（秒）
+    # =====================================================
+
+    TIMEOUT = 60
+
+    # =====================================================
+    # 1キーあたりの1分間リクエスト上限
+    # =====================================================
+
+    RPM_PER_KEY = 10
+
+    # =====================================================
+    # 429発生後のクールダウン時間（秒）
+    # =====================================================
+
+    COOLDOWN_SECONDS = 60
+    
+    
+    # =====================================================
+    # DEFAULT MODELS
+    # =====================================================
+
+    DEFAULT_SPEC_MODEL = (
+        GEMINI_FLASH
+    )
+
+    DEFAULT_SUMMARY_MODEL = (
+        GEMMA_41B
+    )
+
+    DEFAULT_COMPARISON_MODEL = (
+        GEMMA_41B
+    )
 
     # =====================================================
     # API KEYS
@@ -17,53 +73,18 @@ class AIRuntime:
 
         return [
 
-            key
+            os.getenv(
+                f"GEMINI_API_KEY_{i}"
+            )
 
-            for key in [
+            for i in range(
+                1,
+                cls.GEMINI_KEY_COUNT + 1
+            )
 
-                os.getenv(
-                    "GEMINI_API_KEY_1"
-                ),
-
-                os.getenv(
-                    "GEMINI_API_KEY_2"
-                ),
-
-                os.getenv(
-                    "GEMINI_API_KEY_3"
-                ),
-
-                os.getenv(
-                    "GEMINI_API_KEY_4"
-                ),
-
-                os.getenv(
-                    "GEMINI_API_KEY_5"
-                ),
-
-                os.getenv(
-                    "GEMINI_API_KEY_6"
-                ),
-
-                os.getenv(
-                    "GEMINI_API_KEY_7"
-                ),
-
-                os.getenv(
-                    "GEMINI_API_KEY_8"
-                ),
-
-                os.getenv(
-                    "GEMINI_API_KEY_9"
-                ),
-
-                os.getenv(
-                    "GEMINI_API_KEY_10"
-                ),
-
-            ]
-
-            if key
+            if os.getenv(
+                f"GEMINI_API_KEY_{i}"
+            )
 
         ]
 
@@ -75,9 +96,7 @@ class AIRuntime:
     def active_key_count(cls):
 
         return len(
-
             cls.api_keys()
-
         )
 
     # =====================================================
@@ -88,18 +107,18 @@ class AIRuntime:
     def max_workers(cls):
 
         return min(
-            2,
+            cls.MAX_WORKERS,
             cls.active_key_count(),
         )
 
     # =====================================================
-    # RETRY
+    # MAX RETRIES
     # =====================================================
 
     @classmethod
     def max_retries(cls):
 
-        return 3
+        return cls.MAX_RETRIES
 
     # =====================================================
     # TIMEOUT
@@ -108,7 +127,25 @@ class AIRuntime:
     @classmethod
     def timeout(cls):
 
-        return 100
+        return cls.TIMEOUT
+
+    # =====================================================
+    # RPM
+    # =====================================================
+
+    @classmethod
+    def rpm_per_key(cls):
+
+        return cls.RPM_PER_KEY
+
+    # =====================================================
+    # COOLDOWN
+    # =====================================================
+
+    @classmethod
+    def cooldown_seconds(cls):
+
+        return cls.COOLDOWN_SECONDS
 
     # =====================================================
     # STATUS
@@ -130,5 +167,11 @@ class AIRuntime:
 
             "timeout":
                 cls.timeout(),
+
+            "rpm_per_key":
+                cls.rpm_per_key(),
+
+            "cooldown_seconds":
+                cls.cooldown_seconds(),
 
         }

@@ -15,12 +15,16 @@ from api.services.ai.prompts.pc_spec_prompt import (
     PCSpecPrompt,
 )
 
-from api.services.ai.constants.models import (
-    DEFAULT_SPEC_MODEL,
+from api.services.ai.runtime.ai_runtime import (
+    AIRuntime,
 )
 
 
 class PCSpecService:
+
+    # =====================================================
+    # INIT
+    # =====================================================
 
     def __init__(
 
@@ -33,8 +37,13 @@ class PCSpecService:
         self.client = GeminiClient(
 
             model_name=(
+
                 model_name
-                or DEFAULT_SPEC_MODEL
+
+                or
+
+                AIRuntime.DEFAULT_SPEC_MODEL
+
             )
 
         )
@@ -95,11 +104,6 @@ class PCSpecService:
 
             "spec_result":
                 spec_result,
-
-            "attempts":
-                result_bundle[
-                    "attempts"
-                ],
 
             "elapsed":
                 result_bundle.get(

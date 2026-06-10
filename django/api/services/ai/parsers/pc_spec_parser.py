@@ -5,15 +5,8 @@
 
 import json
 import re
-
-from api.services.ai.models.pc_spec_result import (
-    PCSpecResult,
-)
-
-from api.services.ai.exceptions.parse_error import (
-    ParseError,
-)
-
+from api.services.ai.models.pc_spec_result import ( PCSpecResult, )
+from api.services.ai.exceptions.parse_error import ( ParseError, )
 
 class PCSpecParser:
 
@@ -21,20 +14,9 @@ class PCSpecParser:
     # PARSE
     # =====================================================
 
-    def parse(
+    def parse( self, gemini_result, ):
 
-        self,
-
-        gemini_result,
-
-    ):
-
-        candidates = (
-            gemini_result.get(
-                "candidates",
-                []
-            )
-        )
+        candidates = ( gemini_result.get( "candidates", [] ) )
 
         if not candidates:
 
@@ -42,31 +24,15 @@ class PCSpecParser:
                 "Gemini candidates missing"
             )
 
-        full_text = (
-
-            candidates[0]
-
-            .get(
-                "content",
-                {}
-            )
-
-            .get(
-                "parts",
-                [{}]
-            )[0]
-
-            .get(
-                "text",
-                ""
-            )
-
-        )
+        full_text = (candidates[0].get( "content", {} ).get( "parts", [{}]  )[0].get( "text", "" ) )
+        
+        print(  "\n==================== GEMINI RAW ====================" )
+        print(full_text)
+        print(  "====================================================\n" )
 
         json_blocks = re.findall(
 
             r"\{[\s\S]*?\}",
-
             full_text,
 
         )
