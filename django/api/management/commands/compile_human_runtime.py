@@ -1,20 +1,78 @@
-# -*- coding: utf-8 -*-
+# =========================================================
+# FILE:
+# api/management/commands/compile_human_runtime.py
+# =========================================================
 
-import json
-from concurrent.futures import ( ThreadPoolExecutor, as_completed, )
-from django.core.management.base import ( BaseCommand, )
-from django.db import ( close_old_connections, )
-from django.db.models import (  Q, )
-from api.models.pc_products import ( PCProduct, )
-from api.services.ai.services.pc_summary_service import ( PCSummaryService, )
+from concurrent.futures import (
+    ThreadPoolExecutor,
+    as_completed,
+)
 
-MAX_WORKERS = 1
+from django.core.management.base import (
+    BaseCommand,
+)
+
+from django.db import (
+    close_old_connections,
+)
+
+from django.db.models import (
+    Q,
+)
+
+from api.models.pc_products import (
+    PCProduct,
+)
+
+from api.services.ai.runtime.ai_runtime import (
+    AIRuntime,
+)
+
+from api.services.ai.services.pc_summary_service import (
+    PCSummaryService,
+)
+
+from api.services.ai.services.human_runtime_persist_service import (
+    HumanRuntimePersistService,
+)
+
 
 class Command(BaseCommand):
 
     help = (
-        "Generate PC AI Summary"
+        "Compile Human Runtime"
     )
+
+    # =====================================================
+    # INIT
+    # =====================================================
+
+    def __init__(
+
+        self,
+
+        *args,
+
+        **kwargs,
+
+    ):
+
+        super().__init__(
+            *args,
+            **kwargs,
+        )
+
+        self.summary_service = (
+            PCSummaryService()
+        )
+
+        self.persist_service = (
+            HumanRuntimePersistService()
+        )
+
+    # =====================================================
+    # ARGUMENTS
+    # =====================================================
 
     def add_arguments(
 
@@ -25,31 +83,20 @@ class Command(BaseCommand):
     ):
 
         parser.add_argument(
-
             "unique_id",
-
             nargs="?",
-
             type=str,
-
         )
 
         parser.add_argument(
-
             "--limit",
-
             type=int,
-
             default=1,
-
         )
 
         parser.add_argument(
-
             "--force",
-
             action="store_true",
-
         )
 
     # =====================================================
@@ -66,27 +113,9 @@ class Command(BaseCommand):
 
     ):
 
-        unique_id = (
-            options["unique_id"]
-        )
-
-        limit = (
-            options["limit"]
-        )
-
-        force = (
-            options["force"]
-        )
-
         products = (
             self.get_products(
-
-                unique_id,
-
-                limit,
-
-                force,
-
+                options
             )
         )
 
@@ -95,9 +124,7 @@ class Command(BaseCommand):
             self.stdout.write(
 
                 self.style.WARNING(
-
-                    "🔎 対象製品なし"
-
+                    "🔎 No Target Products"
                 )
 
             )
@@ -108,8 +135,10 @@ class Command(BaseCommand):
 
             self.style.SUCCESS(
 
-                f"🚀 START "
-                f"{products.count()}"
+                f"🚀 Human Runtime "
+                f"{len(products)} Products "
+                f"/ Workers="
+                f"{AIRuntime.max_workers()}"
 
             )
 
@@ -117,8 +146,9 @@ class Command(BaseCommand):
 
         with ThreadPoolExecutor(
 
-            max_workers=
-            MAX_WORKERS
+            max_workers=(
+                AIRuntime.max_workers()
+            )
 
         ) as executor:
 
@@ -152,9 +182,7 @@ class Command(BaseCommand):
                 except Exception as e:
 
                     product = (
-                        futures[
-                            future
-                        ]
+                        futures[future]
                     )
 
                     self.stdout.write(
@@ -177,22 +205,30 @@ class Command(BaseCommand):
 
         self,
 
-        unique_id,
-
-        limit,
-
-        force,
+        options,
 
     ):
+
+        unique_id = (
+            options["unique_id"]
+        )
+
+        limit = (
+            options["limit"]
+        )
+
+        force = (
+            options["force"]
+        )
 
         if unique_id:
 
             return (
-                PCProduct.objects
-                .filter(
-                    unique_id=
-                    unique_id
+
+                PCProduct.objects.filter(
+                    unique_id=unique_id
                 )
+
             )
 
         query = (
@@ -234,43 +270,82 @@ class Command(BaseCommand):
     # =====================================================
 
     def process_product(
+
         self,
+
         product,
+
         count,
+
         total,
+
     ):
 
         close_old_connections()
 
         try:
 
-            service = (
-                PCSummaryService()
+            self.stdout.write(
+
+                f"📤 "
+                f"({count}/{total}) "
+                f"{product.name}"
+
             )
 
-            result = (
-                service.generate(
+            bundle = (
+
+                self.summary_service.generate(
                     product
                 )
+
             )
 
-            if not result:
+            if not bundle:
+
+                self.stdout.write(
+
+                    self.style.WARNING(
+
+                        f"⚠️ Empty Result "
+                        f"{product.unique_id}"
+
+                    )
+
+                )
 
                 return
 
-            self.save_summary(
+            result = (
+                bundle["summary_result"]
+            )
+
+            self.persist_service.save(
+
                 product,
+
                 result,
+
             )
 
             self.stdout.write(
 
                 self.style.SUCCESS(
 
-                    f"✅ "
-                    f"({count}/{total}) "
-                    f"{product.unique_id}"
-                    f"{product.name}"
+                    "\n"
+                    "==================================================\n"
+                    "✅ HUMAN COMPLETED\n"
+                    "==================================================\n"
+                    f"PRODUCT : {product.unique_id}\n"
+                    f"MODEL   : {bundle['model']}\n"
+                    f"KEY     : {bundle['api_key_index']}\n"
+                    f"TIME    : {bundle['elapsed']} sec\n"
+                    f"RETRY   : {bundle['attempts']}\n"
+                    "\n"
+                    f"TARGET  : {result.target_user}\n"
+                    f"TAGS    : {', '.join(result.usage_tags)}\n"
+                    f"SUMMARY : {result.summary[:120]}\n"
+                    "=================================================="
 
                 )
 
@@ -279,55 +354,3 @@ class Command(BaseCommand):
         finally:
 
             close_old_connections()
-
-    # =====================================================
-    # SAVE
-    # =====================================================
-
-    def save_summary(
-        self,
-        product,
-        result,
-    ):
-
-        product.is_active = True
-        product.is_posted = True
-
-        product.ai_summary = ( result.summary )
-        product.target_user = ( result.target_user )
-        product.strengths = (
-            json.dumps(
-                result.strengths,
-                ensure_ascii=False,
-            )
-        )
-        product.weaknesses = (
-            json.dumps(
-                result.weaknesses,
-                ensure_ascii=False,
-            )
-        )
-        product.usage_tags = (
-            json.dumps(
-                result.usage_tags,
-                ensure_ascii=False,
-            )
-        )
-        product.save()
-        
-        print(
-            f"[{product.unique_id}] "
-            f"SUMMARY:{result.summary[:80]}"
-        )
-
-        print(
-            f"TARGET:{result.target_user}"
-        )
-
-        print(
-            f"TAGS:{', '.join(result.usage_tags)}"
-        )
-
-        print(
-            "-" * 60
-        )

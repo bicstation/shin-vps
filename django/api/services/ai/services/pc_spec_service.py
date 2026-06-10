@@ -30,16 +30,11 @@ class PCSpecService:
 
     ):
 
-        self.client = (
+        self.client = GeminiClient(
 
-            GeminiClient(
-
-                model_name=(
-                    model_name
-                    or
-                    DEFAULT_SPEC_MODEL
-                )
-
+            model_name=(
+                model_name
+                or DEFAULT_SPEC_MODEL
             )
 
         )
@@ -72,26 +67,6 @@ class PCSpecService:
 
         )
 
-        # result = (
-
-        #     self.client.generate(
-        #         prompt
-        #     )
-
-        # )
-
-        # if not result:
-        #     return None
-
-        # return (
-
-        #     self.parser.parse(
-        #         result
-        #     )
-
-        # )
-        
-        
         result_bundle = (
 
             self.client.generate(
@@ -100,19 +75,46 @@ class PCSpecService:
 
         )
 
-        spec_result = (
-            self.parser.parse(
-                result_bundle["response"]
-            )
-        )
+        if not result_bundle:
 
-        if not result:
             return None
 
+        spec_result = (
+
+            self.parser.parse(
+
+                result_bundle[
+                    "response"
+                ]
+
+            )
+
+        )
 
         return {
-            "spec_result": spec_result,
-            "attempts": result_bundle["attempts"],
-            "model": result_bundle["model"],
-            "api_key_index": result_bundle["api_key_index"],
+
+            "spec_result":
+                spec_result,
+
+            "attempts":
+                result_bundle[
+                    "attempts"
+                ],
+
+            "elapsed":
+                result_bundle.get(
+                    "elapsed",
+                    0,
+                ),
+
+            "model":
+                result_bundle[
+                    "model"
+                ],
+
+            "api_key_index":
+                result_bundle[
+                    "api_key_index"
+                ],
+
         }

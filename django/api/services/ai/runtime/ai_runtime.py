@@ -88,11 +88,8 @@ class AIRuntime:
     def max_workers(cls):
 
         return min(
-
-            8,
-
+            2,
             cls.active_key_count(),
-
         )
 
     # =====================================================
