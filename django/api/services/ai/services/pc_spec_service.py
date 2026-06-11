@@ -29,8 +29,8 @@ class PCSpecService:
     def __init__(
 
         self,
-
-        model_name=None,
+        # model_name=None,
+        model_name="gemini-2.5-flash",
 
     ):
 

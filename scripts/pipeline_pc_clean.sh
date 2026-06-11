@@ -237,7 +237,12 @@ run_django import_linkshare_api --mid 2543
 run_django import_linkshare_api --mid 36508
 run_django import_linkshare_api --mid 43708
 
-break
+SB="/usr/src/app/scrapers/src/shops"
+run_django_raw python3 "$SB/import_bc_ftp_to_db.py" --mid "35909" --maker "hp" --prefix "HP"
+run_django_raw python3 "$SB/import_bc_ftp_to_db.py" --mid "2557" --maker "dell" --prefix "DELL"
+run_django_raw python3 "$SB/import_bc_ftp_to_db.py" --mid "2543" --maker "fujitsu" --prefix "FUJITSU"
+run_django_raw python3 "$SB/import_bc_ftp_to_db.py" --mid "36508" --maker "dynabook" --prefix "DYNABOOK"
+# run_django_raw python3 "$SB/import_bc_api_to_db.py" --mid "43708" --maker "asus"
 
 # ==========================================================
 # ② 02 Reset Stock

@@ -77,23 +77,31 @@ class GeminiClient:
                         key_no,
 
                 }
-
             except Exception as e:
-                   
-                self.stdout.write(
-                    self.style.ERROR(
 
-                        f"❌ "
-                        f"{product.unique_id} "
-                        f"{type(e).__name__} "
-                        f"{str(e)}"
-
-                    )
+                print(
+                    f"❌ {type(e).__name__}: {e}"
                 )
 
                 KeyRotator.cooldown(
                     key_no
                 )
+            # except Exception as e:
+                   
+            #     self.stdout.write(
+            #         self.style.ERROR(
+
+            #             f"❌ "
+            #             f"{product.unique_id} "
+            #             f"{type(e).__name__} "
+            #             f"{str(e)}"
+
+            #         )
+            #     )
+
+            #     KeyRotator.cooldown(
+            #         key_no
+            #     )
 
     # =====================================================
     # REQUEST

@@ -1,5 +1,4 @@
 # /home/maya/shin-dev/shin-vps/django/api/management/commands/import_linkshare_data.py
-
 import os
 import re
 import ftplib
