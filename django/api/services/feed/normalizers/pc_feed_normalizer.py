@@ -5,80 +5,180 @@
 
 class PCFeedNormalizer:
 
+    # =====================================================
+    # NORMALIZE
+    # =====================================================
+
     def normalize(
 
         self,
 
-        parsed,
+        source,
+        data,
 
     ):
 
-        data = parsed["raw_data"]
-
         return {
-
-            "merchant_id":
-
-                parsed.get(
-                    "merchant_id"
-                ),
 
             "sku":
 
-                parsed.get(
-                    "sku"
-                ),
+                source.sku,
 
             "name":
 
-                parsed.get(
-                    "name"
+                source.product_name,
+
+            "description":
+
+                self.build_description(
+                    source,
+                    data,
                 ),
 
             "price":
 
-                parsed.get(
-                    "price",
-                    0,
-                ),
-
-            "url":
-
-                parsed.get(
-                    "url",
-                    "",
+                self.extract_price(
+                    source,
+                    data,
                 ),
 
             "image_url":
 
-                parsed.get(
-                    "image_url",
-                    "",
-                ),
+                source.image_url
+                or data.get(
+                    "imageurl"
+                )
+                or "",
+
+            "url":
+
+                source.product_url
+                or source.affiliate_url
+                or data.get(
+                    "linkurl"
+                )
+                or "",
 
             "category":
 
-                parsed.get(
-                    "category",
-                    "",
-                ),
-
-            "description":
-
-                parsed.get(
-                    "description",
-                    "",
-                ),
+                data.get(
+                    "category"
+                )
+                or "",
 
             "keywords":
 
-                parsed.get(
-                    "keywords",
-                    "",
-                ),
-
-            "raw_data":
-
-                data,
+                data.get(
+                    "keywords"
+                )
+                or "",
 
         }
+
+    # =====================================================
+    # DESCRIPTION
+    # =====================================================
+
+    def build_description(
+
+        self,
+
+        source,
+        data,
+
+    ):
+
+        parts = []
+
+        parts.append(
+            source.product_name
+        )
+
+        if data.get(
+            "description_short"
+        ):
+            parts.append(
+                data[
+                    "description_short"
+                ]
+            )
+
+        if data.get(
+            "description_long"
+        ):
+            parts.append(
+                data[
+                    "description_long"
+                ]
+            )
+
+        if data.get(
+            "category"
+        ):
+            parts.append(
+                data[
+                    "category"
+                ]
+                .replace(
+                    "~~",
+                    "\n"
+                )
+            )
+
+        return "\n\n".join(
+            [
+                p
+                for p in parts
+                if p
+            ]
+        )[:5000]
+
+    # =====================================================
+    # PRICE
+    # =====================================================
+
+    def extract_price(
+
+        self,
+
+        source,
+        data,
+
+    ):
+
+        if source.price:
+            return int(
+                source.price
+            )
+
+        price_data = (
+            data.get(
+                "price"
+            )
+        )
+
+        if isinstance(
+            price_data,
+            dict,
+        ):
+
+            value = (
+                price_data.get(
+                    "value"
+                )
+            )
+
+            if value:
+
+                try:
+
+                    return int(
+                        float(
+                            value
+                        )
+                    )
+
+                except Exception:
+                    pass
+
+        return 0
