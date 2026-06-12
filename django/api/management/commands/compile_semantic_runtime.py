@@ -217,17 +217,16 @@ class Command(BaseCommand):
             # =============================================
             # COMPILE
             # =============================================
-
+            
             runtime_result = (
                 compile_semantic_runtime(
 
                     product=product,
 
-                    skip_extraction=skip_extraction,
-
                     trace_runtime=trace_runtime,
                 )
             )
+
 
             # =============================================
             # SAVE

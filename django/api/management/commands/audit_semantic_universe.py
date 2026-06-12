@@ -1,3 +1,5 @@
+# /home/maya/shin-vps/django/api/management/commands/audit_semantic_universe.py
+
 from django.core.management.base import BaseCommand
 
 from api.utils.semantic.authority.loader import ( load_semantic_master, )

@@ -6,8 +6,14 @@
 import time
 import requests
 
-from api.services.ai.runtime.ai_runtime import ( AIRuntime,)
-from api.services.ai.runtime.key_rotator import ( KeyRotator, )
+from api.services.ai.runtime.ai_runtime import (
+    AIRuntime,
+)
+
+from api.services.ai.runtime.key_rotator import (
+    KeyRotator,
+)
+
 
 class GeminiClient:
 
@@ -16,8 +22,11 @@ class GeminiClient:
     # =====================================================
 
     def __init__(
+
         self,
+
         model_name,
+
     ):
 
         self.model_name = model_name
@@ -27,29 +36,47 @@ class GeminiClient:
     # =====================================================
 
     def generate(
+
         self,
+
         prompt,
+
         response_mime_type=(
+
             "application/json"
+
         ),
+
     ):
 
         started = time.time()
 
-        while True:
+        attempts = 0
 
-            api_key, key_no = (
-                KeyRotator.next_key()
-            )
+        max_attempts = (
+            AIRuntime.max_retries()
+        )
+
+        while attempts < max_attempts:
 
             try:
+
+                api_key, key_no = (
+
+                    KeyRotator.next_key()
+
+                )
 
                 result = self.request(
 
                     api_key=api_key,
+
                     prompt=prompt,
+
                     response_mime_type=(
+
                         response_mime_type
+
                     ),
 
                 )
@@ -58,6 +85,7 @@ class GeminiClient:
 
                     time.time()
                     - started,
+
                     2,
 
                 )
@@ -77,31 +105,34 @@ class GeminiClient:
                         key_no,
 
                 }
+
             except Exception as e:
 
+                attempts += 1
+
                 print(
-                    f"❌ {type(e).__name__}: {e}"
+
+                    f"❌ "
+                    f"{type(e).__name__}: "
+                    f"{e}"
+
                 )
 
-                KeyRotator.cooldown(
-                    key_no
-                )
-            # except Exception as e:
-                   
-            #     self.stdout.write(
-            #         self.style.ERROR(
+                try:
 
-            #             f"❌ "
-            #             f"{product.unique_id} "
-            #             f"{type(e).__name__} "
-            #             f"{str(e)}"
+                    KeyRotator.cooldown(
+                        key_no
+                    )
 
-            #         )
-            #     )
+                except Exception:
+                    pass
 
-            #     KeyRotator.cooldown(
-            #         key_no
-            #     )
+        raise Exception(
+
+            f"ALL GEMINI RETRIES FAILED "
+            f"({max_attempts})"
+
+        )
 
     # =====================================================
     # REQUEST
@@ -173,10 +204,6 @@ class GeminiClient:
 
         )
 
-        # =====================================
-        # AUTH
-        # =====================================
-
         if response.status_code == 401:
 
             raise Exception(
@@ -189,10 +216,6 @@ class GeminiClient:
                 "PERMISSION DENIED"
             )
 
-        # =====================================
-        # RATE LIMIT
-        # =====================================
-
         if response.status_code == 429:
 
             raise Exception(
@@ -201,14 +224,8 @@ class GeminiClient:
 
         response.raise_for_status()
 
-        result = (
-            response.json()
-        )
-        
-        print('~~~~~~~~~~~~~RESUKT JSON~~~~~~~~~~~~~')
-        print(result)
-        print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-        
+        result = response.json()
+
         if (
 
             "candidates"
