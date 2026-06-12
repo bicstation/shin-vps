@@ -8,7 +8,7 @@ from api.models.pc_products import PCProduct
 from api.services.feed.parsers.linkshare_feed_parser import ( LinkshareFeedParser,)
 from api.services.feed.normalizers.pc_feed_normalizer import ( PCFeedNormalizer, )
 from api.services.feed.builders.pc_product_builder import ( PCProductBuilder, )
-from api.services.feed.semantic.builders.asus_semantic_builder import ( AsusSemanticBuilder,)
+from api.services.feed.semantic.builders.semantic_builder import ( AsusSemanticBuilder,)
 from api.services.feed.semantic.builders.semantic_runtime_builder import ( SemanticRuntimeBuilder,)
 
 
@@ -91,11 +91,53 @@ class PCImportService:
         payload.update(
             runtime_payload
         )
+        
+        payload["semantic_runtime"] = {
 
+            "product_type":
+                semantic_payload.get(
+                    "product_type"
+                ),
 
-        payload[
-            "affiliate_updated_at"
-        ] = timezone.now()
+            "target_segment":
+                semantic_payload.get(
+                    "target_segment"
+                ),
+
+            "is_ai_pc":
+                semantic_payload.get(
+                    "is_ai_pc"
+                ),
+
+            "semantic_labels":
+                runtime_payload.get(
+                    "semantic_labels",
+                    [],
+                ),
+
+            "workflow_tags":
+                runtime_payload.get(
+                    "workflow_tags",
+                    [],
+                ),
+
+            "runtime_profiles":
+                runtime_payload.get(
+                    "runtime_profiles",
+                    [],
+                ),
+
+        }
+        
+        payload["semantic_schema_version"] = 1
+
+        payload["semantic_updated_at"] = (
+            timezone.now()
+        )
+        
+        payload["semantic_runtime_compiled"] = True
+        
+        payload["affiliate_updated_at"] = timezone.now()
 
         obj, created = (
 

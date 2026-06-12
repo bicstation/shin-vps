@@ -49,37 +49,56 @@ class SummaryParser:
                 []
             )
         )
-        
+
         full_text = "\n".join(
-            part.get("text", "")
+
+            part.get(
+                "text",
+                ""
+            )
+
             for part in parts
+
         )
 
+        json_blocks = re.findall(
 
-        json_match = re.search(
-            r"\{[\s\S]*\}",
+            r"\{[\s\S]*?\}",
+
             full_text,
+
         )
-        
-        # print( "========== RAW ==========" )
-        # print(json_match.group(0))
-        # print( "=========================" )
-        
-        if not json_match:
+
+        if not json_blocks:
+
             raise Exception(
                 "Summary JSON not found"
             )
 
-        try:
-            data = json.loads(
-                json_match.group(0)
-            )
+        data = None
 
-        except Exception as e:
+        for block in reversed(
+
+            json_blocks
+
+        ):
+
+            try:
+
+                data = json.loads(
+                    block
+                )
+
+                break
+
+            except Exception:
+
+                continue
+
+        if not data:
 
             raise Exception(
-                f"Summary JSON "
-                f"Parse Error: {e}"
+                "Summary JSON parse failed"
             )
 
         return SummaryResult(

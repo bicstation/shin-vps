@@ -1,6 +1,6 @@
 # =========================================================
 # FILE:
-# api/services/ai/services/av_summary_service.py
+# api/services/ai/services/pc_summary_service.py
 # =========================================================
 
 from api.services.ai.clients.gemini_client import (
@@ -11,17 +11,40 @@ from api.services.ai.parsers.summary_parser import (
     SummaryParser,
 )
 
-from api.services.ai.prompts.av_summary_prompt import (
-    AVSummaryPrompt,
+from api.services.ai.prompts.pc_summary_prompt import (
+    PCSummaryPrompt,
+)
+
+from api.services.ai.runtime.ai_runtime import (
+    AIRuntime,
 )
 
 
-class AVSummaryService:
+class PCSummaryService:
 
-    def __init__(self):
+    # =====================================================
+    # INIT
+    # =====================================================
 
-        self.client = (
-            GeminiClient()
+    def __init__(
+
+        self,
+        model_name=None,
+
+    ):
+
+        self.client = GeminiClient(
+
+            model_name=(
+
+                model_name
+
+                or
+
+                AIRuntime.DEFAULT_SUMMARY_MODEL
+
+            )
+
         )
 
         self.parser = (
@@ -29,7 +52,7 @@ class AVSummaryService:
         )
 
         self.prompt_builder = (
-            AVSummaryPrompt()
+            PCSummaryPrompt()
         )
 
     # =====================================================
@@ -39,7 +62,6 @@ class AVSummaryService:
     def generate(
 
         self,
-
         product,
 
     ):
@@ -52,7 +74,7 @@ class AVSummaryService:
 
         )
 
-        result = (
+        result_bundle = (
 
             self.client.generate(
                 prompt
@@ -60,14 +82,16 @@ class AVSummaryService:
 
         )
 
-        if not result:
+        if not result_bundle:
 
             return None
 
         return (
 
             self.parser.parse(
-                result
+
+                result_bundle
+
             )
 
         )

@@ -15,10 +15,10 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 # Runtime Variables
 # ==========================================================
 
-AI_SPEC_LIMIT=2000
-AI_SUMMARY_LIMIT=2000
-AI_SEMANTIC_LIMIT=2000
-IMAGE_CACHE_LIMIT=2000
+AI_SPEC_LIMIT=20
+AI_SUMMARY_LIMIT=20
+AI_SEMANTIC_LIMIT=20
+IMAGE_CACHE_LIMIT=20
 
 # ==========================================================
 # Project Root Topology
@@ -231,18 +231,22 @@ log "🚀 START SHIN CORE LINX SEMANTIC PIPELINE 12 Components"
 
 log "📡 (01/11) Import Linkshare API"
 
+# 2543   FUJITSU
+# 2557   DELL
+# 35909  HP
+# 36508  DYNABOOK
+# 43708  ASUS
+
 run_django import_linkshare_api --mid 35909
 run_django import_linkshare_api --mid 2557
 run_django import_linkshare_api --mid 2543
 run_django import_linkshare_api --mid 36508
 run_django import_linkshare_api --mid 43708
 
-SB="/usr/src/app/scrapers/src/shops"
-run_django_raw python3 "$SB/import_bc_ftp_to_db.py" --mid "35909" --maker "hp" --prefix "HP"
-run_django_raw python3 "$SB/import_bc_ftp_to_db.py" --mid "2557" --maker "dell" --prefix "DELL"
-run_django_raw python3 "$SB/import_bc_ftp_to_db.py" --mid "2543" --maker "fujitsu" --prefix "FUJITSU"
-run_django_raw python3 "$SB/import_bc_ftp_to_db.py" --mid "36508" --maker "dynabook" --prefix "DYNABOOK"
-# run_django_raw python3 "$SB/import_bc_api_to_db.py" --mid "43708" --maker "asus"
+run_django import_linkshare_data --mid 2543
+run_django import_linkshare_data --mid 2557
+run_django import_linkshare_data --mid 35909
+run_django import_linkshare_data --mid 36508
 
 # ==========================================================
 # ② 02 Reset Stock
@@ -258,7 +262,7 @@ run_django reset_pc_stock
 
 log "🔄 (03/11) Transform Raw → PCProduct"
 
-run_django migrate_linkshare_to_pc
+run_django import_linkshare_pc --all
 
 # ==========================================================
 # ④ 04-1 AI SPEC COMPLETION
