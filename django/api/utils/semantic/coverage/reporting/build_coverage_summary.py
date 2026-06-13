@@ -16,15 +16,14 @@ def build_coverage_summary(
     fail_count = 0
 
     for coverage in result.coverage_rows:
+        
+        coverage.finalize()
 
         statuses = [
 
             coverage.discovery,
-
             coverage.ranking,
-
             coverage.finder,
-
             coverage.related,
 
         ]

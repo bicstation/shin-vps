@@ -9,6 +9,14 @@ from api.services.semantic.v2.traversal.traversal_builder import (
     build_traversal_runtime,
 )
 
+from api.services.semantic.v2.meaning.meaning_runtime import (
+    build_finder_meaning,
+)
+
+from api.services.semantic.v2.seo.seo_runtime import (
+    build_finder_seo,
+)
+
 
 # ==========================================================
 # SCORE
@@ -18,20 +26,14 @@ def calculate_match_score(
 
     product,
 
-    selected_attributes,
-
-    selected_groups,
+    filters,
 ):
 
-    semantic_attributes = set(
+    if not filters:
 
-        product.get(
-            "semantic_attributes",
-            []
-        )
-    )
+        return 0
 
-    matched_groups = set(
+    groups = set(
 
         product.get(
             "matched_groups",
@@ -39,45 +41,14 @@ def calculate_match_score(
         )
     )
 
-    score = 0
-
-    matched_nodes = []
-
-    # --------------------------------------------------
-    # ATTRIBUTE
-    # --------------------------------------------------
-
-    for attribute in selected_attributes:
-
-        if attribute in semantic_attributes:
-
-            score += 1
-
-            matched_nodes.append(
-                attribute
-            )
-
-    # --------------------------------------------------
-    # GROUP
-    # --------------------------------------------------
-
-    for group in selected_groups:
-
-        if group in matched_groups:
-
-            score += 1
-
-            matched_nodes.append(
-                group
-            )
-
-    return score, matched_nodes
+    return len(
+        groups & set(filters)
+    )
 
 
 # ==========================================================
 # FINDER
 # ==========================================================
-
 def build_finder_runtime(
 
     selected_attributes=None,
@@ -87,16 +58,6 @@ def build_finder_runtime(
     limit=100,
 ):
 
-    selected_attributes = (
-        selected_attributes
-        or []
-    )
-
-    selected_groups = (
-        selected_groups
-        or []
-    )
-
     authority = (
         build_authority_runtime()
     )
@@ -105,62 +66,79 @@ def build_finder_runtime(
         build_traversal_runtime()
     )
 
-    matched_products = []
+    meaning = (
+        build_finder_meaning()
+    )
+
+    selected_attributes = (
+        selected_attributes or []
+    )
+
+    selected_groups = (
+        selected_groups or []
+    )
+
+    filters = list(
+
+        set(
+            selected_attributes
+            +
+            selected_groups
+        )
+    )
+
+    matches = []
+
+    # ------------------------------------------------------
+    # MATCH
+    # ------------------------------------------------------
 
     for product in traversal.get(
         "products",
         []
     ):
 
-        score, matched_nodes = (
+        score = (
 
             calculate_match_score(
 
                 product,
 
-                selected_attributes,
-
-                selected_groups,
+                filters,
             )
         )
 
-        if (
+        if filters and score <= 0:
 
-            selected_attributes
-            or
-            selected_groups
+            continue
 
-        ):
+        matches.append({
 
-            if score == 0:
-
-                continue
-
-        matched_products.append({
-
-            **product,
-
-            "match_score":
+            "score":
                 score,
 
-            "matched_nodes":
-                matched_nodes,
+            **product,
         })
 
-    matched_products = sorted(
+    # ------------------------------------------------------
+    # SORT
+    # ------------------------------------------------------
 
-        matched_products,
+    matches = sorted(
+
+        matches,
 
         key=lambda x: (
 
             x.get(
-                "match_score",
+                "score",
                 0
             ),
 
             len(
+
                 x.get(
-                    "semantic_attributes",
+                    "matched_groups",
                     []
                 )
             ),
@@ -169,31 +147,79 @@ def build_finder_runtime(
         reverse=True,
     )
 
+    matches = (
+        matches[:limit]
+    )
+
+    # ------------------------------------------------------
+    # SEO
+    # ------------------------------------------------------
+
+    seo = (
+
+        build_finder_seo(
+
+            meaning=
+                meaning,
+
+            product_count=
+                len(matches),
+        )
+    )
+
+    # ------------------------------------------------------
+    # PAYLOAD
+    # ------------------------------------------------------
+
     return {
 
-        "runtime":
-            "finder_v2",
+        # ----------------------------------------------
+        # STATIC AUTHORITY
+        # ----------------------------------------------
 
-        "selected_attributes":
-            selected_attributes,
+        "meaning":
+            meaning,
 
-        "selected_groups":
-            selected_groups,
+        # ----------------------------------------------
+        # SEO
+        # ----------------------------------------------
 
-        "product_count":
-            len(
-                matched_products
-            ),
+        "seo":
+            seo,
 
-        "products":
-            matched_products[
-                :limit
-            ],
+        # ----------------------------------------------
+        # REALITY
+        # ----------------------------------------------
+
+        "data": {
+
+            "filters":
+                filters,
+
+            "result_count":
+
+                len(
+                    matches
+                ),
+
+            "products":
+                matches,
+        },
+
+        # ----------------------------------------------
+        # AUTHORITY
+        # ----------------------------------------------
 
         "semantic_schema_version":
 
             authority.get(
                 "semantic_schema_version"
+            ),
+
+        "authority_version":
+
+            authority.get(
+                "authority_version"
             ),
 
         "semantic_authority":

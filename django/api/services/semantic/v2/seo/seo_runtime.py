@@ -1,29 +1,21 @@
 # -*- coding: utf-8 -*-
+# api/services/semantic/v2/seo/seo_runtime.py
 
 
 # ==========================================================
 # BASE
 # ==========================================================
 
-def build_seo_payload(
-
-    page_type,
+def build_seo(
 
     title,
-
     description,
-
+    keywords,
     canonical,
-
-    keywords=None,
-
-    schema_jsonld=None,
+    schema_jsonld,
 ):
 
     return {
-
-        "page_type":
-            page_type,
 
         "title":
             title,
@@ -32,14 +24,242 @@ def build_seo_payload(
             description,
 
         "keywords":
-            keywords or [],
+            keywords,
 
         "canonical":
             canonical,
 
         "schema_jsonld":
-            schema_jsonld or {},
+            schema_jsonld,
     }
+
+
+# ==========================================================
+# TOP
+# ==========================================================
+
+def build_top_seo(
+
+    meaning,
+
+    product_count,
+
+    group_count,
+
+    attribute_count,
+):
+
+    return build_seo(
+
+        title=(
+
+            f"SHIN CORE LINX | "
+            f"{product_count}製品・"
+            f"{group_count}カテゴリ"
+        ),
+
+        description=(
+
+            f"{product_count}製品、"
+            f"{group_count}カテゴリ、"
+            f"{attribute_count}属性を持つ"
+            f"Semantic Reality Platform"
+        ),
+
+        keywords=[
+
+            "PC",
+
+            "AI",
+
+            "Semantic",
+
+            "Discovery",
+        ],
+
+        canonical=
+            "/pc/top/",
+
+        schema_jsonld={
+
+            "@context":
+                "https://schema.org",
+
+            "@type":
+                "WebSite",
+
+            "name":
+
+                meaning.get(
+                    "identity"
+                ),
+        },
+    )
+
+
+# ==========================================================
+# DISCOVERY
+# ==========================================================
+
+def build_discovery_seo(
+
+    meaning,
+
+    product_count,
+
+    group_count,
+
+    attribute_count,
+):
+
+    return build_seo(
+
+        title=(
+
+            f"{group_count}カテゴリ・"
+            f"{product_count}製品を探索"
+        ),
+
+        description=(
+
+            f"{group_count}カテゴリ、"
+            f"{attribute_count}属性から"
+            f"{product_count}製品を探索できる"
+        ),
+
+        keywords=[
+
+            "Discovery",
+
+            "Semantic",
+
+            "PC",
+        ],
+
+        canonical=
+            "/pc/discovery/",
+
+        schema_jsonld={
+
+            "@context":
+                "https://schema.org",
+
+            "@type":
+                "CollectionPage",
+
+            "name":
+
+                meaning.get(
+                    "identity"
+                ),
+        },
+    )
+
+
+# ==========================================================
+# RANKING
+# ==========================================================
+
+def build_ranking_seo(
+
+    meaning,
+
+    group_name,
+
+    product_count,
+):
+
+    return build_seo(
+
+        title=(
+
+            f"{group_name}ランキング"
+        ),
+
+        description=(
+
+            f"{group_name}に属する"
+            f"{product_count}製品を比較"
+        ),
+
+        keywords=[
+
+            group_name,
+
+            "Ranking",
+
+            "PC",
+        ],
+
+        canonical=
+            "/pc/ranking/",
+
+        schema_jsonld={
+
+            "@context":
+                "https://schema.org",
+
+            "@type":
+                "ItemList",
+
+            "name":
+
+                meaning.get(
+                    "identity"
+                ),
+        },
+    )
+
+
+# ==========================================================
+# FINDER
+# ==========================================================
+
+def build_finder_seo(
+
+    meaning,
+
+    product_count,
+):
+
+    return build_seo(
+
+        title=
+            "PC Finder",
+
+        description=(
+
+            f"{product_count}製品から"
+            "最適なPCを探索"
+        ),
+
+        keywords=[
+
+            "Finder",
+
+            "PC",
+
+            "Semantic",
+        ],
+
+        canonical=
+            "/pc/finder/",
+
+        schema_jsonld={
+
+            "@context":
+                "https://schema.org",
+
+            "@type":
+                "SearchResultsPage",
+
+            "name":
+
+                meaning.get(
+                    "identity"
+                ),
+        },
+    )
 
 
 # ==========================================================
@@ -48,64 +268,34 @@ def build_seo_payload(
 
 def build_product_seo(
 
-    product,
+    meaning,
 
-    semantic_runtime=None,
+    product,
 ):
 
-    semantic_runtime = (
-        semantic_runtime
-        or {}
-    )
-
-    labels = (
-
-        semantic_runtime.get(
-            "semantic_labels",
-            []
-        )
-    )
-
-    description_parts = []
-
-    if labels:
-
-        description_parts.extend(
-            labels[:3]
-        )
-
-    description_parts.append(
-
-        f"{product.maker}の"
-        f"{product.name}"
-    )
-
-    description = "・".join(
-        description_parts
-    )
-
-    return build_seo_payload(
-
-        page_type=
-            "product",
+    return build_seo(
 
         title=
             product.name,
 
-        description=
-            description,
+        description=(
 
-        canonical=
-            f"/pc/products/{product.unique_id}/",
+            f"{product.maker}の"
+            f"{product.name}"
+        ),
 
         keywords=[
 
-            product.maker,
-
             product.name,
 
-            *labels,
+            product.maker,
         ],
+
+        canonical=(
+
+            "/pc/product/"
+            f"{product.unique_id}/"
+        ),
 
         schema_jsonld={
 
@@ -120,85 +310,61 @@ def build_product_seo(
 
             "brand":
                 product.maker,
-
-            "image":
-
-                getattr(
-                    product,
-                    "image_source",
-                    ""
-                ),
         },
     )
 
 
 # ==========================================================
-# RANKING
+# RELATED
 # ==========================================================
 
-def build_ranking_seo(
+def build_related_seo(
 
-    group_slug,
+    meaning,
 
-    product_count,
+    product_name,
+
+    related_count,
 ):
 
-    return build_seo_payload(
+    return build_seo(
 
-        page_type=
-            "ranking",
+        title=(
 
-        title=
-            f"{group_slug}ランキング",
+            f"{product_name}の"
+            "関連製品"
+        ),
 
-        description=
-            (
-                f"{group_slug}に該当する"
-                f"{product_count}件のPCを掲載"
-            ),
+        description=(
 
-        canonical=
-            f"/pc/ranking/{group_slug}/",
+            f"{related_count}件の"
+            "類似製品を表示"
+        ),
 
         keywords=[
 
-            group_slug,
+            product_name,
 
-            "ランキング",
-        ],
-    )
-
-
-# ==========================================================
-# DISCOVER
-# ==========================================================
-
-def build_discover_seo(
-
-    shelf_count,
-):
-
-    return build_seo_payload(
-
-        page_type=
-            "discover",
-
-        title=
-            "PCディスカバリー",
-
-        description=
-            (
-                f"{shelf_count}カテゴリから"
-                "PCを探索"
-            ),
-
-        canonical=
-            "/pc/discover/",
-
-        keywords=[
+            "Related",
 
             "PC",
-
-            "Discovery",
         ],
+
+        canonical=
+            "/pc/related/",
+
+        schema_jsonld={
+
+            "@context":
+                "https://schema.org",
+
+            "@type":
+                "ItemList",
+
+            "name":
+
+                meaning.get(
+                    "identity"
+                ),
+        },
     )

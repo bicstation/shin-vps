@@ -9,6 +9,10 @@ from api.services.semantic.v2.authority.authority_runtime import (
     build_authority_runtime,
 )
 
+from api.services.semantic.v2.meaning.meaning_runtime import (
+    build_product_meaning,
+)
+
 from api.services.semantic.v2.seo.seo_runtime import (
     build_product_seo,
 )
@@ -24,6 +28,10 @@ def build_product_detail_runtime(
 
     authority = (
         build_authority_runtime()
+    )
+
+    meaning = (
+        build_product_meaning()
     )
 
     try:
@@ -42,18 +50,39 @@ def build_product_detail_runtime(
 
         return {
 
-            "runtime":
-                "product_detail_v2",
+            "meaning":
+                meaning,
 
-            "found":
-                False,
+            "seo":
+                {},
 
-            "unique_id":
-                unique_id,
+            "data": {
+
+                "found":
+                    False,
+
+                "unique_id":
+                    unique_id,
+            },
 
             "ready":
                 True,
         }
+
+    # ------------------------------------------------------
+    # PRODUCT REALITY
+    # ------------------------------------------------------
+
+    product_data = {}
+
+    for field in product._meta.fields:
+
+        product_data[
+            field.name
+        ] = getattr(
+            product,
+            field.name
+        )
 
     semantic_runtime = (
 
@@ -69,11 +98,11 @@ def build_product_detail_runtime(
 
         build_product_seo(
 
+            meaning=
+                meaning,
+
             product=
                 product,
-
-            semantic_runtime=
-                semantic_runtime,
         )
     )
 
@@ -83,98 +112,39 @@ def build_product_detail_runtime(
 
     return {
 
-        "runtime":
-            "product_detail_v2",
+        # ----------------------------------------------
+        # STATIC AUTHORITY
+        # ----------------------------------------------
+
+        "meaning":
+            meaning,
+
+        # ----------------------------------------------
+        # SEO
+        # ----------------------------------------------
 
         "seo":
             seo,
 
-        "found":
-            True,
+        # ----------------------------------------------
+        # REALITY
+        # ----------------------------------------------
 
-        "ready":
-            True,
+        "data": {
 
-        # --------------------------------------------------
-        # PRODUCT
-        # --------------------------------------------------
+            "found":
+                True,
 
-        "product_id":
-            product.id,
+            "product":
+                product_data,
 
-        "unique_id":
-            product.unique_id,
+            "semantic_runtime":
+                semantic_runtime,
+        },
 
-        "product_name":
-
-            getattr(
-                product,
-                "name",
-                ""
-            ),
-
-        "maker":
-
-            getattr(
-                product,
-                "maker",
-                ""
-            ),
-
-        "price":
-
-            getattr(
-                product,
-                "price",
-                None
-            ),
-
-        "image_url":
-
-            getattr(
-                product,
-                "image_source",
-                ""
-            ),
-
-        # --------------------------------------------------
-        # SEMANTIC
-        # --------------------------------------------------
-
-        "semantic_runtime":
-            semantic_runtime,
-
-        "semantic_attributes":
-
-            semantic_runtime.get(
-                "semantic_attributes",
-                []
-            ),
-
-        "semantic_groups":
-
-            semantic_runtime.get(
-                "semantic_groups",
-                []
-            ),
-
-        "workflow_tags":
-
-            semantic_runtime.get(
-                "workflow_tags",
-                []
-            ),
-
-        "semantic_labels":
-
-            semantic_runtime.get(
-                "semantic_labels",
-                []
-            ),
-
-        # --------------------------------------------------
+        # ----------------------------------------------
         # AUTHORITY
-        # --------------------------------------------------
+        # ----------------------------------------------
 
         "semantic_schema_version":
 
@@ -182,9 +152,18 @@ def build_product_detail_runtime(
                 "semantic_schema_version"
             ),
 
+        "authority_version":
+
+            authority.get(
+                "authority_version"
+            ),
+
         "semantic_authority":
 
             authority.get(
                 "semantic_authority"
             ),
+
+        "ready":
+            True,
     }

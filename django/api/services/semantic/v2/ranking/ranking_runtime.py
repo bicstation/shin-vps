@@ -1,7 +1,22 @@
 # -*- coding: utf-8 -*-
+# api/services/semantic/v2/ranking/ranking_runtime.py
 
-from api.services.semantic.v2.authority.authority_runtime import (build_authority_runtime,)
-from api.services.semantic.v2.traversal.traversal_builder import (build_traversal_runtime,)
+from api.services.semantic.v2.authority.authority_runtime import (
+    build_authority_runtime,
+)
+
+from api.services.semantic.v2.traversal.traversal_builder import (
+    build_traversal_runtime,
+)
+
+from api.services.semantic.v2.meaning.meaning_runtime import (
+    build_ranking_meaning,
+)
+
+from api.services.semantic.v2.seo.seo_runtime import (
+    build_ranking_seo,
+)
+
 
 # ==========================================================
 # SCORE
@@ -9,7 +24,7 @@ from api.services.semantic.v2.traversal.traversal_builder import (build_traversa
 
 def calculate_product_score(
     product
-    ):
+):
 
     return len(
 
@@ -17,8 +32,8 @@ def calculate_product_score(
             "matched_groups",
             []
         )
-
     )
+
 
 # ==========================================================
 # RANKING
@@ -27,10 +42,9 @@ def calculate_product_score(
 def build_ranking_runtime(
 
     group_slug=None,
+
     limit=100,
-
-    ):
-
+):
 
     authority = (
         build_authority_runtime()
@@ -40,18 +54,14 @@ def build_ranking_runtime(
         build_traversal_runtime()
     )
 
-    try:
-
-        limit = int(limit)
-
-    except Exception:
-
-        limit = 100
+    meaning = (
+        build_ranking_meaning()
+    )
 
     products = []
 
     # ------------------------------------------------------
-    # ALL RANKING
+    # ALL
     # ------------------------------------------------------
 
     if (
@@ -60,12 +70,7 @@ def build_ranking_runtime(
 
         or
 
-        group_slug in [
-
-            "all",
-
-            "score",
-        ]
+        group_slug == "all"
 
     ):
 
@@ -77,8 +82,12 @@ def build_ranking_runtime(
             )
         )
 
+        group_name = (
+            "All Products"
+        )
+
     # ------------------------------------------------------
-    # GROUP FILTER
+    # GROUP
     # ------------------------------------------------------
 
     else:
@@ -102,6 +111,10 @@ def build_ranking_runtime(
                     product
                 )
 
+        group_name = (
+            group_slug
+        )
+
     # ------------------------------------------------------
     # SORT
     # ------------------------------------------------------
@@ -119,27 +132,71 @@ def build_ranking_runtime(
         reverse=True,
     )
 
+    products = (
+        products[:limit]
+    )
+
+    # ------------------------------------------------------
+    # SEO
+    # ------------------------------------------------------
+
+    seo = (
+
+        build_ranking_seo(
+
+            meaning=
+                meaning,
+
+            group_name=
+                group_name,
+
+            product_count=
+                len(products),
+        )
+    )
+
     # ------------------------------------------------------
     # PAYLOAD
     # ------------------------------------------------------
 
     return {
 
-        "runtime":
-            "ranking_v2",
+        # ----------------------------------------------
+        # STATIC AUTHORITY
+        # ----------------------------------------------
 
-        "group_slug":
-            group_slug or "all",
+        "meaning":
+            meaning,
 
-        "product_count":
-            len(
-                products
-            ),
+        # ----------------------------------------------
+        # SEO
+        # ----------------------------------------------
 
-        "products":
-            products[
-                :limit
-            ],
+        "seo":
+            seo,
+
+        # ----------------------------------------------
+        # REALITY
+        # ----------------------------------------------
+
+        "data": {
+
+            "group_slug":
+                group_slug,
+
+            "group_name":
+                group_name,
+
+            "product_count":
+                len(products),
+
+            "products":
+                products,
+        },
+
+        # ----------------------------------------------
+        # AUTHORITY
+        # ----------------------------------------------
 
         "semantic_schema_version":
 

@@ -1,7 +1,22 @@
 # -*- coding: utf-8 -*-
-# /home/maya/shin-dev/shin-vps/django/api/services/semantic/v2/related/related_runtime.py
-from api.services.semantic.v2.authority.authority_runtime import ( build_authority_runtime,)
-from api.services.semantic.v2.traversal.traversal_builder import ( build_traversal_runtime,)
+# api/services/semantic/v2/related/related_runtime.py
+
+from api.models import (
+    PCProduct,
+)
+
+from api.services.semantic.v2.authority.authority_runtime import (
+    build_authority_runtime,
+)
+
+from api.services.semantic.v2.meaning.meaning_runtime import (
+    build_related_meaning,
+)
+
+from api.services.semantic.v2.seo.seo_runtime import (
+    build_related_seo,
+)
+
 
 # ==========================================================
 # SCORE
@@ -16,16 +31,20 @@ def calculate_related_score(
 
     return len(
 
-        set(source_groups)
+        set(
+            source_groups
+        )
 
         &
 
-        set(target_groups)
+        set(
+            target_groups
+        )
     )
 
 
 # ==========================================================
-# RELATED RUNTIME
+# RELATED
 # ==========================================================
 
 def build_related_runtime(
@@ -39,65 +58,94 @@ def build_related_runtime(
         build_authority_runtime()
     )
 
-    traversal = (
-        build_traversal_runtime()
+    meaning = (
+        build_related_meaning()
     )
 
-    source_product = None
+    try:
 
-    for product in traversal.get(
-        "products",
-        []
-    ):
+        source_product = (
 
-        if product.get(
-            "unique_id"
-        ) == unique_id:
+            PCProduct.objects
 
-            source_product = product
+            .get(
+                unique_id=unique_id,
+                is_active=True,
+            )
+        )
 
-            break
-
-    if not source_product:
+    except PCProduct.DoesNotExist:
 
         return {
 
-            "runtime":
-                "related_v2",
+            "meaning":
+                meaning,
 
-            "found":
-                False,
+            "seo":
+                {},
 
-            "unique_id":
-                unique_id,
+            "data": {
 
-            "products":
-                [],
+                "found":
+                    False,
+
+                "unique_id":
+                    unique_id,
+            },
 
             "ready":
                 True,
         }
 
+    # ------------------------------------------------------
+    # SOURCE
+    # ------------------------------------------------------
+
+    source_runtime = (
+
+        source_product.semantic_runtime
+        or {}
+    )
+
     source_groups = (
 
-        source_product.get(
-            "matched_groups",
+        source_runtime.get(
+            "semantic_groups",
             []
         )
     )
 
+    # ------------------------------------------------------
+    # RELATED SEARCH
+    # ------------------------------------------------------
+
     related_products = []
 
-    for product in traversal.get(
-        "products",
-        []
+    for product in (
+
+        PCProduct.objects
+
+        .filter(
+            is_active=True
+        )
+
+        .exclude(
+            id=source_product.id
+        )
     ):
 
-        if product.get(
-            "unique_id"
-        ) == unique_id:
+        runtime = (
+            product.semantic_runtime
+            or {}
+        )
 
-            continue
+        groups = (
+
+            runtime.get(
+                "semantic_groups",
+                []
+            )
+        )
 
         score = (
 
@@ -105,23 +153,39 @@ def build_related_runtime(
 
                 source_groups,
 
-                product.get(
-                    "matched_groups",
-                    []
-                ),
+                groups,
             )
         )
 
-        if score < 5 :
+        if score <= 0:
             continue
+
+        product_data = {}
+
+        for field in product._meta.fields:
+
+            product_data[
+                field.name
+            ] = getattr(
+                product,
+                field.name
+            )
 
         related_products.append({
 
-            **product,
-
-            "related_score":
+            "score":
                 score,
+
+            "product":
+                product_data,
+
+            "semantic_runtime":
+                runtime,
         })
+
+    # ------------------------------------------------------
+    # SORT
+    # ------------------------------------------------------
 
     related_products = sorted(
 
@@ -129,38 +193,110 @@ def build_related_runtime(
 
         key=lambda x:
 
-            x[
-                "related_score"
-            ],
+            x["score"],
 
         reverse=True,
     )
 
+    related_products = (
+        related_products[:limit]
+    )
+
+    # ------------------------------------------------------
+    # SEO
+    # ------------------------------------------------------
+
+    seo = (
+
+        build_related_seo(
+
+            meaning=
+                meaning,
+
+            product_name=
+                source_product.name,
+
+            related_count=
+                len(
+                    related_products
+                ),
+        )
+    )
+
+    # ------------------------------------------------------
+    # SOURCE REALITY
+    # ------------------------------------------------------
+
+    source_data = {}
+
+    for field in source_product._meta.fields:
+
+        source_data[
+            field.name
+        ] = getattr(
+            source_product,
+            field.name
+        )
+
+    # ------------------------------------------------------
+    # PAYLOAD
+    # ------------------------------------------------------
+
     return {
 
-        "runtime":
-            "related_v2",
+        # ----------------------------------------------
+        # STATIC AUTHORITY
+        # ----------------------------------------------
 
-        "found":
-            True,
+        "meaning":
+            meaning,
 
-        "unique_id":
-            unique_id,
+        # ----------------------------------------------
+        # SEO
+        # ----------------------------------------------
 
-        "product_count":
-            len(
-                related_products
-            ),
+        "seo":
+            seo,
 
-        "products":
-            related_products[
-                :limit
-            ],
+        # ----------------------------------------------
+        # REALITY
+        # ----------------------------------------------
+
+        "data": {
+
+            "found":
+                True,
+
+            "source_product":
+                source_data,
+
+            "source_runtime":
+                source_runtime,
+
+            "related_count":
+
+                len(
+                    related_products
+                ),
+
+            "related_products":
+                related_products,
+        },
+
+        # ----------------------------------------------
+        # AUTHORITY
+        # ----------------------------------------------
 
         "semantic_schema_version":
 
             authority.get(
                 "semantic_schema_version"
+            ),
+
+        "authority_version":
+
+            authority.get(
+                "authority_version"
             ),
 
         "semantic_authority":

@@ -1,209 +1,172 @@
 # -*- coding: utf-8 -*-
-# /home/maya/shin-dev/shin-vps/django/api/services/semantic/v2/top/top_runtime.py
+# api/services/semantic/v2/top/top_runtime.py
 
 from api.services.semantic.v2.authority.authority_runtime import (
-build_authority_runtime,
+    build_authority_runtime,
+)
+
+from api.services.semantic.v2.traversal.traversal_builder import (
+    build_traversal_runtime,
 )
 
 from api.services.semantic.v2.discover.discover_runtime import (
-build_discover_runtime,
+    build_discover_runtime,
 )
 
-from api.services.semantic.v2.ranking.ranking_runtime import (
-build_ranking_runtime,
+from api.services.semantic.v2.meaning.meaning_runtime import (
+    build_top_meaning,
 )
+
+from api.services.semantic.v2.seo.seo_runtime import (
+    build_top_seo,
+)
+
 
 # ==========================================================
+# FEATURED PRODUCTS
+# ==========================================================
 
-# TOP RUNTIME
+def build_featured_products(
+    products,
+    limit=12,
+):
 
+    ranked = sorted(
+
+        products,
+
+        key=lambda x: (
+
+            len(
+                x.get(
+                    "matched_groups",
+                    []
+                )
+            ),
+
+            len(
+                x.get(
+                    "semantic_attributes",
+                    []
+                )
+            ),
+        ),
+
+        reverse=True,
+    )
+
+    return ranked[:limit]
+
+
+# ==========================================================
+# TOP
 # ==========================================================
 
 def build_top_runtime():
 
-
     authority = (
         build_authority_runtime()
+    )
+
+    traversal = (
+        build_traversal_runtime()
     )
 
     discovery = (
         build_discover_runtime()
     )
 
-    ranking = (
-        build_ranking_runtime(
-            group_slug="all",
-            limit=12,
+    meaning = (
+        build_top_meaning()
+    )
+
+    # ------------------------------------------------------
+    # REALITY
+    # ------------------------------------------------------
+
+    products = (
+
+        traversal.get(
+            "products",
+            []
         )
     )
 
-    groups = authority.get(
-        "groups",
-        []
+    product_count = (
+
+        traversal.get(
+            "product_count",
+            0
+        )
     )
 
-    attributes = authority.get(
-        "attributes",
-        []
+    group_count = len(
+
+        authority.get(
+            "groups",
+            []
+        )
     )
 
-    shelves = discovery.get(
-        "shelves",
-        []
-    )
+    attribute_count = len(
 
-    products = ranking.get(
-        "products",
-        []
+        authority.get(
+            "attributes",
+            []
+        )
     )
 
     # ------------------------------------------------------
     # FEATURED GROUPS
     # ------------------------------------------------------
 
-    featured_groups = []
+    featured_groups = (
 
-    for shelf in shelves[:8]:
+        discovery
 
-        featured_groups.append({
+        .get(
+            "data",
+            {}
+        )
 
-            "slug":
-                shelf.get(
-                    "group_slug"
-                ),
-
-            "product_count":
-                shelf.get(
-                    "product_count",
-                    0
-                ),
-        })
-
-    # ------------------------------------------------------
-    # FEATURED RANKINGS
-    # ------------------------------------------------------
-
-    featured_rankings = [
-
-        {
-            "slug": "all",
-            "label": "総合ランキング",
-        },
-
-        {
-            "slug": "usage-ai",
-            "label": "AI向けPC",
-        },
-
-        {
-            "slug": "usage-gaming",
-            "label": "ゲーミングPC",
-        },
-
-        {
-            "slug": "usage-business",
-            "label": "ビジネスPC",
-        },
-
-        {
-            "slug": "usage-creator",
-            "label": "クリエイターPC",
-        },
-    ]
+        .get(
+            "shelves",
+            []
+        )[:12]
+    )
 
     # ------------------------------------------------------
     # FEATURED PRODUCTS
     # ------------------------------------------------------
 
-    featured_products = []
+    featured_products = (
 
-    for product in products:
-
-        featured_products.append({
-
-            "product_id":
-                product.get(
-                    "product_id"
-                ),
-
-            "unique_id":
-                product.get(
-                    "unique_id"
-                ),
-
-            "semantic_labels":
-                product.get(
-                    "semantic_labels",
-                    []
-                ),
-
-            "workflow_tags":
-                product.get(
-                    "workflow_tags",
-                    []
-                ),
-        })
+        build_featured_products(
+            products
+        )
+    )
 
     # ------------------------------------------------------
     # SEO
     # ------------------------------------------------------
 
-    seo = {
+    seo = (
 
-        "title":
-            "用途から探せるPC検索サイト",
+        build_top_seo(
 
-        "description":
-            (
-                "AI・ゲーム・ビジネス・"
-                "クリエイター向けPCを"
-                "用途から探せるPC比較サイト"
-            ),
+            meaning=
+                meaning,
 
-        "keywords": [
+            product_count=
+                product_count,
 
-            "PC",
+            group_count=
+                group_count,
 
-            "ノートPC",
-
-            "ゲーミングPC",
-
-            "AI PC",
-
-            "クリエイターPC",
-        ],
-
-        "canonical":
-            "https://bicstation.com/",
-
-        "schema_jsonld": {},
-    }
-
-    # ------------------------------------------------------
-    # STATS
-    # ------------------------------------------------------
-
-    stats = {
-
-        "total_products":
-
-            ranking.get(
-                "product_count",
-                0
-            ),
-
-        "total_groups":
-
-            len(
-                groups
-            ),
-
-        "total_attributes":
-
-            len(
-                attributes
-            ),
-    }
+            attribute_count=
+                attribute_count,
+        )
+    )
 
     # ------------------------------------------------------
     # PAYLOAD
@@ -211,23 +174,48 @@ def build_top_runtime():
 
     return {
 
-        "runtime":
-            "top_v2",
+        # ----------------------------------------------
+        # STATIC AUTHORITY
+        # ----------------------------------------------
+
+        "meaning":
+            meaning,
+
+        # ----------------------------------------------
+        # SEO
+        # ----------------------------------------------
 
         "seo":
             seo,
 
-        "featured_groups":
-            featured_groups,
+        # ----------------------------------------------
+        # REALITY
+        # ----------------------------------------------
 
-        "featured_rankings":
-            featured_rankings,
+        "data": {
 
-        "featured_products":
-            featured_products,
+            "stats": {
 
-        "stats":
-            stats,
+                "product_count":
+                    product_count,
+
+                "group_count":
+                    group_count,
+
+                "attribute_count":
+                    attribute_count,
+            },
+
+            "featured_groups":
+                featured_groups,
+
+            "featured_products":
+                featured_products,
+        },
+
+        # ----------------------------------------------
+        # AUTHORITY
+        # ----------------------------------------------
 
         "semantic_schema_version":
 
@@ -250,4 +238,3 @@ def build_top_runtime():
         "ready":
             True,
     }
-

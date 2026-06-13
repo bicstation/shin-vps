@@ -11,9 +11,17 @@ from api.services.semantic.v2.traversal.traversal_builder import (
     build_traversal_runtime,
 )
 
+from api.services.semantic.v2.meaning.meaning_runtime import (
+    build_discovery_meaning,
+)
+
+from api.services.semantic.v2.seo.seo_runtime import (
+    build_discovery_seo,
+)
+
 
 # ==========================================================
-# DISCOVER
+# DISCOVERY
 # ==========================================================
 
 def build_discover_runtime():
@@ -24,6 +32,10 @@ def build_discover_runtime():
 
     traversal = (
         build_traversal_runtime()
+    )
+
+    meaning = (
+        build_discovery_meaning()
     )
 
     # ------------------------------------------------------
@@ -43,7 +55,7 @@ def build_discover_runtime():
     }
 
     # ------------------------------------------------------
-    # COUNT
+    # PRODUCT COUNT
     # ------------------------------------------------------
 
     group_counter = Counter()
@@ -67,19 +79,14 @@ def build_discover_runtime():
 
     shelves = []
 
-    for group_slug, group_info in group_map.items():
+    for group_slug, group_info in (
+
+        group_map.items()
+    ):
 
         shelves.append({
 
-            # ------------------------------------------
-            # GROUP REALITY
-            # ------------------------------------------
-
             **group_info,
-
-            # ------------------------------------------
-            # DISCOVERY REALITY
-            # ------------------------------------------
 
             "product_count":
 
@@ -106,37 +113,53 @@ def build_discover_runtime():
     )
 
     # ------------------------------------------------------
+    # REALITY
+    # ------------------------------------------------------
+
+    product_count = (
+
+        traversal.get(
+            "product_count",
+            0
+        )
+    )
+
+    group_count = (
+        len(shelves)
+    )
+
+    attribute_count = (
+
+        len(
+
+            authority.get(
+                "attributes",
+                []
+            )
+        )
+    )
+
+    # ------------------------------------------------------
     # SEO
     # ------------------------------------------------------
 
-    seo = {
+    seo = (
 
-        "page_type":
-            "discover",
+        build_discovery_seo(
 
-        "title":
-            "PC Discovery",
+            meaning=
+                meaning,
 
-        "description":
+            product_count=
+                product_count,
 
-            (
-                f"{len(shelves)}個の"
-                "セマンティックグループから"
-                "PCを探索"
-            ),
+            group_count=
+                group_count,
 
-        "canonical":
-            "/pc/discover/",
-
-        "keywords": [
-
-            "PC",
-
-            "Discovery",
-        ],
-
-        "schema_jsonld": {},
-    }
+            attribute_count=
+                attribute_count,
+        )
+    )
 
     # ------------------------------------------------------
     # PAYLOAD
@@ -144,43 +167,47 @@ def build_discover_runtime():
 
     return {
 
-        "runtime":
-            "discover_v2",
+        # ----------------------------------------------
+        # STATIC AUTHORITY
+        # ----------------------------------------------
+
+        "meaning":
+            meaning,
+
+        # ----------------------------------------------
+        # SEO
+        # ----------------------------------------------
 
         "seo":
             seo,
 
-        # --------------------------------------------------
+        # ----------------------------------------------
         # REALITY
-        # --------------------------------------------------
+        # ----------------------------------------------
 
-        "product_count":
+        "data": {
 
-            traversal.get(
-                "product_count",
-                0
-            ),
+            "product_count":
+                product_count,
 
-        "group_count":
+            "group_count":
+                group_count,
 
-            len(
-                authority.get(
-                    "groups",
-                    []
-                )
-            ),
+            "attribute_count":
+                attribute_count,
 
-        "shelf_count":
-            len(
-                shelves
-            ),
+            "shelf_count":
+                len(
+                    shelves
+                ),
 
-        "shelves":
-            shelves,
+            "shelves":
+                shelves,
+        },
 
-        # --------------------------------------------------
+        # ----------------------------------------------
         # AUTHORITY
-        # --------------------------------------------------
+        # ----------------------------------------------
 
         "semantic_schema_version":
 
