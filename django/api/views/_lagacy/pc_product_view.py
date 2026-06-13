@@ -4,10 +4,8 @@ from rest_framework.response import ( Response  )
 from api.models import (  PCProduct  )
 from api.serializers.pc_product_serializer import (  PCProductSerializer  )
 from api.services.semantic.semantic_api_service import ( 
-    build_semantic_product_payload,
     build_semantic_related_products,
     build_semantic_shelf_payload,
-    build_semantic_discovery_payload,
     build_semantic_workflow_payload,
 )
 from api.services.semantic.v2.discovery_runtime_v2 import ( build_discovery_runtime_v2 )
@@ -24,67 +22,64 @@ def pc_product_ranking(request):
         "score"
     )
 
-    qs = (
+    products = list(
 
         PCProduct.objects
 
         .filter(
             is_active=True
         )
-
-        .prefetch_related(
-            "attributes"
-        )
     )
 
-    # -----------------------------------------------------
-    # Semantic Ranking
-    # -----------------------------------------------------
-    if use == "gaming":
+    # =====================================
+    # SCORE RESOLVER
+    # =====================================
+    
+    def get_runtime_score(product):
 
-        qs = qs.order_by(
-            "-score_gpu",
-            "-semantic_score",
-            "-spec_score"
+        runtime = (
+            product.semantic_runtime
+            or {}
         )
 
-    elif use == "creator":
-
-        qs = qs.order_by(
-            "-score_cpu",
-            "-memory_gb",
-            "-semantic_score",
-            "-spec_score"
+        scores = (
+            runtime.get(
+                "scores",
+                {}
+            )
         )
 
-    elif use == "business":
+        if use == "gaming":
+            return scores.get("gaming", 0)
 
-        qs = qs.order_by(
-            "-score_cost",
-            "-score_cpu",
-            "-semantic_score"
+        elif use == "creator":
+            return scores.get("creator", 0)
+
+        elif use == "business":
+            return scores.get("business", 0)
+
+        elif use == "ai":
+            return scores.get("ai", 0)
+
+        return max(
+            scores.values(),
+            default=0
         )
 
-    elif use == "ai":
+    # =====================================
+    # SORT
+    # =====================================
 
-        qs = qs.order_by(
-            "-score_ai",
-            "-semantic_score",
-            "-spec_score"
-        )
+    products.sort(
+        key=get_runtime_score,
+        reverse=True
+    )
 
-    else:
-
-        qs = qs.order_by(
-            "-semantic_score",
-            "-spec_score"
-        )
-
-    qs = qs[:20]
+    products = products[:20]
 
     serializer = (
         PCProductSerializer(
-            qs,
+            products,
             many=True
         )
     )
@@ -92,7 +87,6 @@ def pc_product_ranking(request):
     return Response(
         serializer.data
     )
-
 
 # =========================================================
 # 📄 Product Detail API
@@ -110,10 +104,6 @@ def pc_product_detail(
 
             PCProduct.objects
 
-            .prefetch_related(
-                "attributes"
-            )
-
             .get(
                 unique_id=unique_id,
                 is_active=True
@@ -129,15 +119,6 @@ def pc_product_detail(
             status=404
         )
 
-    # -----------------------------------------------------
-    # Semantic Payload
-    # -----------------------------------------------------
-    semantic_payload = (
-        build_semantic_product_payload(
-            product
-        )
-    )
-
     serializer = (
         PCProductSerializer(
             product
@@ -146,61 +127,64 @@ def pc_product_detail(
 
     data = serializer.data
 
-    # -----------------------------------------------------
-    # Merge Semantic Payload
-    # -----------------------------------------------------
+    runtime = (
+        product.semantic_runtime
+        or {}
+    )
+
     data.update({
 
+        # =================================================
+        # AUTHORITY RUNTIME
+        # =================================================
+
         "semantic_runtime":
-            semantic_payload.get(
-                "semantic_runtime",
-                {}
+            runtime,
+
+        # =================================================
+        # EXPLICIT CONTRACT
+        # =================================================
+
+        "semantic_attributes":
+            runtime.get(
+                "semantic_attributes",
+                []
+            ),
+
+        "semantic_groups":
+            runtime.get(
+                "semantic_groups",
+                []
+            ),
+
+        "workflow_tags":
+            runtime.get(
+                "workflow_tags",
+                []
             ),
 
         "semantic_labels":
-            semantic_payload.get(
+            runtime.get(
                 "semantic_labels",
                 []
             ),
 
-        "workflows":
-            semantic_payload.get(
-                "workflows",
-                []
-            ),
-
-        "adaptive_runtime":
-            semantic_payload.get(
-                "adaptive_runtime",
+        "scores":
+            runtime.get(
+                "scores",
                 {}
             ),
 
-        "runtime_profile":
-            semantic_payload.get(
-                "runtime_profile",
+        "runtime_status":
+            runtime.get(
+                "runtime_status",
                 {}
-            ),
-
-        "semantic_related":
-            semantic_payload.get(
-                "semantic_related",
-                []
-            ),
-
-        "semantic_score":
-            semantic_payload.get(
-                "semantic_score",
-                0
-            ),
-
-        "product_type":
-            semantic_payload.get(
-                "product_type"
             ),
     })
 
-    return Response(data)
-
+    return Response(
+        data
+    )
 
 # =========================================================
 # 🔗 Semantic Related Products API
@@ -246,20 +230,6 @@ def get_related_pc_products(
 # =========================================================
 # 🎬 Semantic Discovery Runtime API
 # =========================================================
-# @api_view(["GET"])
-# @permission_classes([AllowAny])
-# def semantic_discovery_runtime(
-#     request
-# ):
-
-#     payload = (
-#         build_semantic_discovery_payload()
-#     )
-
-#     return Response(
-#         payload
-#     )
-
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def semantic_discovery_runtime(

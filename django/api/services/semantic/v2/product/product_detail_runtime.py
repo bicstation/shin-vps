@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# /home/maya/shin-dev/shin-vps/django/api/services/semantic/v2/product/product_detail_runtime.py
+# api/services/semantic/v2/product/product_detail_runtime.py
 
 from api.models import (
     PCProduct,
@@ -9,13 +9,16 @@ from api.services.semantic.v2.authority.authority_runtime import (
     build_authority_runtime,
 )
 
+from api.services.semantic.v2.seo.seo_runtime import (
+    build_product_seo,
+)
+
 
 # ==========================================================
-# PRODUCT DETAIL RUNTIME
+# PRODUCT DETAIL
 # ==========================================================
 
 def build_product_detail_runtime(
-
     unique_id,
 ):
 
@@ -28,10 +31,6 @@ def build_product_detail_runtime(
         product = (
 
             PCProduct.objects
-
-            .prefetch_related(
-                "attributes"
-            )
 
             .get(
                 unique_id=unique_id,
@@ -46,44 +45,79 @@ def build_product_detail_runtime(
             "runtime":
                 "product_detail_v2",
 
-            "unique_id":
-                unique_id,
-
             "found":
                 False,
+
+            "unique_id":
+                unique_id,
 
             "ready":
                 True,
         }
 
-    semantic_runtime = getattr(
+    semantic_runtime = (
 
-        product,
-
-        "semantic_runtime",
-
-        {}
+        product.semantic_runtime
+        or {}
     )
+
+    # ------------------------------------------------------
+    # SEO
+    # ------------------------------------------------------
+
+    seo = (
+
+        build_product_seo(
+
+            product=
+                product,
+
+            semantic_runtime=
+                semantic_runtime,
+        )
+    )
+
+    # ------------------------------------------------------
+    # PAYLOAD
+    # ------------------------------------------------------
 
     return {
 
         "runtime":
             "product_detail_v2",
 
+        "seo":
+            seo,
+
         "found":
             True,
 
-        "unique_id":
-            product.unique_id,
+        "ready":
+            True,
+
+        # --------------------------------------------------
+        # PRODUCT
+        # --------------------------------------------------
 
         "product_id":
             product.id,
+
+        "unique_id":
+            product.unique_id,
 
         "product_name":
 
             getattr(
                 product,
                 "name",
+                ""
+            ),
+
+        "maker":
+
+            getattr(
+                product,
+                "maker",
                 ""
             ),
 
@@ -95,14 +129,6 @@ def build_product_detail_runtime(
                 None
             ),
 
-        "maker":
-
-            getattr(
-                product,
-                "maker",
-                ""
-            ),
-
         "image_url":
 
             getattr(
@@ -111,28 +137,25 @@ def build_product_detail_runtime(
                 ""
             ),
 
+        # --------------------------------------------------
+        # SEMANTIC
+        # --------------------------------------------------
+
         "semantic_runtime":
             semantic_runtime,
 
-        "semantic_labels":
+        "semantic_attributes":
 
             semantic_runtime.get(
-                "semantic_labels",
+                "semantic_attributes",
                 []
             ),
 
-        "grouped_attributes":
+        "semantic_groups":
 
             semantic_runtime.get(
-                "grouped_attributes",
-                {}
-            ),
-
-        "semantic_graph":
-
-            semantic_runtime.get(
-                "semantic_graph",
-                {}
+                "semantic_groups",
+                []
             ),
 
         "workflow_tags":
@@ -141,6 +164,17 @@ def build_product_detail_runtime(
                 "workflow_tags",
                 []
             ),
+
+        "semantic_labels":
+
+            semantic_runtime.get(
+                "semantic_labels",
+                []
+            ),
+
+        # --------------------------------------------------
+        # AUTHORITY
+        # --------------------------------------------------
 
         "semantic_schema_version":
 
@@ -153,7 +187,4 @@ def build_product_detail_runtime(
             authority.get(
                 "semantic_authority"
             ),
-
-        "ready":
-            True,
     }

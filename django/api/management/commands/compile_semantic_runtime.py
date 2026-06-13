@@ -10,6 +10,9 @@ from django.core.management.base import ( BaseCommand)
 from api.models import ( PCProduct )
 from api.utils.semantic.runtime.runtime_log import ( runtime_log, )
 from api.utils.semantic.runtime.compile_semantic_runtime import (  compile_semantic_runtime )
+from api.utils.semantic.runtime.persist_runtime import ( persist_runtime, ) 
+
+
 
 # =========================================================
 # COMMAND
@@ -226,20 +229,56 @@ class Command(BaseCommand):
                     trace_runtime=trace_runtime,
                 )
             )
-
-
+           
+            
             # =============================================
             # SAVE
             # =============================================
 
-            product.semantic_runtime = (
-                runtime_result
+            persist_runtime(
+
+                product=product,
+
+                semantic_runtime=runtime_result,
             )
 
-            product.semantic_runtime_compiled = True
+            runtime_log(
 
-            product.save()
+                True,
 
+                "RUNTIME SAVED",
+
+                {
+
+                    "product":
+                        product.unique_id,
+
+                    "attributes":
+                        len(
+                            runtime_result.get(
+                                "semantic_attributes",
+                                []
+                            )
+                        ),
+
+                    "groups":
+                        len(
+                            runtime_result.get(
+                                "semantic_groups",
+                                []
+                            )
+                        ),
+
+                    "workflows":
+                        len(
+                            runtime_result.get(
+                                "workflow_tags",
+                                []
+                            )
+                        ),
+                },
+            )
+          
             # =============================================
             # SUCCESS
             # =============================================

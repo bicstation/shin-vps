@@ -15,10 +15,10 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 # Runtime Variables
 # ==========================================================
 
-AI_SPEC_LIMIT=100
-AI_SUMMARY_LIMIT=100
-AI_SEMANTIC_LIMIT=100
-IMAGE_CACHE_LIMIT=100
+AI_SPEC_LIMIT=10
+AI_SUMMARY_LIMIT=10
+AI_SEMANTIC_LIMIT=10
+IMAGE_CACHE_LIMIT=10
 
 # ==========================================================
 # Project Root Topology
@@ -375,7 +375,7 @@ run_django update_product_scores
 # ==========================================================
 
 log "🚀 (09/12) Build Semantic Runtime"
-run_django rebuild_semantic_runtime
+# run_django rebuild_semantic_runtime
 
 # ==========================================================
 # ⑩ 10 Image Cache

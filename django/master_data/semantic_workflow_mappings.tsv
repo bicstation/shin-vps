@@ -41,7 +41,7 @@ memory-entry	usage-budget	10
 storage-standard	usage-business	5
 storage-standard	usage-budget	5
 monitor-business	usage-business	20
-monitor-creato	rusage-creator	20
+monitor-creator	usage-creator	20
 device-desktop	usage-business	10
 device-server	usage-ai	30
 device-server	usage-business	30

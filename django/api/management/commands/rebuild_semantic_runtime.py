@@ -22,6 +22,11 @@ from django.core.management.base import (
     BaseCommand,
 )
 
+raise Exception(
+    "DEPRECATED COMMAND. Use compile_semantic_runtime."
+)
+
+
 from django.db import transaction
 
 from django.utils import timezone

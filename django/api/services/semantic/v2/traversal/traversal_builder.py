@@ -1,192 +1,23 @@
 # -*- coding: utf-8 -*-
-# /home/maya/shin-vps/django/api/services/semantic/v2/traversal/traversal_builder.py
+# api/services/semantic/v2/traversal/traversal_builder.py
 
-"""
-SHIN CORE LINX
-
-Traversal Runtime V2
-
-PCProduct
-+
-Authority Graph
-
-↓
-
-Traversal Runtime
-
-Responsibility
-
-Product
-↓
-Attribute
-↓
-Group
-
-Only.
-
-NO SHELF
-NO DISCOVERY
-NO RULE ENGINE
-"""
-
-from api.models import PCProduct
-
-from api.services.semantic.v2.graph.semantic_graph_builder import (
-    build_semantic_graph,
+from api.models import (
+    PCProduct,
 )
 
 
 # ==========================================================
-# GRAPH INDEX
-# ==========================================================
-
-def build_graph_indexes(graph):
-
-    node_index = {}
-
-    group_to_attributes = {}
-
-    attribute_to_groups = {}
-
-    for node in graph.get(
-        "nodes",
-        []
-    ):
-
-        node_index[
-            node["node_id"]
-        ] = node
-
-    for edge in graph.get(
-        "edges",
-        []
-    ):
-
-        group_slug = edge["source"]
-
-        attribute_slug = edge["target"]
-
-        group_to_attributes.setdefault(
-            group_slug,
-            set()
-        ).add(
-            attribute_slug
-        )
-
-        attribute_to_groups.setdefault(
-            attribute_slug,
-            set()
-        ).add(
-            group_slug
-        )
-
-    return {
-
-        "nodes":
-            node_index,
-
-        "group_to_attributes":
-            group_to_attributes,
-
-        "attribute_to_groups":
-            attribute_to_groups,
-    }
-
-
-# ==========================================================
-# PRODUCT ATTRIBUTE EXTRACTION
-# ==========================================================
-
-def extract_product_attributes(product):
-
-    attributes = []
-
-    product_attributes = getattr(
-        product,
-        "attributes",
-        None
-    )
-
-    if not product_attributes:
-        return []
-
-    try:
-
-        for attr in product_attributes.all():
-
-            slug = getattr(
-                attr,
-                "slug",
-                None
-            )
-
-            if slug:
-
-                attributes.append(
-                    slug
-                )
-
-    except Exception:
-
-        pass
-
-    return list(
-        set(attributes)
-    )
-
-
-# ==========================================================
-# PRODUCT TRAVERSAL
+# PRODUCT
 # ==========================================================
 
 def build_product_traversal(
-
-    product,
-
-    graph_indexes
+    product
 ):
 
-    attribute_slugs = (
-        extract_product_attributes(
-            product
-        )
+    runtime = (
+        product.semantic_runtime
+        or {}
     )
-
-    matched_groups = set()
-
-    semantic_paths = []
-
-    attribute_to_groups = (
-
-        graph_indexes[
-            "attribute_to_groups"
-        ]
-    )
-
-    for attribute_slug in attribute_slugs:
-
-        groups = (
-
-            attribute_to_groups.get(
-                attribute_slug,
-                set()
-            )
-        )
-
-        for group_slug in groups:
-
-            matched_groups.add(
-                group_slug
-            )
-
-            semantic_paths.append({
-
-                "attribute_slug":
-                    attribute_slug,
-
-                "group_slug":
-                    group_slug,
-            })
 
     return {
 
@@ -196,18 +27,61 @@ def build_product_traversal(
         "unique_id":
             product.unique_id,
 
-        "matched_attributes":
-            attribute_slugs,
-
-        "matched_groups":
-            sorted(
-                list(
-                    matched_groups
-                )
+        "name":
+            getattr(
+                product,
+                "name",
+                ""
             ),
 
-        "semantic_paths":
-            semantic_paths,
+        "maker":
+            getattr(
+                product,
+                "maker",
+                ""
+            ),
+
+        "price":
+            getattr(
+                product,
+                "price",
+                None
+            ),
+
+        "image_url":
+            getattr(
+                product,
+                "image_source",
+                ""
+            ),
+
+        "semantic_attributes":
+
+            runtime.get(
+                "semantic_attributes",
+                []
+            ),
+
+        "matched_groups":
+
+            runtime.get(
+                "semantic_groups",
+                []
+            ),
+
+        "workflow_tags":
+
+            runtime.get(
+                "workflow_tags",
+                []
+            ),
+
+        "semantic_labels":
+
+            runtime.get(
+                "semantic_labels",
+                []
+            ),
     }
 
 
@@ -217,38 +91,33 @@ def build_product_traversal(
 
 def build_traversal_runtime():
 
-    graph = (
-        build_semantic_graph()
-    )
-
-    indexes = (
-        build_graph_indexes(
-            graph
-        )
-    )
+    traversals = []
 
     products = (
 
         PCProduct.objects
 
-        .prefetch_related(
-            "attributes"
+        .filter(
+            is_active=True
         )
     )
 
-    traversals = []
-
     for product in products:
+
+        runtime = (
+            product.semantic_runtime
+            or {}
+        )
+
+        if not runtime:
+            continue
 
         try:
 
             traversals.append(
 
                 build_product_traversal(
-
-                    product,
-
-                    indexes
+                    product
                 )
             )
 
@@ -261,16 +130,9 @@ def build_traversal_runtime():
         "runtime":
             "traversal_v2",
 
-        "graph_nodes":
-            graph.get(
-                "node_count",
-                0
-            ),
-
-        "graph_edges":
-            graph.get(
-                "edge_count",
-                0
+        "product_count":
+            len(
+                traversals
             ),
 
         "products":
@@ -286,17 +148,17 @@ def build_traversal_runtime():
 # ==========================================================
 
 def get_product_traversal(
-
     unique_id
 ):
 
-    runtime = (
-        build_traversal_runtime()
-    )
+    for product in (
 
-    for product in runtime.get(
-        "products",
-        []
+        build_traversal_runtime()
+
+        .get(
+            "products",
+            []
+        )
     ):
 
         if (
@@ -314,39 +176,3 @@ def get_product_traversal(
             return product
 
     return None
-
-
-# ==========================================================
-# DEBUG
-# ==========================================================
-
-if __name__ == "__main__":
-
-    runtime = (
-        build_traversal_runtime()
-    )
-
-    print()
-
-    print("=" * 60)
-    print("TRAVERSAL V2")
-    print("=" * 60)
-
-    print()
-
-    print(
-        "Products:",
-        len(
-            runtime["products"]
-        )
-    )
-
-    print(
-        "Graph Nodes:",
-        runtime["graph_nodes"]
-    )
-
-    print(
-        "Graph Edges:",
-        runtime["graph_edges"]
-    )

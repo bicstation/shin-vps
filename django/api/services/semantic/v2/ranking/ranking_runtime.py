@@ -1,14 +1,7 @@
 # -*- coding: utf-8 -*-
-# /home/maya/shin-dev/shin-vps/django/api/services/semantic/v2/ranking/ranking_runtime.py
 
-from api.services.semantic.v2.authority.authority_runtime import (
-    build_authority_runtime,
-)
-
-from api.services.semantic.v2.traversal.traversal_builder import (
-    build_traversal_runtime,
-)
-
+from api.services.semantic.v2.authority.authority_runtime import (build_authority_runtime,)
+from api.services.semantic.v2.traversal.traversal_builder import (build_traversal_runtime,)
 
 # ==========================================================
 # SCORE
@@ -16,28 +9,28 @@ from api.services.semantic.v2.traversal.traversal_builder import (
 
 def calculate_product_score(
     product
-):
+    ):
 
     return len(
 
         product.get(
-            "matched_attributes",
+            "matched_groups",
             []
         )
 
     )
 
-
 # ==========================================================
-# RANKING RUNTIME
+# RANKING
 # ==========================================================
 
 def build_ranking_runtime(
 
     group_slug=None,
-
     limit=100,
-):
+
+    ):
+
 
     authority = (
         build_authority_runtime()
@@ -47,22 +40,46 @@ def build_ranking_runtime(
         build_traversal_runtime()
     )
 
+    try:
+
+        limit = int(limit)
+
+    except Exception:
+
+        limit = 100
+
     products = []
 
-    # ======================================================
-    # SCORE RANKING
-    # ======================================================
+    # ------------------------------------------------------
+    # ALL RANKING
+    # ------------------------------------------------------
 
-    if group_slug == "score":
+    if (
 
-        products = traversal.get(
-            "products",
-            []
+        not group_slug
+
+        or
+
+        group_slug in [
+
+            "all",
+
+            "score",
+        ]
+
+    ):
+
+        products = (
+
+            traversal.get(
+                "products",
+                []
+            )
         )
 
-    # ======================================================
-    # GROUP RANKING
-    # ======================================================
+    # ------------------------------------------------------
+    # GROUP FILTER
+    # ------------------------------------------------------
 
     else:
 
@@ -71,21 +88,23 @@ def build_ranking_runtime(
             []
         ):
 
-            if group_slug:
+            groups = set(
 
-                if group_slug not in product.get(
+                product.get(
                     "matched_groups",
                     []
-                ):
-                    continue
-
-            products.append(
-                product
+                )
             )
 
-    # ======================================================
+            if group_slug in groups:
+
+                products.append(
+                    product
+                )
+
+    # ------------------------------------------------------
     # SORT
-    # ======================================================
+    # ------------------------------------------------------
 
     products = sorted(
 
@@ -100,9 +119,9 @@ def build_ranking_runtime(
         reverse=True,
     )
 
-    # ======================================================
+    # ------------------------------------------------------
     # PAYLOAD
-    # ======================================================
+    # ------------------------------------------------------
 
     return {
 
@@ -110,7 +129,7 @@ def build_ranking_runtime(
             "ranking_v2",
 
         "group_slug":
-            group_slug,
+            group_slug or "all",
 
         "product_count":
             len(
@@ -126,6 +145,12 @@ def build_ranking_runtime(
 
             authority.get(
                 "semantic_schema_version"
+            ),
+
+        "authority_version":
+
+            authority.get(
+                "authority_version"
             ),
 
         "semantic_authority":

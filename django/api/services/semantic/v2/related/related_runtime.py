@@ -1,18 +1,7 @@
 # -*- coding: utf-8 -*-
 # /home/maya/shin-dev/shin-vps/django/api/services/semantic/v2/related/related_runtime.py
-
-from api.models import (
-    PCProduct,
-)
-
-from api.services.semantic.v2.authority.authority_runtime import (
-    build_authority_runtime,
-)
-
-from api.services.semantic.v2.traversal.traversal_builder import (
-    build_traversal_runtime,
-)
-
+from api.services.semantic.v2.authority.authority_runtime import ( build_authority_runtime,)
+from api.services.semantic.v2.traversal.traversal_builder import ( build_traversal_runtime,)
 
 # ==========================================================
 # SCORE

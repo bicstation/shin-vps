@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# /home/maya/shin-vps/django/api/views/finder_v2_view.py
+# /home/maya/shin-dev/shin-vps/django/api/views/finder_v2_view.py
 
 from rest_framework.decorators import (
     api_view,
@@ -20,25 +20,39 @@ from api.services.semantic.v2.finder.finder_runtime import (
 
 
 # ==========================================================
-# SEMANTIC FINDER V2
+# FINDER V2
 # ==========================================================
 
-@api_view(["GET"])
+@api_view(["POST"])
 @permission_classes([AllowAny])
 def semantic_finder_v2(
     request
 ):
-
-    selected_attributes = request.GET.getlist(
-        "attribute"
-    )
 
     payload = (
 
         build_finder_runtime(
 
             selected_attributes=
-                selected_attributes
+
+                request.data.get(
+                    "attributes",
+                    []
+                ),
+
+            selected_groups=
+
+                request.data.get(
+                    "groups",
+                    []
+                ),
+
+            limit=
+
+                request.data.get(
+                    "limit",
+                    100
+                ),
         )
     )
 

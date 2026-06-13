@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# /home/maya/shin-vps/django/api/services/semantic/v2/finder/finder_runtime.py
+# api/services/semantic/v2/finder/finder_runtime.py
 
 from api.services.semantic.v2.authority.authority_runtime import (
     build_authority_runtime,
@@ -11,7 +11,7 @@ from api.services.semantic.v2.traversal.traversal_builder import (
 
 
 # ==========================================================
-# MATCH SCORE
+# SCORE
 # ==========================================================
 
 def calculate_match_score(
@@ -19,15 +19,14 @@ def calculate_match_score(
     product,
 
     selected_attributes,
+
+    selected_groups,
 ):
 
-    if not selected_attributes:
-        return 0
-
-    matched_attributes = set(
+    semantic_attributes = set(
 
         product.get(
-            "matched_attributes",
+            "semantic_attributes",
             []
         )
     )
@@ -44,41 +43,59 @@ def calculate_match_score(
 
     matched_nodes = []
 
-    for node in selected_attributes:
+    # --------------------------------------------------
+    # ATTRIBUTE
+    # --------------------------------------------------
 
-        if node in matched_attributes:
+    for attribute in selected_attributes:
+
+        if attribute in semantic_attributes:
 
             score += 1
 
             matched_nodes.append(
-                node
+                attribute
             )
 
-        elif node in matched_groups:
+    # --------------------------------------------------
+    # GROUP
+    # --------------------------------------------------
+
+    for group in selected_groups:
+
+        if group in matched_groups:
 
             score += 1
 
             matched_nodes.append(
-                node
+                group
             )
 
     return score, matched_nodes
 
 
 # ==========================================================
-# FINDER RUNTIME
+# FINDER
 # ==========================================================
 
 def build_finder_runtime(
 
     selected_attributes=None,
 
+    selected_groups=None,
+
     limit=100,
 ):
 
-    if selected_attributes is None:
+    selected_attributes = (
+        selected_attributes
+        or []
+    )
 
-        selected_attributes = []
+    selected_groups = (
+        selected_groups
+        or []
+    )
 
     authority = (
         build_authority_runtime()
@@ -102,12 +119,21 @@ def build_finder_runtime(
                 product,
 
                 selected_attributes,
+
+                selected_groups,
             )
         )
 
-        if selected_attributes:
+        if (
+
+            selected_attributes
+            or
+            selected_groups
+
+        ):
 
             if score == 0:
+
                 continue
 
         matched_products.append({
@@ -127,16 +153,17 @@ def build_finder_runtime(
 
         key=lambda x: (
 
-            x[
-                "match_score"
-            ],
+            x.get(
+                "match_score",
+                0
+            ),
 
             len(
                 x.get(
-                    "matched_attributes",
+                    "semantic_attributes",
                     []
                 )
-            )
+            ),
         ),
 
         reverse=True,
@@ -149,6 +176,9 @@ def build_finder_runtime(
 
         "selected_attributes":
             selected_attributes,
+
+        "selected_groups":
+            selected_groups,
 
         "product_count":
             len(

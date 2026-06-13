@@ -135,7 +135,10 @@ build/
 # ==============================================================================
 
 dist/
-coverage/
+
+htmlcov/
+coverage.xml
+.coverage
 
 *.pid
 *.sock
