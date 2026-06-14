@@ -51,7 +51,7 @@ def build_product_traversal(
         "image_url":
             getattr(
                 product,
-                "image_source",
+                "image_url",
                 ""
             ),
 

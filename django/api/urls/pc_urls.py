@@ -9,6 +9,7 @@ from api.views.ranking_v2_view import ( semantic_ranking_v2, )
 from api.views.product_detail_v2_view import ( semantic_product_detail_v2, )
 from api.views.related_v2_view import ( semantic_related_v2, )
 from api.views.top_v2_view import ( semantic_top_v2,)
+from api.views import ( semantic_discover_v2, semantic_discover_detail_v2, )
 
 app_name = "pc"
 
@@ -33,6 +34,11 @@ urlpatterns = [
         "discover/",
         semantic_discover_v2,
         name="discover",
+    ),
+
+    path(
+        "discover/<slug:group_slug>/",
+        semantic_discover_detail_v2,
     ),
 
     # =====================================================

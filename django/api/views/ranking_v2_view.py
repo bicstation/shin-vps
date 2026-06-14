@@ -58,6 +58,46 @@ def semantic_ranking_v2(
                 limit,
         )
     )
+    
+    payload["_debug"] = {
+        "unique_id":
+            payload["data"]["products"][0]["unique_id"],
+
+        "image_url":
+            payload["data"]["products"][0]["image_url"],
+    }
+  
+    
+    print()
+    print("=" * 80)
+    print("RANKING DEBUG")
+    print(
+        payload["data"]["products"][0]["unique_id"]
+    )
+    print(
+        repr(
+            payload["data"]["products"][0]["image_url"]
+        )
+    )
+    print("=" * 80)
+    print()
+    
+    
+    print()
+    print("=" * 60)
+    print("DEBUG RANKING IMAGE")
+    print(
+        payload["data"]["products"][0]["unique_id"]
+    )
+    print(
+        repr(
+            payload["data"]["products"][0]["image_url"]
+        )
+    )
+    print("=" * 60)
+    print()
+    
+    
 
     return Response(
         payload

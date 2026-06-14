@@ -23,7 +23,7 @@ const RANKING_RUNTIME_ENDPOINT =
   '/pc/ranking'
 
 export async function fetchSemanticRankingRuntime(
-  slug = 'score',
+  slug = 'all',
 ): Promise<SemanticRankingRuntime | null> {
 
   // ==========================================================================

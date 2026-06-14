@@ -1,0 +1,358 @@
+{
+    "meaning": {
+        "identity": "Representative Selection Guide",
+        "mission": "\u7279\u5b9a\u4e16\u754c\u306e\u4ee3\u8868\u5019\u88dc\u3092\u63d0\u793a\u3059\u308b",
+        "user_intent": "\u3069\u308c\u3092\u9078\u3079\u3070\u826f\u3044\u306e\u304b\u77e5\u308a\u305f\u3044",
+        "meaning_statement": "\u7279\u5b9a\u4e16\u754c\u306b\u304a\u3051\u308b\u4ee3\u8868\u7684\u9078\u629e\u80a2\u3092\u63d0\u793a\u3059\u308b",
+        "existence_reason": "\u5229\u7528\u8005\u304c\u5019\u88dc\u3092\u7d5e\u308a\u8fbc\u3080\u305f\u3081"
+    },
+    "seo": {
+        "title": "usage-ai\u30e9\u30f3\u30ad\u30f3\u30b0",
+        "description": "usage-ai\u306b\u5c5e\u3059\u308b11\u88fd\u54c1\u3092\u6bd4\u8f03",
+        "keywords": [
+            "usage-ai",
+            "Ranking",
+            "PC"
+        ],
+        "canonical": "/pc/ranking/",
+        "schema_jsonld": {
+            "@context": "https://schema.org",
+            "@type": "ItemList",
+            "name": "Representative Selection Guide"
+        }
+    },
+    "data": {
+        "group_slug": "usage-ai",
+        "group_name": "usage-ai",
+        "product_count": 11,
+        "products": [
+            {
+                "product_id": 1628,
+                "unique_id": "ASUS_H7606WW-AI9642R5080W",
+                "name": "ProArt P16 (H7606) (H7606WW-AI9642R5080W); Copilot+ PC",
+                "maker": "asus",
+                "price": 848000,
+                "image_url": "",
+                "semantic_attributes": [
+                    "cpu-npu",
+                    "gpu-rtx-5080",
+                    "amd-ryzen-ai",
+                    "cpu-ai",
+                    "usage-gaming",
+                    "mem-64gb-plus",
+                    "maker-asus"
+                ],
+                "matched_groups": [
+                    "maker-global",
+                    "usage-ai",
+                    "gpu-highend",
+                    "cpu-ai",
+                    "maker-gaming",
+                    "usage-gaming",
+                    "memory-highend"
+                ],
+                "workflow_tags": [
+                    "usage-ai",
+                    "usage-creator",
+                    "usage-gaming"
+                ],
+                "semantic_labels": [
+                    "AI\u7528\u9014",
+                    "\u30af\u30ea\u30a8\u30a4\u30bf\u30fc\u7528\u9014",
+                    "\u30b2\u30fc\u30df\u30f3\u30b0\u7528\u9014"
+                ]
+            },
+            {
+                "product_id": 1627,
+                "unique_id": "ASUS_H7606WX-AI9644R5090W",
+                "name": "ProArt P16 (H7606) (H7606WX-AI9644R5090W); Copilot+ PC",
+                "maker": "asus",
+                "price": 998000,
+                "image_url": "",
+                "semantic_attributes": [
+                    "cpu-npu",
+                    "gpu-rtx-5090",
+                    "amd-ryzen-ai",
+                    "cpu-ai",
+                    "usage-gaming",
+                    "mem-64gb-plus",
+                    "maker-asus"
+                ],
+                "matched_groups": [
+                    "maker-global",
+                    "usage-ai",
+                    "gpu-highend",
+                    "cpu-ai",
+                    "maker-gaming",
+                    "usage-gaming",
+                    "memory-highend"
+                ],
+                "workflow_tags": [
+                    "usage-ai",
+                    "usage-creator",
+                    "usage-gaming"
+                ],
+                "semantic_labels": [
+                    "AI\u7528\u9014",
+                    "\u30af\u30ea\u30a8\u30a4\u30bf\u30fc\u7528\u9014",
+                    "\u30b2\u30fc\u30df\u30f3\u30b0\u7528\u9014"
+                ]
+            },
+            {
+                "product_id": 1597,
+                "unique_id": "ASUS_HN7306EA-AI9641W",
+                "name": "ProArt PX13 (HN7306) (HN7306EA-AI9641W)",
+                "maker": "asus",
+                "price": 499800,
+                "image_url": "",
+                "semantic_attributes": [
+                    "amd-ryzen-ai",
+                    "cpu-npu",
+                    "mem-64gb-plus",
+                    "maker-asus"
+                ],
+                "matched_groups": [
+                    "usage-ai",
+                    "maker-global",
+                    "cpu-ai",
+                    "maker-gaming",
+                    "memory-highend"
+                ],
+                "workflow_tags": [
+                    "usage-ai",
+                    "usage-creator",
+                    "usage-gaming"
+                ],
+                "semantic_labels": [
+                    "AI\u7528\u9014",
+                    "\u30af\u30ea\u30a8\u30a4\u30bf\u30fc\u7528\u9014",
+                    "\u30b2\u30fc\u30df\u30f3\u30b0\u7528\u9014"
+                ]
+            },
+            {
+                "product_id": 1589,
+                "unique_id": "ASUS_M3407GA-AI7321GRS",
+                "name": "ASUS Vivobook S14 (M3407) (M3407GA-AI7321GRS); Copilot\uff0b PC",
+                "maker": "asus",
+                "price": 214800,
+                "image_url": "",
+                "semantic_attributes": [
+                    "amd-ryzen-ai",
+                    "cpu-npu",
+                    "device-laptop",
+                    "maker-asus"
+                ],
+                "matched_groups": [
+                    "device-laptop",
+                    "usage-ai",
+                    "maker-global",
+                    "cpu-ai",
+                    "maker-gaming"
+                ],
+                "workflow_tags": [
+                    "usage-ai",
+                    "usage-gaming"
+                ],
+                "semantic_labels": [
+                    "AI\u7528\u9014",
+                    "\u30b2\u30fc\u30df\u30f3\u30b0\u7528\u9014"
+                ]
+            },
+            {
+                "product_id": 1616,
+                "unique_id": "ASUS_FA401EA-AI12C32G",
+                "name": "ASUS TUF Gaming A14 FA401EA (FA401EA-AI12C32G)",
+                "maker": "asus",
+                "price": 399800,
+                "image_url": "",
+                "semantic_attributes": [
+                    "amd-ryzen-ai",
+                    "cpu-npu",
+                    "mem-32gb",
+                    "maker-asus"
+                ],
+                "matched_groups": [
+                    "memory-standard",
+                    "usage-ai",
+                    "maker-global",
+                    "cpu-ai",
+                    "maker-gaming"
+                ],
+                "workflow_tags": [
+                    "usage-ai",
+                    "usage-gaming"
+                ],
+                "semantic_labels": [
+                    "AI\u7528\u9014",
+                    "\u30b2\u30fc\u30df\u30f3\u30b0\u7528\u9014"
+                ]
+            },
+            {
+                "product_id": 2008,
+                "unique_id": "FUJITSU_FMVA79L1BA",
+                "name": "FMV A79-L1 \u30b3\u30fc\u30eb\u30d6\u30e9\u30c3\u30af",
+                "maker": "fujitsu",
+                "price": 247280,
+                "image_url": "",
+                "semantic_attributes": [
+                    "cpu-npu",
+                    "amd-ryzen-ai",
+                    "cpu-ai",
+                    "mem-16gb",
+                    "ssd-512gb"
+                ],
+                "matched_groups": [
+                    "memory-standard",
+                    "usage-budget",
+                    "usage-ai",
+                    "storage-standard",
+                    "cpu-ai"
+                ],
+                "workflow_tags": [
+                    "ssd-256gb",
+                    "ssd-512gb",
+                    "usage-ai"
+                ],
+                "semantic_labels": [
+                    "AI\u7528\u9014",
+                    "ssd-256gb",
+                    "ssd-512gb"
+                ]
+            },
+            {
+                "product_id": 1991,
+                "unique_id": "FUJITSU_FMVF77L1BA",
+                "name": "FMV F77-L1 \u30d6\u30e9\u30c3\u30af",
+                "maker": "fujitsu",
+                "price": 324280,
+                "image_url": "",
+                "semantic_attributes": [
+                    "amd-ryzen-ai",
+                    "cpu-npu",
+                    "mem-32gb",
+                    "ssd-1tb"
+                ],
+                "matched_groups": [
+                    "cpu-ai",
+                    "memory-standard",
+                    "usage-ai",
+                    "storage-standard"
+                ],
+                "workflow_tags": [
+                    "ssd-256gb",
+                    "ssd-512gb",
+                    "usage-ai"
+                ],
+                "semantic_labels": [
+                    "AI\u7528\u9014",
+                    "ssd-256gb",
+                    "ssd-512gb"
+                ]
+            },
+            {
+                "product_id": 1731,
+                "unique_id": "HP_1000047-md",
+                "name": "HP OmniBook Ultra 14-fd0007AU \u30d1\u30d5\u30a9\u30fc\u30de\u30f3\u30b9\u30e2\u30c7\u30eb",
+                "maker": "hp",
+                "price": 339900,
+                "image_url": "",
+                "semantic_attributes": [
+                    "amd-ryzen-ai",
+                    "cpu-npu",
+                    "maker-hp",
+                    "mem-32gb"
+                ],
+                "matched_groups": [
+                    "cpu-ai",
+                    "usage-ai",
+                    "memory-standard",
+                    "maker-global"
+                ],
+                "workflow_tags": [
+                    "usage-ai"
+                ],
+                "semantic_labels": [
+                    "AI\u7528\u9014"
+                ]
+            },
+            {
+                "product_id": 1764,
+                "unique_id": "HP_1000046-md",
+                "name": "HP OmniBook Ultra 14-fd0006AU \u30b9\u30bf\u30f3\u30c0\u30fc\u30c9\u30d7\u30e9\u30b9\u30e2\u30c7\u30eb",
+                "maker": "hp",
+                "price": 319000,
+                "image_url": "",
+                "semantic_attributes": [
+                    "amd-ryzen-ai",
+                    "cpu-npu",
+                    "maker-hp",
+                    "mem-32gb"
+                ],
+                "matched_groups": [
+                    "cpu-ai",
+                    "usage-ai",
+                    "memory-standard",
+                    "maker-global"
+                ],
+                "workflow_tags": [
+                    "usage-ai"
+                ],
+                "semantic_labels": [
+                    "AI\u7528\u9014"
+                ]
+            },
+            {
+                "product_id": 1690,
+                "unique_id": "HP_1000137-md",
+                "name": "HP OmniBook X Flip 14-kc0007AU \u30b9\u30bf\u30f3\u30c0\u30fc\u30c9\u30e2\u30c7\u30eb",
+                "maker": "hp",
+                "price": 214800,
+                "image_url": "",
+                "semantic_attributes": [
+                    "amd-ryzen-ai",
+                    "cpu-npu",
+                    "maker-hp"
+                ],
+                "matched_groups": [
+                    "cpu-ai",
+                    "usage-ai",
+                    "maker-global"
+                ],
+                "workflow_tags": [
+                    "usage-ai"
+                ],
+                "semantic_labels": [
+                    "AI\u7528\u9014"
+                ]
+            },
+            {
+                "product_id": 1667,
+                "unique_id": "HP_1000138-md",
+                "name": "HP OmniBook X Flip 14-kc0008AU \u30d1\u30d5\u30a9\u30fc\u30de\u30f3\u30b9\u30e2\u30c7\u30eb",
+                "maker": "hp",
+                "price": 319800,
+                "image_url": "",
+                "semantic_attributes": [
+                    "amd-ryzen-ai",
+                    "cpu-npu",
+                    "maker-hp"
+                ],
+                "matched_groups": [
+                    "cpu-ai",
+                    "usage-ai",
+                    "maker-global"
+                ],
+                "workflow_tags": [
+                    "usage-ai"
+                ],
+                "semantic_labels": [
+                    "AI\u7528\u9014"
+                ]
+            }
+        ]
+    },
+    "semantic_schema_version": 3,
+    "authority_version": "2.0",
+    "semantic_authority": "backend",
+    "ready": true
+}

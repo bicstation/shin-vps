@@ -155,6 +155,13 @@ class PCProductRankingView(
         slug = self.kwargs.get(
             "slug"
         )
+        
+        print("\n")
+        print("=================================")
+        print("RANKING VIEW TRACE")
+        print("slug =", slug)
+        print("kwargs =", self.kwargs)
+        print("=================================")
 
         queryset = (
 
@@ -185,6 +192,10 @@ class PCProductRankingView(
         # ==================================================
         # Semantic Attribute Filtering
         # ==================================================
+
+        print(
+            f"FILTER CHECK slug={slug}"
+        )
 
         if slug and slug != "score":
 
@@ -249,6 +260,13 @@ class PCProductRankingView(
     # ======================================================
 
     def list(self, request, *args, **kwargs):
+        
+        print("\n")
+        print("=================================")
+        print("RANKING LIST TRACE")
+        print("path =", request.path)
+        print("kwargs =", self.kwargs)
+        print("=================================")
 
         queryset = self.get_queryset()
 
