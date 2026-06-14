@@ -183,7 +183,7 @@ export const getApiEndpoints = () => {
 
     ranking:
       buildApiUrl(
-        'general/pc-products/ranking/'
+        '/pc/ranking/'
       ),
 
     detailByUid: (

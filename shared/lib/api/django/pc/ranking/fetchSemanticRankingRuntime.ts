@@ -20,7 +20,7 @@ import {
 } from './normalize'
 
 const RANKING_RUNTIME_ENDPOINT =
-  '/general/pc-products/ranking'
+  '/pc/ranking'
 
 export async function fetchSemanticRankingRuntime(
   slug = 'score',

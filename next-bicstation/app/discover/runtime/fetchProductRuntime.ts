@@ -45,7 +45,7 @@ Promise<ProductRuntimeResponse> {
 
     const endpoint =
       buildEndpoint(
-        '/general/pc-products/'
+        '/pc/'
       )
 
     /* ======================================================================

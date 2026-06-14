@@ -100,7 +100,7 @@ export async function fetchSemanticShelfRuntime(
 
     const endpoint =
       buildEndpoint(
-        `/general/semantic/discovery/?shelf=${shelfType}`
+        `/discover/?shelf=${shelfType}`
       )
 
     /* ======================================================================

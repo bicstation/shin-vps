@@ -20,7 +20,7 @@ import {
 } from './normalize'
 
 const RANKING_ENDPOINT =
-  '/general/pc-products/ranking'
+  '/pc/ranking'
 
 export async function fetchRankingProducts(
   type = 'score',

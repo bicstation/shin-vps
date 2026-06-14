@@ -44,7 +44,7 @@ import {
 ========================================= */
 
 const PRODUCTS_ENDPOINT =
-  '/general/pc-products/'
+  '/pc/products/'
 
 /* =========================================
 🔥 Fetch Products

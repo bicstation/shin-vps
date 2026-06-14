@@ -344,14 +344,14 @@ log "📈 Semantic Runtime Health Check"
 # ----------------------------------------------------------
 
 check_api \
-"http://localhost:8000/api/general/pc-products/ranking/"
+"http://localhost:8000/api/pc/ranking/"
 
 # ----------------------------------------------------------
 # Discovery Runtime
 # ----------------------------------------------------------
 
 check_api \
-"http://localhost:8000/api/general/semantic/discovery/"
+"http://localhost:8000/api/pc/discover/"
 
 # ----------------------------------------------------------
 # Shelves Runtime

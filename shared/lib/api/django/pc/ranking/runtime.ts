@@ -1,4 +1,3 @@
-// /home/maya/shin-dev/shin-vps/shared/lib/api/django/pc/ranking/runtime.ts
 // ============================================================================
 // FILE:
 // /home/maya/shin-dev/shin-vps/shared/lib/api/django/pc/ranking/runtime.ts
@@ -7,35 +6,23 @@
 
 /**
  * SHIN CORE LINX
- * Ranking Runtime Pipeline
- *
- * IMPORTANT:
- *
- * This runtime pipeline exists for:
- *
- * semantic collection runtime observability
- *
- * NOT:
- *
- * normalized UI rendering
+ * Ranking Runtime Gateway
  *
  * Responsibilities:
  *
- * - raw semantic collection transport
- * - ranking runtime preservation
- * - runtime observability support
- * - semantic authority exposure
- * - discovery runtime inspection
+ * - ranking runtime fetch
+ * - backend runtime preservation
+ * - frontend-safe runtime exposure
  *
  * IMPORTANT:
  *
- * This pipeline MUST NOT:
+ * Backend remains semantic authority.
+ * This layer MUST NOT:
  *
- * ❌ rerank semantic collections
- * ❌ infer workflow meaning
- * ❌ mutate traversal semantics
- * ❌ generate grouped exploration
- * ❌ transform semantic runtime meaning
+ * ❌ rerank products
+ * ❌ generate semantic meaning
+ * ❌ mutate workflow tags
+ * ❌ modify semantic labels
  */
 
 /* ============================================================================
@@ -43,9 +30,7 @@
 ============================================================================ */
 
 import type {
-
   SemanticRankingRuntime,
-
 } from './contracts'
 
 /* ============================================================================
@@ -53,15 +38,11 @@ import type {
 ============================================================================ */
 
 import {
-
   buildEndpoint,
-
 } from '../utils/buildEndpoint'
 
 import {
-
   safeFetch,
-
 } from '../utils/safeFetch'
 
 /* ============================================================================
@@ -69,29 +50,15 @@ import {
 ============================================================================ */
 
 const RANKING_RUNTIME_ENDPOINT =
-
-  '/general/pc-products/ranking'
+  '/pc/ranking'
 
 /* ============================================================================
 🔥 Fetch Ranking Runtime
 ============================================================================ */
 
-/**
- * Runtime Observatory Pipeline
- *
- * IMPORTANT:
- *
- * Returns:
- *
- * raw semantic ranking runtime payload
- *
- * NOT:
- *
- * normalized ranking structure
- */
 export async function fetchRankingRuntime(
 
-  slug = 'score',
+  slug: string = 'usage-gaming',
 
 ): Promise<SemanticRankingRuntime | null> {
 
@@ -102,7 +69,6 @@ export async function fetchRankingRuntime(
   if (!slug) {
 
     console.warn(
-
       '⚠️ RANKING RUNTIME EMPTY SLUG'
     )
 
@@ -116,45 +82,11 @@ export async function fetchRankingRuntime(
   const endpoint =
 
     buildEndpoint(
-
       `${RANKING_RUNTIME_ENDPOINT}/${slug}/`
-
     )
 
   // ======================================
-  // Runtime Debug
-  // ======================================
-
-  console.log(
-
-    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
-  )
-
-  console.log(
-
-    '🔥 RANKING RUNTIME FETCH START'
-  )
-
-  console.log(
-
-    {
-
-      slug,
-
-      endpoint,
-
-      pipeline:
-        'semantic-collection-runtime-authority',
-    }
-  )
-
-  console.log(
-
-    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
-  )
-
-  // ======================================
-  // Fetch Runtime
+  // Fetch
   // ======================================
 
   const response =
@@ -170,13 +102,9 @@ export async function fetchRankingRuntime(
   if (!response) {
 
     console.error(
-
-      '🔥 RANKING RUNTIME FETCH FAILURE',
-
+      '🔥 RANKING RUNTIME FAILURE',
       {
-
         slug,
-
         endpoint,
       }
     )
@@ -185,75 +113,51 @@ export async function fetchRankingRuntime(
   }
 
   // ======================================
-  // Runtime Payload
+  // Runtime Debug
   // ======================================
 
-  const rankingResults =
+  const source =
 
-    Array.isArray(
-      (response as any)
-        ?.ranking?.results
-    )
+    (response as any)?.data
 
-      ? (response as any)
-          .ranking
-          .results
+    ??
 
-      : []
+    response
 
-  // ======================================
-  // Semantic Runtime Debug
-  // ======================================
+    ??
+
+    {}
 
   console.log(
-
-    '🔥 RANKING RUNTIME RESPONSE',
-
+    '🔥 RANKING RUNTIME',
     {
 
       slug,
 
       endpoint,
 
-      semantic_schema_version:
+      group_slug:
+        source?.group_slug,
 
-        (response as any)
-          ?.semantic_schema_version,
+      group_name:
+        source?.group_name,
 
-      has_semantic_runtime:
+      product_count:
 
-        !!(response as any)
-          ?.semantic_runtime,
+        source?.product_count
 
-      has_workflow_tags:
+        ??
 
-        Array.isArray(
-          (response as any)
-            ?.workflow_tags
-        ),
+        source?.products?.length
 
-      has_grouped_attributes:
+        ??
 
-        !!(response as any)
-          ?.grouped_attributes,
-
-      result_count:
-
-        rankingResults.length,
-
-      payload_keys:
-
-        Object.keys(
-          response || {}
-        ),
-
-      payload:
-        response,
+        0,
     }
   )
 
   // ======================================
-  // Success
+  // Return
   // ======================================
 
   return response

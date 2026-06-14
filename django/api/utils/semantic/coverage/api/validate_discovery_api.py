@@ -18,7 +18,7 @@ def validate_discovery_api(
 
         response = requests.get(
 
-            f"{base_url}/api/general/semantic/discovery/",
+            f"{base_url}/api/discover/",
 
             timeout=10,
 

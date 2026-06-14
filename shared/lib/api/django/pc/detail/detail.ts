@@ -44,7 +44,7 @@ normalizeDetail,
 ========================================= */
 
 const DETAIL_ENDPOINT =
-'/general/pc-products'
+'/pc/products'
 
 /* =========================================
 🔥 Fetch Detail

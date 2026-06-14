@@ -14,7 +14,7 @@ const SITE_SETTINGS: Record<string, {
     'bicstation': {
         name: 'BICSTATION',
         description: 'PC専門ポータルサイトの公認コンシェルジュ',
-        endpoint: '/api/pc-products/',
+        endpoint: '/api/pc/',
     },
     'avflash': {
         name: 'AVFLASH',

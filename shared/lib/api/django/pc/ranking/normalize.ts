@@ -4,67 +4,10 @@
 // Copyright (c) 2024 Shin Corporation. All rights reserved.
 // ============================================================================
 
-/**
- * SHIN CORE LINX
- * Ranking Normalize Layer
- *
- * IMPORTANT:
- *
- * This layer exists for:
- *
- * frontend-safe semantic collection stabilization
- *
- * NOT:
- *
- * semantic ranking generation
- *
- * Responsibilities:
- *
- * - shallow-safe collection shaping
- * - semantic runtime preservation
- * - payload stabilization
- * - collection fallback safety
- *
- * IMPORTANT:
- *
- * This layer MUST NOT:
- *
- * ❌ rerank semantic collections
- * ❌ infer workflow meaning
- * ❌ generate semantic labels
- * ❌ mutate traversal semantics
- * ❌ generate grouped exploration
- * ❌ rewrite semantic runtime meaning
- */
-
-/* ============================================================================
-🔥 Contracts
-============================================================================ */
-
 import type {
-
   SemanticRankingRuntime,
-
 } from './contracts'
 
-/* ============================================================================
-🔥 Normalize Ranking
-============================================================================ */
-
-/**
- * Normalize ranking payload.
- *
- * IMPORTANT:
- *
- * This layer intentionally avoids:
- *
- * - semantic inference
- * - ranking mutation
- * - traversal generation
- * - workflow rewriting
- *
- * Backend remains semantic authority.
- */
 export function normalizeRanking(
 
   payload?: any,
@@ -76,73 +19,157 @@ export function normalizeRanking(
   // ======================================
 
   if (!payload) {
-
     return null
   }
+
+  // ======================================
+  // Compatibility Layer
+  // Legacy:
+  // {
+  //   success,
+  //   products,
+  //   results
+  // }
+  //
+  // Semantic API v3:
+  // {
+  //   meaning,
+  //   seo,
+  //   data
+  // }
+  // ======================================
+
+  const source =
+
+    payload?.data
+
+    ??
+
+    payload
+
+    ??
+
+    {}
 
   // ======================================
   // Ranking Results
   // ======================================
 
-  const runtimePayload = payload as any
-
   const rankingResults =
 
     Array.isArray(
-      runtimePayload?.ranking?.results
+      source?.products
     )
 
-      ? runtimePayload.ranking.results
+      ? source.products
 
     : Array.isArray(
-        runtimePayload?.results
+        source?.results
       )
 
-      ? runtimePayload.results
+      ? source.results
 
     : Array.isArray(
-        runtimePayload?.products
+        source?.items
       )
 
-      ? runtimePayload.products
+      ? source.items
 
     : Array.isArray(
-        runtimePayload?.ranking_products
+        source?.ranking_products
       )
 
-      ? runtimePayload.ranking_products
+      ? source.ranking_products
 
     : Array.isArray(
-        runtimePayload?.items
+        source?.ranking?.results
       )
 
-      ? runtimePayload.items
+      ? source.ranking.results
 
     : []
 
+  // ======================================
+  // Total
+  // ======================================
+
   const total =
 
-    runtimePayload?.ranking?.total
+    source?.product_count
 
-    ?? runtimePayload?.count
+    ??
 
-    ?? runtimePayload?.total
+    source?.count
 
-    ?? rankingResults.length
+    ??
 
-    ?? 0
-  
+    source?.total
+
+    ??
+
+    source?.ranking?.total
+
+    ??
+
+    rankingResults.length
+
+    ??
+
+    0
+
   // ======================================
-  // Canonical Products Continuity
+  // Group Continuity
+  // ======================================
+
+  const group_slug =
+
+    source?.group_slug
+
+    ||
+
+    ''
+
+  const group_name =
+
+    source?.group_name
+
+    ||
+
+    ''
+
+  // ======================================
+  // Canonical Products
   // ======================================
 
   const products =
     rankingResults
-  
 
-    // ======================================
-    // Minimal Semantic Normalize
-    // ======================================
+  // ======================================
+  // Debug
+  // ======================================
+
+  console.log(
+    '🔥 RANKING NORMALIZE',
+    {
+      source:
+        payload?.data
+          ? 'semantic-v3'
+          : 'legacy',
+
+      group_slug,
+
+      group_name,
+
+      total,
+
+      products:
+        products.length,
+    }
+  )
+
+  // ======================================
+  // Return
+  // ======================================
 
   return {
 
@@ -158,15 +185,41 @@ export function normalizeRanking(
 
     success:
 
-      payload?.success
-      || false,
-    
+      payload?.success === true
+
+      ||
+
+      payload?.ready === true
+
+      ||
+
+      !!payload?.data
+
+      ||
+
+      !!payload,
+
     // ====================================
-    // Canonical Frontend Continuity
+    // Meaning
     // ====================================
 
-    products:
-      products,
+    meaning:
+
+      payload?.meaning
+
+      ||
+
+      {},
+
+    // ====================================
+    // Canonical Runtime
+    // ====================================
+
+    group_slug,
+
+    group_name,
+
+    products,
 
     // ====================================
     // Ranking Runtime
@@ -177,17 +230,31 @@ export function normalizeRanking(
       results:
         rankingResults,
 
-      total:
-        payload?.ranking?.total
-        || 0,
+      total,
 
       page:
-        payload?.ranking?.page
-        || 1,
+
+        source?.page
+
+        ??
+
+        source?.ranking?.page
+
+        ??
+
+        1,
 
       limit:
-        payload?.ranking?.limit
-        || 0,
+
+        source?.limit
+
+        ??
+
+        source?.ranking?.limit
+
+        ??
+
+        rankingResults.length,
     },
 
     // ====================================
@@ -197,7 +264,10 @@ export function normalizeRanking(
     semantic_runtime:
 
       payload?.semantic_runtime
-      || {},
+
+      ||
+
+      {},
 
     semantic_labels:
 
@@ -222,7 +292,10 @@ export function normalizeRanking(
     grouped_attributes:
 
       payload?.grouped_attributes
-      || {},
+
+      ||
+
+      {},
 
     semantic_graph:
 
@@ -234,15 +307,21 @@ export function normalizeRanking(
 
         : [],
 
-    render_hints:
-
-      payload?.render_hints
-      || {},
-
     adaptive_runtime:
 
       payload?.adaptive_runtime
-      || {},
+
+      ||
+
+      {},
+
+    render_hints:
+
+      payload?.render_hints
+
+      ||
+
+      {},
 
     // ====================================
     // SEO
@@ -251,53 +330,38 @@ export function normalizeRanking(
     seo:
 
       payload?.seo
-      || {},
+
+      ||
+
+      {},
 
     // ====================================
-    // FAQ
-    // ====================================
-
-    faq:
-
-      Array.isArray(
-        payload?.faq
-      )
-
-        ? payload.faq
-
-        : [],
-
-    // ====================================
-    // Breadcrumbs
-    // ====================================
-
-    breadcrumbs:
-
-      Array.isArray(
-        payload?.breadcrumbs
-      )
-
-        ? payload.breadcrumbs
-
-        : [],
-
-    // ====================================
-    // Schemas
-    // ====================================
-
-    schemas:
-
-      payload?.schemas
-      || {},
-
-    // ====================================
-    // Schema Version
+    // Schema Metadata
     // ====================================
 
     semantic_schema_version:
 
       payload?.semantic_schema_version
-      || 1,
+
+      ||
+
+      1,
+
+    authority_version:
+
+      payload?.authority_version
+
+      ||
+
+      '',
+
+    semantic_authority:
+
+      payload?.semantic_authority
+
+      ||
+
+      '',
 
     // ====================================
     // Raw Backup
@@ -307,9 +371,5 @@ export function normalizeRanking(
       payload,
   }
 }
-
-/* ============================================================================
-🔥 Default Export
-============================================================================ */
 
 export default normalizeRanking

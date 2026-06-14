@@ -137,7 +137,7 @@ def build_discovery_seo(
         ],
 
         canonical=
-            "/pc/discovery/",
+            "/pc/discover/",
 
         schema_jsonld={
 

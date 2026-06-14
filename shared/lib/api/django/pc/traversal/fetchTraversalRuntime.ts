@@ -70,7 +70,7 @@ import {
 
 const TRAVERSAL_RUNTIME_ENDPOINT =
 
-  '/general/pc-products'
+  '/pc'
 
 /* ============================================================================
 🔥 Fetch Traversal Runtime

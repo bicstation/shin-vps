@@ -15,10 +15,10 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 # Runtime Variables
 # ==========================================================
 
-AI_SPEC_LIMIT=2000
-AI_SUMMARY_LIMIT=2000
-AI_SEMANTIC_LIMIT=2000
-IMAGE_CACHE_LIMIT=2000
+AI_SPEC_LIMIT=10
+AI_SUMMARY_LIMIT=10
+AI_SEMANTIC_LIMIT=10
+IMAGE_CACHE_LIMIT=10
 
 # ==========================================================
 # Project Root Topology
@@ -237,10 +237,10 @@ log "📡 (01/12) Import Linkshare API"
 # 36508  DYNABOOK
 # 43708  ASUS
 
-run_django import_linkshare_api --mid 35909
-run_django import_linkshare_api --mid 2557
-run_django import_linkshare_api --mid 2543
-run_django import_linkshare_api --mid 36508
+# run_django import_linkshare_api --mid 35909
+# run_django import_linkshare_api --mid 2557
+# run_django import_linkshare_api --mid 2543
+# run_django import_linkshare_api --mid 36508
 run_django import_linkshare_api --mid 43708
 
 run_django import_linkshare_data --mid 2543
@@ -390,26 +390,36 @@ run_django fetch_product_images --limit $IMAGE_CACHE_LIMIT
 
 log "📈 (11/12) Semantic Runtime Health Check"
 
+# ==========================================================
+# ⑪ 12 属性　API　検証
+# ==========================================================
+
+
+log "🔗 (12/12) 属性API検証"
+
+
+run_django audit_semantic_coverage
+
 # ----------------------------------------------------------
 # Ranking Runtime
 # ----------------------------------------------------------
 
 check_api \
-"http://localhost:8000/api/general/pc-products/ranking/"
+"http://localhost:8000/api/pc/ranking/"
 
 # ----------------------------------------------------------
 # Discovery Runtime
 # ----------------------------------------------------------
 
 check_api \
-"http://localhost:8000/api/general/semantic/discovery/"
+"http://localhost:8000/api/pc/discover/"
 
 # ----------------------------------------------------------
 # Shelves Runtime
 # ----------------------------------------------------------
 
 check_api \
-"http://localhost:8000/api/general/semantic/shelves/"
+"http://localhost:8000/api/pc/top/"
 
 # ==========================================================
 # ⑫ 11 Semantic Runtime Validation
@@ -455,9 +465,9 @@ print(sample.semantic_runtime)
 # ==========================================================
 # DONE
 # ==========================================================
-log "🔗 (12/12) 属性API検証"
 
-run_django audit_semantic_coverage
+
+
 
 
 log "✅ SHIN CORE LINX SEMANTIC PIPELINE COMPLETE 終了"

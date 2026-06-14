@@ -78,7 +78,7 @@ import {
 
 const RANKING_ENDPOINT =
 
-  '/general/pc-products/ranking'
+  '/pc/ranking'
 
 /* ============================================================================
 🔥 Fetch Ranking

@@ -67,7 +67,7 @@ import {
 
 const DETAIL_RUNTIME_ENDPOINT =
 
-  '/general/pc-products'
+  '/pc'
 
 /* ============================================================================
 🔥 Fetch PC Detail Runtime

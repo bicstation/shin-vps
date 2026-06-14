@@ -77,7 +77,7 @@ import {
 ============================================================================ */
 
 const DISCOVER_ENDPOINT =
-  '/general/pc-products/discover'
+  '/pc/discover'
 
 /* ============================================================================
 🔥 Fetch Discover Runtime

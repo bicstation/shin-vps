@@ -44,7 +44,7 @@ import {
 ========================================= */
 
 const RELATED_ENDPOINT =
-  '/general/pc-products'
+  '/pc'
 
 /* =========================================
 🔥 Fetch Related

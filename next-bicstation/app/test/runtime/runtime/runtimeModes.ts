@@ -284,7 +284,7 @@ RuntimeModeDefinition[] = [
       '#38bdf8',
 
     endpoint_hint:
-      '/general/discovery/',
+      '/discover/',
   },
 
   /* ==========================================================================

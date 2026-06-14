@@ -18,7 +18,7 @@ def validate_related_api(
 
         response = requests.get(
 
-            f"{base_url}/api/general/pc-products/1/related/",
+            f"{base_url}/api/pc/1/related/",
 
             timeout=10,
 
