@@ -368,3 +368,59 @@ def build_related_seo(
                 ),
         },
     )
+
+
+# ==========================================================
+# INVENTORY
+# ==========================================================
+
+def build_inventory_seo(
+
+    meaning,
+
+    product_count,
+):
+
+    return build_seo(
+
+        title=(
+
+            f"PC製品一覧 "
+            f"({product_count}製品)"
+        ),
+
+        description=(
+
+            f"{product_count}製品の"
+            f"Reality Inventory"
+        ),
+
+        keywords=[
+
+            "PC",
+
+            "Products",
+
+            "Inventory",
+
+            "Semantic",
+        ],
+
+        canonical=
+            "/pc/products/",
+
+        schema_jsonld={
+
+            "@context":
+                "https://schema.org",
+
+            "@type":
+                "CollectionPage",
+
+            "name":
+
+                meaning.get(
+                    "identity"
+                ),
+        },
+    )

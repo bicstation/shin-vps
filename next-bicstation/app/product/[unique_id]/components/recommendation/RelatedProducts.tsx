@@ -42,8 +42,10 @@ type Props = {
 ============================================================================ */
 
 export default function RelatedProducts({
-related,
-}: Props) {
+  related,
+  continuationRuntime,
+  traversalEdges,
+}: Props){
 
 // ==========================================================================
 // RELATED PRODUCTS

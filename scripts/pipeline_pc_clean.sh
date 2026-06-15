@@ -394,9 +394,7 @@ log "📈 (11/12) Semantic Runtime Health Check"
 # ⑪ 12 属性　API　検証
 # ==========================================================
 
-
-log "🔗 (12/12) 属性API検証"
-
+log "📈 (11-1/12) 属性"
 
 run_django audit_semantic_coverage
 
@@ -404,28 +402,26 @@ run_django audit_semantic_coverage
 # Ranking Runtime
 # ----------------------------------------------------------
 
+log "📈 (11-2/12) TOP-API チェック"
+
 check_api \
-"http://localhost:8000/api/pc/ranking/"
+"http://localhost:8000/api/pc/top/"
 
 # ----------------------------------------------------------
 # Discovery Runtime
 # ----------------------------------------------------------
 
+log "📈 (11-3/12) DISCOVER-API チェック"
+
 check_api \
 "http://localhost:8000/api/pc/discover/"
-
-# ----------------------------------------------------------
-# Shelves Runtime
-# ----------------------------------------------------------
-
-check_api \
-"http://localhost:8000/api/pc/top/"
 
 # ==========================================================
 # ⑫ 11 Semantic Runtime Validation
 # ==========================================================
 
-log "🧠 (11/12) Validate Semantic Runtime"
+
+log "🧠 (11-4/12) Validate Semantic Runtime"
 
 run_django shell -c "
 
@@ -465,9 +461,6 @@ print(sample.semantic_runtime)
 # ==========================================================
 # DONE
 # ==========================================================
-
-
-
 
 
 log "✅ SHIN CORE LINX SEMANTIC PIPELINE COMPLETE 終了"

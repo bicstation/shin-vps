@@ -245,3 +245,43 @@ def build_related_meaning():
                 "近い Reality を比較するため"
             ),
     }
+
+# ==========================================================
+# INVENTORY
+# ==========================================================
+
+def build_inventory_meaning():
+
+    return {
+
+        "identity":
+            "Reality Inventory Authority",
+
+        "mission":
+
+            (
+                "公開中の製品 Reality を"
+                "一覧として提供する"
+            ),
+
+        "user_intent":
+
+            (
+                "存在する製品を"
+                "一覧で確認したい"
+            ),
+
+        "meaning_statement":
+
+            (
+                "Reality Inventory 全体を"
+                "公開するページ"
+            ),
+
+        "existence_reason":
+
+            (
+                "検索・発見・巡回の"
+                "基盤を提供するため"
+            ),
+    }

@@ -7,7 +7,7 @@
 
 import type {
 
-PCProduct,
+  PCProduct,
 
 } from './contracts'
 
@@ -18,136 +18,180 @@ PCProduct,
 export function
 normalizeDetail(
 
-payload?: any
+  payload?: any
 
 ): PCProduct | null {
 
-// ======================================
-// Empty Guard
-// ======================================
+  // ======================================
+  // Empty Guard
+  // ======================================
 
-if (!payload) {
+  if (!payload) {
 
+    return null
 
-return null
+  }
 
+  // ======================================
+  // Product Reality
+  // ======================================
 
+  const product =
+
+    payload?.data?.product
+
+    ?? payload?.product
+
+    ?? payload?.data
+
+    ?? payload
+
+    ?? {}
+
+  // ======================================
+  // Normalize
+  // ======================================
+
+  return {
+
+    // ====================================
+    // Raw Product Reality
+    // ====================================
+
+    ...product,
+
+    // ====================================
+    // Identity Safety
+    // ====================================
+
+    id:
+      product?.id,
+
+    unique_id:
+      product?.unique_id || '',
+
+    // ====================================
+    // Basic Safety
+    // ====================================
+
+    name:
+      product?.name || '',
+
+    product_type:
+      product?.product_type || '',
+
+    maker:
+      product?.maker || '',
+
+    brand:
+      product?.brand || '',
+
+    // ====================================
+    // URL Safety
+    // ====================================
+
+    url:
+      product?.url || '',
+
+    image_url:
+      product?.image_url || '',
+
+    // ====================================
+    // Price
+    // ====================================
+
+    price:
+      product?.price || 0,
+
+    // ====================================
+    // Runtime Safety
+    // ====================================
+
+    semantic_runtime:
+
+      product?.semantic_runtime
+
+      || {},
+
+    adaptive_runtime:
+
+      product?.adaptive_runtime
+
+      || {},
+
+    semantic_related:
+
+      Array.isArray(
+        product?.semantic_related
+      )
+
+        ? product.semantic_related
+
+        : [],
+
+    semantic_labels:
+
+      Array.isArray(
+        product?.semantic_labels
+      )
+
+        ? product.semantic_labels
+
+        : [],
+
+    render_hints:
+
+      product?.render_hints
+
+      || {},
+
+    // ====================================
+    // AI Safety
+    // ====================================
+
+    ai_summary:
+      product?.ai_summary || '',
+
+    ai_content:
+      product?.ai_content || '',
+
+    // ====================================
+    // Schema
+    // ====================================
+
+    semantic_schema_version:
+
+      payload?.semantic_schema_version
+
+      || 1,
+
+    // ====================================
+    // Meaning / SEO
+    // ====================================
+
+    meaning:
+
+      payload?.meaning
+
+      || {},
+
+    seo:
+
+      payload?.seo
+
+      || {},
+
+    // ====================================
+    // Raw Backup
+    // ====================================
+
+    raw:
+      payload,
+  }
 }
 
-// ======================================
-// Minimal Semantic Normalize
-// ======================================
+/* =========================================
+🔥 Default Export
+========================================= */
 
-return {
-
-
-// ====================================
-// Flat Runtime Payload
-// ====================================
-
-...payload,
-
-// ====================================
-// Identity Safety
-// ====================================
-
-id:
-  payload?.id,
-
-unique_id:
-  payload?.unique_id || '',
-
-// ====================================
-// Basic Safety
-// ====================================
-
-name:
-  payload?.name || '',
-
-product_type:
-  payload?.product_type || '',
-
-maker:
-  payload?.maker || '',
-
-brand:
-  payload?.brand || '',
-
-// ====================================
-// URL Safety
-// ====================================
-
-url:
-  payload?.url || '',
-
-image_url:
-  payload?.image_url || '',
-
-// ====================================
-// Runtime Safety
-// ====================================
-
-semantic_runtime:
-
-  payload?.semantic_runtime
-  || {},
-
-adaptive_runtime:
-
-  payload?.adaptive_runtime
-  || {},
-
-semantic_related:
-
-  Array.isArray(
-    payload?.semantic_related
-  )
-
-    ? payload.semantic_related
-
-    : [],
-
-semantic_labels:
-
-  Array.isArray(
-    payload?.semantic_labels
-  )
-
-    ? payload.semantic_labels
-
-    : [],
-
-render_hints:
-
-  payload?.render_hints
-  || {},
-
-// ====================================
-// AI Safety
-// ====================================
-
-ai_summary:
-  payload?.ai_summary || '',
-
-ai_content:
-  payload?.ai_content || '',
-
-// ====================================
-// Schema
-// ====================================
-
-semantic_schema_version:
-
-  payload?.semantic_schema_version
-  || 1,
-
-// ====================================
-// Raw Backup
-// ====================================
-
-raw:
-  payload,
-
-
-}
-}
+export default normalizeDetail

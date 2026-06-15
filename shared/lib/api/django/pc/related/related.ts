@@ -44,7 +44,7 @@ import {
 ========================================= */
 
 const RELATED_ENDPOINT =
-  '/pc'
+  '/pc/products'
 
 /* =========================================
 🔥 Fetch Related
@@ -93,8 +93,6 @@ fetchRelatedPC(
 
   if (
     !response
-    ||
-    !response.success
   ) {
 
     return []

@@ -14,186 +14,202 @@ import type {
 /* =========================================
 🔥 Normalize Related
 ========================================= */
-
-export function
-normalizeRelated(
+export function normalizeRelated(
 
   payload?: any
 
 ): RelatedProduct[] {
 
-  // ======================================
-  // Safe Products
-  // ======================================
+  console.log(
+    '🔥 RELATED RAW PAYLOAD',
+    payload
+  )
+
+  const source =
+
+    payload?.data
+    ?? payload
+    ?? {}
 
   const results =
 
     Array.isArray(
-      payload?.products
+      source?.related_products
     )
 
-      ? payload.products
+      ? source.related_products
 
-      : Array.isArray(
-          payload?.results
-        )
+    : Array.isArray(
+        source?.products
+      )
 
-          ? payload.results
+      ? source.products
 
-          : Array.isArray(
-              payload
-            )
+    : Array.isArray(
+        source?.results
+      )
 
-              ? payload
+      ? source.results
 
-              : []
+    : Array.isArray(
+        source
+      )
+
+      ? source
+
+    : []
 
   // ======================================
   // Normalize
   // ======================================
+  console.log(
+      '🔥 RELATED ITEM SAMPLE',
+      results[0]
+  )
 
-  return results.map(
+  console.log(
+    '🔥 RELATED RAW ITEM',
+    JSON.stringify(
+      results?.[0],
+      null,
+      2
+    )
+)
+
+
+  const normalized =
+  results.map(
     (
       item
-    ): RelatedProduct => ({
+    ): RelatedProduct => {
 
-      /* ====================================
-      Identity
-      ==================================== */
+      const product =
+        item?.product
+        ?? item
 
-      id:
-        item?.id,
+      return {
 
-      unique_id:
-        item?.unique_id || '',
+        /* ====================================
+        Identity
+        ==================================== */
 
-      /* ====================================
-      Basic
-      ==================================== */
+        id:
+          product?.id,
 
-      name:
-        item?.name || '',
+        unique_id:
+          product?.unique_id || '',
 
-      maker:
-        item?.maker || '',
+        /* ====================================
+        Basic
+        ==================================== */
 
-      description:
-        item?.description || '',
+        name:
+          product?.name || '',
 
-      /* ====================================
-      URL
-      ==================================== */
+        maker:
+          product?.maker || '',
 
-      url:
-        item?.url || '',
+        description:
+          product?.description || '',
 
-      affiliate_url:
-        item?.affiliate_url || '',
+        /* ====================================
+        URL
+        ==================================== */
 
-      image_url:
-        item?.image_url || '',
+        url:
+          product?.url || '',
 
-      /* ====================================
-      Price
-      ==================================== */
+        affiliate_url:
+          product?.affiliate_url || '',
 
-      price:
-        item?.price || 0,
+        image_url:
+          product?.image_url || '',
 
-      /* ====================================
-      Specs
-      ==================================== */
+        /* ====================================
+        Price
+        ==================================== */
 
-      cpu_model:
-        item?.cpu_model || '',
+        price:
+          product?.price || 0,
 
-      gpu_model:
-        item?.gpu_model || '',
+        /* ====================================
+        Specs
+        ==================================== */
 
-      memory_gb:
-        item?.memory_gb || 0,
+        cpu_model:
+          product?.cpu_model || '',
 
-      storage_gb:
-        item?.storage_gb || 0,
+        gpu_model:
+          product?.gpu_model || '',
 
-      /* ====================================
-      Scores
-      ==================================== */
+        memory_gb:
+          product?.memory_gb || 0,
 
-      spec_score:
-        item?.spec_score || 0,
+        storage_gb:
+          product?.storage_gb || 0,
 
-      similarity_score:
-        item?.similarity_score || 0,
+        /* ====================================
+        Scores
+        ==================================== */
 
-      semantic_score:
-        item?.semantic_score || 0,
+        spec_score:
+          product?.spec_score || 0,
 
-      /* ====================================
-      Semantic
-      ==================================== */
+        similarity_score:
+          item?.score || 0,
 
-      semantic_role:
-        item?.semantic_role || 'primary',
+        semantic_score:
+          product?.semantic_score || 0,
 
-      semantic_weight:
-        item?.semantic_weight || 0,
+        /* ====================================
+        Semantic
+        ==================================== */
 
-      recommendation_reason:
-        item?.recommendation_reason || '',
+        semantic_role:
+          item?.semantic_role || 'primary',
 
-      confidence:
-        item?.confidence || 0,
+        semantic_weight:
+          item?.semantic_weight || 0,
 
-      icon:
-        item?.icon || '',
+        recommendation_reason:
+          item?.recommendation_reason || '',
 
-      color:
-        item?.color || '',
+        confidence:
+          item?.confidence || 0,
 
-      /* ====================================
-      Related Semantic
-      ==================================== */
+        icon:
+          item?.icon || '',
 
-      matched_attributes:
+        color:
+          item?.color || '',
 
-        Array.isArray(
-          item?.matched_attributes
-        )
+        matched_attributes: [],
 
-          ? item.matched_attributes
+        attributes: [],
 
-          : [],
+        grouped_attributes:
+          product?.grouped_attributes
+          || {},
 
-      /* ====================================
-      Attributes
-      ==================================== */
+        semantic_schema_version:
+          product?.semantic_schema_version
+          || 1,
 
-      attributes:
-
-        Array.isArray(
-          item?.attributes
-        )
-
-          ? item.attributes
-
-          : [],
-
-      grouped_attributes:
-        item?.grouped_attributes
-        || {},
-
-      semantic_schema_version:
-
-        item?.semantic_schema_version
-        || 1,
-
-      /* ====================================
-      Raw Backup
-      ==================================== */
-
-      raw:
-        item,
-    })
+        raw:
+          item,
+      }
+    }
   )
+
+
+  console.log(
+    '🔥 RELATED NORMALIZED',
+    normalized?.[0]
+  )
+
+  return normalized
+
+
 }
+
+

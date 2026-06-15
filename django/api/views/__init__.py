@@ -81,6 +81,9 @@ def api_root(request):
 
             "ranking":
                 "/api/pc/ranking/<group_slug>",
+            
+            "inventory":
+                "/api/pc/products",
 
             "product":
                 "/api/pc/products/<unique_id>",
