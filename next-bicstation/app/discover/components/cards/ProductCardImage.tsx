@@ -50,6 +50,16 @@ export default function ProductCardImage({
 
 }: Props) {
 
+  console.log(
+    '🔥 CARD PRODUCT',
+    product
+  )
+
+  console.log(
+    '🔥 CARD IMAGE URL',
+    product?.image_url
+  )
+
   /* ==========================================================================
   🔥 Runtime
   ========================================================================== */

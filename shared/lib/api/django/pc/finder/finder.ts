@@ -309,11 +309,17 @@ fetchFinder(
     🔥 Normalize
     ====================================================================== */
 
+    console.log(
+      '🔥 NORMALIZE INPUT',
+      runtime
+    )
+
     const normalized =
 
       normalizeFinderRuntime(
         runtime
       )
+   
 
     /* ======================================================================
     🔥 Normalized Runtime Observatory
@@ -351,6 +357,12 @@ fetchFinder(
 
     console.log(
       '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+    )
+
+
+    console.log(
+      '🔥 NORMALIZE OUTPUT',
+      normalized
     )
 
     /* ======================================================================

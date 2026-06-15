@@ -229,6 +229,11 @@ normalizeFinderResults(
   response: any
 ) {
 
+  console.log(
+    '🔥 FINDER NORMALIZE INPUT',
+    response
+  )
+
   if (
     Array.isArray(
       response
@@ -241,12 +246,12 @@ normalizeFinderResults(
   if (
 
     Array.isArray(
-      response?.products
+      response?.data?.products
     )
 
   ) {
 
-    return response.products
+    return response.data.products
   }
 
   if (

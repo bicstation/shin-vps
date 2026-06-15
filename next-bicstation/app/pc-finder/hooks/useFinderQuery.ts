@@ -128,6 +128,14 @@ useFinderQuery() {
   // Search
   // ======================================
 
+  console.log(
+    '🔥 SEARCH STARTED',
+    {
+      purpose,
+      budget,
+    }
+  )
+
   const search =
 
     useCallback(

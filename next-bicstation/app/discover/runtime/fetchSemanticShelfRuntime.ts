@@ -46,6 +46,11 @@ export async function fetchSemanticShelfRuntime(
 
     const runtime =
       await response.json()
+    
+    console.log(
+      '🔥 DISCOVER SAMPLE',
+      runtime?.sample_products?.[0]
+    )
 
     return {
 

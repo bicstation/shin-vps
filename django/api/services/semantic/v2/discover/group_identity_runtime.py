@@ -227,6 +227,11 @@ def build_group_identity_runtime(
                     product.get(
                         "price"
                     ),
+                    
+                "image_url":
+                    product.get(
+                        "image_url"
+                    ),
             })
 
     sample_products = (
