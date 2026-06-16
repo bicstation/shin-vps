@@ -52,9 +52,8 @@ def calculate_match_score(
 def build_finder_runtime(
 
     selected_attributes=None,
-
     selected_groups=None,
-
+    max_price=None,
     limit=100,
 ):
 
@@ -87,29 +86,94 @@ def build_finder_runtime(
         )
     )
 
-    matches = []
-
     # ------------------------------------------------------
     # MATCH
     # ------------------------------------------------------
+    
+    if max_price is not None:
 
+        try:
+
+            max_price = int(
+                max_price
+            )
+
+        except:
+
+            max_price = None
+
+    filters = list(
+
+        set(
+            selected_attributes
+            +
+            selected_groups
+        )
+    )
+
+    matches = []
+    
+    print(
+        "🔥 FINDER FILTERS",
+        {
+            "filters":
+                filters,
+
+            "max_price":
+                max_price,
+        }
+    )
+    
     for product in traversal.get(
         "products",
         []
     ):
 
+        price = product.get(
+            "price",
+            0
+        )
+
+        try:
+
+            price = int(price)
+
+        except:
+
+            price = 0
+
+        if (
+            max_price is not None
+            and
+            price > max_price
+        ):
+            
+            print(
+                "🔥 PRICE FILTER",
+                {
+                    "name":
+                        product.get(
+                            "name"
+                        ),
+
+                    "price":
+                        price,
+
+                    "max_price":
+                        max_price,
+                }
+            )
+            
+            continue
+
         score = (
-
             calculate_match_score(
-
                 product,
-
                 filters,
             )
         )
 
         if filters and score <= 0:
-
             continue
 
         matches.append({
@@ -119,7 +183,8 @@ def build_finder_runtime(
 
             **product,
         })
-
+    
+    
     # ------------------------------------------------------
     # SORT
     # ------------------------------------------------------

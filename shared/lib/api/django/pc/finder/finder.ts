@@ -96,27 +96,38 @@ const FINDER_ENDPOINT =
 🔥 Normalize Usage Payload
 ============================================================================ */
 
+// function normalizeUsagePayload(
+
+//   usage?: string[]
+
+// ): string[] {
+
+//   if (!usage) {
+
+//     return []
+//   }
+
+//   return usage.map((value) => (
+
+//     value
+//       .replace(
+//         'usage-',
+//         ''
+//       )
+//       .trim()
+//   ))
+// }
 function normalizeUsagePayload(
-
   usage?: string[]
-
 ): string[] {
 
   if (!usage) {
-
     return []
   }
 
-  return usage.map((value) => (
-
-    value
-      .replace(
-        'usage-',
-        ''
-      )
-      .trim()
-  ))
+  return usage
 }
+
 
 /* ============================================================================
 🔥 Normalize Workflow Payload
@@ -168,21 +179,62 @@ fetchFinder(
     /* ======================================================================
     🔥 Payload
     ====================================================================== */
+    console.log(
+      '🔥 RAW QUERY USAGE',
+      query.usage
+    )
+
+    console.log(
+      '🔥 FINDER QUERY',
+      query
+    )
+
+    console.log(
+      '🔥 NORMALIZED USAGE',
+      normalizeUsagePayload(
+        query.usage
+      )
+    )
 
     const payload = {
 
-      usage:
-
+      attributes: [
         normalizeUsagePayload(
           query.usage
-        ),
+        )
+      ],
 
-      workflow:
-
-        normalizeWorkflowPayload(
-          query.workflow
-        ),
+      max_price:
+        query.max_price,
     }
+
+
+    // const payload = {
+
+    //   usage:
+
+    //     normalizeUsagePayload(
+    //       query.usage
+    //     ),
+
+    //   workflow:
+
+    //     normalizeWorkflowPayload(
+    //       query.workflow
+    //     ),
+
+    //  budget_max:
+    //       query.max_price,
+    // }
+
+    console.log(
+       '🔥 FINDER REQUEST PAYLOAD',
+      JSON.stringify(
+        payload,
+        null,
+        2
+      )
+    )
 
     /* ======================================================================
     🔥 Intent Observatory

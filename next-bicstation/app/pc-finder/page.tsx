@@ -123,6 +123,15 @@ useMemo(() => {
 
 async function handleSearch() {
 
+console.log(
+  '🔥 FINDER UI STATE',
+  {
+    purpose,
+    semanticUsage,
+    budget,
+  }
+)
+
 
 console.log(
   '🔥 HANDLE SEARCH FIRED'

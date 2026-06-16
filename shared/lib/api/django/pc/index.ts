@@ -148,6 +148,16 @@ import {
 } from './discover'
 
 /* ============================================================================
+🛡️ Legacy Compatibility Imports
+============================================================================ */
+
+import {
+
+  fetchFinder,
+
+} from './finder'
+
+/* ============================================================================
 🛡️ Legacy Compatibility Exports
 ============================================================================ */
 
@@ -160,26 +170,30 @@ import {
 export const fetchPCProducts =
   fetchProducts
 
+
 /**
  * ============================================================================
- * Legacy Finder Continuity
+ * Finder Runtime Continuity
  * ============================================================================
  *
  * IMPORTANT:
  *
- * Legacy continuity currently maps:
+ * Finder now resolves through:
  *
- * finder
+ * finder runtime
  * →
- * search transport runtime
+ * projection layer
+ * →
+ * finder ui contract
  *
- * Future evolution may migrate toward:
+ * Backend remains:
  *
- * finder semantic narrowing runtime
+ * semantic authority
  */
 
+
 export const fetchFinderResult =
-  searchPC
+  fetchFinder
 
 /**
  * ============================================================================

@@ -34,26 +34,56 @@ def semantic_finder_v2(
         build_finder_runtime(
 
             selected_attributes=
-
                 request.data.get(
                     "attributes",
                     []
                 ),
 
             selected_groups=
-
                 request.data.get(
                     "groups",
                     []
                 ),
+                
+            max_price=
+                request.data.get(
+                    "max_price"
+                ),
 
             limit=
-
                 request.data.get(
                     "limit",
                     100
                 ),
         )
+    )
+
+    print(
+        "🔥 REQUEST DATA",
+        request.data
+    )
+    
+    
+    print(
+        "🔥 FINDER REQUEST",
+        {
+            "attributes":
+                request.data.get(
+                    "attributes",
+                    []
+                ),
+
+            "groups":
+                request.data.get(
+                    "groups",
+                    []
+                ),
+
+            "max_price":
+                request.data.get(
+                    "max_price"
+                ),
+        }
     )
 
     return Response(
