@@ -374,11 +374,27 @@ normalizeFinderProducts(
   products: FinderProduct[]
 ) {
 
-  return safeArray(
-    products
-  ).filter(
-    isValidFinderProduct
+  console.log(
+    '🔥 FINDER RESULTS INPUT',
+    products?.length,
+    products?.[0]
   )
+
+  const normalized =
+
+    safeArray(
+      products
+    ).filter(
+      isValidFinderProduct
+    )
+
+  console.log(
+    '🔥 FINDER RESULTS OUTPUT',
+    normalized?.length,
+    normalized?.[0]
+  )
+
+  return normalized
 }
 
 /* =========================================

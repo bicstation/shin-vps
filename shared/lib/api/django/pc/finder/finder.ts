@@ -65,6 +65,14 @@ import {
 
 } from './normalize'
 
+
+import {
+
+  projectFinderResults,
+
+} from './projection'
+
+
 /* ============================================================================
 🔥 Observatory
 ============================================================================ */
@@ -319,7 +327,32 @@ fetchFinder(
       normalizeFinderRuntime(
         runtime
       )
-   
+    
+
+    /* ======================================================================
+    🔥 Projection
+    ====================================================================== */
+
+    const projectedResults =
+
+      projectFinderResults(
+        normalized.results
+      )
+
+    console.log(
+      '🔥 FINDER PROJECTION APPLIED',
+      {
+
+        runtime_results:
+          normalized.results?.length || 0,
+
+        projected_results:
+          projectedResults.length,
+
+        sample:
+          projectedResults?.[0],
+      }
+    )
 
     /* ======================================================================
     🔥 Normalized Runtime Observatory
@@ -369,7 +402,15 @@ fetchFinder(
     🔥 Return
     ====================================================================== */
 
-    return normalized
+    // return normalized
+
+    return {
+
+      ...normalized,
+
+      results:
+        projectedResults,
+    }
 
   } catch (error) {
 
@@ -406,3 +447,5 @@ fetchFinder(
     }
   }
 }
+
+

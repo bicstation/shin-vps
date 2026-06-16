@@ -1,4 +1,6 @@
 // /lib/finderTransport.ts
+// /home/maya/shin-dev/shin-vps/next-bicstation/app/pc-finder/lib/finderTransport.ts
+
 
 /* =========================================
 🔥 API
@@ -57,6 +59,10 @@ import type {
   FinderApiResponse,
 
 } from '../types/finder'
+
+import {
+  projectFinderResults,
+} from '@/shared/lib/api/django/pc/finder/projection'
 
 /* =========================================
 🔥 Dummy
@@ -168,21 +174,37 @@ fetchFinderTransport({
         response
       )
 
+    const projectedProducts =
+
+      projectFinderResults(
+
+        normalized?.results
+
+        ?? []
+
+      )
+    
+    console.log(
+      '🔥 PROJECTED FINDER PRODUCT',
+      projectedProducts?.[0]
+    )
+    
+
     // ====================================
     // Dummy Fallback
     // ====================================
 
-    if (
-      !normalized.length
-    ) {
+    // if (
+    //   !projectedProducts.length
+    // ) {
 
-      console.warn(
-        '🔥 Finder Dummy Fallback'
-      )
+    //   console.warn(
+    //     '🔥 Finder Dummy Fallback'
+    //   )
 
-      normalized =
-        DUMMY_FINDER_RESULTS
-    }
+    //   normalized =
+    //     DUMMY_FINDER_RESULTS
+    // }
 
     // ====================================
     // Product Normalize
@@ -191,8 +213,15 @@ fetchFinderTransport({
     const validProducts =
 
       normalizeFinderProducts(
-        normalized
+        projectedProducts
       )
+    
+    console.log(
+      '🔥 VALID FINDER PRODUCT',
+      validProducts?.[0]
+    )
+    
+
 
     // ====================================
     // Recommendation Sort
@@ -322,3 +351,4 @@ fetchFinderTransport({
     )
   }
 }
+

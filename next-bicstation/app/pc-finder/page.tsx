@@ -1,486 +1,286 @@
-// /home/maya/shin-dev/shin-vps/next-bicstation/app/pc-finder/page.tsx
 'use client'
 
-/* =========================================
-🔥 React
-========================================= */
+import { useMemo, useState } from 'react'
 
-import {
-  useMemo,
-  useState,
-} from 'react'
+import HeroSection from './sections/hero/HeroSection'
+import IntentSection from './sections/intent/IntentSection'
+import BudgetSection from './sections/budget/BudgetSection'
 
-/* =========================================
-🔥 API
-========================================= */
-
-import {
-  fetchFinderResult,
-} from '@/shared/lib/api/django/pc'
-
-/* =========================================
-🔥 ORCHESTRATION
-========================================= */
-
-import FinderLayout
-  from './orchestration/FinderLayout'
-
-import FinderSemanticFlow
-  from './orchestration/FinderSemanticFlow'
+import FinderLoading from './components/FinderLoading'
+import EmptyFinder from './components/EmptyFinder'
 
 import FinderConversionFlow
-  from './orchestration/FinderConversionFlow'
+from './orchestration/FinderConversionFlow'
 
-/* =========================================
-🔥 STATES
-========================================= */
+import {
+fetchFinderResult,
+} from '@/shared/lib/api/django/pc'
 
-import EmptyFinder
-  from './components/EmptyFinder'
+import type {
+FinderProduct,
+} from './types/finder'
 
-import FinderLoading
-  from './components/FinderLoading'
 
-/* =========================================
-🔥 Styles
-========================================= */
-
-import styles
-  from './PCFinderPage.module.css'
-
-/* =========================================
-🔥 Semantic Mapping
-========================================= */
+console.log(
+  '🔥 PAGE TSX LOADED'
+)
 
 const PURPOSE_TO_SEMANTIC = {
 
-  gaming:
-    'usage-gaming',
+gaming: 'usage-gaming',
+creator: 'usage-creator',
+business: 'usage-business',
+ai: 'usage-ai',
 
-  creator:
-    'usage-creator',
+} as const
 
-  business:
-    'usage-business',
+export default function Page() {
 
-  ai:
-    'usage-ai',
-}
+const [
 
-/* =========================================
-🔥 Dummy Fallback
-========================================= */
 
-const DUMMY_RESULTS = [
+purpose,
 
-  {
-    unique_id:
-      'dummy-gaming-001',
+setPurpose,
 
-    name:
-      'RTX 4070 搭載 Gaming PC',
 
-    maker:
-      'GALLERIA',
+] = useState('gaming')
 
-    price:
-      249800,
+const [
 
-    image_url:
-      '/dummy/gaming.jpg',
 
-    recommendation_reason:
-      'gaming semantic に最適化された高バランス構成。',
+budget,
 
-    grouped_attributes: {
+setBudget,
 
-      usage: [
-        {
-          name:
-            'ゲーミング',
-          slug:
-            'usage-gaming',
-        },
-      ],
 
-      gpu: [
-        {
-          name:
-            'RTX 4070',
-          slug:
-            'gpu-rtx-4070',
-        },
-      ],
+] = useState(250000)
 
-    },
+const [
 
-  },
 
+loading,
+
+setLoading,
+
+
+] = useState(false)
+
+const [
+
+
+searched,
+
+setSearched,
+
+
+] = useState(false)
+
+const [
+
+
+results,
+
+setResults,
+
+
+] = useState<FinderProduct[]>([])
+
+const semanticUsage =
+
+
+PURPOSE_TO_SEMANTIC[
+  purpose as keyof typeof PURPOSE_TO_SEMANTIC
 ]
 
-/* =========================================
-🔥 PAGE
-========================================= */
 
-export default function
-PCFinderPage() {
+const semanticDescription =
 
-  // ======================================
-  // STATE
-  // ======================================
 
-  const [
+useMemo(() => {
 
-    purpose,
+  switch (purpose) {
 
-    setPurpose,
+    case 'gaming':
+      return 'FPS・MMORPG・重量級ゲーム向け'
 
-  ] = useState(
-    'gaming'
-  )
+    case 'creator':
+      return '動画編集・配信・制作向け'
 
-  const [
+    case 'business':
+      return '業務・法人利用向け'
 
-    budget,
+    case 'ai':
+      return 'AI画像生成・LLM用途向け'
 
-    setBudget,
+    default:
+      return ''
 
-  ] = useState(
-    250000
-  )
-
-  const [
-
-    loading,
-
-    setLoading,
-
-  ] = useState(
-    false
-  )
-
-  const [
-
-    searched,
-
-    setSearched,
-
-  ] = useState(
-    false
-  )
-
-  const [
-
-    results,
-
-    setResults,
-
-  ] = useState<any[]>([])
-
-  // ======================================
-  // SEMANTIC
-  // ======================================
-
-  const semanticUsage =
-
-    PURPOSE_TO_SEMANTIC[
-      purpose
-    ]
-
-    || 'usage-gaming'
-
-  // ======================================
-  // DESCRIPTION
-  // ======================================
-
-  const semanticDescription =
-
-    useMemo(() => {
-
-      switch (
-        purpose
-      ) {
-
-        case 'gaming':
-          return 'FPS・MMORPG・重量級ゲーム向け'
-
-        case 'creator':
-          return '動画編集・配信・制作向け'
-
-        case 'business':
-          return '業務・法人利用向け'
-
-        case 'ai':
-          return 'AI画像生成・LLM用途向け'
-
-        default:
-          return 'semantic recommendation'
-
-      }
-
-    }, [
-      purpose,
-    ])
-
-  // ======================================
-  // SEARCH
-  // ======================================
-
-  async function
-  handleSearch() {
-
-    try {
-
-      // --------------------------------
-      // Loading
-      // --------------------------------
-
-      setLoading(true)
-
-      setSearched(true)
-
-      // --------------------------------
-      // Fetch
-      // --------------------------------
-
-      const response =
-
-        await fetchFinderResult({
-
-          usage:
-            semanticUsage,
-
-          max_price:
-            budget,
-
-        })
-
-      // --------------------------------
-      // Normalize
-      // --------------------------------
-
-      const normalized =
-
-        Array.isArray(
-          response
-        )
-
-          ? response
-
-          : Array.isArray(
-              response?.products
-            )
-
-          ? response.products
-
-          : Array.isArray(
-              response?.results
-            )
-
-          ? response.results
-
-          : []
-
-      // --------------------------------
-      // Apply
-      // --------------------------------
-
-      setResults(
-        normalized
-      )
-
-      // --------------------------------
-      // Debug
-      // --------------------------------
-
-      console.log(
-        '\n🔥 ====================================='
-      )
-
-      console.log(
-        '🔥 PC FINDER'
-      )
-
-      console.log({
-
-        purpose,
-
-        semanticUsage,
-
-        budget,
-
-        resultCount:
-          normalized?.length
-          || 0,
-
-        firstResult:
-
-          normalized?.[0]
-          ? {
-
-              unique_id:
-                normalized[0]
-                  ?.unique_id,
-
-              name:
-                normalized[0]
-                  ?.name,
-
-              maker:
-                normalized[0]
-                  ?.maker,
-
-            }
-
-          : null,
-
-      })
-
-      console.log(
-        '🔥 =====================================\n'
-      )
-
-    } catch (error) {
-
-      console.error(
-        '🔥 Finder Fetch Error'
-      )
-
-      console.error(
-        error
-      )
-
-      // --------------------------------
-      // Dummy Fallback
-      // --------------------------------
-
-      setResults(
-        DUMMY_RESULTS
-      )
-
-    } finally {
-
-      setLoading(false)
-
-    }
   }
 
-  // ======================================
-  // RESULT STATE
-  // ======================================
+}, [purpose])
 
-  const hasResults =
 
-    results.length > 0
+async function handleSearch() {
 
-  // ======================================
-  // RENDER
-  // ======================================
 
-  return (
+console.log(
+  '🔥 HANDLE SEARCH FIRED'
+)
 
-    <main
-      className={
-        styles.page
-      }
-    >
+try {
 
-      <FinderLayout>
+  setLoading(true)
 
-        {/* ==================================
-        SEMANTIC FLOW
-        semantic cognition layer
-        ================================== */}
+  setSearched(true)
 
-        <FinderSemanticFlow
+  const response =
 
-          purpose={
-            purpose
-          }
+    await fetchFinderResult({
 
-          budget={
-            budget
-          }
+      usage:
+        semanticUsage,
 
-          semanticUsage={
-            semanticUsage
-          }
+      max_price:
+        budget,
 
-          semanticDescription={
-            semanticDescription
-          }
+    })
 
-          onPurposeChange={
-            setPurpose
-          }
+  const products =
 
-          onBudgetChange={
-            setBudget
-          }
+    Array.isArray(response)
 
-          onSearch={
-            handleSearch
-          }
+      ? response
 
-          loading={
-            loading
-          }
+      : (
+          response?.data?.products
+          ?? response?.products
+          ?? response?.results
+          ?? []
+        )
 
-        />
-
-        {/* ==================================
-        EMPTY
-        ================================== */}
-
-        {!loading
-          &&
-          searched
-          &&
-          !hasResults && (
-
-          <EmptyFinder />
-
-        )}
-
-        {/* ==================================
-        LOADING
-        ================================== */}
-
-        {loading && (
-
-          <FinderLoading />
-
-        )}
-
-        {/* ==================================
-        CONVERSION FLOW
-        commerce recommendation layer
-        ================================== */}
-
-        {!loading
-          &&
-          hasResults && (
-
-          <FinderConversionFlow
-
-            purpose={
-              purpose
-            }
-
-            semanticUsage={
-              semanticUsage
-            }
-
-            results={
-              results
-            }
-
-          />
-
-        )}
-
-      </FinderLayout>
-
-    </main>
+  console.log(
+    '🔥 FINDER RESPONSE',
+    products?.length,
+    products?.[0]
   )
+
+  setResults(products)
+
+} catch (error) {
+
+  console.error(
+    '🔥 FINDER ERROR',
+    error
+  )
+
+  setResults([])
+
+} finally {
+
+  setLoading(false)
+
+}
+
+
+}
+
+return (
+
+
+<>
+
+  <HeroSection
+
+    purpose={purpose as any}
+
+    semanticUsage={
+      semanticUsage
+    }
+
+    semanticDescription={
+      semanticDescription
+    }
+
+  />
+
+  <IntentSection
+
+    value={
+      purpose as any
+    }
+
+    onChange={
+      setPurpose as any
+    }
+
+  />
+
+  <BudgetSection
+
+    value={
+      budget
+    }
+
+    onChange={
+      setBudget
+    }
+
+  />
+
+  <button
+    onClick={
+      handleSearch
+    }
+  >
+
+    診断開始
+
+  </button>
+
+  {loading && (
+
+    <FinderLoading />
+
+  )}
+
+  {!loading &&
+   searched &&
+   !results.length && (
+
+    <EmptyFinder
+
+      semanticUsage={
+        semanticUsage
+      }
+
+    />
+
+  )}
+
+  {!loading &&
+   results.length > 0 && (
+
+    <FinderConversionFlow
+
+      purpose={
+        purpose
+      }
+
+      semanticUsage={
+        semanticUsage
+      }
+
+      results={
+        results
+      }
+
+    />
+
+  )}
+
+</>
+
+
+)
 }

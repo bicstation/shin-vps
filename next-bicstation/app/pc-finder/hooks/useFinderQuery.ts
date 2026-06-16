@@ -72,6 +72,15 @@ import {
   DUMMY_FINDER_RESULTS,
 } from '../dummy/finderResults'
 
+
+/* =========================================
+🔥 Projection
+========================================= */
+
+import {
+  projectFinderResults,
+} from '@/shared/lib/api/django/pc/finder/projection'
+
 /* =========================================
 🔥 Hook
 ========================================= */
@@ -188,6 +197,7 @@ useFinderQuery() {
 
             })
 
+          
           // ===============================
           // Normalize
           // ===============================
@@ -198,19 +208,40 @@ useFinderQuery() {
               response
             )
 
+          console.log(
+            '🔥 NORMALIZED PRODUCTS',
+            normalized?.length,
+            normalized?.[0]
+          )
+
+          // ===============================
+          // Projection
+          // ===============================
+
+          let projectedProducts =
+
+            projectFinderResults(
+              normalized
+            )
+
+          console.log(
+            '🔥 PROJECTED FINDER PRODUCT',
+            projectedProducts?.[0]
+          )
+
           // ===============================
           // Dummy Fallback
           // ===============================
 
           if (
-            !normalized.length
+            !projectedProducts.length
           ) {
 
             console.warn(
               '🔥 Using Dummy Finder Results'
             )
 
-            normalized =
+            projectedProducts =
               DUMMY_FINDER_RESULTS
           }
 
@@ -219,18 +250,14 @@ useFinderQuery() {
           // ===============================
 
           const sorted =
-
             sortFinderRecommendations({
-
               products:
-                normalized,
-
+                projectedProducts,
               semanticUsage,
-
               maxPrice:
                 budget,
-
             })
+
 
           // ===============================
           // AI Reasoning
@@ -265,6 +292,12 @@ useFinderQuery() {
 
               })
             )
+          
+          console.log(
+            '🔥 FINDER UI PRODUCTS',
+            enriched.length,
+            enriched?.[0]
+          )
 
           // ===============================
           // Save

@@ -91,26 +91,50 @@ export function normalizeFinderRuntime(
   /* ========================================================================
   🔥 Safe Results
   ======================================================================== */
+  const source =
+    runtime?.data ?? runtime
 
   const rawResults =
 
     Array.isArray(
-      runtime.results
+      source?.products
     )
 
-      ? runtime.results
+      ? source.products
 
-      : []
+      : Array.isArray(
+          source?.results
+        )
+
+        ? source.results
+
+        : []
+  
+  console.log(
+    '🔥 RAW RESULTS',
+    rawResults.length,
+    rawResults?.[0]
+  )
 
   /* ========================================================================
   🔥 Normalize Products
   ======================================================================== */
+  console.log(
+    '🔥 RAW RESULTS',
+    rawResults?.length,
+    rawResults?.[0]
+  )
 
   const results =
 
     rawResults.map(
       normalizeFinderProduct
     )
+  
+  console.log(
+    '🔥 NORMALIZED PRODUCT',
+    results?.[0]
+  )
 
   /* ========================================================================
   🔥 Runtime Build
@@ -179,9 +203,9 @@ export function normalizeFinderProduct(
 
   const product =
 
-    item.product
-
-    || {}
+    typeof item?.product === 'object'
+      ? item.product
+      : item
 
   /* ========================================================================
   🔥 Semantic Runtime
