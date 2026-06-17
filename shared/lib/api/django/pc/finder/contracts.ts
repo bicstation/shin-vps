@@ -66,43 +66,30 @@ import type {
  * multi-dimensional semantic narrowing continuity.
  */
 
+
 export interface FinderQuery {
 
   /**
-   * Human traversal continuity usage.
-   *
-   * Examples:
-   * - usage-ai
-   * - usage-gaming
-   * - usage-business
-   *
-   * IMPORTANT:
-   * Multiple narrowing continuity allowed.
+   * Semantic Narrowing
    */
-
   usage?: string[]
 
-  /**
-   * Optional workflow continuity.
-   *
-   * IMPORTANT:
-   * Supports multi-workflow narrowing continuity.
-   */
-
   workflow?: string[]
-
-  /**
-   * Optional traversal continuity shelf.
-   */
 
   shelf?: string
 
   /**
-   * Optional budget continuity.
+   * Runtime Reality
    */
+  max_price?: number
 
-  budget_max?: number
+  /**
+   * Legacy Compatibility
+   */
+  budget_max?: number | null
+
 }
+
 
 /* ============================================================================
 🔥 Finder Runtime Meta

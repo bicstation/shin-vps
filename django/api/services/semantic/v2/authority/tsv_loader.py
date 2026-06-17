@@ -244,3 +244,42 @@ if __name__ == "__main__":
 
             f"{name}: {len(rows)} rows"
         )
+
+
+# ==========================================================
+# SEMANTIC GROUPS
+# ==========================================================
+
+def load_semantic_groups():
+
+    return load_tsv(
+
+        DEFAULT_TSV_DIR
+        / "semantic_groups.tsv"
+    )
+
+
+# ==========================================================
+# SEMANTIC ATTRIBUTES
+# ==========================================================
+
+def load_semantic_attributes():
+
+    return load_tsv(
+
+        DEFAULT_TSV_DIR
+        / "semantic_attributes.tsv"
+    )
+
+
+# ==========================================================
+# SEMANTIC GROUP MAPPINGS
+# ==========================================================
+
+def load_semantic_group_mappings():
+
+    return load_tsv(
+
+        DEFAULT_TSV_DIR
+        / "semantic_group_mappings.tsv"
+    )

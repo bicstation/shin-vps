@@ -11,6 +11,10 @@ from api.views.related_v2_view import ( semantic_related_v2, )
 from api.views.top_v2_view import ( semantic_top_v2,)
 from api.views import ( semantic_discover_detail_v2, )
 from api.views.product_list_v2_view import ( semantic_product_list_v2, )
+from api.views.topology_v2_view import ( topology_runtime_v2, )
+from api.views.navigation_v2_view import ( navigation_v2, )
+from api.views.sidebar_v2_view import ( sidebar_v2, )
+from api.views.discover_universe_v2_view import ( discover_universe_v2,)
 
 app_name = "pc"
 
@@ -26,6 +30,35 @@ urlpatterns = [
         name="semantic_top_v2",
     ),
 
+    # ======================================================
+    # TSV Topology
+    # ======================================================
+
+
+    path(
+        "topology/",
+        topology_runtime_v2,
+        name="topology",
+    ),
+
+
+    path(
+        "navigation/",
+        navigation_v2,
+        name="navigation",
+    ),
+    
+    path(
+        "sidebar/",
+        sidebar_v2,
+        name="sidebar",
+    ),
+    
+    path(
+        "discover-universe/",
+        discover_universe_v2,
+        name="discover_universe",
+    ),
 
     # =====================================================
     # DISCOVER

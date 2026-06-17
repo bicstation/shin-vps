@@ -1,0 +1,112 @@
+// ============================================================================
+// FILE:
+// /home/maya/shin-dev/shin-vps/shared/lib/api/django/pc/navigation/contracts.ts
+// Copyright (c) 2024 Shin Corporation.
+// All rights reserved.
+// ============================================================================
+
+/**
+ * ============================================================================
+ * SHIN CORE LINX
+ * Navigation Runtime Contracts
+ * ============================================================================
+ *
+ * IMPORTANT
+ *
+ * Backend remains:
+ *
+ * semantic authority
+ *
+ * This contract represents:
+ *
+ * Runtime Reality
+ *
+ * NOT:
+ *
+ * UI Projection
+ *
+ * ============================================================================
+ */
+
+/* ============================================================================
+🔥 Navigation Runtime Item
+============================================================================ */
+
+export interface NavigationRuntimeItem {
+
+  /**
+   * Semantic Identifier
+   */
+
+  slug: string
+
+  /**
+   * Human Label
+   */
+
+  name: string
+
+  /**
+   * Semantic Type
+   *
+   * usage
+   * workflow
+   * maker
+   * gpu
+   * etc.
+   */
+
+  type: string
+
+  /**
+   * Runtime Metadata
+   */
+
+  icon?: string
+
+  color?: string
+
+  /**
+   * Hierarchy
+   */
+
+  parent_group?: string
+
+  /**
+   * Runtime Metrics
+   */
+
+  attribute_count?: number
+
+  product_count?: number
+}
+
+/* ============================================================================
+🔥 Navigation Runtime Response
+============================================================================ */
+
+export interface NavigationRuntimeResponse {
+
+  success?: boolean
+
+  semantic_authority?: string
+
+  authority_version?: string
+
+  navigation: NavigationRuntimeItem[]
+}
+
+/* ============================================================================
+🔥 Navigation Runtime
+============================================================================ */
+
+export interface NavigationRuntime {
+
+  semantic_authority?: string
+
+  authority_version?: string
+
+  navigation: NavigationRuntimeItem[]
+
+  raw?: any
+}
