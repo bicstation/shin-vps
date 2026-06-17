@@ -1,126 +1,126 @@
-type	name	slug	order	is_adult	semantic_role	semantic_weight	icon	color	is_ranking_enabled
-product_type	モニター	product-monitor	10	0	primary	0.95	monitor	cyan	true
-product_type	デスクトップPC	product-desktop	10	0	primary	0.95	pc	blue	true
-product_type	ノートPC	product-notebook	10	0	primary	0.95	laptop	green	true
-product_type	ミニPC	product-mini-pc	10	0	secondary	0.70	box	gray	false
-product_type	サーバー	product-server	10	0	highlight	0.98	server	darkred	true
-product_type	ワークステーション	product-workstation	10	0	highlight	0.92	cpu	purple	true
-device	ノートPC	device-laptop	90	0	primary	0.80	laptop	blue	true
-device	デスクトップPC	device-desktop	80	0	secondary	0.70	pc	gray	true
-device	サーバー	device-server	100	0	highlight	0.98	server	darkred	true
-device	ワークステーション	device-workstation	95	0	highlight	0.92	cpu	purple	true
-device	ミニPC	device-mini-pc	75	0	secondary	0.65	box	green	true
-device	モバイルPC	device-mobile-pc	85	0	primary	0.78	smartphone	cyan	true
-cpu	Core Ultra 9	intel-core-ultra-9	110	0	primary	0.98	cpu	red	true
-cpu	Core Ultra 7	intel-core-ultra-7	105	0	primary	0.92	cpu	orange	true
-cpu	Core Ultra 5	intel-core-ultra-5	100	0	primary	0.88	cpu	yellow	true
-cpu	Core i9	intel-core-i9	90	0	primary	0.95	cpu	red	true
-cpu	Core i7	intel-core-i7	85	0	primary	0.88	cpu	orange	true
-cpu	Core i5	intel-core-i5	80	0	secondary	0.75	cpu	yellow	true
-cpu	Core i3	intel-core-i3	70	0	secondary	0.60	cpu	blue	true
-cpu	Ryzen AI	amd-ryzen-ai	95	0	highlight	0.97	cpu	purple	true
-cpu	Ryzen Threadripper	amd-threadripper	95	0	highlight	0.99	cpu	darkred	true
-cpu	Snapdragon X Elite / Plus	arm-snapdragon-x	92	0	highlight	0.93	cpu	cyan	true
-cpu	Ryzen 9	amd-ryzen-9	85	0	primary	0.90	cpu	red	true
-cpu	Ryzen 7	amd-ryzen-7	80	0	primary	0.84	cpu	orange	true
-cpu	Ryzen 5	amd-ryzen-5	75	0	secondary	0.72	cpu	yellow	true
-cpu	Ryzen 3	amd-ryzen-3	70	0	secondary	0.58	cpu	blue	true
-cpu	Intel Xeon	intel-xeon	95	0	highlight	0.96	cpu	darkred	true
-cpu	Celeron / Pentium	intel-low-end	10	0	supportive	0.20	cpu	gray	true
-cpu_feature	NPU搭載	cpu-npu	10	0	highlight	0.85	sparkles	purple	true
-gpu	GeForce RTX 5090	gpu-rtx-5090	110	0	highlight	1.00	gpu	red	true
-gpu	GeForce RTX 5080	gpu-rtx-5080	105	0	highlight	0.98	gpu	red	true
-gpu	GeForce RTX 5070 Ti	gpu-rtx-5070-ti	100	0	highlight	0.95	gpu	orange	true
-gpu	GeForce RTX 5070	gpu-rtx-5070	95	0	primary	0.92	gpu	orange	true
-gpu	GeForce RTX 4090	gpu-rtx-4090	92	0	highlight	0.97	gpu	red	true
-gpu	GeForce RTX 4080	gpu-rtx-4080	88	0	primary	0.90	gpu	orange	true
-gpu	GeForce RTX 4070 Ti	gpu-rtx-4070-ti	85	0	primary	0.87	gpu	yellow	true
-gpu	GeForce RTX 4070	gpu-rtx-4070	82	0	primary	0.84	gpu	yellow	true
-gpu	GeForce RTX 4060 Ti	gpu-rtx-4060-ti	78	0	secondary	0.78	gpu	green	true
-gpu	GeForce RTX 4060	gpu-rtx-4060	75	0	secondary	0.74	gpu	green	true
-gpu	GeForce RTX 4050	gpu-rtx-4050	70	0	secondary	0.68	gpu	blue	true
-gpu	Radeon AI PRO	gpu-radeon-ai-pro	65	0	highlight	0.80	gpu	purple	true
-gpu	Intel Arc Graphics	gpu-intel-arc	50	0	supportive	0.55	gpu	cyan	true
-gpu	Intel Graphics (内蔵)	gpu-intel-graphics	5	0	supportive	0.15	gpu	gray	true
-gpu	AMD Radeon Graphics (内蔵)	gpu-amd-graphics	5	0	supportive	0.18	gpu	gray	true
-gpu_type	プロ向け	gpu-professional	45	0	highlight	0.72	briefcase	darkblue	true
-vram	24GB以上	vram-24gb-plus	100	0	highlight	0.98	memory	red	TRUE
-vram	16GB	vram-16gb	90	0	primary	0.9	memory	orange	TRUE
-vram	12GB	vram-12gb	80	0	primary	0.82	memory	yellow	TRUE
-vram	8GB	vram-8gb	70	0	secondary	0.7	memory	green	TRUE
-vram	6GB	vram-6gb	60	0	secondary	0.58	memory	blue	TRUE
-vram	4GB以下	vram-4gb	50	0	supportive	0.35	memory	gray	TRUE
-memory	64GB以上（超大容量）	mem-64gb-plus	100	0	highlight	0.96	memory	red	TRUE
-memory	32GB（大容量）	mem-32gb	90	0	primary	0.88	memory	orange	TRUE
-memory	16GB（標準）	mem-16gb	80	0	secondary	0.72	memory	yellow	FALSE
-memory	8GB（最低限）	mem-8gb	70	0	supportive	0.45	memory	blue	FALSE
-storage	2TB以上（超大容量）	ssd-2tb-plus	100	0	highlight	0.94	hard-drive	red	TRUE
-storage	1TB（大容量）	ssd-1tb	90	0	primary	0.84	hard-drive	orange	TRUE
-storage	512GB（標準）	ssd-512gb	80	0	secondary	0.68	hard-drive	yellow	FALSE
-storage	256GB（最低限）	ssd-256gb	70	0	supportive	0.4	hard-drive	blue	FALSE
-storage_type	NVMe SSD	storage-nvme	50	0	highlight	0.78	cpu	purple	TRUE
-storage_type	SATA SSD	storage-sata	40	0	secondary	0.5	hard-drive	gray	TRUE
-usage	ゲーミングPC	usage-gaming	711	0	highlight	0.98	gamepad	red	true
-usage	クリエイター向け	usage-creator	712	0	highlight	0.92	pen-tool	purple	true
-usage	ビジネス・法人向け	usage-business	713	0	primary	0.75	briefcase	blue	true
-usage	AI・ローカルAI用途	usage-ai	714	0	highlight	0.99	sparkles	purple	true
-usage	モバイル・軽量	usage-mobile	715	0	primary	0.82	smartphone	cyan	true
-usage	コスパ重視	usage-budget	716	0	secondary	0.65	badge-dollar-sign	green	true
-pc_feature	1kg未満（超軽量）	feat-weight-1kg	100	0	highlight	0.88	feather	cyan	true
-pc_feature	1.0〜1.5kg（軽量）	feat-weight-1-5kg	90	0	primary	0.72	feather	blue	true
-pc_feature	1.5〜2.0kg（標準）	feat-weight-2kg	80	0	secondary	0.55	scale	gray	true
-maker	ASUS	maker-asus	50	0	secondary	0.45	laptop	blue	false
-maker	DELL	maker-dell	50	0	secondary	0.45	monitor	blue	false
-maker	HP	maker-hp	50	0	secondary	0.45	laptop	blue	false
-maker	Lenovo	maker-lenovo	50	0	secondary	0.45	briefcase	blue	false
-maker	MSI	maker-msi	50	0	secondary	0.50	cpu	red	false
-maker	NEC	maker-nec	50	0	secondary	0.40	building	gray	false
-maker	FUJITSU	maker-fujitsu	50	0	secondary	0.40	building	gray	false
-maker	Dynabook	maker-dynabook	50	0	secondary	0.40	laptop	gray	false
-maker	MouseComputer	maker-mouse	50	0	secondary	0.50	mouse	red	false
-maker	Dospara	maker-dospara	50	0	secondary	0.50	monitor	purple	false
-maker	Acer	maker-acer	50	0	secondary	0.45	laptop	green	false
-maker	Razer	maker-razer	50	0	highlight	0.70	sparkles	green	false
-maker	VAIO	maker-vaio	50	0	secondary	0.40	laptop	black	false
-maker	MINISFORUM	maker-minisforum	50	0	secondary	0.45	cpu	gray	false
-maker	Beelink	maker-beelink	50	0	secondary	0.45	box	gray	false
-monitor_size	24インチ前後（標準）	monitor-24inch	80	0	secondary	0.72	monitor	blue	false
-monitor_size	27インチ（大画面）	monitor-27inch	90	0	primary	0.84	monitor	green	true
-monitor_size	32インチ以上（特大）	monitor-32inch	100	0	highlight	0.96	monitor	purple	true
-monitor_size	22インチ以下（小型）	monitor-small	70	0	supportive	0.48	monitor	gray	false
-resolution	FHD	fhd	80	0	secondary	0.65	screen-share	blue	false
-resolution	WQHD	wqhd	90	0	primary	0.84	screen-share	green	true
-resolution	4K	4k	100	0	highlight	0.96	screen-share	purple	true
-resolution	8K（超高精細）	res-8k	110	0	highlight	1.00	screen-share	red	true
-refresh_rate	60Hz（標準）	hz-60hz	80	0	supportive	0.50	gauge	gray	false
-refresh_rate	120Hz以上（高リフレッシュ）	hz-120hz	90	0	primary	0.84	gauge	green	true
-refresh_rate	240Hz以上（ゲーミング）	hz-240hz	100	0	highlight	0.96	gauge	red	true
-refresh_rate	500Hz	refresh-500hz	90	0	highlight	0.98	zap	purple	true
-panel_type	IPS	panel-ips	90	0	primary	0.82	layers	blue	true
-panel_type	VA	panel-va	80	0	secondary	0.68	layers	green	false
-panel_type	OLED	panel-oled	100	0	highlight	0.98	sparkles	purple	true
-aspect_ratio	スーパーウルトラワイド（32:9）	aspect-32-9	100	0	highlight	0.95	stretch-horizontal	purple	true
-aspect_ratio	ウルトラワイド（21:9）	aspect-21-9	90	0	primary	0.84	stretch-horizontal	blue	true
-actor_type	単体女優	solo-actress	1001	1	highlight	0.92	user	pink	true
-actor_type	素人・ナンパ	amateur	1002	1	primary	0.82	users	orange	true
-actor_type	熟女・人妻	mature	1003	1	primary	0.84	heart	red	true
-actor_type	女子大生	college-girl	1004	1	secondary	0.72	book-open	purple	false
-body	巨乳	big-breasts	1010	1	highlight	0.90	sparkles	pink	true
-body	美少女	beautiful-girl	1011	1	primary	0.78	star	yellow	true
-body	スレンダー	slender	1012	1	secondary	0.70	wand	blue	false
-body	ぽっちゃり	chubby	1013	1	secondary	0.62	circle	orange	false
-av_feature	4K / 高画質	ultra-hd-4k	1020	1	highlight	0.88	monitor	purple	true
-av_feature	VR / 3D	vr-content	1021	1	highlight	0.94	glasses	cyan	true
-av_feature	個人撮影	self-shot	1022	1	secondary	0.68	smartphone	green	false
-av_feature	AI解析済 / 高圧縮	ai-analyzed	1023	1	highlight	0.86	cpu	purple	true
-scene	制服・コスプレ	cosplay	1030	1	highlight	0.84	shirt	pink	true
-scene	巨乳・フェチ	fetish	1031	1	primary	0.80	eye	red	true
-scene	痴漢・露出	public-exposure	1032	1	secondary	0.72	map	purple	false
-scene	白衣・奉仕	nursing	1033	1	secondary	0.66	heart-handshake	blue	false
-style	中出し	creampie	1040	1	highlight	0.90	droplets	red	true
-style	拘束・SM	sm-bondage	1041	1	highlight	0.88	lock	purple	true
-style	潮吹き	squirting	1042	1	primary	0.82	waves	cyan	true
-style	逆レイ・攻め	female-led	1043	1	secondary	0.74	crown	pink	false
-gal	ギャル系	adult	1050	1	highlight	0.90	sunglasses	orange	true
-body	美乳	beautiful-breasts	1014	1	secondary	0.72	heart	pink	false
-body	巨尻	big-ass	1015	1	primary	0.78	circle	red	true
+type	name	slug	title	description	order	is_adult	semantic_role	semantic_weight	icon	color	is_ranking_enabled
+product_type	モニター	product-monitor	モニター	用途別ディスプレイ比較	10	0	primary	0.95	monitor	cyan	TRUE
+product_type	デスクトップPC	product-desktop	デスクトップPC	据置型PCを比較	10	0	primary	0.95	pc	blue	TRUE
+product_type	ノートPC	product-notebook	ノートPC	携帯型PCを比較	10	0	primary	0.95	laptop	green	TRUE
+product_type	ミニPC	product-mini-pc	ミニPC	小型PCを比較	10	0	secondary	0.7	box	gray	FALSE
+product_type	サーバー	product-server	サーバー	業務向けサーバー構成	10	0	highlight	0.98	server	darkred	TRUE
+product_type	ワークステーション	product-workstation	ワークステーション	専門業務向け高性能機	10	0	highlight	0.92	cpu	purple	TRUE
+device	ノートPC	device-laptop	ノートPC	持ち運びしやすいPC	90	0	primary	0.8	laptop	blue	TRUE
+device	デスクトップPC	device-desktop	デスクトップ	拡張性重視のPC	80	0	secondary	0.7	pc	gray	TRUE
+device	サーバー	device-server	サーバー	業務・運用向け構成	100	0	highlight	0.98	server	darkred	TRUE
+device	ワークステーション	device-workstation	ワークステーション	制作・解析向け高性能機	95	0	highlight	0.92	cpu	purple	TRUE
+device	ミニPC	device-mini-pc	ミニPC	省スペース構成	75	0	secondary	0.65	box	green	TRUE
+device	モバイルPC	device-mobile-pc	モバイルPC	軽量・長時間駆動向け	85	0	primary	0.78	smartphone	cyan	TRUE
+cpu	Core Ultra 9	intel-core-ultra-9	Core Ultra 9	最上位AI・高性能向け	110	0	primary	0.98	cpu	red	TRUE
+cpu	Core Ultra 7	intel-core-ultra-7	Core Ultra 7	高性能ノート向け	105	0	primary	0.92	cpu	orange	TRUE
+cpu	Core Ultra 5	intel-core-ultra-5	Core Ultra 5	標準AIノート向け	100	0	primary	0.88	cpu	yellow	TRUE
+cpu	Core i9	intel-core-i9	Core i9	高性能ゲーミング向け	90	0	primary	0.95	cpu	red	TRUE
+cpu	Core i7	intel-core-i7	Core i7	性能重視の定番CPU	85	0	primary	0.88	cpu	orange	TRUE
+cpu	Core i5	intel-core-i5	Core i5	バランス重視向け	80	0	secondary	0.75	cpu	yellow	TRUE
+cpu	Core i3	intel-core-i3	Core i3	入門・事務用途向け	70	0	secondary	0.6	cpu	blue	TRUE
+cpu	Ryzen AI	amd-ryzen-ai	Ryzen AI	生成AI・NPU搭載向け	95	0	highlight	0.97	cpu	purple	TRUE
+cpu	Ryzen Threadripper	amd-threadripper	Threadripper	制作・解析向け超高性能	95	0	highlight	0.99	cpu	darkred	TRUE
+cpu	Snapdragon X Elite / Plus	arm-snapdragon-x	Snapdragon X	省電力AIノート向け	92	0	highlight	0.93	cpu	cyan	TRUE
+cpu	Ryzen 9	amd-ryzen-9	Ryzen 9	ハイエンド用途向け	85	0	primary	0.9	cpu	red	TRUE
+cpu	Ryzen 7	amd-ryzen-7	Ryzen 7	ゲーム・制作向け	80	0	primary	0.84	cpu	orange	TRUE
+cpu	Ryzen 5	amd-ryzen-5	Ryzen 5	コスパ重視向け	75	0	secondary	0.72	cpu	yellow	TRUE
+cpu	Ryzen 3	amd-ryzen-3	Ryzen 3	軽作業・入門向け	70	0	secondary	0.58	cpu	blue	TRUE
+cpu	Intel Xeon	intel-xeon	Xeon	業務・サーバー向け	95	0	highlight	0.96	cpu	darkred	TRUE
+cpu	Celeron / Pentium	intel-low-end	Celeron系	低価格PC向け	10	0	supportive	0.2	cpu	gray	TRUE
+cpu_feature	NPU搭載	cpu-npu	NPU搭載	AI処理を高速化	10	0	highlight	0.85	sparkles	purple	TRUE
+gpu	GeForce RTX 5090	gpu-rtx-5090	RTX 5090	最上位AI・4Kゲーム向け	110	0	highlight	1	gpu	red	TRUE
+gpu	GeForce RTX 5080	gpu-rtx-5080	RTX 5080	高性能AI・ゲーム向け	105	0	highlight	0.98	gpu	red	TRUE
+gpu	GeForce RTX 5070 Ti	gpu-rtx-5070-ti	RTX 5070 Ti	高性能ゲーム向け	100	0	highlight	0.95	gpu	orange	TRUE
+gpu	GeForce RTX 5070	gpu-rtx-5070	RTX 5070	WQHDゲーム向け	95	0	primary	0.92	gpu	orange	TRUE
+gpu	GeForce RTX 4090	gpu-rtx-4090	RTX 4090	AI・制作向け高性能GPU	92	0	highlight	0.97	gpu	red	TRUE
+gpu	GeForce RTX 4080	gpu-rtx-4080	RTX 4080	4Kゲーム・制作向け	88	0	primary	0.9	gpu	orange	TRUE
+gpu	GeForce RTX 4070 Ti	gpu-rtx-4070-ti	RTX 4070 Ti	高FPSゲーム向け	85	0	primary	0.87	gpu	yellow	TRUE
+gpu	GeForce RTX 4070	gpu-rtx-4070	RTX 4070	ゲーム・制作向け	82	0	primary	0.84	gpu	yellow	TRUE
+gpu	GeForce RTX 4060 Ti	gpu-rtx-4060-ti	RTX 4060 Ti	定番ゲーム向け	78	0	secondary	0.78	gpu	green	TRUE
+gpu	GeForce RTX 4060	gpu-rtx-4060	RTX 4060	フルHDゲーム向け	75	0	secondary	0.74	gpu	green	TRUE
+gpu	GeForce RTX 4050	gpu-rtx-4050	RTX 4050	入門ゲーミング向け	70	0	secondary	0.68	gpu	blue	TRUE
+gpu	Radeon AI PRO	gpu-radeon-ai-pro	Radeon AI PRO	AI開発・業務向け	65	0	highlight	0.8	gpu	purple	TRUE
+gpu	Intel Arc Graphics	gpu-intel-arc	Intel Arc	コスパGPU向け	50	0	supportive	0.55	gpu	cyan	TRUE
+gpu	Intel Graphics (内蔵)	gpu-intel-graphics	Intel内蔵GPU	軽作業・事務向け	5	0	supportive	0.15	gpu	gray	TRUE
+gpu	AMD Radeon Graphics (内蔵)	gpu-amd-graphics	Radeon内蔵GPU	軽量ノート向け	5	0	supportive	0.18	gpu	gray	TRUE
+gpu_type	プロ向け	gpu-professional	プロ向けGPU	CAD・制作業務向け	45	0	highlight	0.72	briefcase	darkblue	TRUE
+vram	24GB以上	vram-24gb-plus	24GB以上VRAM	AI・4K制作向け	100	0	highlight	0.98	memory	red	TRUE
+vram	16GB	vram-16gb	16GB VRAM	生成AI・高画質向け	90	0	primary	0.9	memory	orange	TRUE
+vram	12GB	vram-12gb	12GB VRAM	WQHDゲーム向け	80	0	primary	0.82	memory	yellow	TRUE
+vram	8GB	vram-8gb	8GB VRAM	定番ゲーム向け	70	0	secondary	0.7	memory	green	TRUE
+vram	6GB	vram-6gb	6GB VRAM	入門ゲーム向け	60	0	secondary	0.58	memory	blue	TRUE
+vram	4GB以下	vram-4gb	4GB以下VRAM	軽作業向け	50	0	supportive	0.35	memory	gray	TRUE
+memory	64GB以上（超大容量）	mem-64gb-plus	64GB以上メモリ	AI・制作向け	100	0	highlight	0.96	memory	red	TRUE
+memory	32GB（大容量）	mem-32gb	32GBメモリ	快適な作業向け	90	0	primary	0.88	memory	orange	TRUE
+memory	16GB（標準）	mem-16gb	16GBメモリ	標準的な用途向け	80	0	secondary	0.72	memory	yellow	FALSE
+memory	8GB（最低限）	mem-8gb	8GBメモリ	軽作業向け	70	0	supportive	0.45	memory	blue	FALSE
+storage	2TB以上（超大容量）	ssd-2tb-plus	2TB以上SSD	大量データ保存向け	100	0	highlight	0.94	hard-drive	red	TRUE
+storage	1TB（大容量）	ssd-1tb	1TB SSD	余裕ある保存容量	90	0	primary	0.84	hard-drive	orange	TRUE
+storage	512GB（標準）	ssd-512gb	512GB SSD	標準的な容量	80	0	secondary	0.68	hard-drive	yellow	FALSE
+storage	256GB（最低限）	ssd-256gb	256GB SSD	最低限の保存容量	70	0	supportive	0.4	hard-drive	blue	FALSE
+storage_type	NVMe SSD	storage-nvme	NVMe SSD	高速な読み書き向け	50	0	highlight	0.78	cpu	purple	TRUE
+storage_type	SATA SSD	storage-sata	SATA SSD	標準的なSSD構成	40	0	secondary	0.5	hard-drive	gray	TRUE
+usage	ゲーミングPC	usage-gaming	FPS Gaming	高FPSゲーム向け	711	0	highlight	0.98	gamepad	red	TRUE
+usage	クリエイター向け	usage-creator	動画編集	動画編集・制作向け	712	0	highlight	0.92	pen-tool	purple	TRUE
+usage	ビジネス・法人向け	usage-business	ビジネス	業務・事務作業向け	713	0	primary	0.75	briefcase	blue	TRUE
+usage	AI・ローカルAI用途	usage-ai	AI画像生成	生成AI・ローカルLLM向け	714	0	highlight	0.99	sparkles	purple	TRUE
+usage	モバイル・軽量	usage-mobile	軽量モバイル	持ち運び重視向け	715	0	primary	0.82	smartphone	cyan	TRUE
+usage	コスパ重視	usage-budget	コスパ重視	価格と性能を両立	716	0	secondary	0.65	badge-dollar-sign	green	TRUE
+pc_feature	1kg未満（超軽量）	feat-weight-1kg	1kg未満	持ち運び最優先向け	100	0	highlight	0.88	feather	cyan	TRUE
+pc_feature	1.0〜1.5kg（軽量）	feat-weight-1-5kg	軽量モデル	外出利用向け	90	0	primary	0.72	feather	blue	TRUE
+pc_feature	1.5〜2.0kg（標準）	feat-weight-2kg	標準重量	据置兼用向け	80	0	secondary	0.55	scale	gray	TRUE
+maker	ASUS	maker-asus	ASUS	幅広い用途に対応	50	0	secondary	0.45	laptop	blue	FALSE
+maker	DELL	maker-dell	DELL	法人・個人向け定番	50	0	secondary	0.45	monitor	blue	FALSE
+maker	HP	maker-hp	HP	ビジネス用途に人気	50	0	secondary	0.45	laptop	blue	FALSE
+maker	Lenovo	maker-lenovo	Lenovo	法人導入実績が豊富	50	0	secondary	0.45	briefcase	blue	FALSE
+maker	MSI	maker-msi	MSI	ゲーミング分野に強み	50	0	secondary	0.5	cpu	red	FALSE
+maker	NEC	maker-nec	NEC	国内向け定番モデル	50	0	secondary	0.4	building	gray	FALSE
+maker	FUJITSU	maker-fujitsu	FUJITSU	国内ビジネス向け	50	0	secondary	0.4	building	gray	FALSE
+maker	Dynabook	maker-dynabook	Dynabook	モバイルノートに強み	50	0	secondary	0.4	laptop	gray	FALSE
+maker	MouseComputer	maker-mouse	Mouse Computer	BTOモデルが豊富	50	0	secondary	0.5	mouse	red	FALSE
+maker	Dospara	maker-dospara	Dospara	ゲーミングPCで人気	50	0	secondary	0.5	monitor	purple	FALSE
+maker	Acer	maker-acer	Acer	コスパ重視モデル展開	50	0	secondary	0.45	laptop	green	FALSE
+maker	Razer	maker-razer	Razer	高級ゲーミングブランド	50	0	highlight	0.7	sparkles	green	FALSE
+maker	VAIO	maker-vaio	VAIO	軽量モバイル向け	50	0	secondary	0.4	laptop	black	FALSE
+maker	MINISFORUM	maker-minisforum	MINISFORUM	高性能ミニPC向け	50	0	secondary	0.45	cpu	gray	FALSE
+maker	Beelink	maker-beelink	Beelink	小型PCに特化	50	0	secondary	0.45	box	gray	FALSE
+monitor_size	24インチ前後（標準）	monitor-24inch	24インチ前後	標準的な作業向け	80	0	secondary	0.72	monitor	blue	FALSE
+monitor_size	27インチ（大画面）	monitor-27inch	27インチ	作業とゲームを両立	90	0	primary	0.84	monitor	green	TRUE
+monitor_size	32インチ以上（特大）	monitor-32inch	32インチ以上	没入感重視向け	100	0	highlight	0.96	monitor	purple	TRUE
+monitor_size	22インチ以下（小型）	monitor-small	22インチ以下	省スペース向け	70	0	supportive	0.48	monitor	gray	FALSE
+resolution	FHD	fhd	フルHD	標準的な画質	80	0	secondary	0.65	screen-share	blue	FALSE
+resolution	WQHD	wqhd	WQHD	作業領域を拡大	90	0	primary	0.84	screen-share	green	TRUE
+resolution	4K	4k	4K	高精細な映像向け	100	0	highlight	0.96	screen-share	purple	TRUE
+resolution	8K（超高精細）	res-8k	8K	最高クラスの高精細	110	0	highlight	1	screen-share	red	TRUE
+refresh_rate	60Hz（標準）	hz-60hz	60Hz	一般用途向け	80	0	supportive	0.5	gauge	gray	FALSE
+refresh_rate	120Hz以上（高リフレッシュ）	hz-120hz	120Hz以上	滑らかな表示向け	90	0	primary	0.84	gauge	green	TRUE
+refresh_rate	240Hz以上（ゲーミング）	hz-240hz	240Hz以上	高速ゲーム向け	100	0	highlight	0.96	gauge	red	TRUE
+refresh_rate	500Hz	refresh-500hz	500Hz	競技レベル向け	90	0	highlight	0.98	zap	purple	TRUE
+panel_type	IPS	panel-ips	IPS	色再現性を重視	90	0	primary	0.82	layers	blue	TRUE
+panel_type	VA	panel-va	VA	コントラスト重視	80	0	secondary	0.68	layers	green	FALSE
+panel_type	OLED	panel-oled	OLED	黒表現と発色が優秀	100	0	highlight	0.98	sparkles	purple	TRUE
+aspect_ratio	スーパーウルトラワイド（32:9）	aspect-32-9	32:9	圧倒的な横長表示	100	0	highlight	0.95	stretch-horizontal	purple	TRUE
+aspect_ratio	ウルトラワイド（21:9）	aspect-21-9	21:9	作業領域を拡張	90	0	primary	0.84	stretch-horizontal	blue	TRUE
+actor_type	単体女優	solo-actress	単体女優	専属女優の魅力	1001	1	highlight	0.92	user	pink	TRUE
+actor_type	素人・ナンパ	amateur	素人・ナンパ	自然な出会いの世界	1002	1	primary	0.82	users	orange	TRUE
+actor_type	熟女・人妻	mature	熟女・人妻	大人の魅力の世界	1003	1	primary	0.84	heart	red	TRUE
+actor_type	女子大生	college-girl	女子大生	青春の魅力の世界	1004	1	secondary	0.72	book-open	purple	FALSE
+body	巨乳	big-breasts	巨乳	豊かなバストの魅力	1010	1	highlight	0.9	sparkles	pink	TRUE
+body	美少女	beautiful-girl	美少女	可憐な魅力の世界	1011	1	primary	0.78	star	yellow	TRUE
+body	スレンダー	slender	スレンダー	細身の美しさの魅力	1012	1	secondary	0.7	wand	blue	FALSE
+body	ぽっちゃり	chubby	ぽっちゃり	柔らかな魅力の世界	1013	1	secondary	0.62	circle	orange	FALSE
+av_feature	4K / 高画質	ultra-hd-4k	4K高画質	高精細映像の魅力	1020	1	highlight	0.88	monitor	purple	TRUE
+av_feature	VR / 3D	vr-content	VR体験	没入体験の魅力	1021	1	highlight	0.94	glasses	cyan	TRUE
+av_feature	個人撮影	self-shot	個人撮影	自然な臨場感の魅力	1022	1	secondary	0.68	smartphone	green	FALSE
+av_feature	AI解析済 / 高圧縮	ai-analyzed	AI最適化	AI解析技術の魅力	1023	1	highlight	0.86	cpu	purple	TRUE
+scene	制服・コスプレ	cosplay	コスプレ	衣装変化の魅力	1030	1	highlight	0.84	shirt	pink	TRUE
+scene	巨乳・フェチ	fetish	フェチ	嗜好探求の魅力	1031	1	primary	0.8	eye	red	TRUE
+scene	痴漢・露出	public-exposure	露出系	刺激的状況の魅力	1032	1	secondary	0.72	map	purple	FALSE
+scene	白衣・奉仕	nursing	白衣・奉仕	奉仕的関係の魅力	1033	1	secondary	0.66	heart-handshake	blue	FALSE
+style	中出し	creampie	中出し	人気傾向の魅力	1040	1	highlight	0.9	droplets	red	TRUE
+style	拘束・SM	sm-bondage	SM	支配と服従の魅力	1041	1	highlight	0.88	lock	purple	TRUE
+style	潮吹き	squirting	潮吹き	感度表現の魅力	1042	1	primary	0.82	waves	cyan	TRUE
+style	逆レイ・攻め	female-led	女攻め	主導的魅力の世界	1043	1	secondary	0.74	crown	pink	FALSE
+gal	ギャル系	adult	ギャル系	華やかな魅力の世界	1050	1	highlight	0.9	sunglasses	orange	TRUE
+body	美乳	beautiful-breasts	美乳	美しいバストの魅力	1014	1	secondary	0.72	heart	pink	FALSE
+body	巨尻	big-ass	巨尻	豊かなヒップの魅力	1015	1	primary	0.78	circle	red	TRUE

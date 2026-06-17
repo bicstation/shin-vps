@@ -15,10 +15,10 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 # Runtime Variables
 # ==========================================================
 
-AI_SPEC_LIMIT=10
-AI_SUMMARY_LIMIT=10
-AI_SEMANTIC_LIMIT=10
-IMAGE_CACHE_LIMIT=10
+AI_SPEC_LIMIT=1000
+AI_SUMMARY_LIMIT=1000
+AI_SEMANTIC_LIMIT=1000
+IMAGE_CACHE_LIMIT=1000
 
 # ==========================================================
 # Project Root Topology
