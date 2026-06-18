@@ -49,5 +49,6 @@ device-mobile	usage-mobile	30
 storage-standard	ssd-256gb	30
 storage-standard	ssd-512gb	30
 storage-highend	ssd-1tb	30
-storage-highend	ssd-2tb	30
+storage-highend	ssd-2tb-plus	30
+
 

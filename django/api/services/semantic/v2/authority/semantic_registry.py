@@ -39,6 +39,14 @@ NORMALIZATION_RULES_FILE = (
     "semantic_normalization_rules"
 )
 
+SLUG_METADATA_FILE = (
+    "semantic_slug_metadata"
+)
+
+WORKFLOW_MAPPINGS_FILE = (
+    "semantic_workflow_mappings"
+)
+
 
 # ==========================================================
 # REGISTRY BUILDER
@@ -87,6 +95,18 @@ def build_semantic_registry():
         "normalization_rules":
             raw.get(
                 NORMALIZATION_RULES_FILE,
+                []
+            ),
+               
+        "slug_metadata":
+            raw.get(
+                SLUG_METADATA_FILE,
+                []
+            ),
+        
+        "workflow_mappings":
+            raw.get(
+                WORKFLOW_MAPPINGS_FILE,
                 []
             ),
 
@@ -156,6 +176,13 @@ def get_normalization_rules(registry):
         []
     )
 
+def get_slug_metadata(registry):
+
+    return registry.get(
+        "slug_metadata",
+        []
+    )
+
 
 # ==========================================================
 # DEBUG
@@ -214,5 +241,12 @@ if __name__ == "__main__":
         "normalization_rules:",
         len(
             registry["normalization_rules"]
+        )
+    )
+    
+    print(
+        "slug_metadata:",
+        len(
+            registry["slug_metadata"]
         )
     )

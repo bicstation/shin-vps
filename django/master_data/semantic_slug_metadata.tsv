@@ -1,1 +1,169 @@
 slug	name	title	description
+product-monitor	モニター	モニター	用途別ディスプレイ比較
+product-desktop	デスクトップPC	デスクトップPC	据置型PCを比較
+product-notebook	ノートPC	ノートPC	携帯型PCを比較
+product-mini-pc	ミニPC	ミニPC	小型PCを比較
+product-server	サーバー	サーバー	業務向けサーバー構成
+product-workstation	ワークステーション	ワークステーション	専門業務向け高性能機
+device-laptop	ノートPC	ノートPC	持ち運びしやすいPC
+device-desktop	デスクトップPC	デスクトップ	拡張性重視のPC
+device-server	サーバー	サーバー	業務・運用向け構成
+device-workstation	ワークステーション	ワークステーション	制作・解析向け高性能機
+device-mini-pc	ミニPC	ミニPC	省スペース構成
+device-mobile-pc	モバイルPC	モバイルPC	軽量・長時間駆動向け
+intel-core-ultra-9	Core Ultra 9	Core Ultra 9	最上位AI・高性能向け
+intel-core-ultra-7	Core Ultra 7	Core Ultra 7	高性能ノート向け
+intel-core-ultra-5	Core Ultra 5	Core Ultra 5	標準AIノート向け
+intel-core-i9	Core i9	Core i9	高性能ゲーミング向け
+intel-core-i7	Core i7	Core i7	性能重視の定番CPU
+intel-core-i5	Core i5	Core i5	バランス重視向け
+intel-core-i3	Core i3	Core i3	入門・事務用途向け
+amd-ryzen-ai	Ryzen AI	Ryzen AI	生成AI・NPU搭載向け
+amd-threadripper	Ryzen Threadripper	Threadripper	制作・解析向け超高性能
+arm-snapdragon-x	Snapdragon X Elite / Plus	Snapdragon X	省電力AIノート向け
+amd-ryzen-9	Ryzen 9	Ryzen 9	ハイエンド用途向け
+amd-ryzen-7	Ryzen 7	Ryzen 7	ゲーム・制作向け
+amd-ryzen-5	Ryzen 5	Ryzen 5	コスパ重視向け
+amd-ryzen-3	Ryzen 3	Ryzen 3	軽作業・入門向け
+intel-xeon	Intel Xeon	Xeon	業務・サーバー向け
+intel-low-end	Celeron / Pentium	Celeron系	低価格PC向け
+cpu-npu	NPU搭載	NPU搭載	AI処理を高速化
+gpu-rtx-5090	GeForce RTX 5090	RTX 5090	最上位AI・4Kゲーム向け
+gpu-rtx-5080	GeForce RTX 5080	RTX 5080	高性能AI・ゲーム向け
+gpu-rtx-5070-ti	GeForce RTX 5070 Ti	RTX 5070 Ti	高性能ゲーム向け
+gpu-rtx-5070	GeForce RTX 5070	RTX 5070	WQHDゲーム向け
+gpu-rtx-4090	GeForce RTX 4090	RTX 4090	AI・制作向け高性能GPU
+gpu-rtx-4080	GeForce RTX 4080	RTX 4080	4Kゲーム・制作向け
+gpu-rtx-4070-ti	GeForce RTX 4070 Ti	RTX 4070 Ti	高FPSゲーム向け
+gpu-rtx-4070	GeForce RTX 4070	RTX 4070	ゲーム・制作向け
+gpu-rtx-4060-ti	GeForce RTX 4060 Ti	RTX 4060 Ti	定番ゲーム向け
+gpu-rtx-4060	GeForce RTX 4060	RTX 4060	フルHDゲーム向け
+gpu-rtx-4050	GeForce RTX 4050	RTX 4050	入門ゲーミング向け
+gpu-radeon-ai-pro	Radeon AI PRO	Radeon AI PRO	AI開発・業務向け
+gpu-intel-arc	Intel Arc Graphics	Intel Arc	コスパGPU向け
+gpu-intel-graphics	Intel Graphics (内蔵)	Intel内蔵GPU	軽作業・事務向け
+gpu-amd-graphics	AMD Radeon Graphics (内蔵)	Radeon内蔵GPU	軽量ノート向け
+gpu-professional	プロ向け	プロ向けGPU	CAD・制作業務向け
+vram-24gb-plus	24GB以上	24GB以上VRAM	AI・4K制作向け
+vram-16gb	16GB	16GB VRAM	生成AI・高画質向け
+vram-12gb	12GB	12GB VRAM	WQHDゲーム向け
+vram-8gb	8GB	8GB VRAM	定番ゲーム向け
+vram-6gb	6GB	6GB VRAM	入門ゲーム向け
+vram-4gb	4GB以下	4GB以下VRAM	軽作業向け
+mem-64gb-plus	64GB以上（超大容量）	64GB以上メモリ	AI・制作向け
+mem-32gb	32GB（大容量）	32GBメモリ	快適な作業向け
+mem-16gb	16GB（標準）	16GBメモリ	標準的な用途向け
+mem-8gb	8GB（最低限）	8GBメモリ	軽作業向け
+ssd-2tb-plus	2TB以上（超大容量）	2TB以上SSD	大量データ保存向け
+ssd-1tb	1TB（大容量）	1TB SSD	余裕ある保存容量
+ssd-512gb	512GB（標準）	512GB SSD	標準的な容量
+ssd-256gb	256GB（最低限）	256GB SSD	最低限の保存容量
+storage-nvme	NVMe SSD	NVMe SSD	高速な読み書き向け
+storage-sata	SATA SSD	SATA SSD	標準的なSSD構成
+usage-gaming	ゲーミングPC	FPS Gaming	高FPSゲーム向け
+usage-creator	クリエイター向け	動画編集	動画編集・制作向け
+usage-business	ビジネス・法人向け	ビジネス	業務・事務作業向け
+usage-ai	AI・ローカルAI用途	AI画像生成	生成AI・ローカルLLM向け
+usage-mobile	モバイル・軽量	軽量モバイル	持ち運び重視向け
+usage-budget	コスパ重視	コスパ重視	価格と性能を両立
+feat-weight-1kg	1kg未満（超軽量）	1kg未満	持ち運び最優先向け
+feat-weight-1-5kg	1.0〜1.5kg（軽量）	軽量モデル	外出利用向け
+feat-weight-2kg	1.5〜2.0kg（標準）	標準重量	据置兼用向け
+maker-asus	ASUS	ASUS	幅広い用途に対応
+maker-dell	DELL	DELL	法人・個人向け定番
+maker-hp	HP	HP	ビジネス用途に人気
+maker-lenovo	Lenovo	Lenovo	法人導入実績が豊富
+maker-msi	MSI	MSI	ゲーミング分野に強み
+maker-nec	NEC	NEC	国内向け定番モデル
+maker-fujitsu	FUJITSU	FUJITSU	国内ビジネス向け
+maker-dynabook	Dynabook	Dynabook	モバイルノートに強み
+maker-mouse	MouseComputer	Mouse Computer	BTOモデルが豊富
+maker-dospara	Dospara	Dospara	ゲーミングPCで人気
+maker-acer	Acer	Acer	コスパ重視モデル展開
+maker-razer	Razer	Razer	高級ゲーミングブランド
+maker-vaio	VAIO	VAIO	軽量モバイル向け
+maker-minisforum	MINISFORUM	MINISFORUM	高性能ミニPC向け
+maker-beelink	Beelink	Beelink	小型PCに特化
+monitor-24inch	24インチ前後（標準）	24インチ前後	標準的な作業向け
+monitor-27inch	27インチ（大画面）	27インチ	作業とゲームを両立
+monitor-32inch	32インチ以上（特大）	32インチ以上	没入感重視向け
+monitor-small	22インチ以下（小型）	22インチ以下	省スペース向け
+fhd	FHD	フルHD	標準的な画質
+wqhd	WQHD	WQHD	作業領域を拡大
+4k	4K	4K	高精細な映像向け
+res-8k	8K（超高精細）	8K	最高クラスの高精細
+hz-60hz	60Hz（標準）	60Hz	一般用途向け
+hz-120hz	120Hz以上（高リフレッシュ）	120Hz以上	滑らかな表示向け
+hz-240hz	240Hz以上（ゲーミング）	240Hz以上	高速ゲーム向け
+refresh-500hz	500Hz	500Hz	競技レベル向け
+panel-ips	IPS	IPS	色再現性を重視
+panel-va	VA	VA	コントラスト重視
+panel-oled	OLED	OLED	黒表現と発色が優秀
+aspect-32-9	スーパーウルトラワイド（32:9）	32:9	圧倒的な横長表示
+aspect-21-9	ウルトラワイド（21:9）	21:9	作業領域を拡張
+solo-actress	単体女優	単体女優	専属女優の世界
+amateur	素人・ナンパ	素人・ナンパ	自然な出会いの世界
+mature	熟女・人妻	熟女・人妻	大人の魅力の世界
+college-girl	女子大生	女子大生	青春の魅力の世界
+big-breasts	巨乳	巨乳	豊かなバストの魅力
+beautiful-girl	美少女	美少女	可憐な魅力の世界
+slender	スレンダー	スレンダー	細身の美しさの魅力
+chubby	ぽっちゃり	ぽっちゃり	柔らかな魅力の世界
+ultra-hd-4k	4K / 高画質	4K高画質	高精細映像の魅力
+vr-content	VR / 3D	VR体験	没入体験の魅力
+self-shot	個人撮影	個人撮影	自然な臨場感の魅力
+ai-analyzed	AI解析済 / 高圧縮	AI最適化	AI解析技術の魅力
+cosplay	制服・コスプレ	コスプレ	衣装変化の魅力
+fetish	巨乳・フェチ	フェチ	嗜好探求の魅力
+public-exposure	痴漢・露出	露出系	刺激的状況の魅力
+nursing	白衣・奉仕	白衣・奉仕	奉仕的関係の魅力
+creampie	中出し	中出し	人気傾向の魅力
+sm-bondage	拘束・SM	SM	支配と服従の魅力
+squirting	潮吹き	潮吹き	感度表現の魅力
+female-led	逆レイ・攻め	女攻め	主導的魅力の世界
+adult	ギャル系	ギャル系	華やかな魅力の世界
+beautiful-breasts	美乳	美乳	美しいバストの魅力
+big-ass	巨尻	巨尻	豊かなヒップの魅力
+gpu-highend	ハイエンドGPU	ハイエンドGPU	4KゲームやAI処理向け
+gpu-mainstream	主流GPU	主流GPU	性能と価格のバランス重視
+gpu-entry	エントリーGPU	エントリーGPU	基本用途向けGPU構成
+gpu-professional	業務向けGPU	業務向けGPU	CADや専門業務向けGPU
+gpu-integrated	内蔵GPU	内蔵GPU	省電力重視の内蔵GPU
+cpu-ai	AI向けCPU	AI向けCPU	AI処理やNPU活用向け
+cpu-highend	ハイエンドCPU	ハイエンドCPU	高負荷作業向けCPU性能
+cpu-mainstream	主流CPU	主流CPU	幅広い用途に対応
+cpu-entry	エントリーCPU	エントリーCPU	基本作業向けCPU構成
+cpu-workstation	ワークステーションCPU	ワークステーションCPU	専門業務向け高性能CPU
+cpu-arm	ARM系CPU	ARM系CPU	省電力重視のARM環境
+memory-highend	大容量メモリ	大容量メモリ	重作業向け大容量構成
+memory-standard	標準メモリ	標準メモリ	一般用途向け標準構成
+memory-entry	最低限メモリ	最低限メモリ	基本用途向け構成
+storage-highend	大容量ストレージ	大容量ストレージ	大量保存向け容量重視
+storage-standard	標準ストレージ	標準ストレージ	日常用途向け標準容量
+storage-fast	高速ストレージ	高速ストレージ	高速起動と快適操作向け
+usage-ai	AI用途	AI画像生成	生成AI・ローカルLLM向け
+usage-gaming	ゲーミング用途	FPS Gaming	高FPSゲームプレイ向け
+usage-creator	クリエイター用途	動画編集	動画編集・制作向け
+usage-business	ビジネス用途	ビジネス	業務・事務作業向け
+usage-mobile	モバイル用途	軽量モバイル	持ち運び重視向け
+usage-budget	コスパ用途	コスパ重視	価格と性能を両立
+device-laptop	ノートPC	ノートPC	持ち運び可能なPC
+device-desktop	デスクトップPC	デスクトップPC	拡張性重視の据置PC
+device-mini	ミニPC	ミニPC	省スペース設置向け
+device-server	サーバー	サーバー	業務運用向けシステム
+device-workstation	ワークステーション	ワークステーション	CADや制作向け高性能機
+device-mobile	モバイルPC	モバイルPC	軽量性を重視したPC
+monitor-gaming	ゲーミングモニター	ゲーミングモニター	高リフレッシュレート対応
+monitor-creator	クリエイターモニター	クリエイターモニター	色再現性を重視した表示
+monitor-business	業務向けモニター	ビジネスモニター	業務利用向け画面環境
+monitor-ultrawide	ウルトラワイド	ウルトラワイド	横長表示で作業効率向上
+monitor-highrefresh	高リフレッシュ	高リフレッシュ	滑らかな映像表示向け
+monitor-oled	OLEDモニター	OLEDモニター	高画質表示を重視
+maker-global	海外メーカー	海外メーカー	海外ブランドを中心に展開
+maker-japan	国内メーカー	国内メーカー	国内ブランドを中心に展開
+maker-gaming	ゲーミングブランド	ゲーミングブランド	ゲーム向けブランドを比較
+adult-actress	女優系	女優の魅力	出演者の個性や魅力から探す
+adult-body	体型・見た目	身体の魅力	体型や外見の特徴から探す
+adult-scene	シチュエーション	シチュエーションの魅力	好みの状況や設定から探す
+adult-style	プレイ内容	プレイの魅力	好みの展開や傾向から探す
+adult-feature	映像特徴	体験の魅力	映像や視聴体験から探す

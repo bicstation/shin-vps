@@ -6,11 +6,14 @@ from collections import defaultdict
 from api.services.semantic.v2.authority.authority_runtime import (
     build_authority_runtime,
 )
+
 from api.services.semantic.v2.authority.tsv_loader import (
     load_semantic_groups,
     load_semantic_attributes,
     load_semantic_group_mappings,
 )
+
+
 # ==========================================================
 # TOPOLOGY
 # ==========================================================
@@ -20,6 +23,24 @@ def build_topology_runtime():
     authority = (
         build_authority_runtime()
     )
+
+    # ------------------------------------------------------
+    # Metadata Index
+    # ------------------------------------------------------
+
+    metadata_index = {
+
+        row["slug"]: row
+
+        for row in authority.get(
+            "slug_metadata",
+            []
+        )
+    }
+
+    # ------------------------------------------------------
+    # Raw Authority
+    # ------------------------------------------------------
 
     groups = (
         load_semantic_groups()
@@ -39,9 +60,9 @@ def build_topology_runtime():
 
     attribute_index = {
 
-        attr.get("slug"): attr
+        row["slug"]: row
 
-        for attr in attributes
+        for row in attributes
     }
 
     # ------------------------------------------------------
@@ -53,14 +74,10 @@ def build_topology_runtime():
     for row in mappings:
 
         mapping_index[
-            row.get(
-                "group_slug"
-            )
+            row["group_slug"]
         ].append(
 
-            row.get(
-                "attribute_slug"
-            )
+            row["attribute_slug"]
         )
 
     # ------------------------------------------------------
@@ -72,19 +89,32 @@ def build_topology_runtime():
     for group in groups:
 
         if str(
+
             group.get(
                 "is_active",
                 "1"
             )
+
         ) not in (
+
             "1",
             "true",
             "True",
         ):
             continue
 
-        group_slug = group.get(
-            "group_slug"
+        group_slug = (
+            group.get(
+                "group_slug"
+            )
+        )
+
+        group_metadata = (
+
+            metadata_index.get(
+                group_slug,
+                {}
+            )
         )
 
         children = []
@@ -94,24 +124,54 @@ def build_topology_runtime():
             []
         ):
 
-            attribute = attribute_index.get(
-                attribute_slug
+            attribute = (
+                attribute_index.get(
+                    attribute_slug
+                )
             )
 
             if not attribute:
                 continue
 
+            attribute_metadata = (
+
+                metadata_index.get(
+                    attribute_slug,
+                    {}
+                )
+            )
+
             children.append({
 
+                # --------------------------
+                # Identity
+                # --------------------------
+
                 "slug":
-                    attribute.get(
-                        "slug"
-                    ),
+                    attribute_slug,
+
+                # --------------------------
+                # Metadata Authority
+                # --------------------------
 
                 "name":
-                    attribute.get(
+                    attribute_metadata.get(
                         "name"
                     ),
+
+                "title":
+                    attribute_metadata.get(
+                        "title"
+                    ),
+
+                "description":
+                    attribute_metadata.get(
+                        "description"
+                    ),
+
+                # --------------------------
+                # Semantic Authority
+                # --------------------------
 
                 "type":
                     attribute.get(
@@ -146,13 +206,35 @@ def build_topology_runtime():
 
         topology.append({
 
+            # ----------------------------------
+            # Identity
+            # ----------------------------------
+
             "slug":
                 group_slug,
 
+            # ----------------------------------
+            # Metadata Authority
+            # ----------------------------------
+
             "name":
-                group.get(
-                    "group_name"
+                group_metadata.get(
+                    "name"
                 ),
+
+            "title":
+                group_metadata.get(
+                    "title"
+                ),
+
+            "description":
+                group_metadata.get(
+                    "description"
+                ),
+
+            # ----------------------------------
+            # Group Authority
+            # ----------------------------------
 
             "parent_group":
                 group.get(
@@ -179,6 +261,10 @@ def build_topology_runtime():
                     "sort_order"
                 ),
 
+            # ----------------------------------
+            # Relations
+            # ----------------------------------
+
             "attributes":
                 children,
         })
@@ -187,10 +273,10 @@ def build_topology_runtime():
 
         topology,
 
-        key=lambda x:
+        key=lambda row:
 
             int(
-                x.get(
+                row.get(
                     "sort_order",
                     999
                 )
@@ -199,16 +285,16 @@ def build_topology_runtime():
 
     return {
 
-        # --------------------------------------------------
-        # TOPOLOGY
-        # --------------------------------------------------
+        # --------------------------------------
+        # Runtime
+        # --------------------------------------
 
         "groups":
             topology,
 
-        # --------------------------------------------------
-        # AUTHORITY
-        # --------------------------------------------------
+        # --------------------------------------
+        # Authority Metadata
+        # --------------------------------------
 
         "semantic_schema_version":
 

@@ -82,12 +82,19 @@ export function normalizeNavigation(
       ? source.navigation
 
       : Array.isArray(
-          source?.items
+          source?.intents
         )
 
-        ? source.items
+          ? source.intents
 
-        : []
+          : Array.isArray(
+              source?.items
+            )
+
+              ? source.items
+
+              : []  
+
 
   /* ========================================================================
   Observatory
@@ -96,6 +103,28 @@ export function normalizeNavigation(
   console.log(
     '🔥 NAVIGATION NORMALIZE',
     {
+
+      source_shape:
+
+        Array.isArray(
+          source?.navigation
+        )
+
+          ? 'navigation'
+
+          : Array.isArray(
+              source?.intents
+            )
+
+              ? 'intents'
+
+              : Array.isArray(
+                  source?.items
+                )
+
+                  ? 'items'
+
+                  : 'unknown',
 
       items:
         navigation.length,
@@ -110,6 +139,7 @@ export function normalizeNavigation(
         navigation?.[0],
     }
   )
+
 
   /* ========================================================================
   Return

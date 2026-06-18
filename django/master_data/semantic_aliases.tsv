@@ -245,8 +245,6 @@ gpu-professional	a2000	model	0	0.9
 gpu-professional	a4000	model	0	0.92
 gpu-professional	t1000	model	0	0.82
 gpu-professional	t600	model	0	0.78
-nvidia-rtx-4070	rtx 4070	canonical	0	1
-nvidia-rtx-4060	rtx 4060	canonical	0	1
 vram-24gb-plus	24gb	canonical	0	1
 vram-24gb-plus	24gb gddr6	spec	0	0.94
 vram-24gb-plus	24gb gddr6x	spec	0	0.96
@@ -581,10 +579,10 @@ female-led	逆レイ	category	1	0.82
 female-led	女攻め	category	1	0.88
 female-led	騎乗位	position	1	0.84
 female-led	逆ナン	scene	1	0.78
-gal	ギャル	canonical	1	1
-gal	黒ギャル	category	1	0.94
-gal	金髪ギャル	category	1	0.92
-gal	ヤマンバ	category	1	0.88
+adult	ギャル	canonical	1	1
+adult	黒ギャル	category	1	0.94
+adult	金髪ギャル	category	1	0.92
+adult	ヤマンバ	category	1	0.88
 beautiful-breasts	美乳	canonical	1	1
 big-ass	巨尻	canonical	1	1
 big-ass	デカ尻	category	1	0.95
@@ -617,4 +615,4 @@ mem-64gb-plus	64gb	canonical	0	1
 ssd-256gb	256gb	canonical	0	1
 ssd-512gb	512gb	canonical	0	1
 ssd-1tb	1tb	canonical	0	1
-ssd-2tb	2tb	canonical	0	1
+ssd-2tb-plus	2tb	canonical	0	1

@@ -70,7 +70,6 @@ def build_navigation_runtime():
 
     intents = []
     
-    
     # ==========================================================
     # GROUPS
     # ==========================================================
@@ -85,7 +84,7 @@ def build_navigation_runtime():
                 "slug"
             )
         )
-
+               
         parent_group = (
             group.get(
                 "parent_group"
@@ -128,7 +127,17 @@ def build_navigation_runtime():
                 group.get(
                     "name"
                 ),
+                
+            "title":
+                group.get(
+                    "title"
+                ),
 
+            "description":
+                group.get(
+                    "description"
+                ),
+ 
             "type":
                 group.get(
                     "type"

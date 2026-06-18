@@ -18,6 +18,9 @@ fetchSemanticRankingRuntime,
 
 import HomeRuntimeOrchestrator
 from './home/orchestration/HomeRuntimeOrchestrator'
+import {
+  fetchNavigationRuntime,
+} from '@/shared/lib/api/django/pc/navigation'
 
 /* ============================================================================
 🔥 Home Page
@@ -31,21 +34,22 @@ export default async function Page() {
 
 const [
 
+  sidebar,
 
-sidebar,
+  ranking,
 
-ranking,
-
+  navigation,
 
 ] = await Promise.all([
 
+  fetchSidebar(),
 
-fetchSidebar(),
+  fetchSemanticRankingRuntime(),
 
-fetchSemanticRankingRuntime(),
-
+  fetchNavigationRuntime(),
 
 ])
+
 
 // ======================================================
 // Runtime
@@ -59,7 +63,10 @@ sidebar,
 
 ranking,
 
+navigation,
+
 heroRanking:
+
 
   Array.isArray(
     ranking?.products
@@ -77,6 +84,12 @@ adaptive_runtime:
 
 
 }
+
+console.log(
+  '🔥 NAVIGATION',
+  runtime?.navigation
+)
+
 
 // ======================================================
 // Render

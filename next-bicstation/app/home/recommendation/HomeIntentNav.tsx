@@ -6,11 +6,32 @@ import Link
 import styles
   from '../styles/recommendation.module.css'
 
-import {
-  INTENT_NAV,
-} from '../data/recommendation'
+type Props = {
 
-export default function HomeIntentNav() {
+  intents?: any[]
+}
+
+export default function HomeIntentNav({
+
+  intents = [],
+
+}: Props) {
+
+  console.log(
+    '🔥 HOME INTENTS',
+    intents
+  )
+
+  /* ==========================================
+  Usage Intent Only
+  ========================================== */
+
+  const usageIntents =
+
+    intents.filter(
+      (intent) =>
+        intent?.type === 'usage'
+    )
 
   return (
 
@@ -74,75 +95,79 @@ export default function HomeIntentNav() {
         }
       >
 
-        {INTENT_NAV.map((intent) => (
+        {
 
-          <Link
-            key={intent.slug}
+          usageIntents.map((intent) => (
 
-            href={
-              `/ranking/${intent.slug}`
-            }
+            <Link
+              key={intent.slug}
 
-            className={
-              styles.intentCard
-            }
-          >
+              href={
+                `/ranking/${intent.slug}`
+              }
 
-            {/* =================================
-            TOP
-            ================================= */}
-
-            <div
               className={
-                styles.intentCardTop
+                styles.intentCard
               }
             >
+
+              {/* ===============================
+              TOP
+              =============================== */}
 
               <div
                 className={
-                  styles.intentIcon
+                  styles.intentCardTop
                 }
               >
-                {intent.icon}
-              </div>
-
-              <div>
 
                 <div
                   className={
-                    styles.intentCardTitle
+                    styles.intentIcon
                   }
                 >
-                  {intent.label}
+                  {intent.icon}
                 </div>
 
-                <div
-                  className={
-                    styles.intentCardText
-                  }
-                >
-                  {intent.description}
+                <div>
+
+                  <div
+                    className={
+                      styles.intentCardTitle
+                    }
+                  >
+                    {intent.title}
+                  </div>
+
+                  <div
+                    className={
+                      styles.intentCardText
+                    }
+                  >
+                    {intent.description}
+                  </div>
+
                 </div>
 
               </div>
 
-            </div>
+              {/* ===============================
+              FOOTER
+              =============================== */}
 
-            {/* =================================
-            FOOTER
-            ================================= */}
+              <div
+                className={
+                  styles.intentCardFooter
+                }
+              >
+                おすすめを見る →
+              </div>
 
-            <div
-              className={
-                styles.intentCardFooter
-              }
-            >
-              おすすめを見る →
-            </div>
+            </Link>
 
-          </Link>
+          ))
 
-        ))}
+        }
 
       </div>
 

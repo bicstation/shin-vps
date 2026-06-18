@@ -81,6 +81,11 @@ observatory = false,
 
 }: Props) {
 
+
+console.log(
+  '🔥 HOME ORCHESTRATOR RUNTIME',
+  runtime
+)
 // ======================================================
 // Runtime
 // ======================================================
@@ -281,7 +286,11 @@ return (
   INTENT NAV
   ================================================== */}
 
-  <HomeIntentNav />
+  <HomeIntentNav
+  intents={
+    runtime?.navigation?.navigation
+  }
+/>
 
   {/* ==================================================
   HERO RANKING

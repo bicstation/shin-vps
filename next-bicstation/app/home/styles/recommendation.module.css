@@ -16,6 +16,32 @@ Semantic Navigation Layer
   margin-bottom: 64px;
 }
 
+.intentSection {
+  position: relative;
+
+  overflow: hidden;
+
+  margin-top: 72px;
+  margin-bottom: 64px;
+
+  padding: 64px 40px;
+
+  border-radius: 36px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(15,23,42,.92),
+      rgba(2,6,23,.96)
+    );
+
+  border:
+    1px solid rgba(255,255,255,.06);
+}
+
+
+
+
 /* =========================================================
 🔥 SHARED HEADER
 ========================================================= */
@@ -679,6 +705,9 @@ Semantic Navigation Layer
     margin-bottom:
       48px;
   }
+
+
+
 
   .pathsHeader,
   .intentHeader,

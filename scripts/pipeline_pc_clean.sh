@@ -15,10 +15,10 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 # Runtime Variables
 # ==========================================================
 
-AI_SPEC_LIMIT=1000
-AI_SUMMARY_LIMIT=1000
-AI_SEMANTIC_LIMIT=1000
-IMAGE_CACHE_LIMIT=1000
+AI_SPEC_LIMIT=10
+AI_SUMMARY_LIMIT=10
+AI_SEMANTIC_LIMIT=10
+IMAGE_CACHE_LIMIT=10
 
 # ==========================================================
 # Project Root Topology
@@ -293,6 +293,7 @@ run_django compile_semantic_runtime \
   --limit $AI_SEMANTIC_LIMIT \
   --needs-runtime
 
+
 # ==========================================================
 # ⑤ 05-1 Attribute TSV Sync
 # ==========================================================
@@ -323,6 +324,9 @@ SEMANTIC_FILES=(
   "semantic_groups.tsv"
   "semantic_group_mappings.tsv"
   "semantic_attributes.tsv"
+  "semantic_slug_metadata.tsv"
+  "semantic_workflow_mappings.tsv"
+
 )
 
 for FILE in "${SEMANTIC_FILES[@]}"
@@ -339,6 +343,15 @@ do
     }
 
 done
+
+
+# ==========================================================
+# ⑦ 05-3 Authority Integrity Audit
+# ==========================================================
+
+log "🛡️ (05-3/12) Slug Metadata Audit"
+
+run_django audit_slug_metadata
 
 
 # ==========================================================

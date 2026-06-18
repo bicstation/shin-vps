@@ -95,6 +95,18 @@ def build_authority_runtime():
                 "normalization_rules",
                 []
             ),
+        
+        "slug_metadata":
+            registry.get(
+                "slug_metadata",
+                []
+            ),
+        
+        "workflow_mappings":
+            registry.get(
+                "workflow_mappings",
+                []
+            ),
 
         # ==========================================
         # Runtime Metadata
@@ -188,6 +200,16 @@ def get_runtime_normalization_rules():
         []
     )
 
+def get_runtime_slug_metadata():
+
+    runtime = (
+        build_authority_runtime()
+    )
+
+    return runtime.get(
+        "slug_metadata",
+        []
+    )
 
 # ==========================================================
 # DEBUG
@@ -249,8 +271,17 @@ if __name__ == "__main__":
         )
     )
 
+    print(
+        "Slug Metadata:",
+        len(
+            runtime["slug_metadata"]
+        )
+    )
+
     print()
 
     print(
         "Authority Runtime Ready"
     )
+    
+    

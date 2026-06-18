@@ -59,6 +59,10 @@ export interface NavigationIntent {
 
   label: string
 
+  title?: string
+
+  description?: string
+
   icon?: string
 
   color?: string
@@ -69,7 +73,6 @@ export interface NavigationIntent {
 /* ============================================================================
 🔥 Project Navigation Item
 ============================================================================ */
-
 export function projectNavigationIntent(
 
   runtime?: NavigationRuntimeItem
@@ -84,6 +87,12 @@ export function projectNavigationIntent(
     label:
       runtime?.name || '',
 
+    title:
+      runtime?.title || '',
+
+    description:
+      runtime?.description || '',
+
     icon:
       runtime?.icon || '',
 
@@ -94,6 +103,7 @@ export function projectNavigationIntent(
       runtime?.product_count || 0,
   }
 }
+
 
 /* ============================================================================
 🔥 Project Navigation Collection

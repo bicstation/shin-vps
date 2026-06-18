@@ -34,52 +34,31 @@
 
 export interface NavigationRuntimeItem {
 
-  /**
-   * Semantic Identifier
-   */
-
   slug: string
-
-  /**
-   * Human Label
-   */
 
   name: string
 
   /**
-   * Semantic Type
-   *
-   * usage
-   * workflow
-   * maker
-   * gpu
-   * etc.
+   * Semantic Slug Metadata
    */
+
+  title?: string
+
+  description?: string
 
   type: string
-
-  /**
-   * Runtime Metadata
-   */
 
   icon?: string
 
   color?: string
 
-  /**
-   * Hierarchy
-   */
-
   parent_group?: string
-
-  /**
-   * Runtime Metrics
-   */
 
   attribute_count?: number
 
   product_count?: number
 }
+
 
 /* ============================================================================
 🔥 Navigation Runtime Response
