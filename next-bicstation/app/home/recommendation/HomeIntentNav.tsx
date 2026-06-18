@@ -6,10 +6,92 @@ import Link
 import styles
   from '../styles/recommendation.module.css'
 
+import {
+
+  Gamepad2,
+  Sparkles,
+  PenTool,
+  BadgeDollarSign,
+  Briefcase,
+  Smartphone,
+  Laptop,
+  Monitor,
+  Cpu,
+  Server,
+  Box,
+
+} from 'lucide-react'
+
+import {
+  LucideIcon,
+} from 'lucide-react'
+
 type Props = {
 
   intents?: any[]
 }
+
+const ICON_MAP: Record<string, LucideIcon> = {
+
+  gamepad:
+    Gamepad2,
+
+  sparkles:
+    Sparkles,
+
+  'pen-tool':
+    PenTool,
+
+  'badge-dollar-sign':
+    BadgeDollarSign,
+
+  briefcase:
+    Briefcase,
+
+  smartphone:
+    Smartphone,
+
+  laptop:
+    Laptop,
+
+  pc:
+    Monitor,
+
+  cpu:
+    Cpu,
+
+  server:
+    Server,
+
+  box:
+    Box,
+
+}
+
+
+
+const COLOR_MAP: Record<string, string> = {
+
+  red:
+    '#ef4444',
+
+  purple:
+    '#a855f7',
+
+  green:
+    '#22c55e',
+
+  blue:
+    '#3b82f6',
+
+  cyan:
+    '#06b6d4',
+
+  orange:
+    '#f97316',
+
+}
+
 
 export default function HomeIntentNav({
 
@@ -21,6 +103,8 @@ export default function HomeIntentNav({
     '🔥 HOME INTENTS',
     intents
   )
+
+  
 
   /* ==========================================
   Usage Intent Only
@@ -89,87 +173,196 @@ export default function HomeIntentNav({
       GRID
       ===================================== */}
 
-      <div
-        className={
-          styles.intentGrid
-        }
-      >
+      <div className={ styles.intentGrid } >
+
 
         {
+          usageIntents.map((intent) => {
 
-          usageIntents.map((intent) => (
+            const Icon =
 
-            <Link
-              key={intent.slug}
+              ICON_MAP[
+                intent.icon
+              ]
 
-              href={
-                `/ranking/${intent.slug}`
-              }
+            const accentColor =
 
-              className={
-                styles.intentCard
-              }
-            >
+              COLOR_MAP[
+                intent.color
+              ]
 
-              {/* ===============================
-              TOP
-              =============================== */}
+              ||
 
-              <div
-                className={
-                  styles.intentCardTop
+              '#0ea5e9'
+
+            return (
+
+              <Link
+                key={intent.slug}
+
+                href={
+                  `/ranking/${intent.slug}`
                 }
+
+                className={
+                  styles.intentCard
+                }
+
+                 style={{
+
+                  borderColor:
+                    `${accentColor}33`,
+                  boxShadow:
+                    `0 0 40px ${accentColor}15`,
+
+                }}
               >
+                {/* ===============================
+                  TOP
+                  =============================== */}
+
+                  <div
+                    className={
+                      styles.intentCardTop
+                    }
+                  >
+
+                    <div
+                      className={
+                        styles.intentIcon
+                      }
+
+                      style={{
+
+                        color:
+                          accentColor,
+
+                        border:
+                          `1px solid ${accentColor}44`,
+
+                        background:
+                          `linear-gradient(
+                            135deg,
+                            ${accentColor}22,
+                            rgba(255,255,255,.03)
+                          )`,
+
+                        boxShadow:
+                          `0 0 24px ${accentColor}22`,
+
+                      }}
+                    >
+
+                      {
+
+                        Icon
+
+                          ? (
+                              <Icon
+                                size={24}
+                                strokeWidth={2.2}
+                              />
+                            )
+
+                          : '📦'
+
+                      }
+
+                    </div>
+
+                    <div>
+
+                      <div
+                        className={
+                          styles.intentCardTitle
+                        }
+
+                        style={{
+
+                          textShadow:
+                            `0 0 12px ${accentColor}22`,
+
+                        }}
+                      >
+                        {intent.title}
+                      </div>
+
+                      <div
+
+                        style={{
+
+                          display:
+                            'inline-flex',
+
+                          alignItems:
+                            'center',
+
+                          padding:
+                            '4px 10px',
+
+                          borderRadius:
+                            '999px',
+
+                          background:
+                            `${accentColor}18`,
+
+                          border:
+                            `1px solid ${accentColor}33`,
+
+                          color:
+                            accentColor,
+
+                          fontSize:
+                            '11px',
+
+                          fontWeight:
+                            800,
+
+                          marginBottom:
+                            '12px',
+
+                        }}
+                      >
+
+                        {intent.product_count}
+                        製品
+
+                      </div>
+
+                      <div
+                        className={
+                          styles.intentCardText
+                        }
+                      >
+                        {intent.description}
+                      </div>
+
+                    </div>
+
+                  </div>
+
+                {/* ===============================
+                FOOTER
+                =============================== */}
 
                 <div
                   className={
-                    styles.intentIcon
+                    styles.intentCardFooter
                   }
                 >
-                  {intent.icon}
+                  おすすめを見る →
                 </div>
 
-                <div>
+              </Link>
 
-                  <div
-                    className={
-                      styles.intentCardTitle
-                    }
-                  >
-                    {intent.title}
-                  </div>
+            )
 
-                  <div
-                    className={
-                      styles.intentCardText
-                    }
-                  >
-                    {intent.description}
-                  </div>
-
-                </div>
-
-              </div>
-
-              {/* ===============================
-              FOOTER
-              =============================== */}
-
-              <div
-                className={
-                  styles.intentCardFooter
-                }
-              >
-                おすすめを見る →
-              </div>
-
-            </Link>
-
-          ))
-
+          })
         }
 
+
       </div>
+      
 
     </section>
 
