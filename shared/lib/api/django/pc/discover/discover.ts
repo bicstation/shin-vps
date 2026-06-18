@@ -70,7 +70,7 @@ import {
 
   normalizeDiscoverRuntime,
 
-} from './runtime'
+} from './normalize'
 
 /* ============================================================================
 🔥 Endpoint

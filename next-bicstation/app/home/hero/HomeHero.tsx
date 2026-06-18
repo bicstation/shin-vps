@@ -6,7 +6,29 @@ import Link
 import styles
   from '../styles/hero.module.css'
 
-export default function HomeHero() {
+type Props = {
+  meaning?: any
+  stats?: any
+}
+
+
+export default function HomeHero({
+
+  meaning,
+
+  stats,
+
+}: Props) {
+
+  console.log(
+    'TOP_MEANING',
+    meaning
+  )
+
+  console.log(
+    'TOP_STATS',
+    stats
+  )
 
   return (
 

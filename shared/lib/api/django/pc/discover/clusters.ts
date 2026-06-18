@@ -1,321 +1,81 @@
+// ============================================================================
+// FILE:
+// /home/maya/shin-vps/shared/lib/api/django/pc/discover/clusters.ts
+// Copyright (c) 2024 Shin Corporation.
+// All rights reserved.
+// ============================================================================
+
 /* ============================================================================
-🔥 Normalize Discover Runtime
+🔥 Contracts
 ============================================================================ */
 
-export function normalizeDiscoverRuntime(
+export interface DiscoverCluster {
+
+  slug?: string
+
+  name?: string
+
+  title?: string
+
+  description?: string
+
+  icon?: string
+
+  color?: string
+
+  product_count?: number
+
+  [key: string]: any
+}
+
+/* ============================================================================
+🔥 Normalize Discover Clusters
+============================================================================ */
+
+export function normalizeDiscoverClusters(
 
   payload?: any
 
-): DiscoverRuntime {
-
-  // ======================================
-  // Compatibility Layer
-  // ======================================
-  //
-  // Legacy
-  // {
-  //   success,
-  //   products,
-  //   results
-  // }
-  //
-  // Semantic API v3
-  // {
-  //   meaning,
-  //   seo,
-  //   data
-  // }
-  //
-  // ======================================
+): DiscoverCluster[] {
 
   const source =
 
-    payload?.data
-
-    ??
-
     payload
-
-    ??
-
-    {}
-
-  // ======================================
-  // Canonical Continuity
-  // ======================================
-
-  const products =
-    normalizeProducts(source)
+    ?? {}
 
   const clusters =
-    normalizeDiscoverClusters(source)
 
-  const intents =
-    normalizeDiscoverIntents(source)
+    Array.isArray(
+      source?.clusters
+    )
 
-  const paths =
-    normalizePaths(source)
+      ? source.clusters
 
-  const recommendations =
-    normalizeRecommendations(source)
+      : Array.isArray(
+          source?.featured_groups
+        )
 
-  // ======================================
-  // Runtime Debug
-  // ======================================
+          ? source.featured_groups
+
+          : []
 
   console.log(
-    '🔥 DISCOVER NORMALIZE',
+    '🔥 DISCOVER CLUSTERS',
     {
 
-      products:
-        products.length,
-
-      clusters:
+      count:
         clusters.length,
 
-      intents:
-        intents.length,
-
-      paths:
-        paths.length,
-
-      recommendations:
-        recommendations.length,
-
-      source:
-        payload?.data
-          ? 'semantic-v3'
-          : 'legacy',
+      sample:
+        clusters?.[0],
     }
   )
 
-  // ======================================
-  // Return
-  // ======================================
-
-  return {
-
-    // ====================================
-    // Success Compatibility
-    // ====================================
-
-    success:
-
-      payload?.success === true
-
-      ||
-
-      !!payload?.data
-
-      ||
-
-      !!payload,
-
-    // ====================================
-    // Semantic Runtime
-    // ====================================
-
-    semantic_schema_version:
-
-      payload?.semantic_schema_version
-
-      ||
-
-      source?.semantic_schema_version
-
-      ||
-
-      1,
-
-    semantic_runtime:
-
-      payload?.semantic_runtime
-
-      ||
-
-      source?.semantic_runtime
-
-      ||
-
-      {},
-
-    adaptive_runtime:
-
-      payload?.adaptive_runtime
-
-      ||
-
-      source?.adaptive_runtime
-
-      ||
-
-      {},
-
-    render_hints:
-
-      payload?.render_hints
-
-      ||
-
-      source?.render_hints
-
-      ||
-
-      {},
-
-    // ====================================
-    // Canonical Continuity
-    // ====================================
-
-    products,
-
-    clusters,
-
-    intents,
-
-    paths,
-
-    recommendations,
-
-    // ====================================
-    // Exploration Continuity
-    // ====================================
-
-    grouped_attributes:
-
-      source?.grouped_attributes
-
-      ||
-
-      {},
-
-    semantic_graph:
-
-      Array.isArray(
-        source?.semantic_graph
-      )
-
-        ? source.semantic_graph
-
-        : [],
-
-    workflow_tags:
-
-      Array.isArray(
-        source?.workflow_tags
-      )
-
-        ? source.workflow_tags
-
-        : [],
-
-    semantic_labels:
-
-      Array.isArray(
-        source?.semantic_labels
-      )
-
-        ? source.semantic_labels
-
-        : [],
-
-    // ====================================
-    // Observatory
-    // ====================================
-
-    observatory: {
-
-      topology_source:
-
-        source?.topology_source
-
-        ||
-
-        'discover-runtime',
-
-      continuity_status:
-
-        'normalized',
-
-      normalized:
-
-        true,
-
-      runtime_path:
-
-        'discover/normalize',
-
-      warnings: [],
-    },
-
-    // ====================================
-    // Meaning Layer
-    // ====================================
-
-    meaning:
-
-      payload?.meaning
-
-      ||
-
-      {},
-
-    // ====================================
-    // SEO
-    // ====================================
-
-    seo:
-
-      payload?.seo
-
-      ||
-
-      source?.seo
-
-      ||
-
-      {},
-
-    faq:
-
-      Array.isArray(
-        source?.faq
-      )
-
-        ? source.faq
-
-        : [],
-
-    breadcrumbs:
-
-      Array.isArray(
-        source?.breadcrumbs
-      )
-
-        ? source.breadcrumbs
-
-        : [],
-
-    schemas:
-
-      source?.schemas
-
-      ||
-
-      {},
-
-    // ====================================
-    // Raw Backup
-    // ====================================
-
-    raw:
-
-      payload,
-  }
+  return clusters
 }
 
 /* ============================================================================
 🔥 Default Export
 ============================================================================ */
 
-export default normalizeDiscoverRuntime
+export default normalizeDiscoverClusters

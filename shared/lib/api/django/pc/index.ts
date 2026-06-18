@@ -114,6 +114,12 @@ export * from './runtime'
 export * from './semantic'
 
 /* ============================================================================
+🔥 Top
+============================================================================ */
+
+export * from './top'
+
+/* ============================================================================
 🛡️ Legacy Compatibility Imports
 ============================================================================ */
 
@@ -122,12 +128,6 @@ import {
   fetchProducts,
 
 } from './products'
-
-import {
-
-  searchPC,
-
-} from './search'
 
 import {
 
@@ -257,6 +257,8 @@ console.log({
   runtime: true,
 
   semantic: true,
+
+  top: true,
 
   continuity:
     'healthy',

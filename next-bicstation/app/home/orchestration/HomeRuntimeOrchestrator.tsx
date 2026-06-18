@@ -280,7 +280,11 @@ return (
   HERO
   ================================================== */}
 
-  <HomeHero />
+  <HomeHero
+    meaning={runtime?.top?.meaning}
+    stats={runtime?.top?.stats}
+  />
+
 
   {/* ==================================================
   INTENT NAV

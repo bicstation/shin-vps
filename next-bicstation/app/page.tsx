@@ -21,6 +21,9 @@ from './home/orchestration/HomeRuntimeOrchestrator'
 import {
   fetchNavigationRuntime,
 } from '@/shared/lib/api/django/pc/navigation'
+import {
+  fetchTopRuntime,
+} from '@/shared/lib/api/django/pc/top'
 
 /* ============================================================================
 🔥 Home Page
@@ -40,6 +43,8 @@ const [
 
   navigation,
 
+  top,
+
 ] = await Promise.all([
 
   fetchSidebar(),
@@ -47,6 +52,8 @@ const [
   fetchSemanticRankingRuntime(),
 
   fetchNavigationRuntime(),
+
+  fetchTopRuntime(),
 
 ])
 
@@ -58,14 +65,15 @@ const [
 
 const runtime = {
 
-
 sidebar,
 
 ranking,
 
 navigation,
 
-heroRanking:
+heroRanking,
+
+top:
 
 
   Array.isArray(
