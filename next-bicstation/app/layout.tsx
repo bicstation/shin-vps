@@ -116,14 +116,10 @@ export default function RootLayout({
            🔹 Main Content
         ========================================================= */}
 
-        <main
-          style={{
-            maxWidth: '720px',
-            margin: '0 auto',
-            padding: '16px',
-          }}
-        >
+        <main className={styles.main} >
+
           {children}
+
         </main>
 
         {/* =========================================================

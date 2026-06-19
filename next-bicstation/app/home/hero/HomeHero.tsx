@@ -4,7 +4,7 @@ import Link
   from 'next/link'
 
 import styles
-  from '../styles/hero.module.css'
+  from '../styles/v2/hero.module.css'
 
 type Props = {
   meaning?: any
@@ -64,22 +64,42 @@ export default function HomeHero({
         </span>
       </div>
 
-      <div className={styles.heroFeaturedGroups}>
+      <div
+        className={
+          styles.heroFeaturedGroups
+        }
+      >
 
         {featuredGroups
-          ?.slice(0, 5)
+          ?.slice(0, 6)
           .map(group => (
 
-            <span
+            <Link
               key={group.group_slug}
-              className={styles.heroFeaturedGroup}
+              href={`/discover/${group.group_slug}`}
+              className={
+                styles.heroFeaturedGroup
+              }
             >
-              {group.group_name}
-            </span>
 
-        ))}
+              <span>
+                {group.group_name}
+              </span>
+
+              <span
+                className={
+                  styles.heroFeaturedCount
+                }
+              >
+                {group.product_count ?? 0}
+              </span>
+
+            </Link>
+
+          ))}
 
       </div>
+
 
 
       {/* =====================================
@@ -98,14 +118,9 @@ export default function HomeHero({
       TITLE
       ===================================== */}
 
-      <h1
-        className={
-          styles.heroTitle
-        }
-      >
-        あなたに合う
-        高性能PCを
-        わかりやすく提案
+      <h1 className={styles.heroTitle}>
+        あなたに合ったPCが
+        用途から見つかる
       </h1>
 
       {/* =====================================
@@ -117,12 +132,12 @@ export default function HomeHero({
           styles.heroDescription
         }
       >
-        FPSゲーム・動画編集・
-        AI画像生成・普段使いまで。
+          AI・ゲーム・動画編集・普段使いまで。
 
-        用途別 recommendation により、
-        初心者でも比較しやすい
-        PC選びをサポートします。
+          用途別に比較しながら、
+          自分にぴったりのPCを
+          わかりやすく探せます。
+
       </p>
 
       {/* =====================================
@@ -140,7 +155,7 @@ export default function HomeHero({
             styles.heroPoint
           }
         >
-          🎮 FPS gaming向け
+          🎮 FPS ゲーム向け
         </div>
 
         <div
@@ -221,7 +236,7 @@ export default function HomeHero({
         }
       >
         スペック知識がなくても、
-        用途ベースで比較できます。
+        クリック一つで探索可能。
       </div>
 
     </section>

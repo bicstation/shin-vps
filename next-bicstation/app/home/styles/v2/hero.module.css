@@ -644,3 +644,163 @@ Semantic Recommendation Gateway
       .34
     );
 }
+
+
+/* =========================================================
+🔥 RUNTIME HEADER
+========================================================= */
+
+.heroRuntimeMeaning {
+
+  color:
+    rgba(255,255,255,.92);
+
+  font-size:
+    1.25rem;
+
+  font-weight:
+    800;
+
+  margin-bottom:
+    8px;
+}
+
+.heroStats {
+
+  display: flex;
+
+  justify-content: center;
+
+  margin-bottom:
+    16px;
+
+  color:
+    rgba(226,232,240,.82);
+
+  font-size:
+    1rem;
+
+  font-weight:
+    700;
+}
+
+/* =========================================================
+🔥 FEATURED GROUPS
+========================================================= */
+
+.heroFeaturedGroups {
+
+  display: flex;
+
+  flex-wrap: wrap;
+
+  justify-content: center;
+
+  gap: 12px;
+
+  margin-bottom:
+    28px;
+}
+
+.heroFeaturedGroup {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  padding:
+    8px 14px;
+
+  border-radius:
+    999px;
+
+  text-decoration:
+    none;
+
+  color:
+    #e2e8f0;
+
+  background:
+    rgba(
+      255,
+      255,
+      255,
+      .04
+    );
+
+  border:
+    1px solid rgba(
+      255,
+      255,
+      255,
+      .08
+    );
+
+  backdrop-filter:
+    blur(10px);
+
+  transition:
+    all .2s ease;
+}
+
+.heroFeaturedGroup:hover {
+
+  transform:
+    translateY(-2px);
+
+  background:
+    rgba(
+      255,
+      255,
+      255,
+      .08
+    );
+
+  border-color:
+    rgba(
+      249,
+      115,
+      22,
+      .28
+    );
+}
+
+.heroFeaturedCount {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  min-width:
+    28px;
+
+  height:
+    22px;
+
+  padding:
+    0 8px;
+
+  border-radius:
+    999px;
+
+  background:
+    rgba(
+      249,
+      115,
+      22,
+      .14
+    );
+
+  color:
+    #fdba74;
+
+  font-size:
+    11px;
+
+  font-weight:
+    800;
+}

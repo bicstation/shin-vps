@@ -4,7 +4,7 @@ import Link
   from 'next/link'
 
 import styles
-  from '../styles/reality-map.module.css'
+  from '../styles/v2/reality-map.module.css'
 
 type FeaturedGroup = {
   group_slug: string
@@ -33,6 +33,10 @@ export default function HomeRealityMap({
     return null
   }
 
+  // =====================================================
+  // Universe Separation
+  // =====================================================
+
   const usageGroups =
     groups.filter(
       group =>
@@ -44,6 +48,88 @@ export default function HomeRealityMap({
       group =>
         group.type === 'device'
     )
+
+  // =====================================================
+  // Universe Renderer
+  // =====================================================
+
+  const renderUniverse = (
+    title: string,
+    description: string,
+    universe: FeaturedGroup[],
+  ) => {
+
+    if (!universe.length) {
+      return null
+    }
+
+    return (
+
+      <section
+        className={styles.universe}
+      >
+
+        <div
+          className={styles.universeHeader}
+        >
+
+          <h3
+            className={
+              styles.universeTitle
+            }
+          >
+            {title}
+          </h3>
+
+          <p
+            className={
+              styles.universeDescription
+            }
+          >
+            {description}
+          </p>
+
+        </div>
+
+        <div
+          className={styles.chipGrid}
+        >
+
+          {universe.map(group => (
+
+            <Link
+              key={group.group_slug}
+              href={`/discover/${group.group_slug}`}
+              className={styles.chip}
+            >
+
+              <span
+                className={
+                  styles.chipName
+                }
+              >
+                {group.group_name}
+              </span>
+
+              <span
+                className={
+                  styles.chipCount
+                }
+              >
+                {group.product_count ?? 0}
+              </span>
+
+            </Link>
+
+          ))}
+
+        </div>
+
+      </section>
+
+    )
+
+  }
 
   return (
 
@@ -80,165 +166,16 @@ export default function HomeRealityMap({
         className={styles.universeGrid}
       >
 
-        {!!usageGroups.length && (
-
-          <section
-            className={styles.universe}
-          >
-
-            <div
-              className={styles.universeHeader}
-            >
-
-              <h3
-                className={
-                  styles.universeTitle
-                }
-              >
-                Usage Universe
-              </h3>
-
-              <p
-                className={
-                  styles.universeDescription
-                }
-              >
-                PCを何に使うかという
-                用途の世界
-              </p>
-
-            </div>
-
-            <div
-              className={
-                styles.universeList
-              }
-            >
-
-              {usageGroups.map(group => (
-
-                <Link
-                  key={group.group_slug}
-                  href={`/discover/${group.group_slug}`}
-                  className={styles.row}
-                >
-
-                  <div
-                    className={styles.name}
-                  >
-                    {group.group_name}
-                  </div>
-
-                  <div
-                    className={styles.right}
-                  >
-
-                    <span
-                      className={
-                        styles.count
-                      }
-                    >
-                      {group.product_count ?? 0}
-                    </span>
-
-                    <span
-                      className={
-                        styles.arrow
-                      }
-                    >
-                      →
-                    </span>
-
-                  </div>
-
-                </Link>
-
-              ))}
-
-            </div>
-
-          </section>
-
+        {renderUniverse(
+          'Usage Universe',
+          'PCを何に使うかという用途の世界',
+          usageGroups,
         )}
 
-        {!!deviceGroups.length && (
-
-          <section
-            className={styles.universe}
-          >
-
-            <div
-              className={styles.universeHeader}
-            >
-
-              <h3
-                className={
-                  styles.universeTitle
-                }
-              >
-                Device Universe
-              </h3>
-
-              <p
-                className={
-                  styles.universeDescription
-                }
-              >
-                PCの形状や種類の世界
-              </p>
-
-            </div>
-
-            <div
-              className={
-                styles.universeList
-              }
-            >
-
-              {deviceGroups.map(group => (
-
-                <Link
-                  key={group.group_slug}
-                  href={`/discover/${group.group_slug}`}
-                  className={styles.row}
-                >
-
-                  <div
-                    className={styles.name}
-                  >
-                    {group.group_name}
-                  </div>
-
-                  <div
-                    className={styles.right}
-                  >
-
-                    <span
-                      className={
-                        styles.count
-                      }
-                    >
-                      {group.product_count ?? 0}
-                    </span>
-
-                    <span
-                      className={
-                        styles.arrow
-                      }
-                    >
-                      →
-                    </span>
-
-                  </div>
-
-                </Link>
-
-              ))}
-
-            </div>
-
-          </section>
-
+        {renderUniverse(
+          'Device Universe',
+          'PCの形状や種類の世界',
+          deviceGroups,
         )}
 
       </div>

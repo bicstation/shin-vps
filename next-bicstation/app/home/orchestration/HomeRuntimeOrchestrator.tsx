@@ -314,22 +314,13 @@ return (
     }
   />
 
-
   <HomeRealityExamples
-    // featuredGroups={
-    //   runtime?.top?.featured_groups
-    // }
     navigation={
       runtime.navigation
     }
   />
 
 
-<HomeRealityMap
-  groups={
-    runtime?.top?.featured_groups
-  }
-/>
 
 <HomeDiscoverGateway
   navigation={runtime.navigation}
