@@ -3,6 +3,14 @@
 import Link
   from 'next/link'
 
+import {
+  ICON_MAP,
+} from '@/shared/lib/ui/icon-map'
+
+import {
+  COLOR_MAP,
+} from '@/shared/lib/ui/color-map'
+
 import styles
   from '../styles/v2/hero.module.css'
 
@@ -10,6 +18,7 @@ type Props = {
   meaning?: any
   stats?: any
   featuredGroups?: any[]
+  groups?: any
 }
 
 
@@ -18,7 +27,6 @@ export default function HomeHero({
   meaning,
   stats,
   featuredGroups,
-
 }: Props) {
 
   console.log(
@@ -30,16 +38,6 @@ export default function HomeHero({
     'TOP_STATS',
     stats
   )
-
-  // console.log(
-  //   'FEATURED_GROUPS',
-  //   runtime?.top?.featured_groups
-  // )
-
-  // console.log(
-  //   'RANKING_PRODUCTS',
-  //   rankingProducts
-  // )
 
   console.log(
     'FEATURED_GROUPS',
@@ -60,7 +58,7 @@ export default function HomeHero({
 
       <div className={styles.heroStats}>
         <span>
-          製品数 {stats?.product_count}
+          {stats?.product_count}製品を掲載中
         </span>
       </div>
 
@@ -72,31 +70,56 @@ export default function HomeHero({
 
         {featuredGroups
           ?.slice(0, 6)
-          .map(group => (
+          .map(group => {
 
-            <Link
-              key={group.group_slug}
-              href={`/discover/${group.group_slug}`}
-              className={
-                styles.heroFeaturedGroup
-              }
-            >
+            const Icon =
+              ICON_MAP[group.icon]
 
-              <span>
-                {group.group_name}
-              </span>
+            const color =
+              COLOR_MAP[group.color]
+              || '#64748b'
 
-              <span
+            return (
+
+              <Link
+                key={group.group_slug}
+                href={`/discover/${group.group_slug}`}
                 className={
-                  styles.heroFeaturedCount
+                  styles.heroFeaturedGroup
                 }
+
+                style={{
+                  borderColor:
+                    `${color}33`,
+                }}
               >
-                {group.product_count ?? 0}
-              </span>
 
-            </Link>
+                {Icon && (
 
-          ))}
+                  <Icon
+                    size={14}
+                    color={color}
+                  />
+
+                )}
+
+                <span>
+                  {group.group_name}
+                </span>
+
+                <span
+                  className={
+                    styles.heroFeaturedCount
+                  }
+                >
+                  {group.product_count ?? 0}
+                </span>
+
+              </Link>
+
+            )
+
+          })}
 
       </div>
 
@@ -134,9 +157,8 @@ export default function HomeHero({
       >
           AI・ゲーム・動画編集・普段使いまで。
 
-          用途別に比較しながら、
-          自分にぴったりのPCを
-          わかりやすく探せます。
+          やりたいことから、
+          あなたに合ったPCを見つけられます。
 
       </p>
 

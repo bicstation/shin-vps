@@ -6,6 +6,14 @@ import Link
 import styles
   from '../styles/v2/reality-map.module.css'
 
+import {
+  ICON_MAP,
+} from '@/shared/lib/ui/icon-map'
+
+import {
+  COLOR_MAP,
+} from '@/shared/lib/ui/color-map'
+
 type FeaturedGroup = {
   group_slug: string
   group_name: string
@@ -33,10 +41,6 @@ export default function HomeRealityMap({
     return null
   }
 
-  // =====================================================
-  // Universe Separation
-  // =====================================================
-
   const usageGroups =
     groups.filter(
       group =>
@@ -48,10 +52,6 @@ export default function HomeRealityMap({
       group =>
         group.type === 'device'
     )
-
-  // =====================================================
-  // Universe Renderer
-  // =====================================================
 
   const renderUniverse = (
     title: string,
@@ -95,33 +95,88 @@ export default function HomeRealityMap({
           className={styles.chipGrid}
         >
 
-          {universe.map(group => (
+          {universe.map(group => {
 
-            <Link
-              key={group.group_slug}
-              href={`/discover/${group.group_slug}`}
-              className={styles.chip}
-            >
+            const Icon =
+              ICON_MAP[
+                group.icon ?? ''
+              ]
 
-              <span
-                className={
-                  styles.chipName
-                }
+            const accentColor =
+              COLOR_MAP[
+                group.color ?? ''
+              ]
+              || '#64748b'
+
+            return (
+
+              <Link
+                key={group.group_slug}
+                href={`/discover/${group.group_slug}`}
+                className={styles.chip}
+
+                style={{
+
+                  borderColor:
+                    `${accentColor}33`,
+
+                  background:
+                    `${accentColor}08`,
+
+                }}
               >
-                {group.group_name}
-              </span>
 
-              <span
-                className={
-                  styles.chipCount
-                }
-              >
-                {group.product_count ?? 0}
-              </span>
+                <div
+                  className={
+                    styles.chipLeft
+                  }
+                >
 
-            </Link>
+                  {Icon && (
 
-          ))}
+                    <div
+                      className={
+                        styles.chipIcon
+                      }
+
+                      style={{
+                        color:
+                          accentColor,
+                      }}
+                    >
+
+                      <Icon
+                        size={16}
+                        strokeWidth={2.2}
+                      />
+
+                    </div>
+
+                  )}
+
+                  <span
+                    className={
+                      styles.chipName
+                    }
+                  >
+                    {group.group_name}
+                  </span>
+
+                </div>
+
+                <span
+                  className={
+                    styles.chipCount
+                  }
+                >
+                  {group.product_count ?? 0}
+                </span>
+
+              </Link>
+
+            )
+
+          })}
 
         </div>
 
@@ -144,20 +199,20 @@ export default function HomeRealityMap({
         <div
           className={styles.eyebrow}
         >
-          Reality Map
+          PCの探し方
         </div>
 
         <h2
           className={styles.title}
         >
-          SHIN CORE LINX Universe
+          用途や種類から探す
         </h2>
 
         <p
           className={styles.description}
         >
-          SHIN CORE LINX が理解する
-          Semantic Reality の構造です。
+          やりたいことやPCの種類から、
+          あなたに合ったPCを見つけられます。
         </p>
 
       </div>
@@ -167,14 +222,14 @@ export default function HomeRealityMap({
       >
 
         {renderUniverse(
-          'Usage Universe',
-          'PCを何に使うかという用途の世界',
+          '用途から探す',
+          'AI・ゲーム・仕事など目的から探せます',
           usageGroups,
         )}
 
         {renderUniverse(
-          'Device Universe',
-          'PCの形状や種類の世界',
+          'PCの種類から探す',
+          'ノートPCやデスクトップなど形状から探せます',
           deviceGroups,
         )}
 

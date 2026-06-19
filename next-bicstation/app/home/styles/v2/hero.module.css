@@ -76,6 +76,11 @@ Semantic Recommendation Gateway
     0 6px 32px rgba(249,115,22,.12);
 }
 
+.heroTitle {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
 /* =========================================================
 🔥 DESCRIPTION
 ========================================================= */

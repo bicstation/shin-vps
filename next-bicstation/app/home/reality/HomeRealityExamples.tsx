@@ -1,9 +1,10 @@
 // /app/home/reality/HomeRealityExamples.tsx
 
-import Link from 'next/link'
+import Link
+  from 'next/link'
 
 import styles
-  from '../styles/reality-examples.module.css'
+  from '../styles/v2/reality-examples.module.css'
 
 type NavigationItem = {
   slug: string
@@ -32,11 +33,6 @@ export default function HomeRealityExamples({
     return null
   }
 
-  // =====================================================
-  // Usage First
-  // Device Second
-  // =====================================================
-
   const usageExamples =
     items.filter(
       item =>
@@ -49,13 +45,116 @@ export default function HomeRealityExamples({
         item.type === 'device'
     )
 
-  const examples = [
+  const renderSection = (
+    title: string,
+    description: string,
+    examples: NavigationItem[],
+    badge: string,
+  ) => {
 
-    ...usageExamples,
+    if (!examples.length) {
+      return null
+    }
 
-    ...deviceExamples,
+    return (
 
-  ]
+      <section
+        className={styles.group}
+      >
+
+        <div
+          className={styles.groupHeader}
+        >
+
+          <h3
+            className={styles.groupTitle}
+          >
+            {title}
+          </h3>
+
+          <p
+            className={
+              styles.groupDescription
+            }
+          >
+            {description}
+          </p>
+
+        </div>
+
+        <div
+          className={styles.examples}
+        >
+
+          {examples.map(example => (
+
+            <Link
+              key={example.slug}
+              href={`/discover/${example.slug}`}
+              className={styles.item}
+            >
+
+              <div
+                className={styles.content}
+              >
+
+                <div
+                  className={styles.top}
+                >
+
+                  <span
+                    className={styles.type}
+                  >
+                    {badge}
+                  </span>
+
+                  <span
+                    className={styles.count}
+                  >
+                    {example.product_count ?? 0}
+                    製品
+                  </span>
+
+                </div>
+
+                <h3
+                  className={styles.name}
+                >
+                  {example.title ||
+                   example.name}
+                </h3>
+
+                {example.description && (
+
+                  <p
+                    className={
+                      styles.text
+                    }
+                  >
+                    {example.description}
+                  </p>
+
+                )}
+
+              </div>
+
+              <div
+                className={styles.arrow}
+              >
+                →
+              </div>
+
+            </Link>
+
+          ))}
+
+        </div>
+
+      </section>
+
+    )
+
+  }
 
   return (
 
@@ -70,90 +169,39 @@ export default function HomeRealityExamples({
         <div
           className={styles.eyebrow}
         >
-          Reality Examples
+          PC選びの入口
         </div>
 
         <h2
           className={styles.title}
         >
-          Semantic Reality Examples
+          用途や種類から探す
         </h2>
 
         <p
           className={styles.description}
         >
-          SHIN CORE LINX が理解する
-          Semantic Reality の代表例です。
+          AI・ゲーム・動画編集・仕事用など、
+
+          やりたいことや
+          PCの種類から探せます。
         </p>
 
       </div>
 
-      <div
-        className={styles.examples}
-      >
+      {renderSection(
+        '用途から探す',
+        'AI・ゲーム・仕事など目的から探せます',
+        usageExamples,
+        '用途',
+      )}
 
-        {examples.map(example => (
-
-          <Link
-            key={example.slug}
-            href={`/discover/${example.slug}`}
-            className={styles.item}
-          >
-
-            <div
-              className={styles.content}
-            >
-
-              <div
-                className={styles.top}
-              >
-
-                <span
-                  className={styles.type}
-                >
-                  {example.type}
-                </span>
-
-                <span
-                  className={styles.count}
-                >
-                  {example.product_count ?? 0}
-                </span>
-
-              </div>
-
-              <h3
-                className={styles.name}
-              >
-                {example.title ||
-                 example.name}
-              </h3>
-
-              {example.description && (
-
-                <p
-                  className={
-                    styles.text
-                  }
-                >
-                  {example.description}
-                </p>
-
-              )}
-
-            </div>
-
-            <div
-              className={styles.arrow}
-            >
-              →
-            </div>
-
-          </Link>
-
-        ))}
-
-      </div>
+      {renderSection(
+        'PCの種類から探す',
+        'ノートPCやデスクトップなど形状から探せます',
+        deviceExamples,
+        '種類',
+      )}
 
     </section>
 

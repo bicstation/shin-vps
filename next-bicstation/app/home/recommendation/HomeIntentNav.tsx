@@ -31,66 +31,14 @@ type Props = {
   intents?: any[]
 }
 
-const ICON_MAP: Record<string, LucideIcon> = {
+import {
+  ICON_MAP,
+} from '@/shared/lib/ui/icon-map'
 
-  gamepad:
-    Gamepad2,
+import {
+  COLOR_MAP,
+} from '@/shared/lib/ui/color-map'
 
-  sparkles:
-    Sparkles,
-
-  'pen-tool':
-    PenTool,
-
-  'badge-dollar-sign':
-    BadgeDollarSign,
-
-  briefcase:
-    Briefcase,
-
-  smartphone:
-    Smartphone,
-
-  laptop:
-    Laptop,
-
-  pc:
-    Monitor,
-
-  cpu:
-    Cpu,
-
-  server:
-    Server,
-
-  box:
-    Box,
-
-}
-
-
-
-const COLOR_MAP: Record<string, string> = {
-
-  red:
-    '#ef4444',
-
-  purple:
-    '#a855f7',
-
-  green:
-    '#22c55e',
-
-  blue:
-    '#3b82f6',
-
-  cyan:
-    '#06b6d4',
-
-  orange:
-    '#f97316',
-
-}
 
 
 export default function HomeIntentNav({
