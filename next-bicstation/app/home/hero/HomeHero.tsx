@@ -9,14 +9,15 @@ import styles
 type Props = {
   meaning?: any
   stats?: any
+  featuredGroups?: any[]
 }
 
 
 export default function HomeHero({
 
   meaning,
-
   stats,
+  featuredGroups,
 
 }: Props) {
 
@@ -30,6 +31,21 @@ export default function HomeHero({
     stats
   )
 
+  // console.log(
+  //   'FEATURED_GROUPS',
+  //   runtime?.top?.featured_groups
+  // )
+
+  // console.log(
+  //   'RANKING_PRODUCTS',
+  //   rankingProducts
+  // )
+
+  console.log(
+    'FEATURED_GROUPS',
+    featuredGroups
+  )
+
   return (
 
     <section
@@ -37,6 +53,34 @@ export default function HomeHero({
         styles.hero
       }
     >
+
+      <div className={styles.heroRuntimeMeaning}>
+        {meaning?.identity}
+      </div>
+
+      <div className={styles.heroStats}>
+        <span>
+          製品数 {stats?.product_count}
+        </span>
+      </div>
+
+      <div className={styles.heroFeaturedGroups}>
+
+        {featuredGroups
+          ?.slice(0, 5)
+          .map(group => (
+
+            <span
+              key={group.group_slug}
+              className={styles.heroFeaturedGroup}
+            >
+              {group.group_name}
+            </span>
+
+        ))}
+
+      </div>
+
 
       {/* =====================================
       LABEL

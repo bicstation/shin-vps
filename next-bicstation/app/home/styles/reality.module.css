@@ -1,0 +1,112 @@
+/* =========================================================
+   Reality Section
+========================================================= */
+
+.section {
+  margin-top: 80px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.eyebrow {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-top: 8px;
+}
+
+.description {
+  margin-top: 12px;
+  color: #6b7280;
+  line-height: 1.7;
+}
+
+/* =========================================================
+   Grid
+========================================================= */
+
+.grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      auto-fill,
+      minmax(240px, 1fr)
+    );
+
+  gap: 20px;
+}
+
+/* =========================================================
+   Card
+========================================================= */
+
+.card {
+  padding: 20px;
+
+  border: 1px solid #e5e7eb;
+
+  border-radius: 16px;
+
+  background: #ffffff;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 8px 24px
+    rgba(0,0,0,0.08);
+}
+
+.cardTitle {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.cardType {
+  display: inline-block;
+
+  margin-top: 10px;
+
+  padding:
+    4px 10px;
+
+  border-radius: 999px;
+
+  background: #f3f4f6;
+
+  font-size: 0.75rem;
+
+  color: #6b7280;
+}
+
+.cardDescription {
+  margin-top: 12px;
+
+  color: #4b5563;
+
+  line-height: 1.6;
+}
+
+.cardFooter {
+  margin-top: 16px;
+
+  font-size: 0.875rem;
+
+  color: #6b7280;
+}

@@ -62,34 +62,31 @@ const [
 // Runtime
 // ======================================================
 
-
 const runtime = {
 
-sidebar,
+  sidebar,
 
-ranking,
+  ranking,
 
-navigation,
+  navigation,
 
-heroRanking,
+  top,
 
-top:
+  heroRanking:
 
+    Array.isArray(
+      ranking?.products
+    )
 
-  Array.isArray(
-    ranking?.products
-  )
+      ? ranking.products[0]
 
-    ? ranking.products[0]
+      : null,
 
-    : null,
+  semantic_runtime:
+    true,
 
-semantic_runtime:
-  true,
-
-adaptive_runtime:
-  true,
-
+  adaptive_runtime:
+    true,
 
 }
 

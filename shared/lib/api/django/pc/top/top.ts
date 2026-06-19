@@ -45,9 +45,16 @@
 
 import {
 
+  buildEndpoint,
+
+} from '../utils/buildEndpoint'
+
+import {
+
   safeFetch,
 
 } from '../utils/safeFetch'
+
 
 /* ============================================================================
 🔥 Contracts
@@ -75,7 +82,7 @@ import {
 
 const TOP_ENDPOINT =
 
-  '/api/pc/top/'
+  '/pc/top/'
 
 /* ============================================================================
 🔥 Fetch Top Runtime
@@ -89,11 +96,21 @@ export async function fetchTopRuntime(
     '🔥 FETCH TOP RUNTIME'
   )
 
-  const payload =
-
-    await safeFetch(
+  const endpoint =
+    buildEndpoint(
       TOP_ENDPOINT
     )
+
+  console.log(
+    '🔥 TOP ENDPOINT',
+    endpoint
+  )
+
+  const payload =
+    await safeFetch(
+      endpoint
+    )
+
 
   console.log(
     '🔥 TOP RAW PAYLOAD',

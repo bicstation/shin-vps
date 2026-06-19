@@ -1,0 +1,101 @@
+.section {
+  margin-top: 96px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.eyebrow {
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.title {
+  margin-top: 12px;
+  font-size: 2.5rem;
+  font-weight: 800;
+}
+
+.description {
+  margin-top: 16px;
+  opacity: 0.75;
+}
+
+.examples {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.item {
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  padding: 24px;
+
+  border-radius: 16px;
+
+  border:
+    1px solid rgba(
+      255,
+      255,
+      255,
+      0.08
+    );
+
+  text-decoration: none;
+
+  color: inherit;
+
+  transition: 0.2s;
+}
+
+.item:hover {
+  transform: translateY(-2px);
+}
+
+.content {
+  flex: 1;
+}
+
+.top {
+  display: flex;
+  gap: 12px;
+
+  margin-bottom: 8px;
+}
+
+.type {
+  font-size: 0.8rem;
+  opacity: 0.6;
+}
+
+.count {
+  font-size: 0.8rem;
+  opacity: 0.6;
+}
+
+.name {
+  font-size: 1.2rem;
+  font-weight: 700;
+
+  margin-bottom: 8px;
+}
+
+.text {
+  opacity: 0.75;
+  line-height: 1.7;
+}
+
+.arrow {
+  font-size: 1.5rem;
+  opacity: 0.5;
+}

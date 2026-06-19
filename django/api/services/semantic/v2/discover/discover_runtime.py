@@ -78,11 +78,23 @@ def build_discover_runtime():
     # ------------------------------------------------------
 
     shelves = []
-
+    
+    
     for group_slug, group_info in (
 
         group_map.items()
     ):
+
+        # --------------------------------------------------
+        # PC Runtime Only
+        # --------------------------------------------------
+
+        if (
+            group_info.get(
+                "parent_group"
+            ) == "adult"
+        ):
+            continue
 
         shelves.append({
 
@@ -102,12 +114,20 @@ def build_discover_runtime():
 
     shelves.sort(
 
-        key=lambda x:
+        key=lambda x: (
+
+            int(
+                x.get(
+                    "discovery_priority",
+                    0
+                )
+            ),
 
             x.get(
                 "product_count",
                 0
             ),
+        ),
 
         reverse=True,
     )

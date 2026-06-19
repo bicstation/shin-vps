@@ -34,6 +34,12 @@ from '../cta/HomeStickyCTA'
 import HomeEmpty
 from '../common/HomeEmpty'
 
+import HomeRealityMap
+  from '../reality/HomeRealityMap'
+
+import HomeRealityExamples
+  from '../reality/HomeRealityExamples'  
+
 /* ============================================================================
 🔥 Cards
 ============================================================================ */
@@ -57,7 +63,21 @@ from '../observatory/HomeTopologyInspector'
 import HomeContinuityInspector
 from '../observatory/HomeContinuityInspector'
 
-/* ============================================================================
+import HomeDiscoverGateway
+  from '../discover/HomeDiscoverGateway'
+
+import HomeFinderGateway
+  from '../finder/HomeFinderGateway'
+
+import HomeRankingGateway
+  from '../ranking/HomeRankingGateway'
+
+  import HomeGuideGateway
+  from '../guide/HomeGuideGateway'
+
+
+
+  /* ============================================================================
 🔥 Types
 ============================================================================ */
 
@@ -283,8 +303,47 @@ return (
   <HomeHero
     meaning={runtime?.top?.meaning}
     stats={runtime?.top?.stats}
+    featuredGroups={
+      runtime?.top?.featured_groups
+    }
   />
 
+  <HomeRealityMap
+    groups={
+      runtime?.top?.featured_groups
+    }
+  />
+
+
+  <HomeRealityExamples
+    // featuredGroups={
+    //   runtime?.top?.featured_groups
+    // }
+    navigation={
+      runtime.navigation
+    }
+  />
+
+
+<HomeRealityMap
+  groups={
+    runtime?.top?.featured_groups
+  }
+/>
+
+<HomeDiscoverGateway
+  navigation={runtime.navigation}
+/>
+
+<HomeFinderGateway/>
+
+<HomeRankingGateway
+  totalProducts={
+    runtime?.top?.stats?.product_count ?? 0
+  }
+/>
+
+<HomeGuideGateway/>
 
   {/* ==================================================
   INTENT NAV
