@@ -475,5 +475,8 @@ print(sample.semantic_runtime)
 # DONE
 # ==========================================================
 
+log "✅ コンシェルジェ未登録語一覧"
+
+run_django audit_unknown_intents
 
 log "✅ SHIN CORE LINX SEMANTIC PIPELINE COMPLETE 終了"

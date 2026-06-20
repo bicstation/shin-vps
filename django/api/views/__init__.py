@@ -34,7 +34,7 @@ from .ranking_v2_view import *
 from .related_v2_view import *
 from .product_detail_v2_view import *
 from .discover_v2_view import *
-
+from .intent_v1_view import *
 # ==========================================================
 # TSV TOPOLOGY V2
 # ==========================================================
@@ -70,6 +70,7 @@ from .article_view import (
 from .contenthub_view import (
     ContentHubViewSet,
 )
+
 
 # ==========================================================
 # LOGGER

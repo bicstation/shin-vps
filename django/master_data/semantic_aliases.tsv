@@ -365,6 +365,15 @@ usage-ai	tensor	core	0	0.7
 usage-ai	local llm	category	0	0.96
 usage-ai	ai pc	category	0	0.82
 usage-ai	copilot+ pc	category	0	0.78
+usage-ai	ai開発	category	0	0.78
+usage-ai	ai開発向け	category	0	0.78
+usage-ai	ai開発用	category	0	0.78
+usage-ai	ai学習	category	0	0.78
+usage-ai	機械学習	category	0	0.78
+usage-ai	llm開発	category	0	0.78
+usage-ai	aiエージェント	category	0	0.78
+usage-ai	cursor	category	0	0.78
+usage-ai	claude code	category	0	0.78
 usage-mobile	軽量ノート	category	0	0.94
 usage-mobile	持ち運び	category	0	0.88
 usage-mobile	1kg以下	spec	0	0.98

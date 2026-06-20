@@ -15,6 +15,7 @@ from api.views.topology_v2_view import ( topology_runtime_v2, )
 from api.views.navigation_v2_view import ( navigation_v2, )
 from api.views.sidebar_v2_view import ( sidebar_v2, )
 from api.views.discover_universe_v2_view import ( discover_universe_v2,)
+from api.views.intent_v1_view import (semantic_intent_v1,)
 
 app_name = "pc"
 
@@ -58,6 +59,11 @@ urlpatterns = [
         "discover-universe/",
         discover_universe_v2,
         name="discover_universe",
+    ),
+    
+    path(
+        "intent/",
+        semantic_intent_v1,
     ),
 
     # =====================================================
