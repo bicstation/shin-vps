@@ -3,8 +3,11 @@
 import Link
   from 'next/link'
 
+import SemanticIcon
+  from '@/shared/lib/ui/semantic/SemanticIcon'
+
 import styles
-  from '../styles/finder1.module.css'
+  from '../styles/v2/finder1.module.css'
 
 export default function HomeFinderGateway() {
 
@@ -23,6 +26,18 @@ export default function HomeFinderGateway() {
         >
 
           <div
+            className={styles.finderIcon}
+          >
+
+            <SemanticIcon
+              icon="search"
+              color="cyan"
+              size={28}
+            />
+
+          </div>
+
+          <div
             className={styles.eyebrow}
           >
             PC Finder
@@ -31,18 +46,50 @@ export default function HomeFinderGateway() {
           <h2
             className={styles.title}
           >
-            どのPCを選べば良いか
-            わからない方へ
+            質問に答えるだけで
+            あなたに合うPCが見つかる
           </h2>
 
           <p
             className={styles.description}
           >
-            用途・予算・重視ポイントから、
-            あなたに合うPCを絞り込みます。
-            スペックに詳しくなくても
-            Finder が選択をサポートします。
+            用途・予算・重視ポイントを
+            選ぶだけ。
+
+            スペックに詳しくなくても、
+            Finder が最適なPC探しを
+            サポートします。
           </p>
+
+          <div
+            className={styles.points}
+          >
+
+            <div
+              className={styles.point}
+            >
+              🎮 ゲーム用途
+            </div>
+
+            <div
+              className={styles.point}
+            >
+              🤖 AI用途
+            </div>
+
+            <div
+              className={styles.point}
+            >
+              🎬 動画編集
+            </div>
+
+            <div
+              className={styles.point}
+            >
+              💼 ビジネス用途
+            </div>
+
+          </div>
 
         </div>
 
@@ -54,7 +101,7 @@ export default function HomeFinderGateway() {
             href="/pc-finder"
             className={styles.button}
           >
-            PC Finderを開始する
+            PC Finder を開始する
           </Link>
 
         </div>

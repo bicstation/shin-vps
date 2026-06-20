@@ -1,14 +1,18 @@
-/* /app/home/styles/finder.module.css */
+/* /app/home/styles/guide1.module.css */
 
 .section {
   margin-top: 96px;
 }
 
 /* ===================================================== */
-/* Gateway Card */
+/* Card */
 /* ===================================================== */
 
 .card {
+
+  position: relative;
+
+  overflow: hidden;
 
   display: flex;
 
@@ -16,29 +20,55 @@
 
   align-items: center;
 
-  gap: 40px;
+  gap: 48px;
 
   padding: 40px;
 
   border-radius: 24px;
 
-  border: 1px solid rgba(
-    255,
-    255,
-    255,
-    0.08
-  );
+  border:
+    1px solid rgba(
+      255,
+      255,
+      255,
+      0.08
+    );
 
   background:
-    rgba(
-      255,
-      255,
-      255,
-      0.02
-    );
+    linear-gradient(
+      rgba(2,6,23,.82),
+      rgba(2,6,23,.92)
+    ),
+    url('/images/universe/guide-universe.png');
+
+  background-size: cover;
+
+  background-position: center;
 
   backdrop-filter:
     blur(10px);
+}
+
+/* ===================================================== */
+/* Glow Layer */
+/* ===================================================== */
+
+.card::before {
+
+  content: '';
+
+  position: absolute;
+
+  inset: 0;
+
+  background:
+    radial-gradient(
+      circle at center,
+      rgba(56,189,248,.12),
+      transparent 70%
+    );
+
+  pointer-events: none;
 }
 
 /* ===================================================== */
@@ -46,6 +76,11 @@
 /* ===================================================== */
 
 .content {
+
+  position: relative;
+
+  z-index: 1;
+
   flex: 1;
 }
 
@@ -59,7 +94,7 @@
 
   text-transform: uppercase;
 
-  opacity: 0.7;
+  opacity: 0.75;
 }
 
 .title {
@@ -77,44 +112,68 @@
 
   margin-top: 16px;
 
-  max-width: 640px;
+  max-width: 680px;
 
-  line-height: 1.8;
+  line-height: 1.9;
 
-  opacity: 0.8;
+  opacity: 0.82;
 }
 
 /* ===================================================== */
-/* Stats */
+/* Tags */
 /* ===================================================== */
 
-.stats {
+.tags {
 
   display: flex;
 
-  align-items: center;
+  flex-wrap: wrap;
 
-  gap: 12px;
+  gap: 10px;
 
   margin-top: 24px;
-
-  font-size: 0.95rem;
-
-  opacity: 0.8;
 }
 
-.stats strong {
+.tag {
 
-  font-size: 1.2rem;
+  padding:
+    8px 14px;
 
-  font-weight: 800;
+  border-radius: 999px;
+
+  font-size: 0.875rem;
+
+  font-weight: 600;
+
+  border:
+    1px solid rgba(
+      255,
+      255,
+      255,
+      0.12
+    );
+
+  background:
+    rgba(
+      255,
+      255,
+      255,
+      0.05
+    );
+
+  backdrop-filter:
+    blur(6px);
 }
 
 /* ===================================================== */
-/* Actions */
+/* Action */
 /* ===================================================== */
 
 .actions {
+
+  position: relative;
+
+  z-index: 1;
 
   display: flex;
 
@@ -131,7 +190,8 @@
 
   justify-content: center;
 
-  padding: 14px 28px;
+  padding:
+    16px 32px;
 
   border-radius: 999px;
 
@@ -139,9 +199,15 @@
 
   font-weight: 700;
 
-  transition:
-    transform 0.2s ease,
-    opacity 0.2s ease;
+  color: inherit;
+
+  border:
+    1px solid rgba(
+      255,
+      255,
+      255,
+      0.15
+    );
 
   background:
     rgba(
@@ -151,13 +217,13 @@
       0.08
     );
 
-  border:
-    1px solid rgba(
-      255,
-      255,
-      255,
-      0.1
-    );
+  backdrop-filter:
+    blur(8px);
+
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease;
 }
 
 .button:hover {
@@ -165,16 +231,28 @@
   transform:
     translateY(-2px);
 
-  opacity: 0.9;
+  border-color:
+    rgba(
+      56,
+      189,
+      248,
+      0.35
+    );
+
+  background:
+    rgba(
+      255,
+      255,
+      255,
+      0.12
+    );
 }
 
 /* ===================================================== */
 /* Mobile */
 /* ===================================================== */
 
-@media (
-  max-width: 768px
-) {
+@media (max-width: 768px) {
 
   .section {
     margin-top: 72px;
@@ -187,6 +265,8 @@
     align-items: flex-start;
 
     padding: 28px;
+
+    gap: 24px;
   }
 
   .title {
@@ -194,12 +274,10 @@
   }
 
   .actions {
-
     width: 100%;
   }
 
   .button {
-
     width: 100%;
   }
 

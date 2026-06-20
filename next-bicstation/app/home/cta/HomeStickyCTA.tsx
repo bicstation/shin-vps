@@ -23,7 +23,7 @@ export default function HomeStickyCTA() {
       ==================================== */}
 
       <Link
-        href="/ranking/score"
+        href="/ranking/all"
 
         className={
           styles.stickyPrimary

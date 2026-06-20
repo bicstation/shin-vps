@@ -6,13 +6,8 @@ import Link
 import styles
   from '../styles/v2/reality-map.module.css'
 
-import {
-  ICON_MAP,
-} from '@/shared/lib/ui/icon-map'
-
-import {
-  COLOR_MAP,
-} from '@/shared/lib/ui/color-map'
+import SemanticIcon
+  from '@/shared/lib/ui/semantic/SemanticIcon'
 
 type FeaturedGroup = {
   group_slug: string
@@ -57,6 +52,7 @@ export default function HomeRealityMap({
     title: string,
     description: string,
     universe: FeaturedGroup[],
+    variant: 'usage' | 'device',
   ) => {
 
     if (!universe.length) {
@@ -66,7 +62,14 @@ export default function HomeRealityMap({
     return (
 
       <section
-        className={styles.universe}
+        className={`
+          ${styles.universe}
+          ${
+            variant === 'usage'
+              ? styles.usageUniverse
+              : styles.deviceUniverse
+          }
+        `}
       >
 
         <div
@@ -95,88 +98,55 @@ export default function HomeRealityMap({
           className={styles.chipGrid}
         >
 
-          {universe.map(group => {
+          {universe.map(group => (
 
-            const Icon =
-              ICON_MAP[
-                group.icon ?? ''
-              ]
+            <Link
+              key={group.group_slug}
+              href={`/discover/${group.group_slug}`}
+              className={styles.chip}
+            >
 
-            const accentColor =
-              COLOR_MAP[
-                group.color ?? ''
-              ]
-              || '#64748b'
-
-            return (
-
-              <Link
-                key={group.group_slug}
-                href={`/discover/${group.group_slug}`}
-                className={styles.chip}
-
-                style={{
-
-                  borderColor:
-                    `${accentColor}33`,
-
-                  background:
-                    `${accentColor}08`,
-
-                }}
+              <div
+                className={
+                  styles.chipLeft
+                }
               >
 
                 <div
                   className={
-                    styles.chipLeft
+                    styles.chipIcon
                   }
                 >
 
-                  {Icon && (
-
-                    <div
-                      className={
-                        styles.chipIcon
-                      }
-
-                      style={{
-                        color:
-                          accentColor,
-                      }}
-                    >
-
-                      <Icon
-                        size={16}
-                        strokeWidth={2.2}
-                      />
-
-                    </div>
-
-                  )}
-
-                  <span
-                    className={
-                      styles.chipName
-                    }
-                  >
-                    {group.group_name}
-                  </span>
+                  <SemanticIcon
+                    icon={group.icon}
+                    color={group.color}
+                    size={16}
+                  />
 
                 </div>
 
                 <span
                   className={
-                    styles.chipCount
+                    styles.chipName
                   }
                 >
-                  {group.product_count ?? 0}
+                  {group.group_name}
                 </span>
 
-              </Link>
+              </div>
 
-            )
+              <span
+                className={
+                  styles.chipCount
+                }
+              >
+                {group.product_count ?? 0}
+              </span>
 
-          })}
+            </Link>
+
+          ))}
 
         </div>
 
@@ -225,12 +195,14 @@ export default function HomeRealityMap({
           '用途から探す',
           'AI・ゲーム・仕事など目的から探せます',
           usageGroups,
+          'usage',
         )}
 
         {renderUniverse(
           'PCの種類から探す',
           'ノートPCやデスクトップなど形状から探せます',
           deviceGroups,
+          'device',
         )}
 
       </div>

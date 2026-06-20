@@ -31,15 +31,8 @@ type Props = {
   intents?: any[]
 }
 
-import {
-  ICON_MAP,
-} from '@/shared/lib/ui/icon-map'
-
-import {
-  COLOR_MAP,
-} from '@/shared/lib/ui/color-map'
-
-
+import SemanticIcon
+  from '@/shared/lib/ui/semantic/SemanticIcon'
 
 export default function HomeIntentNav({
 
@@ -120,197 +113,90 @@ export default function HomeIntentNav({
       {/* =====================================
       GRID
       ===================================== */}
+      
 
-      <div className={ styles.intentGrid } >
+      <div className={styles.intentGrid}>
 
+        {usageIntents.map((intent) => (
 
-        {
-          usageIntents.map((intent) => {
+          <Link
+            key={intent.slug}
+            href={`/ranking/${intent.slug}`}
+            className={styles.intentCard}
+          >
 
-            const Icon =
+            {/* ===============================
+            TOP
+            =============================== */}
 
-              ICON_MAP[
-                intent.icon
-              ]
+            <div
+              className={
+                styles.intentCardTop
+              }
+            >
 
-            const accentColor =
-
-              COLOR_MAP[
-                intent.color
-              ]
-
-              ||
-
-              '#0ea5e9'
-
-            return (
-
-              <Link
-                key={intent.slug}
-
-                href={
-                  `/ranking/${intent.slug}`
-                }
-
+              <div
                 className={
-                  styles.intentCard
+                  styles.intentIcon
                 }
-
-                 style={{
-
-                  borderColor:
-                    `${accentColor}33`,
-                  boxShadow:
-                    `0 0 40px ${accentColor}15`,
-
-                }}
               >
-                {/* ===============================
-                  TOP
-                  =============================== */}
 
-                  <div
-                    className={
-                      styles.intentCardTop
-                    }
-                  >
+                <SemanticIcon
+                  icon={intent.icon}
+                  color={intent.color}
+                  size={24}
+                />
 
-                    <div
-                      className={
-                        styles.intentIcon
-                      }
+              </div>
 
-                      style={{
-
-                        color:
-                          accentColor,
-
-                        border:
-                          `1px solid ${accentColor}44`,
-
-                        background:
-                          `linear-gradient(
-                            135deg,
-                            ${accentColor}22,
-                            rgba(255,255,255,.03)
-                          )`,
-
-                        boxShadow:
-                          `0 0 24px ${accentColor}22`,
-
-                      }}
-                    >
-
-                      {
-
-                        Icon
-
-                          ? (
-                              <Icon
-                                size={24}
-                                strokeWidth={2.2}
-                              />
-                            )
-
-                          : '📦'
-
-                      }
-
-                    </div>
-
-                    <div>
-
-                      <div
-                        className={
-                          styles.intentCardTitle
-                        }
-
-                        style={{
-
-                          textShadow:
-                            `0 0 12px ${accentColor}22`,
-
-                        }}
-                      >
-                        {intent.title}
-                      </div>
-
-                      <div
-
-                        style={{
-
-                          display:
-                            'inline-flex',
-
-                          alignItems:
-                            'center',
-
-                          padding:
-                            '4px 10px',
-
-                          borderRadius:
-                            '999px',
-
-                          background:
-                            `${accentColor}18`,
-
-                          border:
-                            `1px solid ${accentColor}33`,
-
-                          color:
-                            accentColor,
-
-                          fontSize:
-                            '11px',
-
-                          fontWeight:
-                            800,
-
-                          marginBottom:
-                            '12px',
-
-                        }}
-                      >
-
-                        {intent.product_count}
-                        製品
-
-                      </div>
-
-                      <div
-                        className={
-                          styles.intentCardText
-                        }
-                      >
-                        {intent.description}
-                      </div>
-
-                    </div>
-
-                  </div>
-
-                {/* ===============================
-                FOOTER
-                =============================== */}
+              <div>
 
                 <div
                   className={
-                    styles.intentCardFooter
+                    styles.intentCardTitle
                   }
                 >
-                  おすすめを見る →
+                  {intent.title}
                 </div>
 
-              </Link>
+                <div
+                  className={
+                    styles.intentProductCount
+                  }
+                >
+                  {intent.product_count ?? 0}
+                  製品
+                </div>
 
-            )
+                <div
+                  className={
+                    styles.intentCardText
+                  }
+                >
+                  {intent.description}
+                </div>
 
-          })
-        }
+              </div>
 
+            </div>
+
+            {/* ===============================
+            FOOTER
+            =============================== */}
+
+            <div
+              className={
+                styles.intentCardFooter
+              }
+            >
+              おすすめを見る →
+            </div>
+
+          </Link>
+
+        ))}
 
       </div>
-      
 
     </section>
 

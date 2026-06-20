@@ -1,0 +1,121 @@
+/* =========================================================
+🔥 Semantic Icon
+Runtime Semantic UI Layer
+========================================================= */
+
+.icon {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  line-height: 1;
+}
+
+/* =========================================================
+🔥 Sizes
+========================================================= */
+
+.xs {
+  width: 14px;
+  height: 14px;
+}
+
+.sm {
+  width: 18px;
+  height: 18px;
+}
+
+.md {
+  width: 24px;
+  height: 24px;
+}
+
+.lg {
+  width: 32px;
+  height: 32px;
+}
+
+/* =========================================================
+🔥 Circle Container
+========================================================= */
+
+.circle {
+
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 999px;
+
+}
+
+.circleSm {
+
+  width: 32px;
+  height: 32px;
+
+}
+
+.circleMd {
+
+  width: 40px;
+  height: 40px;
+
+}
+
+.circleLg {
+
+  width: 56px;
+  height: 56px;
+
+}
+
+/* =========================================================
+🔥 Card Style
+========================================================= */
+
+.card {
+
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 14px;
+
+  backdrop-filter: blur(10px);
+
+  border:
+    1px solid rgba(
+      255,
+      255,
+      255,
+      0.08
+    );
+
+}
+
+.cardSm {
+
+  width: 36px;
+  height: 36px;
+
+}
+
+.cardMd {
+
+  width: 48px;
+  height: 48px;
+
+}
+
+.cardLg {
+
+  width: 64px;
+  height: 64px;
+
+}

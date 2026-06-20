@@ -1,14 +1,18 @@
-/* /app/home/styles/guide1.module.css */
+/* /app/home/styles/v2/finder1.module.css */
 
 .section {
   margin-top: 96px;
 }
 
 /* ===================================================== */
-/* Card */
+/* Gateway Card */
 /* ===================================================== */
 
 .card {
+
+  position: relative;
+
+  overflow: hidden;
 
   display: flex;
 
@@ -31,15 +35,52 @@
     );
 
   background:
-    rgba(
-      255,
-      255,
-      255,
-      0.02
-    );
+    linear-gradient(
+      rgba(2,6,23,.82),
+      rgba(2,6,23,.92)
+    ),
+    url('/images/finder/finder-universe.png');
+
+  background-size: cover;
+
+  background-position: center;
 
   backdrop-filter:
     blur(10px);
+}
+
+/* ===================================================== */
+/* Finder Glow */
+/* ===================================================== */
+
+.card::before {
+
+  content: '';
+
+  position: absolute;
+
+  inset: 0;
+
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(6,182,212,.15),
+      transparent 45%
+    );
+
+  pointer-events: none;
+}
+
+/* ===================================================== */
+/* Layer */
+/* ===================================================== */
+
+.content,
+.actions {
+
+  position: relative;
+
+  z-index: 1;
 }
 
 /* ===================================================== */
@@ -48,6 +89,42 @@
 
 .content {
   flex: 1;
+}
+
+.finderIcon {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  width: 56px;
+
+  height: 56px;
+
+  border-radius: 16px;
+
+  margin-bottom: 20px;
+
+  background:
+    rgba(
+      255,
+      255,
+      255,
+      0.04
+    );
+
+  border:
+    1px solid rgba(
+      255,
+      255,
+      255,
+      0.08
+    );
+
+  backdrop-filter:
+    blur(8px);
 }
 
 .eyebrow {
@@ -60,7 +137,7 @@
 
   text-transform: uppercase;
 
-  opacity: 0.7;
+  opacity: 0.75;
 }
 
 .title {
@@ -82,14 +159,14 @@
 
   line-height: 1.9;
 
-  opacity: 0.8;
+  opacity: 0.82;
 }
 
 /* ===================================================== */
-/* Tags */
+/* Finder Points */
 /* ===================================================== */
 
-.tags {
+.points {
 
   display: flex;
 
@@ -100,7 +177,11 @@
   margin-top: 24px;
 }
 
-.tag {
+.point {
+
+  display: inline-flex;
+
+  align-items: center;
 
   padding:
     8px 14px;
@@ -116,7 +197,7 @@
       255,
       255,
       255,
-      0.1
+      0.12
     );
 
   background:
@@ -124,12 +205,15 @@
       255,
       255,
       255,
-      0.04
+      0.05
     );
+
+  backdrop-filter:
+    blur(6px);
 }
 
 /* ===================================================== */
-/* Action */
+/* Actions */
 /* ===================================================== */
 
 .actions {
@@ -173,11 +257,16 @@
       255,
       255,
       255,
-      0.06
+      0.08
     );
 
+  backdrop-filter:
+    blur(8px);
+
   transition:
-    all 0.2s ease;
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease;
 }
 
 .button:hover {
@@ -187,10 +276,10 @@
 
   border-color:
     rgba(
-      255,
-      255,
-      255,
-      0.25
+      6,
+      182,
+      212,
+      0.35
     );
 
   background:
@@ -198,7 +287,7 @@
       255,
       255,
       255,
-      0.1
+      0.12
     );
 }
 
@@ -219,6 +308,8 @@
     align-items: flex-start;
 
     padding: 28px;
+
+    gap: 24px;
   }
 
   .title {
@@ -231,6 +322,10 @@
 
   .button {
     width: 100%;
+  }
+
+  .points {
+    gap: 8px;
   }
 
 }

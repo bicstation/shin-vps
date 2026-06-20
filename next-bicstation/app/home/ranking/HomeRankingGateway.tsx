@@ -3,8 +3,11 @@
 import Link
   from 'next/link'
 
+import SemanticIcon
+  from '@/shared/lib/ui/semantic/SemanticIcon'
+
 import styles
-  from '../styles/ranking.module.css'
+  from '../styles/v2/ranking.module.css'
 
 type Props = {
   totalProducts?: number
@@ -24,9 +27,25 @@ export default function HomeRankingGateway({
         className={styles.card}
       >
 
+        {/* ===================================== */}
+        {/* Content */}
+        {/* ===================================== */}
+
         <div
           className={styles.content}
         >
+
+          <div
+            className={styles.rankingIcon}
+          >
+
+            <SemanticIcon
+              icon="trophy"
+              color="orange"
+              size={28}
+            />
+
+          </div>
 
           <div
             className={styles.eyebrow}
@@ -47,10 +66,49 @@ export default function HomeRankingGateway({
             現在注目されている
             人気PCをランキング形式で確認できます。
 
-            AI・ゲーム・クリエイター用途など
-            様々な視点から
-            人気モデルを比較できます。
+            AI・ゲーム・クリエイター用途など、
+            様々な視点から比較できます。
           </p>
+
+          <div
+            className={styles.points}
+          >
+
+            <div
+              className={styles.point}
+            >
+              🏆 人気モデル
+            </div>
+
+            <div
+              className={styles.point}
+            >
+              📈 注目度上昇
+            </div>
+
+            <div
+              className={styles.point}
+            >
+              🎮 ゲーミング
+            </div>
+
+            <div
+              className={styles.point}
+            >
+              🤖 AI対応
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* ===================================== */}
+        {/* Action Panel */}
+        {/* ===================================== */}
+
+        <div
+          className={styles.actions}
+        >
 
           <div
             className={styles.stats}
@@ -66,17 +124,11 @@ export default function HomeRankingGateway({
 
           </div>
 
-        </div>
-
-        <div
-          className={styles.actions}
-        >
-
           <Link
             href="/ranking/all"
             className={styles.button}
           >
-            ランキングを見る
+            🏆 ランキングを見る
           </Link>
 
         </div>

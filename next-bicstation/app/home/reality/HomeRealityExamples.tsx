@@ -6,15 +6,21 @@ import Link
 import styles
   from '../styles/v2/reality-examples.module.css'
 
+import SemanticIcon
+  from '@/shared/lib/ui/semantic/SemanticIcon'
+
 type NavigationItem = {
   slug: string
   name?: string
   title?: string
   description?: string
   type?: string
+  icon?: string
+  color?: string
   parent_group?: string
   product_count?: number
 }
+
 
 type Props = {
   navigation?: {
@@ -59,7 +65,14 @@ export default function HomeRealityExamples({
     return (
 
       <section
-        className={styles.group}
+        className={`
+          ${styles.group}
+          ${
+            badge === '用途'
+              ? styles.usageGroup
+              : styles.deviceGroup
+          }
+        `}
       >
 
         <div
@@ -117,12 +130,30 @@ export default function HomeRealityExamples({
 
                 </div>
 
-                <h3
-                  className={styles.name}
+                <div
+                  className={styles.nameRow}
                 >
-                  {example.title ||
-                   example.name}
-                </h3>
+
+                  <div
+                    className={styles.icon}
+                  >
+
+                    <SemanticIcon
+                      icon={example.icon}
+                      color={example.color}
+                      size={18}
+                    />
+
+                  </div>
+
+                  <h3
+                    className={styles.name}
+                  >
+                    {example.title ||
+                    example.name}
+                  </h3>
+
+                </div>
 
                 {example.description && (
 

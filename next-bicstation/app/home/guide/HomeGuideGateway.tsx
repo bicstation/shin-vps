@@ -4,7 +4,7 @@ import Link
   from 'next/link'
 
 import styles
-  from '../styles/guide1.module.css'
+  from '../styles/v2/guide1.module.css'
 
 export default function HomeGuideGateway() {
 

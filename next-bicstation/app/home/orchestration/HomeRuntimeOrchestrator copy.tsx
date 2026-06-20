@@ -41,6 +41,16 @@ import HomeRealityExamples
   from '../reality/HomeRealityExamples'  
 
 /* ============================================================================
+🔥 Cards
+============================================================================ */
+
+import ProductCard
+from '@/shared/components/organisms/cards/ProductCard'
+
+import HeroRankingCard
+from '@/shared/components/organisms/cards/HeroRankingCard'
+
+/* ============================================================================
 🔥 Observatory
 ============================================================================ */
 
@@ -79,6 +89,11 @@ type Props = {
 runtime?: any
 
 observatory?: boolean
+
+totalProducts?: number
+
+featuredProducts?: any[]
+
 
 }
 
@@ -131,10 +146,27 @@ runtime?.topology
 || {}
 
 
-const featuredProducts =
-  runtime?.top?.featured_products
-  ?? []
+// ======================================================
+// Products
+// ======================================================
 
+const rankingProducts =
+
+
+Array.isArray(
+  ranking?.products
+)
+
+  ? ranking.products
+
+  : []
+
+
+const heroRanking =
+
+
+rankingProducts?.[0]
+|| null
 
 
 // ======================================================
@@ -157,7 +189,7 @@ const sections = [
 {
   type: 'ranking',
   visible:
-    featuredProducts.length > 0,
+    rankingProducts.length > 0,
 },
 
 {
@@ -211,10 +243,11 @@ sections.filter(
 // ======================================================
 
 if (
-  !featuredProducts.length
-  &&
-  !sidebar
-){
+!rankingProducts.length
+&&
+!sidebar
+) {
+
 
 return <HomeEmpty />
 
@@ -308,42 +341,134 @@ return (
 
 <HomeFinderGateway/>
 
+{/* <HomeRankingGateway
+  totalProducts={
+    runtime?.top?.stats?.product_count ?? 0
+  }
+/> */}
 <HomeRankingGateway
   totalProducts={
     runtime?.top?.stats?.product_count ?? 0
   }
 
   featuredProducts={
-    featuredProducts
+    runtime?.top?.featured_products ?? []
   }
 />
 
 <HomeFeaturedProducts
-  products={
-    featuredProducts
-  }
+  products={rankingProducts}
 />
+
 
 <HomeGuideGateway/>
 
+  {/* ==================================================
+  INTENT NAV
+  ================================================== */}
+
+  {/* <HomeIntentNav
+  intents={
+    runtime?.navigation?.navigation
+  }
+/> */}
+
+  {/* ==================================================
+  HERO RANKING
+  ================================================== */}
+
+  {/* {
+
+    heroRanking && (
+
+      <section
+
+        style={{
+
+          padding:
+            '40px 24px',
+        }}
+      >
+
+        <HeroRankingCard
+          product={heroRanking}
+        />
+
+      </section>
+
+    )
+
+  } */}
+
+  {/* ==================================================
+  RANKING GRID
+  ================================================== */}
+
+  
+
+  {
+
+    rankingProducts.length > 0 && (
+
+
+      <section
+        className={
+          styles.productGrid
+        }
+      >
+
+        {
+
+          rankingProducts.map(
+
+            (
+              product: any,
+              index: number
+            ) => (
+
+              <ProductCard
+
+                key={
+                  product?.unique_id
+                  ?? index
+                }
+
+                product={
+                  product
+                }
+
+              />
+
+            )
+
+          )
+
+        }
+
+      </section>
+
+
+    )
+
+  }
 
   {/* ==================================================
   RECOMMENDATION
   ================================================== */}
 
-  {/* <HomeRecommendedPaths /> */}
+  <HomeRecommendedPaths />
 
   {/* ==================================================
   CAPABILITY
   ================================================== */}
 
-  {/* <HomeCapabilitySection /> */}
+  <HomeCapabilitySection />
 
   {/* ==================================================
   GUIDE
   ================================================== */}
 
-  {/* <HomeGuideSection /> */}
+  <HomeGuideSection />
 
   {/* ==================================================
   TRUST
@@ -355,7 +480,7 @@ return (
   FINDER CTA
   ================================================== */}
 
-  {/* <HomeFinderCTA /> */}
+  <HomeFinderCTA />
 
   {/* ==================================================
   BOTTOM CTA

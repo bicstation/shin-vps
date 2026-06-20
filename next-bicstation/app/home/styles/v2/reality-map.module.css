@@ -351,3 +351,60 @@
   align-items: center;
   justify-content: center;
 }
+
+
+/* =====================================================
+🔥 Universe Background
+===================================================== */
+
+.universe {
+
+  position: relative;
+
+  overflow: hidden;
+}
+
+.universe::before {
+
+  content: '';
+
+  position: absolute;
+
+  inset: 0;
+
+  background-size: cover;
+
+  background-position: center;
+
+  background-repeat: no-repeat;
+
+  opacity: 0.12;
+
+  pointer-events: none;
+}
+
+/* 用途 Universe */
+
+.usageUniverse::before {
+
+  background-image:
+    url('/images/universe/usage.png');
+}
+
+/* Device Universe */
+
+.deviceUniverse::before {
+
+  background-image:
+    url('/images/universe/device.png');
+}
+
+/* コンテンツを前面へ */
+
+.universeHeader,
+.chipGrid {
+
+  position: relative;
+
+  z-index: 1;
+}

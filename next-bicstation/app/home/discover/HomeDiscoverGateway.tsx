@@ -3,8 +3,11 @@
 import Link
   from 'next/link'
 
+import SemanticIcon
+  from '@/shared/lib/ui/semantic/SemanticIcon'
+
 import styles
-  from '../styles/discover.module.css'
+  from '../styles/v2/discover.module.css'
 
 type NavigationItem = {
   slug: string
@@ -15,6 +18,9 @@ type NavigationItem = {
   description?: string
 
   type?: string
+
+  icon?: string
+  color?: string
 
   product_count?: number
 }
@@ -36,16 +42,6 @@ export default function HomeDiscoverGateway({
     return null
   }
 
-  // =====================================================
-  // Discover Runtime
-  //
-  // Temporary:
-  // usage universe
-  //
-  // Future:
-  // runtime.top.discover
-  // =====================================================
-
   const discoverItems = items
 
     .filter(
@@ -59,6 +55,11 @@ export default function HomeDiscoverGateway({
         -
         (a.product_count ?? 0)
     )
+
+  console.log(
+    'DISCOVER_ITEMS',
+    discoverItems
+  )
 
   if (!discoverItems.length) {
     return null
@@ -77,7 +78,7 @@ export default function HomeDiscoverGateway({
         <div
           className={styles.eyebrow}
         >
-          Discover
+          PCを探す
         </div>
 
         <h2
@@ -90,7 +91,7 @@ export default function HomeDiscoverGateway({
           className={styles.description}
         >
           AI・ゲーム・動画編集など、
-          あなたの目的から
+          やりたいことから
           最適なPCを探せます。
         </p>
 
@@ -112,12 +113,24 @@ export default function HomeDiscoverGateway({
               className={styles.cardBody}
             >
 
+              <div
+                className={styles.cardIcon}
+              >
+
+                <SemanticIcon
+                  icon={item.icon ?? 'box'}
+                  color={item.color}
+                  size={22}
+                />
+
+              </div>
+
               <h3
                 className={styles.cardTitle}
               >
-                {item.title ||
-                 item.name ||
-                 item.slug}
+                {item.title
+                  || item.name
+                  || item.slug}
               </h3>
 
               {item.description && (
@@ -139,7 +152,7 @@ export default function HomeDiscoverGateway({
             >
 
               <span>
-                Products
+                掲載製品数
               </span>
 
               <strong>

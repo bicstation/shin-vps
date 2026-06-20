@@ -3,13 +3,9 @@
 import Link
   from 'next/link'
 
-import {
-  ICON_MAP,
-} from '@/shared/lib/ui/icon-map'
+import SemanticIcon
+ from '@/shared/lib/ui/semantic/SemanticIcon'
 
-import {
-  COLOR_MAP,
-} from '@/shared/lib/ui/color-map'
 
 import styles
   from '../styles/v2/hero.module.css'
@@ -70,56 +66,37 @@ export default function HomeHero({
 
         {featuredGroups
           ?.slice(0, 6)
-          .map(group => {
+          .map(group => (
 
-            const Icon =
-              ICON_MAP[group.icon]
+            <Link
+              key={group.group_slug}
+              href={`/discover/${group.group_slug}`}
+              className={
+                styles.heroFeaturedGroup
+              }
+            >
 
-            const color =
-              COLOR_MAP[group.color]
-              || '#64748b'
+              <SemanticIcon
+                icon={group.icon}
+                color={group.color}
+                size={14}
+              />
 
-            return (
+              <span>
+                {group.group_name}
+              </span>
 
-              <Link
-                key={group.group_slug}
-                href={`/discover/${group.group_slug}`}
+              <span
                 className={
-                  styles.heroFeaturedGroup
+                  styles.heroFeaturedCount
                 }
-
-                style={{
-                  borderColor:
-                    `${color}33`,
-                }}
               >
+                {group.product_count ?? 0}
+              </span>
 
-                {Icon && (
+            </Link>
 
-                  <Icon
-                    size={14}
-                    color={color}
-                  />
-
-                )}
-
-                <span>
-                  {group.group_name}
-                </span>
-
-                <span
-                  className={
-                    styles.heroFeaturedCount
-                  }
-                >
-                  {group.product_count ?? 0}
-                </span>
-
-              </Link>
-
-            )
-
-          })}
+        ))}
 
       </div>
 
@@ -143,6 +120,7 @@ export default function HomeHero({
 
       <h1 className={styles.heroTitle}>
         あなたに合ったPCが
+        <br />
         用途から見つかる
       </h1>
 

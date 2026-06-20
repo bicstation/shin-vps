@@ -1,33 +1,38 @@
-// /home/maya/shin-vps/next-bicstation/app/components/home/trust/HomeTrustSection.tsx
+// /app/home/trust/HomeTrustSection.tsx
 
 import styles
-  from '../styles/trust.module.css'
+  from '../styles/v2/trust.module.css'
 
 const TRUST_ITEMS = [
+
   {
-    icon: '🛡',
-    title: '初心者でも比較しやすい',
+    icon: '🎯',
+    title: '用途から探せる',
     description:
-      '用途ベース recommendation により、スペック知識がなくても選びやすい。',
+      'AI・ゲーム・動画編集・仕事など、やりたいことから最適なPCを見つけられます。',
   },
+
   {
     icon: '🤖',
-    title: 'AI用途もわかりやすい',
+    title: 'AIに強いPCがわかる',
     description:
-      '画像生成・動画編集・LLM用途などを semantic に比較できます。',
+      'NPU・GPU・メモリ構成を含め、AI用途に適したモデルを比較できます。',
   },
+
   {
-    icon: '⚖',
-    title: '失敗しにくい選び方',
+    icon: '📊',
+    title: 'ランキングで比較できる',
     description:
-      '価格だけでなく、長く使いやすい構成も考慮しています。',
+      '注目モデルや人気モデルをランキング形式で比較できます。',
   },
+
   {
-    icon: '🎮',
-    title: '用途別 recommendation',
+    icon: '📚',
+    title: '知識がなくても安心',
     description:
-      'FPS gaming・配信・動画編集など目的別に探せます。',
+      'Guide と Finder が用途に合ったPC選びをサポートします。',
   },
+
 ]
 
 export default function HomeTrustSection() {
@@ -55,7 +60,7 @@ export default function HomeTrustSection() {
             styles.trustLabel
           }
         >
-          TRUSTED COMPARISON
+          WHY SHIN CORE LINX
         </div>
 
         <h2
@@ -63,8 +68,8 @@ export default function HomeTrustSection() {
             styles.trustTitle
           }
         >
-          安心して
-          比較を始められる
+          PC選びを
+          もっとわかりやすく
         </h2>
 
         <p
@@ -73,13 +78,17 @@ export default function HomeTrustSection() {
           }
         >
           SHIN CORE LINX は、
-          スペック比較だけではなく、
+          製品スペックだけではなく、
 
           「何ができるか」
 
-          を semantic に整理し、
-          初心者でも比較しやすい
-          recommendation experience を提供します。
+          を中心に整理し、
+
+          用途・ランキング・Guide・Finder
+          を通じて、
+          あなたに合ったPC探しを
+          サポートします。
+
         </p>
 
       </div>
@@ -94,11 +103,10 @@ export default function HomeTrustSection() {
         }
       >
 
-        {TRUST_ITEMS.map((item) => (
+        {TRUST_ITEMS.map(item => (
 
           <div
             key={item.title}
-
             className={
               styles.trustCard
             }
@@ -137,4 +145,5 @@ export default function HomeTrustSection() {
     </section>
 
   )
+
 }
