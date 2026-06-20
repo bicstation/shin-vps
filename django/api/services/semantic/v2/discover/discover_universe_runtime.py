@@ -36,10 +36,8 @@ def build_discover_universe_runtime():
 
         build_universe_index(
 
-            navigation.get(
-                "intents",
-                []
-            )
+            # navigation.get( "intents", [] )
+            authority.get("groups", [])
         )
     )
 
