@@ -1,0 +1,243 @@
+/* ============================================================================
+🔥 DISCOVER PAGE
+============================================================================ */
+
+.discover {
+  width: 100%;
+
+  max-width: 1400px;
+
+  margin: 0 auto;
+
+  padding: 48px 24px 96px;
+}
+
+/* ============================================================================
+🔥 HERO
+============================================================================ */
+
+.hero {
+  text-align: center;
+
+  margin-bottom: 48px;
+}
+
+.heroLabel {
+  display: inline-block;
+
+  padding: 8px 14px;
+
+  border-radius: 999px;
+
+  background: rgba(59,130,246,.12);
+
+  color: #93c5fd;
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+  letter-spacing: .08em;
+
+  text-transform: uppercase;
+
+  margin-bottom: 20px;
+}
+
+.heroTitle {
+  color: #fff;
+
+  font-size: clamp(
+    2rem,
+    5vw,
+    3.5rem
+  );
+
+  font-weight: 900;
+
+  line-height: 1.1;
+
+  margin-bottom: 16px;
+}
+
+.heroDescription {
+  max-width: 760px;
+
+  margin: 0 auto;
+
+  color: rgba(226,232,240,.8);
+
+  font-size: 16px;
+
+  line-height: 1.8;
+}
+
+/* ============================================================================
+🔥 UNIVERSE TABS
+============================================================================ */
+
+.universeTabs {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 12px;
+
+  justify-content: center;
+
+  margin-bottom: 40px;
+}
+
+.universeTab,
+.universeTabActive {
+  border: none;
+
+  cursor: pointer;
+
+  border-radius: 999px;
+
+  padding: 12px 18px;
+
+  font-size: 14px;
+
+  font-weight: 700;
+
+  transition: .2s;
+}
+
+.universeTab {
+  background: rgba(255,255,255,.05);
+
+  color: rgba(255,255,255,.7);
+}
+
+.universeTab:hover {
+  background: rgba(255,255,255,.1);
+}
+
+.universeTabActive {
+  background: #2563eb;
+
+  color: white;
+}
+
+/* ============================================================================
+🔥 GRID
+============================================================================ */
+
+.universeGrid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      auto-fill,
+      minmax(280px, 1fr)
+    );
+
+  gap: 20px;
+}
+
+/* ============================================================================
+🔥 CARD
+============================================================================ */
+
+.universeCard {
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 16px;
+
+  text-decoration: none;
+
+  padding: 24px;
+
+  border-radius: 24px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(18,24,38,.95),
+      rgba(10,14,24,.98)
+    );
+
+  border:
+    1px solid rgba(255,255,255,.08);
+
+  transition:
+    transform .2s ease,
+    border-color .2s ease;
+}
+
+.universeCard:hover {
+  transform:
+    translateY(-4px);
+
+  border-color:
+    rgba(59,130,246,.4);
+}
+
+.universeCardIcon {
+  flex-shrink: 0;
+}
+
+.universeCardContent {
+  flex: 1;
+}
+
+.universeCardTitle {
+  color: #fff;
+
+  font-size: 18px;
+
+  font-weight: 800;
+
+  margin-bottom: 8px;
+}
+
+.universeCardDescription {
+  color:
+    rgba(226,232,240,.8);
+
+  font-size: 14px;
+
+  line-height: 1.7;
+}
+
+.universeCardMeta {
+  color:
+    rgba(255,255,255,.5);
+
+  font-size: 20px;
+}
+
+/* ============================================================================
+🔥 EMPTY
+============================================================================ */
+
+.emptyState {
+  text-align: center;
+
+  padding: 80px 24px;
+
+  color:
+    rgba(255,255,255,.6);
+}
+
+/* ============================================================================
+📱 MOBILE
+============================================================================ */
+
+@media (max-width: 768px) {
+
+  .discover {
+    padding:
+      32px 16px 72px;
+  }
+
+  .universeGrid {
+    grid-template-columns:
+      1fr;
+  }
+
+}

@@ -55,11 +55,38 @@ urlpatterns = [
         name="sidebar",
     ),
     
+    
+    # ======================================================
+    # SEMANTIC UNIVERSE
+    # ======================================================
+
+    # Legacy endpoint
+    #
+    # Discover Universe 構想時代のURL。
+    # 既存Frontend互換維持のため残す。
+    #
+    # New integrations SHOULD use:
+    # /api/pc/semantics/
+    #
     path(
         "discover-universe/",
         discover_universe_v2,
         name="discover_universe",
     ),
+
+    # Semantic Authority Runtime Endpoint
+    #
+    # Universe / Group / Attribute を含む
+    # Semantic Topology Gateway。
+    #
+    # Preferred endpoint.
+    #
+    path(
+        "semantics/",
+        discover_universe_v2,
+        name="semantics",
+    ),
+
     
     path(
         "intent/",

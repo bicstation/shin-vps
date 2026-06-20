@@ -59,6 +59,11 @@ def build_authority_runtime():
         # ==========================================
         # Registry
         # ==========================================
+        "universes":
+            registry.get(
+                "universes",
+                []
+            ),
 
         "groups":
             registry.get(

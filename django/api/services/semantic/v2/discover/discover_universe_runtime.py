@@ -32,12 +32,20 @@ def build_discover_universe_runtime():
         build_navigation_runtime()
     )
     
+    # universes = (
+
+    #     build_universe_index(
+
+    #         # navigation.get( "intents", [] )
+    #         authority.get("groups", [])
+    #     )
+    # )
+    
     universes = (
 
-        build_universe_index(
-
-            # navigation.get( "intents", [] )
-            authority.get("groups", [])
+        authority.get(
+            "universes",
+            []
         )
     )
 

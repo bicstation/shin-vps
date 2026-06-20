@@ -15,10 +15,10 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 # Runtime Variables
 # ==========================================================
 
-AI_SPEC_LIMIT=10
-AI_SUMMARY_LIMIT=10
-AI_SEMANTIC_LIMIT=10
-IMAGE_CACHE_LIMIT=10
+AI_SPEC_LIMIT=200
+AI_SUMMARY_LIMIT=200
+AI_SEMANTIC_LIMIT=200
+IMAGE_CACHE_LIMIT=200
 
 # ==========================================================
 # Project Root Topology
@@ -326,6 +326,7 @@ SEMANTIC_FILES=(
   "semantic_attributes.tsv"
   "semantic_slug_metadata.tsv"
   "semantic_workflow_mappings.tsv"
+  "semantic_universes.tsv"
 
 )
 

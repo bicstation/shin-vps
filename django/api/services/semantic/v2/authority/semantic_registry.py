@@ -47,6 +47,9 @@ WORKFLOW_MAPPINGS_FILE = (
     "semantic_workflow_mappings"
 )
 
+UNIVERSES_FILE = (
+    "semantic_universes"
+)
 
 # ==========================================================
 # REGISTRY BUILDER
@@ -61,6 +64,11 @@ def build_semantic_registry():
         # ------------------------------------------
         # Raw Authority
         # ------------------------------------------
+        "universes":
+            raw.get(
+                UNIVERSES_FILE,
+                []
+            ),
 
         "groups":
             raw.get(
