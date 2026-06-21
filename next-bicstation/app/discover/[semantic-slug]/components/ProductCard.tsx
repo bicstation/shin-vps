@@ -1,6 +1,6 @@
 // ============================================================================
 // FILE:
-// /app/discover/components/cards/UniverseCard.tsx
+// /app/discover/[semantic-slug]/components/ProductCard.tsx
 // ============================================================================
 
 'use client'
@@ -13,28 +13,21 @@ import Link
   from 'next/link'
 
 /* ============================================================================
-🔥 Types
+🔥 Runtime
 ============================================================================ */
 
-// import type {
+import type {
 
-//   NavigationItem,
+  DiscoverDetailProduct,
 
-// } from '../../types/discover'
+} from '@/shared/lib/api/django/pc/discover-detail'
 
 /* ============================================================================
 🔥 Styles
 ============================================================================ */
 
 import styles
-  from '../../styles/discover.module.css'
-
-/* ============================================================================
-🔥 Semantic Icon
-============================================================================ */
-
-import SemanticIcon
-  from '@/shared/lib/ui/semantic/SemanticIcon'
+  from '../styles/discover-detail.module.css'
 
 /* ============================================================================
 🔥 Props
@@ -42,18 +35,18 @@ import SemanticIcon
 
 type Props = {
 
-  item:
-    NavigationItem
+  product:
+    DiscoverDetailProduct
 
 }
 
 /* ============================================================================
-🔥 Universe Card
+🔥 Product Card
 ============================================================================ */
 
-export default function UniverseCard({
+export default function ProductCard({
 
-  item,
+  product,
 
 }: Props) {
 
@@ -62,40 +55,42 @@ export default function UniverseCard({
     <Link
 
       href={
-        `/discover/${item.group_slug}`
+        `/product/${product.unique_id}`
       }
 
       className={
-        styles.universeCard
+        styles.productCard
       }
 
     >
 
       {/* ==========================================================
-      ICON
+      IMAGE
       ========================================================== */}
 
-      <div
-        className={
-          styles.universeCardIcon
-        }
-      >
+      {
 
-        <SemanticIcon
+        product.image_url && (
 
-          icon={
-            item.icon
-          }
+          <img
 
-          color={
-            item.color
-          }
+            src={
+              product.image_url
+            }
 
-          size={24}
+            alt={
+              product.name
+            }
 
-        />
+            className={
+              styles.productImage
+            }
 
-      </div>
+          />
+
+        )
+
+      }
 
       {/* ==========================================================
       CONTENT
@@ -103,59 +98,73 @@ export default function UniverseCard({
 
       <div
         className={
-          styles.universeCardContent
+          styles.productContent
         }
       >
 
         <h3
           className={
-            styles.universeCardTitle
+            styles.productName
           }
         >
 
-          {item.group_name}
+          {
+
+            product.name
+
+          }
 
         </h3>
 
-        <p
-          className={
-            styles.universeCardDescription
-          }
-        >
+        {
 
-          Semantic Attribute
+          product.maker && (
 
-        </p>
+            <p
+              className={
+                styles.productMaker
+              }
+            >
 
-      </div>
+              {
 
-      {/* ==========================================================
-      META
-      ========================================================== */}
+                product.maker
 
-      <div
-        className={
-          styles.universeCardMeta
+              }
+
+            </p>
+
+          )
+
         }
-      >
 
-        <span>
+        {
 
-          Explore
+          product.price !== undefined && (
 
-        </span>
+            <p
+              className={
+                styles.productPrice
+              }
+            >
 
-        <span>
+              ¥
 
-          →
+              {
 
-        </span>
+                product.price.toLocaleString()
+
+              }
+
+            </p>
+
+          )
+
+        }
 
       </div>
 
     </Link>
-
-
 
   )
 

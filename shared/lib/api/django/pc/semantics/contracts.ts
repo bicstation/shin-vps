@@ -1,36 +1,6 @@
 // ============================================================================
-// FILE:
-// /home/maya/shin-vps/shared/lib/api/django/pc/semantics/contracts.ts
-// Copyright (c) 2024 Shin Corporation.
-// All rights reserved.
+// 🔥 Semantic Universe
 // ============================================================================
-
-/**
- * ============================================================================
- * SHIN CORE LINX
- * Semantic Runtime Contracts
- * ============================================================================
- *
- * IMPORTANT
- *
- * Backend remains:
- *
- * semantic authority
- *
- * This contract represents:
- *
- * Runtime Reality
- *
- * NOT:
- *
- * UI Projection
- *
- * ============================================================================
- */
-
-/* ============================================================================
-🔥 Semantic Universe
-============================================================================ */
 
 export interface SemanticUniverse {
 
@@ -41,6 +11,8 @@ export interface SemanticUniverse {
   sort_order?: string
 
   is_active?: string
+
+  is_adult?: string
 }
 
 /* ============================================================================
@@ -71,6 +43,103 @@ export interface SemanticNavigationItem {
 }
 
 /* ============================================================================
+🔥 Semantic Discover Shelf
+============================================================================ */
+
+export interface SemanticDiscoverShelf {
+
+  group_slug: string
+
+  group_name: string
+
+  parent_group?: string
+
+  type?: string
+
+  icon?: string
+
+  color?: string
+
+  sort_order?: string
+
+  discovery_priority?: string
+
+  is_active?: string
+
+  product_count?: number
+}
+
+/* ============================================================================
+🔥 Semantic Discover Runtime
+============================================================================ */
+
+export interface SemanticDiscoverRuntime {
+
+  product_count?: number
+
+  group_count?: number
+
+  attribute_count?: number
+
+  shelf_count?: number
+
+  shelves: SemanticDiscoverShelf[]
+}
+
+/* ============================================================================
+🔥 Semantic Meaning
+============================================================================ */
+
+export interface SemanticMeaning {
+
+  identity?: string
+
+  mission?: string
+
+  user_intent?: string
+
+  meaning_statement?: string
+
+  existence_reason?: string
+}
+
+/* ============================================================================
+🔥 Semantic SEO
+============================================================================ */
+
+export interface SemanticSEO {
+
+  title?: string
+
+  description?: string
+
+  keywords?: string[]
+
+  canonical?: string
+
+  schema_jsonld?: any
+}
+
+/* ============================================================================
+🔥 Semantic Summary
+============================================================================ */
+
+export interface SemanticSummary {
+
+  navigation_count?: number
+
+  sidebar_count?: number
+
+  shelf_count?: number
+
+  universe_count?: number
+
+  product_count?: number
+
+  attribute_count?: number
+}
+
+/* ============================================================================
 🔥 Semantic Runtime Response
 ============================================================================ */
 
@@ -79,6 +148,16 @@ export interface SemanticRuntimeResponse {
   universes: SemanticUniverse[]
 
   navigation: SemanticNavigationItem[]
+
+  sidebar: SemanticNavigationItem[]
+
+  discover: SemanticDiscoverRuntime
+
+  meaning: SemanticMeaning
+
+  seo: SemanticSEO
+
+  summary: SemanticSummary
 }
 
 /* ============================================================================
@@ -90,6 +169,16 @@ export interface SemanticRuntime {
   universes: SemanticUniverse[]
 
   navigation: SemanticNavigationItem[]
+
+  sidebar: SemanticNavigationItem[]
+
+  discover: SemanticDiscoverRuntime
+
+  meaning: SemanticMeaning
+
+  seo: SemanticSEO
+
+  summary: SemanticSummary
 
   raw?: any
 }

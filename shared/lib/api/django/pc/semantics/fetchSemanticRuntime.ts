@@ -122,6 +122,8 @@ export async function fetchSemanticRuntime(
     normalizeSemanticRuntime(
       payload
     )
+  
+
 
   console.log(
     '🔥 SEMANTIC RUNTIME',
@@ -132,6 +134,18 @@ export async function fetchSemanticRuntime(
 
       navigation:
         runtime?.navigation?.length,
+
+      sidebar:
+        runtime?.sidebar?.length,
+
+      shelves:
+        runtime?.discover?.shelves?.length,
+
+      meaning:
+        !!runtime?.meaning,
+
+      summary:
+        !!runtime?.summary,
     }
   )
 

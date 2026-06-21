@@ -1,6 +1,6 @@
 // ============================================================================
 // FILE:
-// /app/discover/page.tsx
+// /app/discover/[semantic-slug]/page.tsx
 // ============================================================================
 
 'use client'
@@ -10,9 +10,10 @@
 ============================================================================ */
 
 import {
+
   useEffect,
-  useMemo,
   useState,
+
 } from 'react'
 
 /* ============================================================================
@@ -20,62 +21,90 @@ import {
 ============================================================================ */
 
 import {
-  fetchSemanticRuntime,
-} from '@/shared/lib/api/django/pc/semantics'
+
+  fetchDiscoverDetail,
+
+} from '@/shared/lib/api/django/pc/discover-detail'
 
 import type {
-  SemanticRuntime,
-} from '@/shared/lib/api/django/pc/semantics'
+
+  DiscoverDetailRuntime,
+
+} from '@/shared/lib/api/django/pc/discover-detail'
 
 /* ============================================================================
 🔥 Components
 ============================================================================ */
 
-import DiscoverHero
-  from './components/hero/DiscoverHero'
+import SemanticHero
+  from './components/SemanticHero'
 
-import UniverseTabs
-  from './components/tabs/UniverseTabs'
+import SemanticAliases
+  from './components/SemanticAliases'
 
-import UniverseGrid
-  from './components/cards/UniverseGrid'
+import ProductGrid
+  from './components/ProductGrid'
 
-import EmptyState
-  from './components/common/EmptyState'
+import EmptyProducts
+  from './components/EmptyProducts'
+
+import NotFoundState
+  from './components/NotFoundState'
 
 /* ============================================================================
 🔥 Styles
 ============================================================================ */
 
 import styles
-  from './styles/discover.module.css'
+  from './styles/discover-detail.module.css'
 
 /* ============================================================================
-🔥 Discover Universe Page
+🔥 Props
 ============================================================================ */
 
-export default function DiscoverPage() {
+type Props = {
+
+  params: {
+
+    'semantic-slug': string
+
+  }
+
+}
+
+/* ============================================================================
+🔥 Discover Detail Page
+============================================================================ */
+
+export default function DiscoverDetailPage({
+
+  params,
+
+}: Props) {
 
   /* ==========================================================================
   🔥 Runtime
   ========================================================================== */
 
   const [
+
     runtime,
+
     setRuntime,
-  ] = useState<SemanticRuntime | null>(
-    null
-  )
+
+  ] = useState<
+
+    DiscoverDetailRuntime | null
+
+  >(null)
 
   const [
+
     loading,
-    setLoading,
-  ] = useState(true)
 
-  const [
-    activeUniverse,
-    setActiveUniverse,
-  ] = useState('')
+    setLoading,
+
+  ] = useState(true)
 
   /* ==========================================================================
   🔥 Load Runtime
@@ -88,29 +117,38 @@ export default function DiscoverPage() {
       try {
 
         const data =
-          await fetchSemanticRuntime()
+
+          await fetchDiscoverDetail(
+
+            params['semantic-slug']
+
+          )
+
+        console.log(
+
+          'DISCOVER DETAIL RUNTIME',
+
+          data
+
+        )
 
         setRuntime(data)
 
-        if (
-          data?.universes?.length
-        ) {
+      }
 
-          setActiveUniverse(
-            data.universes[0]
-              .universe_slug
-          )
-
-        }
-
-      } catch (error) {
+      catch (error) {
 
         console.error(
-          'DISCOVER UNIVERSE ERROR',
+
+          'DISCOVER DETAIL ERROR',
+
           error
+
         )
 
-      } finally {
+      }
+
+      finally {
 
         setLoading(false)
 
@@ -120,38 +158,11 @@ export default function DiscoverPage() {
 
     loadRuntime()
 
-  }, [])
+  }, [
 
-  /* ==========================================================================
-  🔥 Active Attributes
-  ========================================================================== */
+    params,
 
-  const activeAttributes =
-    useMemo(() => {
-
-      if (
-        !runtime?.discover?.shelves
-      ) {
-
-        return []
-
-      }
-
-      return runtime.discover.shelves.filter(
-
-        (item) =>
-
-          item.parent_group ===
-          activeUniverse
-
-      )
-
-    }, [
-
-      runtime,
-      activeUniverse,
-
-    ])
+  ])
 
   /* ==========================================================================
   🔥 Loading
@@ -163,7 +174,7 @@ export default function DiscoverPage() {
 
       <main
         className={
-          styles.discover
+          styles.discoverDetail
         }
       >
 
@@ -176,14 +187,14 @@ export default function DiscoverPage() {
   }
 
   /* ==========================================================================
-  🔥 Empty Runtime
+  🔥 Not Found
   ========================================================================== */
 
   if (
 
     !runtime ||
 
-    runtime.universes.length === 0
+    !runtime.found
 
   ) {
 
@@ -191,17 +202,25 @@ export default function DiscoverPage() {
 
       <main
         className={
-          styles.discover
+          styles.discoverDetail
         }
       >
 
-        <EmptyState />
+        <NotFoundState />
 
       </main>
 
     )
 
   }
+
+  /* ==========================================================================
+  🔥 Empty Products
+  ========================================================================== */
+
+  const hasProducts =
+
+    runtime.sample_products.length > 0
 
   /* ==========================================================================
   🔥 Render
@@ -211,7 +230,7 @@ export default function DiscoverPage() {
 
     <main
       className={
-        styles.discover
+        styles.discoverDetail
       }
     >
 
@@ -219,39 +238,61 @@ export default function DiscoverPage() {
       Hero
       ========================================================== */}
 
-      <DiscoverHero />
+      <SemanticHero
 
-      {/* ==========================================================
-      Universe Tabs
-      ========================================================== */}
-
-      <UniverseTabs
-
-        universes={
-          runtime.universes
-        }
-
-        activeUniverse={
-          activeUniverse
-        }
-
-        onChange={
-          setActiveUniverse
+        runtime={
+          runtime
         }
 
       />
 
       {/* ==========================================================
-      Attribute Cards
+      Aliases
       ========================================================== */}
 
-      <UniverseGrid
+      {
 
-        items={
-          activeAttributes
-        }
+        runtime.aliases.length > 0 && (
 
-      />
+          <SemanticAliases
+
+            aliases={
+              runtime.aliases
+            }
+
+          />
+
+        )
+
+      }
+
+      {/* ==========================================================
+      Products
+      ========================================================== */}
+
+      {
+
+        hasProducts
+
+          ? (
+
+            <ProductGrid
+
+              products={
+                runtime.sample_products
+              }
+
+            />
+
+          )
+
+          : (
+
+            <EmptyProducts />
+
+          )
+
+      }
 
     </main>
 

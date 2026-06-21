@@ -88,6 +88,51 @@ export function normalizeSemanticRuntime(
       ? source.navigation
 
       : []
+  
+  const sidebar: SemanticNavigationItem[] =
+
+    Array.isArray(
+      source?.sidebar
+    )
+
+      ? source.sidebar
+
+      : []
+  
+  const discover =
+
+    source?.discover
+
+    ||
+
+    {
+
+      shelves: [],
+    }
+  
+  const meaning =
+
+    source?.meaning
+
+    ||
+
+    {}
+
+  const seo =
+
+    source?.seo
+
+    ||
+
+    {}
+  
+  const summary =
+
+    source?.summary
+
+    ||
+
+    {}
 
   console.log(
     '🔥 SEMANTIC NORMALIZE',
@@ -98,6 +143,12 @@ export function normalizeSemanticRuntime(
 
       navigation:
         navigation.length,
+
+      sidebar:
+        sidebar.length,
+
+      shelves:
+        discover?.shelves?.length,
 
       sample_universe:
         universes?.[0],
@@ -113,9 +164,21 @@ export function normalizeSemanticRuntime(
 
     navigation,
 
+    sidebar,
+
+    discover,
+
+    meaning,
+
+    seo,
+
+    summary,
+
     raw:
       payload,
   }
+
+
 }
 
 /* ============================================================================

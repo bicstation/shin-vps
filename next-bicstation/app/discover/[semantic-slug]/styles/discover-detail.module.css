@@ -1,0 +1,285 @@
+/* ============================================================================
+FILE:
+/app/discover/[semantic-slug]/styles/discover-detail.module.css
+============================================================================ */
+
+/* ============================================================================
+🔥 Layout
+============================================================================ */
+
+.discoverDetail {
+
+  max-width: 1280px;
+
+  margin: 0 auto;
+
+  padding: 2rem;
+
+}
+
+/* ============================================================================
+🔥 Hero
+============================================================================ */
+
+.semanticHero {
+
+  margin-bottom: 3rem;
+
+  padding: 2rem;
+
+  border: 1px solid #e5e7eb;
+
+  border-radius: 16px;
+
+  background: #ffffff;
+
+}
+
+.semanticHeroTitle {
+
+  margin: 0;
+
+  font-size: 2rem;
+
+  font-weight: 700;
+
+}
+
+.semanticHeroDescription {
+
+  margin-top: 1rem;
+
+  color: #6b7280;
+
+  line-height: 1.8;
+
+}
+
+.semanticHeroMeta {
+
+  margin-top: 1rem;
+
+  font-size: 0.9rem;
+
+  font-weight: 600;
+
+  color: #4f46e5;
+
+}
+
+/* ============================================================================
+🔥 Aliases
+============================================================================ */
+
+.aliasSection {
+
+  margin-bottom: 3rem;
+
+}
+
+.aliasTitle {
+
+  margin-bottom: 1rem;
+
+  font-size: 1.25rem;
+
+  font-weight: 600;
+
+}
+
+.aliasList {
+
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 0.75rem;
+
+}
+
+.aliasTag {
+
+  padding: 0.5rem 0.75rem;
+
+  border-radius: 999px;
+
+  background: #f3f4f6;
+
+  font-size: 0.875rem;
+
+}
+
+/* ============================================================================
+🔥 Products
+============================================================================ */
+
+.productSection {
+
+  margin-bottom: 3rem;
+
+}
+
+.sectionTitle {
+
+  margin-bottom: 1.5rem;
+
+  font-size: 1.5rem;
+
+  font-weight: 700;
+
+}
+
+.productGrid {
+
+  display: grid;
+
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(280px, 1fr)
+  );
+
+  gap: 1.5rem;
+
+}
+
+/* ============================================================================
+🔥 Product Card
+============================================================================ */
+
+.productCard {
+
+  display: flex;
+
+  flex-direction: column;
+
+  overflow: hidden;
+
+  text-decoration: none;
+
+  color: inherit;
+
+  border: 1px solid #e5e7eb;
+
+  border-radius: 16px;
+
+  background: #ffffff;
+
+  transition: transform 0.2s ease;
+
+}
+
+.productCard:hover {
+
+  transform: translateY(-4px);
+
+}
+
+.productImage {
+
+  width: 100%;
+
+  aspect-ratio: 16 / 10;
+
+  object-fit: cover;
+
+  background: #f8fafc;
+
+}
+
+.productContent {
+
+  padding: 1rem;
+
+}
+
+.productName {
+
+  margin: 0;
+
+  font-size: 1rem;
+
+  line-height: 1.5;
+
+  font-weight: 600;
+
+}
+
+.productMaker {
+
+  margin-top: 0.5rem;
+
+  color: #6b7280;
+
+  font-size: 0.875rem;
+
+}
+
+.productPrice {
+
+  margin-top: 0.75rem;
+
+  font-size: 1.1rem;
+
+  font-weight: 700;
+
+  color: #2563eb;
+
+}
+
+/* ============================================================================
+🔥 Empty
+============================================================================ */
+
+.emptyProducts {
+
+  padding: 3rem;
+
+  text-align: center;
+
+  border: 1px dashed #d1d5db;
+
+  border-radius: 16px;
+
+}
+
+.emptyProductsTitle {
+
+  font-size: 1.25rem;
+
+  font-weight: 600;
+
+}
+
+.emptyProductsText {
+
+  margin-top: 1rem;
+
+  color: #6b7280;
+
+}
+
+/* ============================================================================
+🔥 Not Found
+============================================================================ */
+
+.notFoundState {
+
+  padding: 4rem 2rem;
+
+  text-align: center;
+
+}
+
+.notFoundState h1 {
+
+  margin-bottom: 1rem;
+
+  font-size: 2rem;
+
+}
+
+.notFoundState p {
+
+  color: #6b7280;
+
+}
