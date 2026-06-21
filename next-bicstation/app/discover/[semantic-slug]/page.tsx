@@ -51,6 +51,9 @@ import EmptyProducts
 import NotFoundState
   from './components/NotFoundState'
 
+import Breadcrumb
+  from './components/Breadcrumb'
+
 /* ============================================================================
 🔥 Styles
 ============================================================================ */
@@ -233,6 +236,10 @@ export default function DiscoverDetailPage({
         styles.discoverDetail
       }
     >
+
+      <Breadcrumb
+        runtime={runtime}
+      />
 
       {/* ==========================================================
       Hero

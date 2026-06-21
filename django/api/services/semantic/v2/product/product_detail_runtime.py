@@ -1,22 +1,11 @@
 # -*- coding: utf-8 -*-
 # api/services/semantic/v2/product/product_detail_runtime.py
 
-from api.models import (
-    PCProduct,
-)
-
-from api.services.semantic.v2.authority.authority_runtime import (
-    build_authority_runtime,
-)
-
-from api.services.semantic.v2.meaning.meaning_runtime import (
-    build_product_meaning,
-)
-
-from api.services.semantic.v2.seo.seo_runtime import (
-    build_product_seo,
-)
-
+from api.models import ( PCProduct, )
+from api.services.semantic.v2.authority.authority_runtime import ( build_authority_runtime,)
+from api.services.semantic.v2.meaning.meaning_runtime import ( build_product_meaning, )
+from api.services.semantic.v2.seo.seo_runtime import ( build_product_seo, )
+from api.services.semantic.v2.product.product_semantic_runtime import ( build_product_semantic_runtime, )
 
 # ==========================================================
 # PRODUCT DETAIL
@@ -69,6 +58,7 @@ def build_product_detail_runtime(
                 True,
         }
 
+
     # ------------------------------------------------------
     # PRODUCT REALITY
     # ------------------------------------------------------
@@ -84,10 +74,25 @@ def build_product_detail_runtime(
             field.name
         )
 
-    semantic_runtime = (
+    # ------------------------------------------------------
+    # COMPILED AUTHORITY RUNTIME
+    # ------------------------------------------------------
+
+    compiled_runtime = (
 
         product.semantic_runtime
         or {}
+    )
+
+    # ------------------------------------------------------
+    # PRODUCT SEMANTIC RUNTIME
+    # ------------------------------------------------------
+
+    product_semantic_runtime = (
+
+        build_product_semantic_runtime(
+            product
+        )
     )
 
     # ------------------------------------------------------
@@ -113,7 +118,7 @@ def build_product_detail_runtime(
     return {
 
         # ----------------------------------------------
-        # STATIC AUTHORITY
+        # STATIC MEANING
         # ----------------------------------------------
 
         "meaning":
@@ -135,15 +140,30 @@ def build_product_detail_runtime(
             "found":
                 True,
 
+            # --------------------------
+            # Product Reality
+            # --------------------------
+
             "product":
                 product_data,
 
-            "semantic_runtime":
-                semantic_runtime,
+            # --------------------------
+            # Semantic Authority Runtime
+            # --------------------------
+
+            "compiled_runtime":
+                compiled_runtime,
+
+            # --------------------------
+            # Product Meaning Runtime
+            # --------------------------
+
+            "product_semantic_runtime":
+                product_semantic_runtime,
         },
 
         # ----------------------------------------------
-        # AUTHORITY
+        # AUTHORITY METADATA
         # ----------------------------------------------
 
         "semantic_schema_version":
@@ -167,3 +187,4 @@ def build_product_detail_runtime(
         "ready":
             True,
     }
+

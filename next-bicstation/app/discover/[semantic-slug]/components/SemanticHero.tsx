@@ -46,9 +46,14 @@ export default function SemanticHero({
   return (
 
     <section
-      className={
-        styles.semanticHero
-      }
+      className={`
+        ${styles.semanticHero}
+        ${
+          runtime.group_slug === 'device-laptop'
+            ? styles.heroLaptop
+            : ''
+        }
+      `}
     >
 
       {/* ==========================================================
