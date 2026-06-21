@@ -283,3 +283,73 @@ FILE:
   color: #6b7280;
 
 }
+
+
+.aliasTag {
+
+  padding: 0.5rem 0.75rem;
+
+  border-radius: 999px;
+
+  background: #f3f4f6;
+
+  border: 1px solid #e5e7eb;
+
+  font-size: 0.875rem;
+
+  font-weight: 500;
+
+}
+
+.aliasTag:hover {
+
+  background: #eef2ff;
+
+  border-color: #6366f1;
+
+}
+
+.semanticHero {
+
+  background: #ffffff;
+
+  color: #111827;
+
+}
+
+.semanticHeroTitle {
+
+  color: #111827;
+
+}
+
+.semanticHeroDescription {
+
+  color: #4b5563;
+
+}
+
+.aliasTag {
+
+  padding: 0.5rem 0.75rem;
+
+  border-radius: 999px;
+
+  background: #f3f4f6;
+
+  color: #111827;
+
+  border: 1px solid #e5e7eb;
+
+  font-size: 0.875rem;
+
+  font-weight: 500;
+
+}
+
+.productName {
+
+  color: #111827;
+
+}
+

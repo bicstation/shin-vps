@@ -198,34 +198,16 @@ fetchFinder(
 
     const payload = {
 
-      attributes: [
+      attributes:
+
         normalizeUsagePayload(
           query.usage
-        )
-      ],
+        ),
 
       max_price:
         query.max_price,
     }
 
-
-    // const payload = {
-
-    //   usage:
-
-    //     normalizeUsagePayload(
-    //       query.usage
-    //     ),
-
-    //   workflow:
-
-    //     normalizeWorkflowPayload(
-    //       query.workflow
-    //     ),
-
-    //  budget_max:
-    //       query.max_price,
-    // }
 
     console.log(
        '🔥 FINDER REQUEST PAYLOAD',
@@ -282,6 +264,16 @@ fetchFinder(
     /* ======================================================================
     🔥 Fetch
     ====================================================================== */
+
+    console.log(
+      '🔥 FINAL PAYLOAD',
+      JSON.stringify(
+        payload,
+        null,
+        2
+      )
+    )
+
 
     const response =
 
