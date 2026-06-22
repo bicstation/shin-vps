@@ -38,22 +38,6 @@ decision confidence runtime
     0 28px 72px rgba(0,0,0,.34);
 }
 
-.productHero::before {
-  content: '';
-
-  position: absolute;
-
-  inset: 0;
-
-  background:
-    radial-gradient(
-      circle at top right,
-      rgba(249,115,22,.10),
-      transparent 40%
-    );
-
-  pointer-events: none;
-}
 
 /* ============================================================================
 🔥 HERO TOP
@@ -908,5 +892,24 @@ decision confidence runtime
     padding: 0 16px;
 
   }
+
+}
+
+
+.productHeroBackgroundOverlay {
+
+  position: absolute;
+  inset: 0;
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(2,6,23,.15) 0%,
+      rgba(2,6,23,.55) 55%,
+      rgba(2,6,23,.88) 100%
+    );
+  
+  background-image:
+    url('/images/hero/hero.png');
 
 }

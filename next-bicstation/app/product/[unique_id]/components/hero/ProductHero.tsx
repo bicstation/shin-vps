@@ -168,6 +168,20 @@ export default function ProductHero({
 
     product?.name
     || 'PRODUCT'
+  
+  const heroTitle =
+  product?.name
+    ?.split('(')[0]
+    ?.trim()
+  || product?.name
+  || 'PRODUCT'
+
+  const role =
+    product
+      ?.product_semantic_runtime
+      ?.semantic_labels?.[0]
+      ?.title
+  || 'AI CREATIVE WORKSTATION'
 
   const image =
 
@@ -208,6 +222,11 @@ export default function ProductHero({
         styles.productHero
       }
     >
+       <div
+          className={
+            styles.productHeroBackgroundOverlay
+          }
+       />
 
       {/* ============================================================
       TOP
@@ -286,7 +305,7 @@ export default function ProductHero({
               styles.productHeroLabel
             }
           >
-            SEMANTIC PRODUCT RUNTIME
+             {role}
           </div>
 
           <h1
@@ -294,7 +313,7 @@ export default function ProductHero({
               styles.productHeroTitle
             }
           >
-            {title}
+            {heroTitle}
           </h1>
 
           <div
