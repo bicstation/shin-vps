@@ -25,13 +25,28 @@ def build_product_detail_runtime(
 
     try:
 
+
+        # ------------------------------------------------------
+        # PRODUCT REALITY
+        #
+        # Reality must remain accessible even when
+        # inventory refresh temporarily marks products
+        # as inactive.
+        #
+        # Inventory state is exposed separately via:
+        #
+        # product.is_active
+        # product.stock_status
+        #
+        # ------------------------------------------------------
+
         product = (
 
             PCProduct.objects
 
             .get(
                 unique_id=unique_id,
-                is_active=True,
+                # is_active=True,
             )
         )
 
