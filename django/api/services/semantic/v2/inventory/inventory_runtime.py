@@ -65,10 +65,12 @@ def build_inventory_runtime(
     queryset = (
 
         PCProduct.objects
+        
+        .all()
 
-        .filter(
-            is_active=True
-        )
+        # .filter(
+        #     # is_active=True
+        # )
 
         .order_by(
             "-updated_at"
