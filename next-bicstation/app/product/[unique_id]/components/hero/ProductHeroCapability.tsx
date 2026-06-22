@@ -1,115 +1,106 @@
-// next-bicstation/app/product/[unique_id]/components/hero/ProductHeroCapability.tsx
+// ============================================================================
+// FILE:
+// app/product/[unique_id]/components/hero/ProductHeroCapability.tsx
+// Semantic Experience V3
+// ============================================================================
 
 import styles
   from './hero.module.css'
 
+/* =========================================
+🔥 Props
+========================================= */
+
 type Props = {
+
   product: any
+
+  semanticRuntime?: {
+
+    semantic_summary?: string
+
+    workflow_tags?: any[]
+
+    semantic_labels?: any[]
+
+  }
+
 }
 
 /* =========================================
-🔥 HELPERS
+🔥 Helpers
 ========================================= */
 
-function buildCapabilities(
-  product: any
-) {
-
-  const capabilities: string[] = []
-
-  const text = JSON.stringify(
-    product
-  ).toLowerCase()
-
-  // ======================================
-  // GAMING
-  // ======================================
+function getText(
+  value: any
+): string {
 
   if (
-    text.includes('rtx')
-    || text.includes('geforce')
-    || text.includes('gaming')
+    value == null
   ) {
+    return ''
+  }
 
-    capabilities.push(
-      '🎮 高fps gaming対応'
-    )
+  if (
+    typeof value === 'string'
+  ) {
+    return value
+  }
 
-    capabilities.push(
-      '🎯 FPSゲームを快適プレイ'
-    )
+  if (
+    typeof value === 'number'
+  ) {
+    return String(value)
+  }
+
+  return (
+
+    value?.title
+    || value?.name
+    || value?.label
+    || value?.slug
+    || ''
+
+  )
+
+}
+
+function parseStrengths(
+  strengths: any
+): string[] {
+
+  if (!strengths) {
+
+    return []
 
   }
 
-  // ======================================
-  // AI
-  // ======================================
-
   if (
-    text.includes('rtx')
-    || text.includes('ai')
+    Array.isArray(strengths)
   ) {
 
-    capabilities.push(
-      '🤖 AI画像生成対応'
-    )
-
-    capabilities.push(
-      '⚡ Stable Diffusion利用OK'
-    )
+    return strengths
 
   }
 
-  // ======================================
-  // CREATOR
-  // ======================================
+  try {
 
-  if (
-    text.includes('creator')
-    || text.includes('premiere')
-    || text.includes('davinci')
-  ) {
+    const parsed =
+      JSON.parse(
+        strengths
+      )
 
-    capabilities.push(
-      '🎬 動画編集も快適'
-    )
+    return Array.isArray(parsed)
+      ? parsed
+      : []
 
   }
 
-  // ======================================
-  // MEMORY
-  // ======================================
+  catch {
 
-  if (
-    text.includes('32gb')
-    || text.includes('64gb')
-  ) {
-
-    capabilities.push(
-      '🧠 マルチタスクに強い'
-    )
+    return []
 
   }
-
-  // ======================================
-  // DEFAULT
-  // ======================================
-
-  if (
-    capabilities.length === 0
-  ) {
-
-    capabilities.push(
-      '💻 日常用途を快適化'
-    )
-
-    capabilities.push(
-      '📺 動画視聴や作業向け'
-    )
-
-  }
-
-  return capabilities.slice(0, 4)
 
 }
 
@@ -118,13 +109,33 @@ function buildCapabilities(
 ========================================= */
 
 export default function ProductHeroCapability({
+
   product,
+  semanticRuntime,
+
 }: Props) {
 
-  const capabilities =
-    buildCapabilities(
-      product
+  const summary =
+
+    semanticRuntime
+      ?.semantic_summary
+
+  const targetUser =
+
+    product?.target_user
+
+  const strengths =
+
+    parseStrengths(
+      product?.strengths
     )
+
+  const workflowTags =
+
+    (semanticRuntime?.workflow_tags || [])
+      .map(getText)
+      .filter(Boolean)
+      .slice(0, 6)
 
   return (
 
@@ -149,7 +160,7 @@ export default function ProductHeroCapability({
             styles.heroCapabilityLabel
           }
         >
-          REAL WORLD PERFORMANCE
+          SEMANTIC EXPERIENCE
         </div>
 
         <h2
@@ -157,56 +168,174 @@ export default function ProductHeroCapability({
             styles.heroCapabilityTitle
           }
         >
-          このPCでできること
+          このPCで実現できること
         </h2>
-
-        <p
-          className={
-            styles.heroCapabilityDescription
-          }
-        >
-          スペック情報だけではなく、
-          実際の利用シーンをもとに
-          おすすめ用途を整理しています。
-        </p>
 
       </div>
 
       {/* ==================================
-      GRID
+      SUMMARY
       ================================== */}
 
-      <div
-        className={
-          styles.heroCapabilityGrid
-        }
-      >
+      {summary && (
 
-        {capabilities.map(
-          (capability) => (
+        <div
+          className={
+            styles.heroCapabilitySummary
+          }
+        >
 
-            <div
-              key={capability}
+          <div
+            className={
+              styles.heroCapabilityBlockLabel
+            }
+          >
+            PRODUCT IDENTITY
+          </div>
 
-              className={
-                styles.heroCapabilityCard
-              }
-            >
+          <p
+            className={
+              styles.heroCapabilityDescription
+            }
+          >
+            {summary}
+          </p>
 
-              <div
-                className={
-                  styles.heroCapabilityText
-                }
-              >
-                {capability}
-              </div>
+        </div>
 
-            </div>
+      )}
 
-          )
-        )}
+      {/* ==================================
+      TARGET USER
+      ================================== */}
 
-      </div>
+      {targetUser && (
+
+        <div
+          className={
+            styles.heroCapabilitySummary
+          }
+        >
+
+          <div
+            className={
+              styles.heroCapabilityBlockLabel
+            }
+          >
+            TARGET USER
+          </div>
+
+          <p
+            className={
+              styles.heroCapabilityDescription
+            }
+          >
+            {targetUser}
+          </p>
+
+        </div>
+
+      )}
+
+      {/* ==================================
+      STRENGTHS
+      ================================== */}
+
+      {strengths.length > 0 && (
+
+        <>
+
+          <div
+            className={
+              styles.heroCapabilityBlockLabel
+            }
+          >
+            KEY STRENGTHS
+          </div>
+
+          <div
+            className={
+              styles.heroCapabilityGrid
+            }
+          >
+
+            {strengths.map(
+              (
+                strength,
+                index
+              ) => (
+
+                <div
+                  key={index}
+                  className={
+                    styles.heroCapabilityCard
+                  }
+                >
+
+                  <div
+                    className={
+                      styles.heroCapabilityText
+                    }
+                  >
+                    ✓ {strength}
+                  </div>
+
+                </div>
+
+              )
+            )}
+
+          </div>
+
+        </>
+
+      )}
+
+      {/* ==================================
+      WORKFLOWS
+      ================================== */}
+
+      {workflowTags.length > 0 && (
+
+        <>
+
+          <div
+            className={
+              styles.heroCapabilityBlockLabel
+            }
+          >
+            RECOMMENDED WORKFLOWS
+          </div>
+
+          <div
+            className={
+              styles.heroCapabilityTags
+            }
+          >
+
+            {workflowTags.map(
+              (
+                tag,
+                index
+              ) => (
+
+                <div
+                  key={index}
+                  className={
+                    styles.heroCapabilityTag
+                  }
+                >
+                  {tag}
+                </div>
+
+              )
+            )}
+
+          </div>
+
+        </>
+
+      )}
 
       {/* ==================================
       FOOTER
@@ -223,8 +352,7 @@ export default function ProductHeroCapability({
             styles.heroCapabilityFooterText
           }
         >
-          ✔ gaming・AI・クリエイティブ用途まで
-          幅広く対応しやすい構成です。
+          Semantic Authority Runtime に基づいて構築された製品体験サマリー
         </div>
 
       </div>
@@ -232,4 +360,5 @@ export default function ProductHeroCapability({
     </section>
 
   )
+
 }

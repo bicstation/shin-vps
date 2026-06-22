@@ -1,5 +1,3 @@
-// next-bicstation/app/product/[unique_id]/components/semantic/ProductSemanticAccordion.tsx
-
 'use client'
 
 import { useState }
@@ -8,135 +6,229 @@ import { useState }
 import styles
   from './semantic.module.css'
 
+/* =========================================
+🔥 Types
+========================================= */
+
+type SemanticItem = {
+
+  slug?: string
+
+  title?: string
+
+  name?: string
+
+  description?: string
+
+  role?: string
+
+  weight?: number
+
+}
+
 type Props = {
-  product: any
+
+  semanticRuntime?: {
+
+    semantic_reasons?: SemanticItem[]
+
+    related_intents?: SemanticItem[]
+
+    workflow_tags?: SemanticItem[]
+
+    semantic_labels?: SemanticItem[]
+
+  }
+
 }
 
 /* =========================================
-🔥 HELPERS
+🔥 Helpers
 ========================================= */
 
-function buildSemanticItems(
-  product: any
-) {
+function getTitle(
+  value: any
+): string {
 
-  const text = JSON.stringify(
-    product
-  ).toLowerCase()
+  if (!value) {
+    return ''
+  }
+
+  if (
+    typeof value === 'string'
+  ) {
+    return value
+  }
+
+  return (
+    value.title
+    || value.name
+    || value.slug
+    || 'Unknown'
+  )
+
+}
+
+function getDescription(
+  value: any
+): string {
+
+  if (!value) {
+    return ''
+  }
+
+  if (
+    typeof value === 'string'
+  ) {
+    return value
+  }
+
+  return (
+    value.description
+    || ''
+  )
+
+}
+
+function buildItems(
+  semanticRuntime: any
+) {
 
   const items = []
 
-  /* ======================================
-  🎮 gaming
-  ====================================== */
-
-  if (
-    text.includes('rtx')
-    || text.includes('gaming')
-    || text.includes('geforce')
+  for (
+    const reason of (
+      semanticRuntime
+        ?.semantic_reasons
+        || []
+    )
   ) {
 
     items.push({
-      title: 'Gaming Performance',
-      summary:
-        '高fps gaming に対応しやすい構成です。',
+
+      category:
+        'Semantic Reason',
+
+      title:
+        getTitle(reason),
+
       detail:
-        'FPSゲームや重量級タイトルでも、高画質・高フレームレート環境を維持しやすいGPU性能を備えています。',
+        getDescription(reason),
+
+      role:
+        reason?.role,
+
+      weight:
+        reason?.weight,
+
     })
 
   }
 
-  /* ======================================
-  🤖 AI
-  ====================================== */
-
-  if (
-    text.includes('rtx')
-    || text.includes('ai')
+  for (
+    const intent of (
+      semanticRuntime
+        ?.related_intents
+        || []
+    )
   ) {
 
     items.push({
-      title: 'AI Workload',
-      summary:
-        'AI画像生成用途にも対応しやすい構成です。',
+
+      category:
+        'Related Intent',
+
+      title:
+        getTitle(intent),
+
       detail:
-        'Stable Diffusionや画像生成AIなど、GPU活用型ワークロードでも快適に動作しやすい性能を備えています。',
+        getDescription(intent),
+
+      role:
+        intent?.role,
+
+      weight:
+        intent?.weight,
+
     })
 
   }
 
-  /* ======================================
-  🎬 creator
-  ====================================== */
-
-  if (
-    text.includes('creator')
-    || text.includes('premiere')
-    || text.includes('davinci')
+  for (
+    const workflow of (
+      semanticRuntime
+        ?.workflow_tags
+        || []
+    )
   ) {
 
     items.push({
-      title: 'Creative Usage',
-      summary:
-        '動画編集や制作用途にも適しています。',
+
+      category:
+        'Workflow',
+
+      title:
+        getTitle(workflow),
+
       detail:
-        'Premiere ProやDaVinci Resolveなどの編集ソフトでも、快適に作業しやすい構成です。',
+        getDescription(workflow),
+
+      role:
+        workflow?.role,
+
+      weight:
+        workflow?.weight,
+
     })
 
   }
 
-  /* ======================================
-  🧠 multitask
-  ====================================== */
-
-  if (
-    text.includes('32gb')
-    || text.includes('64gb')
+  for (
+    const label of (
+      semanticRuntime
+        ?.semantic_labels
+        || []
+    )
   ) {
 
     items.push({
-      title: 'Multitasking',
-      summary:
-        '配信・ブラウザ・ゲーム同時利用にも強い構成です。',
+
+      category:
+        'Semantic Label',
+
+      title:
+        getTitle(label),
+
       detail:
-        '複数アプリを同時利用する環境でも、安定した動作を維持しやすい余裕があります。',
+        getDescription(label),
+
+      role:
+        label?.role,
+
+      weight:
+        label?.weight,
+
     })
 
   }
 
-  /* ======================================
-  💻 default
-  ====================================== */
-
-  if (
-    items.length === 0
-  ) {
-
-    items.push({
-      title: 'Daily Performance',
-      summary:
-        '日常用途を快適に行いやすい構成です。',
-      detail:
-        'ブラウジング・動画視聴・作業用途などを快適にこなしやすいバランス構成です。',
-    })
-
-  }
-
-  return items.slice(0, 5)
+  return items
 
 }
 
 /* =========================================
-🔥 COMPONENT
+🔥 Component
 ========================================= */
 
 export default function ProductSemanticAccordion({
-  product,
+
+  semanticRuntime,
+
 }: Props) {
 
   const items =
-    buildSemanticItems(
-      product
+    buildItems(
+      semanticRuntime
     )
 
   const [
@@ -147,9 +239,11 @@ export default function ProductSemanticAccordion({
   )
 
   if (
-    !items.length
+    items.length === 0
   ) {
+
     return null
+
   }
 
   return (
@@ -159,10 +253,6 @@ export default function ProductSemanticAccordion({
         styles.semanticAccordionSection
       }
     >
-
-      {/* ==================================
-      HEADER
-      ================================== */}
 
       <div
         className={
@@ -175,7 +265,7 @@ export default function ProductSemanticAccordion({
             styles.semanticAccordionLabel
           }
         >
-          SEMANTIC ANALYSIS
+          SEMANTIC AUTHORITY
         </div>
 
         <h2
@@ -183,7 +273,7 @@ export default function ProductSemanticAccordion({
             styles.semanticAccordionTitle
           }
         >
-          詳細パフォーマンス分析
+          Semantic Runtime Analysis
         </h2>
 
         <p
@@ -191,16 +281,11 @@ export default function ProductSemanticAccordion({
             styles.semanticAccordionDescription
           }
         >
-          スペックだけではなく、
-          実際の利用シーンや
-          強みを整理しています。
+          Backend Semantic Authority が
+         生成した Runtime を表示しています。
         </p>
 
       </div>
-
-      {/* ==================================
-      ACCORDION
-      ================================== */}
 
       <div
         className={
@@ -220,18 +305,11 @@ export default function ProductSemanticAccordion({
             return (
 
               <div
-                key={
-                  item.title
-                }
-
+                key={`${item.category}-${item.title}-${index}`}
                 className={
                   styles.semanticAccordionItem
                 }
               >
-
-                {/* ==========================
-                BUTTON
-                ========================== */}
 
                 <button
                   type="button"
@@ -239,9 +317,11 @@ export default function ProductSemanticAccordion({
                   onClick={() => {
 
                     setActiveIndex(
+
                       isActive
                         ? null
                         : index
+
                     )
 
                   }}
@@ -270,7 +350,7 @@ export default function ProductSemanticAccordion({
                         styles.semanticAccordionItemSummary
                       }
                     >
-                      {item.summary}
+                      {item.category}
                     </div>
 
                   </div>
@@ -287,10 +367,6 @@ export default function ProductSemanticAccordion({
 
                 </button>
 
-                {/* ==========================
-                CONTENT
-                ========================== */}
-
                 {isActive && (
 
                   <div
@@ -299,13 +375,46 @@ export default function ProductSemanticAccordion({
                     }
                   >
 
-                    <p
-                      className={
-                        styles.semanticAccordionText
-                      }
-                    >
-                      {item.detail}
-                    </p>
+                    {item.detail && (
+
+                      <p
+                        className={
+                          styles.semanticAccordionText
+                        }
+                      >
+                        {item.detail}
+                      </p>
+
+                    )}
+
+                    {item.role && (
+
+                      <p
+                        className={
+                          styles.semanticAccordionText
+                        }
+                      >
+                        Role: {item.role}
+                      </p>
+
+                    )}
+
+                    {
+
+                      typeof item.weight === 'number'
+                      && (
+
+                        <p
+                          className={
+                            styles.semanticAccordionText
+                          }
+                        >
+                          Weight: {item.weight}
+                        </p>
+
+                      )
+
+                    }
 
                   </div>
 
@@ -320,10 +429,6 @@ export default function ProductSemanticAccordion({
 
       </div>
 
-      {/* ==================================
-      FOOTER
-      ================================== */}
-
       <div
         className={
           styles.semanticAccordionFooter
@@ -335,8 +440,8 @@ export default function ProductSemanticAccordion({
             styles.semanticAccordionFooterText
           }
         >
-          ✔ semantic analysis をもとに、
-          実利用ベースで整理しています。
+          ✔ Backend Semantic Authority Runtime
+          をそのまま表示しています
         </div>
 
       </div>
@@ -344,4 +449,5 @@ export default function ProductSemanticAccordion({
     </section>
 
   )
+
 }

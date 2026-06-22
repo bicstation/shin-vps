@@ -39,8 +39,6 @@ device-desktop	optiplex	series	0	0.92
 device-desktop	elitedesk	series	0	0.92
 device-desktop	prodesk	series	0	0.9
 device-desktop	thinkcentre	series	0	0.92
-device-desktop	rog	series	0	0.72
-device-desktop	strix	series	0	0.7
 device-desktop	omen	series	0	0.74
 device-desktop	predator	series	0	0.74
 device-desktop	desktop pc	canonical	0	0.95

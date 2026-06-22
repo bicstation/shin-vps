@@ -20,6 +20,7 @@ import { executeFinder } from "../_runtime/finder";
 import { executeSemantic } from "../_runtime/semantic";
 import { executeNavigation } from "../_runtime/navigation";
 import { executeConcierge } from "../_runtime/concierge";
+import { executeProductDetail } from "../_runtime/product-detail";
 
 export default function RuntimeConsole() {
 
@@ -59,7 +60,6 @@ export default function RuntimeConsole() {
       switch (runtimeType) {
 
         case "finder":
-
           console.log(
             "TEST FINDER",
             {
@@ -67,28 +67,22 @@ export default function RuntimeConsole() {
               maxPrice,
             }
           );
-
           data = await executeFinder(
             usage,
             maxPrice
               ? Number(maxPrice)
               : undefined
           );
-
           break;
 
         case "semantic":
-
           data =
             await executeSemantic();
-
           break;
 
         case "navigation":
-
           data =
             await executeNavigation();
-
           break;
 
         case "concierge":
@@ -97,7 +91,14 @@ export default function RuntimeConsole() {
             await executeConcierge(
               usage
             );
+          break;
+        
+        case "product-detail":
 
+          data =
+            await executeProductDetail(
+              usage
+            );
           break;
 
         default:

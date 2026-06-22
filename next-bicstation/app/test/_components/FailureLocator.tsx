@@ -1,5 +1,3 @@
-// /home/maya/shin-dev/shin-vps/next-bicstation/app/test/_components/FailureLocator.tsx
-
 "use client";
 
 type Props = {
@@ -21,6 +19,10 @@ export default function FailureLocator({
   response,
 
 }: Props) {
+
+  const isProductDetail =
+
+    !!request?.unique_id
 
   let status =
     "SUCCESS"
@@ -65,7 +67,7 @@ export default function FailureLocator({
       "RuntimeForm"
 
     reason =
-      "Usage value not propagated to state"
+      "Input value not propagated to state"
 
   }
 
@@ -92,9 +94,15 @@ export default function FailureLocator({
 
   else if (
 
-    !request.usage
-    ||
-    request.usage.length === 0
+    isProductDetail
+
+      ? !request?.unique_id
+
+      : (
+          !request?.usage
+          ||
+          request.usage.length === 0
+        )
 
   ) {
 
@@ -105,7 +113,12 @@ export default function FailureLocator({
       "Request Builder"
 
     reason =
-      "Usage lost during request generation"
+
+      isProductDetail
+
+        ? "Unique ID lost during request generation"
+
+        : "Usage lost during request generation"
 
   }
 
@@ -149,13 +162,42 @@ export default function FailureLocator({
   }
 
   /* =========================================================
-   * Semantic Validation
+   * Product Detail Validation
    * ======================================================= */
 
   else if (
 
+    isProductDetail
+    &&
+    !(
+      response?.product
+      ||
+      response?.data?.product
+    )
+
+  ) {
+
+    status =
+      "FAILURE"
+
+    layer =
+      "Product Detail Runtime"
+
+    reason =
+      "Product payload missing"
+
+  }
+
+  /* =========================================================
+   * Finder Validation
+   * ======================================================= */
+
+  else if (
+
+    !isProductDetail
+    &&
     Array.isArray(
-      response.results
+      response?.results
     )
     &&
     response.results.length === 0

@@ -7,25 +7,15 @@
 🔥 API
 ============================================================================ */
 
-import {
 
-fetchPCDetail,
-
-} from '@/shared/lib/api/django/pc/detail/detail'
-
-import {
-
-fetchRelatedPC,
-
-} from '@/shared/lib/api/django/pc/related/related'
+import {  fetchProductDetail,} from '@/shared/lib/api/django/pc/product-detail'
+import {  fetchRelatedPC,} from '@/shared/lib/api/django/pc/related/related'
 
 /* ============================================================================
 🔥 Next
 ============================================================================ */
 
-import type {
-Metadata,
-} from 'next'
+import type { Metadata, } from 'next'
 
 /* ============================================================================
 🔥 Sections
@@ -74,15 +64,16 @@ from './states/ProductEmptyState'
 🔥 Props
 ============================================================================ */
 
+// type Props = {
+//   semanticRuntime: any
+//   params: {
+//   unique_id: string
+//   }
+// }
+
 type Props = {
-
-params: {
-
-
-unique_id: string
-
-
-}
+  product: any
+  semanticRuntime: any
 }
 
 /* ============================================================================
@@ -104,9 +95,23 @@ params.unique_id
 // Product
 // ==========================================================================
 
+const runtime =
+await fetchProductDetail(
+  uniqueId
+)
+
+console.log(
+  '🔥 PRODUCT DETAIL RUNTIME',
+  runtime
+)
+
 const product =
-await fetchPCDetail(
-uniqueId
+runtime?.product
+
+
+console.log(
+  '🔥 semantic runtime',
+  runtime?.product_semantic_runtime
 )
 
 // ==========================================================================
@@ -195,10 +200,19 @@ params.unique_id
 // Product Runtime
 // ==========================================================================
 
-const product =
-await fetchPCDetail(
-uniqueId
+const runtime =
+await fetchProductDetail(
+  uniqueId
 )
+
+console.log(
+  '🔥 PRODUCT DETAIL RUNTIME',
+  runtime
+)
+
+const product =
+runtime?.product
+
 
 // ==========================================================================
 // Related Runtime
@@ -325,10 +339,12 @@ return (
     SEMANTIC
     ============================================================ */}
 
-    <ProductSemanticSection
-      product={product}
-    />
-
+      <ProductSemanticSection
+        product={product}
+        semanticRuntime={
+          runtime?.product_semantic_runtime
+        }
+      />
     {/* ============================================================
     SPEC
     ============================================================ */}

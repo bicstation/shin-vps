@@ -48,10 +48,13 @@ runtimeType === "finder"
 
 const requiresInput =
 
+  runtimeType === "finder"
+  ||
+  runtimeType === "concierge"
+  ||
+  runtimeType === "product-detail"
 
-runtimeType === "finder"
-||
-runtimeType === "concierge"
+
 
 
 return (
@@ -146,6 +149,10 @@ return (
               runtimeType === "finder"
 
                 ? "usage-ai"
+
+                : runtimeType === "product-detail"
+
+                ? "ASUS_RC71L-Z1E512"
 
                 : "相談内容"
 

@@ -28,6 +28,7 @@ cpu	Ryzen 3	amd-ryzen-3	Ryzen 3	軽作業・入門向け	70	0	secondary	0.58	cpu
 cpu	Intel Xeon	intel-xeon	Xeon	業務・サーバー向け	95	0	highlight	0.96	cpu	darkred	TRUE
 cpu	Celeron / Pentium	intel-low-end	Celeron系	低価格PC向け	10	0	supportive	0.2	cpu	gray	TRUE
 cpu_feature	NPU搭載	cpu-npu	NPU搭載	AI処理を高速化	10	0	highlight	0.85	sparkles	purple	TRUE
+cpu_feature	AI CPU	cpu-ai	AI CPU	AI処理に最適化されたCPU	50	0	highlight	0.95	cpu	purple	TRUE
 gpu	GeForce RTX 5090	gpu-rtx-5090	RTX 5090	最上位AI・4Kゲーム向け	110	0	highlight	1	gpu	red	TRUE
 gpu	GeForce RTX 5080	gpu-rtx-5080	RTX 5080	高性能AI・ゲーム向け	105	0	highlight	0.98	gpu	red	TRUE
 gpu	GeForce RTX 5070 Ti	gpu-rtx-5070-ti	RTX 5070 Ti	高性能ゲーム向け	100	0	highlight	0.95	gpu	orange	TRUE

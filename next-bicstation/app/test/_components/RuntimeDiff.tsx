@@ -24,24 +24,72 @@ export default function RuntimeDiff({
 
     state?.usage || ""
 
-  const requestUsage =
+  const isProductDetail =
 
-    request?.usage || []
+    !!request?.unique_id
 
-  const responseCount =
+  const requestValue =
 
-    Array.isArray(
-      response?.results
-    )
-      ? response.results.length
-      : 0
+    isProductDetail
+
+      ? request?.unique_id
+
+      : JSON.stringify(
+          request?.usage || []
+        )
+
+  const requestSuccess =
+
+    isProductDetail
+
+      ? !!request?.unique_id
+
+      : Array.isArray(
+          request?.usage
+        )
+        &&
+        request.usage.length > 0
+
+  const responseValue =
+
+    isProductDetail
+
+      ? (
+          response?.product?.unique_id
+          ||
+          response?.data?.product?.unique_id
+          ||
+          "-"
+        )
+
+      : Array.isArray(
+          response?.results
+        )
+          ? response.results.length
+          : 0
+
+  const responseSuccess =
+
+    isProductDetail
+
+      ? !!(
+          response?.product
+          ||
+          response?.data?.product
+        )
+
+      : Array.isArray(
+          response?.results
+        )
+          &&
+          response.results.length > 0
 
   const checks = [
 
     {
 
       label:
-        "State Usage",
+        "State Input",
 
       value:
         stateUsage,
@@ -54,28 +102,34 @@ export default function RuntimeDiff({
     {
 
       label:
-        "Request Usage",
+        isProductDetail
+
+          ? "Request Unique ID"
+
+          : "Request Usage",
 
       value:
-        JSON.stringify(
-          requestUsage
-        ),
+        requestValue,
 
       success:
-        requestUsage.length > 0,
+        requestSuccess,
 
     },
 
     {
 
       label:
-        "Response Results",
+        isProductDetail
+
+          ? "Response Product"
+
+          : "Response Results",
 
       value:
-        responseCount,
+        responseValue,
 
       success:
-        responseCount > 0,
+        responseSuccess,
 
     },
 

@@ -1,4 +1,7 @@
-// /app/product/[unique_id]/sections/ProductSemanticSection.tsx
+// ============================================================================
+// FILE:
+// /app/product/[unique_id]/section/ProductSemanticSection.tsx
+// ============================================================================
 
 /* =========================================
 🔥 Components
@@ -20,6 +23,16 @@ import ProductSemanticAccordion
 type Props = {
 
   product: any
+
+  semanticRuntime?: {
+    semantic_summary?: string
+    semantic_reasons?: string[]
+    related_intents?: string[]
+    grouped_attributes?: Record<
+      string,
+      any
+    >
+  }
 }
 
 /* =========================================
@@ -28,7 +41,11 @@ type Props = {
 
 export default function
 ProductSemanticSection({
+
   product,
+
+  semanticRuntime,
+
 }: Props) {
 
   // ======================================
@@ -44,17 +61,9 @@ ProductSemanticSection({
   // Semantic Guard
   // ======================================
 
-  const grouped =
-
-    product
-      ?.grouped_attributes
-      || {}
-
   const hasSemantic =
 
-    Object.keys(
-      grouped
-    ).length > 0
+    !!semanticRuntime
 
   if (!hasSemantic) {
 
@@ -74,7 +83,9 @@ ProductSemanticSection({
       {/* ============================= */}
 
       <ProductSemanticSummary
-        product={product}
+        semanticRuntime={
+          semanticRuntime
+        }
       />
 
       {/* ============================= */}
@@ -82,7 +93,9 @@ ProductSemanticSection({
       {/* ============================= */}
 
       <ProductSemanticReasons
-        product={product}
+        semanticRuntime={
+          semanticRuntime
+        }
       />
 
       {/* ============================= */}
@@ -90,7 +103,9 @@ ProductSemanticSection({
       {/* ============================= */}
 
       <ProductSemanticAccordion
-        product={product}
+        semanticRuntime={
+          semanticRuntime
+        }
       />
 
     </section>

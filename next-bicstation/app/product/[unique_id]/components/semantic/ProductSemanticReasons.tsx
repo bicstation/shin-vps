@@ -1,118 +1,36 @@
-// next-bicstation/app/product/[unique_id]/components/semantic/ProductSemanticReasons.tsx
+// ============================================================================
+// FILE:
+// app/product/[unique_id]/components/semantic/ProductSemanticReasons.tsx
+// ============================================================================
 
 import styles
   from './semantic.module.css'
 
-type Props = {
-  product: any
-}
-
 /* =========================================
-🔥 HELPERS
+🔥 Types
 ========================================= */
 
-function buildSemanticReasons(
-  product: any
-) {
+type SemanticReason = {
 
-  const text = JSON.stringify(
-    product
-  ).toLowerCase()
+  slug?: string
 
-  const reasons = []
+  title?: string
 
-  /* ======================================
-  🎮 gaming
-  ====================================== */
+  description?: string
 
-  if (
-    text.includes('rtx')
-    || text.includes('gaming')
-    || text.includes('geforce')
-  ) {
+  role?: string
 
-    reasons.push({
-      icon: '🎮',
-      title: '高fps gaming に強い',
-      description:
-        'FPSゲームや重量級タイトルでも、快適なフレームレートを維持しやすいGPU性能を備えています。',
-    })
+  weight?: number
+
+}
+
+type Props = {
+
+  semanticRuntime?: {
+
+    semantic_reasons?: SemanticReason[]
 
   }
-
-  /* ======================================
-  🤖 AI
-  ====================================== */
-
-  if (
-    text.includes('rtx')
-    || text.includes('ai')
-  ) {
-
-    reasons.push({
-      icon: '🤖',
-      title: 'AI画像生成にも対応',
-      description:
-        'Stable DiffusionなどのGPU活用型AIワークロードでも使いやすい構成です。',
-    })
-
-  }
-
-  /* ======================================
-  🎬 creator
-  ====================================== */
-
-  if (
-    text.includes('creator')
-    || text.includes('premiere')
-    || text.includes('davinci')
-  ) {
-
-    reasons.push({
-      icon: '🎬',
-      title: '動画編集用途にも適応',
-      description:
-        'Premiere ProやDaVinci Resolveなど、クリエイティブ用途にも向いています。',
-    })
-
-  }
-
-  /* ======================================
-  🧠 multitask
-  ====================================== */
-
-  if (
-    text.includes('32gb')
-    || text.includes('64gb')
-  ) {
-
-    reasons.push({
-      icon: '🧠',
-      title: 'マルチタスク性能が高い',
-      description:
-        'ゲーム・配信・ブラウザなどを同時利用しやすい余裕ある構成です。',
-    })
-
-  }
-
-  /* ======================================
-  ⚡ default
-  ====================================== */
-
-  if (
-    reasons.length === 0
-  ) {
-
-    reasons.push({
-      icon: '⚡',
-      title: '日常用途でも快適',
-      description:
-        'ブラウジング・動画視聴・一般作業まで、幅広く快適に使いやすい構成です。',
-    })
-
-  }
-
-  return reasons.slice(0, 4)
 
 }
 
@@ -121,18 +39,23 @@ function buildSemanticReasons(
 ========================================= */
 
 export default function ProductSemanticReasons({
-  product,
+
+  semanticRuntime,
+
 }: Props) {
 
   const reasons =
-    buildSemanticReasons(
-      product
-    )
+
+    semanticRuntime
+      ?.semantic_reasons
+      || []
 
   if (
-    !reasons.length
+    reasons.length === 0
   ) {
+
     return null
+
   }
 
   return (
@@ -158,7 +81,7 @@ export default function ProductSemanticReasons({
             styles.semanticReasonsLabel
           }
         >
-          WHY THIS PC
+          SEMANTIC REASONS
         </div>
 
         <h2
@@ -166,7 +89,7 @@ export default function ProductSemanticReasons({
             styles.semanticReasonsTitle
           }
         >
-          おすすめされる理由
+          このPCが提案される理由
         </h2>
 
         <p
@@ -174,9 +97,8 @@ export default function ProductSemanticReasons({
             styles.semanticReasonsDescription
           }
         >
-          スペック数値だけではなく、
-          実際の利用シーンをもとに
-          このPCの強みを整理しています。
+          Backend Semantic Authority が
+          判定した意味情報を表示しています。
         </p>
 
       </div>
@@ -192,33 +114,20 @@ export default function ProductSemanticReasons({
       >
 
         {reasons.map(
-          (reason) => (
+          (
+            reason,
+            index
+          ) => (
 
             <div
               key={
-                reason.title
+                `${reason.slug || 'reason'}-${index}`
               }
 
               className={
                 styles.semanticReasonsCard
               }
             >
-
-              {/* ==========================
-              ICON
-              ========================== */}
-
-              <div
-                className={
-                  styles.semanticReasonsIcon
-                }
-              >
-                {reason.icon}
-              </div>
-
-              {/* ==========================
-              CONTENT
-              ========================== */}
 
               <div
                 className={
@@ -231,16 +140,64 @@ export default function ProductSemanticReasons({
                     styles.semanticReasonsCardTitle
                   }
                 >
-                  {reason.title}
+                  {
+                    reason.title
+                    || reason.slug
+                    || 'Semantic Reason'
+                  }
                 </div>
 
-                <p
-                  className={
-                    styles.semanticReasonsCardDescription
-                  }
-                >
-                  {reason.description}
-                </p>
+                {
+
+                  reason.description && (
+
+                    <p
+                      className={
+                        styles.semanticReasonsCardDescription
+                      }
+                    >
+                      {reason.description}
+                    </p>
+
+                  )
+
+                }
+
+                {
+
+                  reason.role && (
+
+                    <p
+                      className={
+                        styles.semanticReasonsCardDescription
+                      }
+                    >
+                      Role:
+                      {' '}
+                      {reason.role}
+                    </p>
+
+                  )
+
+                }
+
+                {
+
+                  typeof reason.weight === 'number' && (
+
+                    <p
+                      className={
+                        styles.semanticReasonsCardDescription
+                      }
+                    >
+                      Weight:
+                      {' '}
+                      {reason.weight}
+                    </p>
+
+                  )
+
+                }
 
               </div>
 
@@ -266,8 +223,8 @@ export default function ProductSemanticReasons({
             styles.semanticReasonsFooterText
           }
         >
-          ✔ semantic analysis をもとに、
-          実利用ベースで整理しています。
+          ✔ Backend Semantic Authority Runtime
+          に基づく判定理由です
         </div>
 
       </div>
@@ -275,4 +232,5 @@ export default function ProductSemanticReasons({
     </section>
 
   )
+
 }

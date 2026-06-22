@@ -26,4 +26,10 @@ export const RUNTIMES = [
     placeholder: 'AI向けPCを探したい',
   },
 
+  {
+    key: "product-detail",
+    label: "Product Detail Runtime",
+    placeholder: '',
+  },
+
 ]

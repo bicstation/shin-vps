@@ -63,9 +63,29 @@ def build_product_detail_runtime(
     # PRODUCT REALITY
     # ------------------------------------------------------
 
+    EXCLUDED_FIELDS = {
+
+        "semantic_runtime",
+
+        "workflow_tags",
+
+        "semantic_labels",
+
+        "runtime_profiles",
+
+        "semantic_runtime_compiled",
+
+        "semantic_updated_at",
+
+    }
+
     product_data = {}
 
     for field in product._meta.fields:
+
+        if field.name in EXCLUDED_FIELDS:
+
+            continue
 
         product_data[
             field.name

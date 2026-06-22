@@ -1,11 +1,13 @@
 // ============================================================================
 // FILE:
-// /home/maya/shin-dev/shin-vps/next-bicstation/app/product/[unique_id]/components/hero/ProductHero.tsx
+// app/product/[unique_id]/components/hero/ProductHero.tsx
+// Semantic Runtime V3
 // ============================================================================
 
 'use client'
 
-import Link from 'next/link'
+import Link
+  from 'next/link'
 
 import styles
   from './hero.module.css'
@@ -14,57 +16,190 @@ type Props = {
   product: any
 }
 
+/* ============================================================================
+🔥 Helpers
+============================================================================ */
+
+function getSemanticRuntime(
+  product: any
+) {
+
+  return (
+    product?.product_semantic_runtime
+    || {}
+  )
+
+}
+
+function getHeroSubtitle(
+  product: any
+) {
+
+  const runtime =
+    getSemanticRuntime(
+      product
+    )
+
+  return (
+
+    runtime?.semantic_summary
+    || product?.target_user
+    || 'Semantic Product Runtime'
+
+  )
+
+}
+
+function buildSemanticChips(
+  product: any
+) {
+
+  const runtime =
+    getSemanticRuntime(
+      product
+    )
+
+  const labels =
+
+    runtime?.semantic_labels
+    || []
+
+  return labels
+    .slice(0, 6)
+    .map(
+      (
+        label: any
+      ) => {
+
+        if (
+          typeof label === 'string'
+        ) {
+
+          return label
+
+        }
+
+        return (
+
+          label?.title
+          || label?.slug
+          || label?.name
+          || ''
+
+        )
+
+      }
+    )
+    .filter(Boolean)
+
+}
+
+function buildSpecChips(
+  product: any
+) {
+
+  const chips: string[] = []
+
+  if (
+    product?.gpu_model
+  ) {
+
+    chips.push(
+      product.gpu_model
+    )
+
+  }
+
+  if (
+    product?.cpu_model
+  ) {
+
+    chips.push(
+      product.cpu_model
+    )
+
+  }
+
+  if (
+    product?.memory_gb
+  ) {
+
+    chips.push(
+      `${product.memory_gb}GB Memory`
+    )
+
+  }
+
+  if (
+    product?.storage_gb
+  ) {
+
+    const storage =
+
+      product.storage_gb >= 1024
+
+        ? `${Math.floor(
+            product.storage_gb / 1024
+          )}TB SSD`
+
+        : `${product.storage_gb}GB SSD`
+
+    chips.push(
+      storage
+    )
+
+  }
+
+  return chips
+
+}
+
+/* ============================================================================
+🔥 Component
+============================================================================ */
+
 export default function ProductHero({
+
   product,
+
 }: Props) {
 
-  // ==========================================================================
-  // VALUES
-  // ==========================================================================
-
   const title =
+
     product?.name
     || 'PRODUCT'
 
   const image =
+
     product?.image_url
 
   const maker =
+
     product?.maker_name
     || product?.maker
     || 'UNKNOWN'
 
   const price =
+
     product?.price
 
-  // ==========================================================================
-  // SEMANTIC CHIPS
-  // ==========================================================================
+  const subtitle =
 
-  const groupedAttributes =
-    product?.grouped_attributes
-    || {}
+    getHeroSubtitle(
+      product
+    )
 
-  const semanticChips = [
+  const semanticChips =
 
-    ...(groupedAttributes?.usage || []),
-    ...(groupedAttributes?.gpu || []),
-    ...(groupedAttributes?.cpu || []),
+    buildSemanticChips(
+      product
+    )
 
-  ].slice(0, 8)
+  const specChips =
 
-  // ==========================================================================
-  // CLEAN SUMMARY
-  // ==========================================================================
-
-  const summary =
-    product?.ai_summary
-      ?.replace(/\[SUMMARY_DATA\]/g, '')
-      ?.trim()
-
-  // ==========================================================================
-  // RENDER
-  // ==========================================================================
+    buildSpecChips(
+      product
+    )
 
   return (
 
@@ -74,9 +209,9 @@ export default function ProductHero({
       }
     >
 
-      {/* ================================================================
+      {/* ============================================================
       TOP
-      ================================================================ */}
+      ============================================================ */}
 
       <div
         className={
@@ -95,61 +230,16 @@ export default function ProductHero({
               styles.productHeroTag
             }
           >
-
             {maker}
-
           </div>
-
-          {
-            semanticChips
-              .slice(0, 2)
-              .map(
-                (
-                  chip: any,
-                  index: number
-                ) => (
-
-                  <div
-                    key={index}
-
-                    className={
-                      styles.productHeroTag
-                    }
-                  >
-
-                    {
-                      chip?.label
-                      || chip?.name
-                      || chip
-                    }
-
-                  </div>
-
-                )
-              )
-          }
 
         </div>
 
-         {/* ========================================================
-          TITLE
-          ======================================================== */}
-
-          <h1
-            className={
-              styles.productHeroTitle
-            }
-          >
-
-            {title}
-
-          </h1>
-
       </div>
 
-      {/* ================================================================
+      {/* ============================================================
       MAIN
-      ================================================================ */}
+      ============================================================ */}
 
       <div
         className={
@@ -157,9 +247,9 @@ export default function ProductHero({
         }
       >
 
-        {/* ============================================================
+        {/* ========================================================
         IMAGE
-        ============================================================ */}
+        ======================================================== */}
 
         <div
           className={
@@ -167,26 +257,23 @@ export default function ProductHero({
           }
         >
 
-          {
-            image && (
+          {image && (
 
-              <img
-                src={image}
-                alt={title}
+            <img
+              src={image}
+              alt={title}
+              className={
+                styles.productHeroImage
+              }
+            />
 
-                className={
-                  styles.productHeroImage
-                }
-              />
-
-            )
-          }
+          )}
 
         </div>
 
-        {/* ============================================================
+        {/* ========================================================
         CONTENT
-        ============================================================ */}
+        ======================================================== */}
 
         <div
           className={
@@ -194,102 +281,111 @@ export default function ProductHero({
           }
         >
 
-          {/* ========================================================
-          LABEL
-          ======================================================== */}
-
           <div
             className={
               styles.productHeroLabel
             }
           >
-
             SEMANTIC PRODUCT RUNTIME
-
           </div>
 
-          {/* ========================================================
-          DESCRIPTION
-          ======================================================== */}
+          <h1
+            className={
+              styles.productHeroTitle
+            }
+          >
+            {title}
+          </h1>
 
-          {/* {
-            summary && (
+          <div
+            className={
+              styles.productHeroDescription
+            }
+          >
+            {subtitle}
+          </div>
 
-              <div
-                className={
-                  styles.productHeroDescription
-                }
-              >
+          {/* ====================================================
+          SEMANTIC CHIPS
+          ==================================================== */}
 
-                {summary}
+          {semanticChips.length > 0 && (
 
-              </div>
+            <div
+              className={
+                styles.productHeroCapabilities
+              }
+            >
 
-            )
-          } */}
+              {semanticChips.map(
+                (
+                  chip,
+                  index
+                ) => (
 
-          {/* ========================================================
-          CAPABILITIES
-          ======================================================== */}
+                  <div
+                    key={index}
+                    className={
+                      styles.productHeroCapability
+                    }
+                  >
+                    {chip}
+                  </div>
 
-          {
-            semanticChips.length > 0 && (
+                )
+              )}
 
-              <div
-                className={
-                  styles.productHeroCapabilities
-                }
-              >
+            </div>
 
-                {
-                  semanticChips.map(
-                    (
-                      chip: any,
-                      index: number
-                    ) => (
+          )}
 
-                      <div
-                        key={index}
+          {/* ====================================================
+          SPEC CHIPS
+          ==================================================== */}
 
-                        className={
-                          styles.productHeroCapability
-                        }
-                      >
+          {specChips.length > 0 && (
 
-                        ✓ {
-                          chip?.label
-                          || chip?.name
-                          || chip
-                        }
+            <div
+              className={
+                styles.productHeroSpecs
+              }
+            >
 
-                      </div>
+              {specChips.map(
+                (
+                  chip,
+                  index
+                ) => (
 
-                    )
-                  )
-                }
+                  <div
+                    key={index}
+                    className={
+                      styles.productHeroSpec
+                    }
+                  >
+                    {chip}
+                  </div>
 
-              </div>
+                )
+              )}
 
-            )
-          }
+            </div>
+
+          )}
 
         </div>
 
       </div>
 
-      {/* ================================================================
+      {/* ============================================================
       BOTTOM
-      ================================================================ */}
+      ============================================================ */}
 
       <div
         className={
           styles.productHeroBottom
         }
       >
-
-        {/* ============================================================
-        PRICE
-        ============================================================ */}
 
         <div
           className={
@@ -302,9 +398,7 @@ export default function ProductHero({
               styles.productHeroPriceLabel
             }
           >
-
-            PRICE
-
+            実売価格
           </div>
 
           <div
@@ -314,16 +408,14 @@ export default function ProductHero({
           >
 
             ¥
-            {Number(price)
-              .toLocaleString()}
+
+            {Number(
+              price || 0
+            ).toLocaleString()}
 
           </div>
 
         </div>
-
-        {/* ============================================================
-        ACTIONS
-        ============================================================ */}
 
         <div
           className={
@@ -333,26 +425,20 @@ export default function ProductHero({
 
           <Link
             href="#spec"
-
             className={
               styles.productHeroPrimary
             }
           >
-
             スペックを見る
-
           </Link>
 
           <Link
             href="#related"
-
             className={
               styles.productHeroSecondary
             }
           >
-
             近い用途のPCを見る
-
           </Link>
 
         </div>
@@ -362,4 +448,5 @@ export default function ProductHero({
     </section>
 
   )
+
 }
