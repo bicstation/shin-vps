@@ -1,7 +1,6 @@
 // ============================================================================
 // FILE:
 // app/product/[unique_id]/components/hero/ProductHero.tsx
-// Semantic Runtime V3
 // ============================================================================
 
 'use client'
@@ -10,147 +9,56 @@ import Link
   from 'next/link'
 
 import styles
-  from './hero.module.css'
+  from './styles/ProductHero.module.css'
 
 type Props = {
+
   product: any
+
+  semanticRuntime?: {
+
+    semantic_summary?: string
+
+    grouped_attributes?: Record<
+      string,
+      any[]
+    >
+
+  }
+
 }
 
 /* ============================================================================
 🔥 Helpers
 ============================================================================ */
 
-function getSemanticRuntime(
-  product: any
-) {
+function getChipText(
+  value: any
+): string {
 
-  return (
-    product?.product_semantic_runtime
-    || {}
-  )
+  if (!value) {
 
-}
+    return ''
 
-function getHeroSubtitle(
-  product: any
-) {
+  }
 
-  const runtime =
-    getSemanticRuntime(
-      product
-    )
+  if (
+    typeof value === 'string'
+  ) {
+
+    return value
+
+  }
 
   return (
 
-    runtime?.semantic_summary
-    || product?.target_user
-    || 'Semantic Product Runtime'
+    value.label
+    || value.title
+    || value.name
+    || value.slug
+    || ''
 
   )
-
-}
-
-function buildSemanticChips(
-  product: any
-) {
-
-  const runtime =
-    getSemanticRuntime(
-      product
-    )
-
-  const labels =
-
-    runtime?.semantic_labels
-    || []
-
-  return labels
-    .slice(0, 6)
-    .map(
-      (
-        label: any
-      ) => {
-
-        if (
-          typeof label === 'string'
-        ) {
-
-          return label
-
-        }
-
-        return (
-
-          label?.title
-          || label?.slug
-          || label?.name
-          || ''
-
-        )
-
-      }
-    )
-    .filter(Boolean)
-
-}
-
-function buildSpecChips(
-  product: any
-) {
-
-  const chips: string[] = []
-
-  if (
-    product?.gpu_model
-  ) {
-
-    chips.push(
-      product.gpu_model
-    )
-
-  }
-
-  if (
-    product?.cpu_model
-  ) {
-
-    chips.push(
-      product.cpu_model
-    )
-
-  }
-
-  if (
-    product?.memory_gb
-  ) {
-
-    chips.push(
-      `${product.memory_gb}GB Memory`
-    )
-
-  }
-
-  if (
-    product?.storage_gb
-  ) {
-
-    const storage =
-
-      product.storage_gb >= 1024
-
-        ? `${Math.floor(
-            product.storage_gb / 1024
-          )}TB SSD`
-
-        : `${product.storage_gb}GB SSD`
-
-    chips.push(
-      storage
-    )
-
-  }
-
-  return chips
 
 }
 
@@ -161,6 +69,7 @@ function buildSpecChips(
 export default function ProductHero({
 
   product,
+  semanticRuntime,
 
 }: Props) {
 
@@ -168,20 +77,6 @@ export default function ProductHero({
 
     product?.name
     || 'PRODUCT'
-  
-  const heroTitle =
-  product?.name
-    ?.split('(')[0]
-    ?.trim()
-  || product?.name
-  || 'PRODUCT'
-
-  const role =
-    product
-      ?.product_semantic_runtime
-      ?.semantic_labels?.[0]
-      ?.title
-  || 'AI CREATIVE WORKSTATION'
 
   const image =
 
@@ -197,23 +92,32 @@ export default function ProductHero({
 
     product?.price
 
-  const subtitle =
+  const groupedAttributes =
 
-    getHeroSubtitle(
-      product
-    )
+    semanticRuntime
+      ?.grouped_attributes
 
-  const semanticChips =
+    ||
 
-    buildSemanticChips(
-      product
-    )
+    product
+      ?.grouped_attributes
 
-  const specChips =
+    ||
 
-    buildSpecChips(
-      product
-    )
+    {}
+
+  const semanticChips = [
+
+    ...(groupedAttributes?.usage || []),
+
+    ...(groupedAttributes?.gpu || []),
+
+    ...(groupedAttributes?.cpu || []),
+
+  ]
+    .map(getChipText)
+    .filter(Boolean)
+    .slice(0, 6)
 
   return (
 
@@ -222,15 +126,20 @@ export default function ProductHero({
         styles.productHero
       }
     >
-       <div
-          className={
-            styles.productHeroBackgroundOverlay
-          }
-       />
 
-      {/* ============================================================
+      {/* ==========================================================
+      BACKGROUND
+      ========================================================== */}
+
+      <div
+        className={
+          styles.productHeroBackgroundOverlay
+        }
+      />
+
+      {/* ==========================================================
       TOP
-      ============================================================ */}
+      ========================================================== */}
 
       <div
         className={
@@ -252,13 +161,37 @@ export default function ProductHero({
             {maker}
           </div>
 
+          {
+
+            semanticChips
+              .slice(0, 2)
+              .map(
+                (
+                  chip,
+                  index
+                ) => (
+
+                  <div
+                    key={index}
+                    className={
+                      styles.productHeroTag
+                    }
+                  >
+                    {chip}
+                  </div>
+
+                )
+              )
+
+          }
+
         </div>
 
       </div>
 
-      {/* ============================================================
+      {/* ==========================================================
       MAIN
-      ============================================================ */}
+      ========================================================== */}
 
       <div
         className={
@@ -266,33 +199,37 @@ export default function ProductHero({
         }
       >
 
-        {/* ========================================================
+        {/* ======================================================
         IMAGE
-        ======================================================== */}
+        ====================================================== */}
 
-        <div
-          className={
-            styles.productHeroImageArea
-          }
-        >
+        {
 
-          {image && (
+          image && (
 
-            <img
-              src={image}
-              alt={title}
+            <div
               className={
-                styles.productHeroImage
+                styles.productHeroImageArea
               }
-            />
+            >
 
-          )}
+              <img
+                src={image}
+                alt={title}
+                className={
+                  styles.productHeroImage
+                }
+              />
 
-        </div>
+            </div>
 
-        {/* ========================================================
+          )
+
+        }
+
+        {/* ======================================================
         CONTENT
-        ======================================================== */}
+        ====================================================== */}
 
         <div
           className={
@@ -305,7 +242,7 @@ export default function ProductHero({
               styles.productHeroLabel
             }
           >
-             {role}
+            SEMANTIC PRODUCT RUNTIME
           </div>
 
           <h1
@@ -313,92 +250,54 @@ export default function ProductHero({
               styles.productHeroTitle
             }
           >
-            {heroTitle}
+            {title}
           </h1>
 
-          <div
-            className={
-              styles.productHeroDescription
-            }
-          >
-            {subtitle}
-          </div>
+          {
 
-          {/* ====================================================
-          SEMANTIC CHIPS
-          ==================================================== */}
+            semanticChips.length > 0 && (
 
-          {semanticChips.length > 0 && (
+              <div
+                className={
+                  styles.productHeroCapabilities
+                }
+              >
 
-            <div
-              className={
-                styles.productHeroCapabilities
-              }
-            >
+                {
 
-              {semanticChips.map(
-                (
-                  chip,
-                  index
-                ) => (
+                  semanticChips.map(
+                    (
+                      chip,
+                      index
+                    ) => (
 
-                  <div
-                    key={index}
-                    className={
-                      styles.productHeroCapability
-                    }
-                  >
-                    {chip}
-                  </div>
+                      <div
+                        key={index}
+                        className={
+                          styles.productHeroCapability
+                        }
+                      >
+                        ✓ {chip}
+                      </div>
 
-                )
-              )}
+                    )
+                  )
 
-            </div>
+                }
 
-          )}
+              </div>
 
-          {/* ====================================================
-          SPEC CHIPS
-          ==================================================== */}
+            )
 
-          {specChips.length > 0 && (
-
-            <div
-              className={
-                styles.productHeroSpecs
-              }
-            >
-
-              {specChips.map(
-                (
-                  chip,
-                  index
-                ) => (
-
-                  <div
-                    key={index}
-                    className={
-                      styles.productHeroSpec
-                    }
-                  >
-                    {chip}
-                  </div>
-
-                )
-              )}
-
-            </div>
-
-          )}
+          }
 
         </div>
 
       </div>
 
-      {/* ============================================================
+      {/* ==========================================================
       BOTTOM
-      ============================================================ */}
+      ========================================================== */}
 
       <div
         className={
@@ -417,7 +316,7 @@ export default function ProductHero({
               styles.productHeroPriceLabel
             }
           >
-            実売価格
+            PRICE
           </div>
 
           <div
@@ -428,9 +327,13 @@ export default function ProductHero({
 
             ¥
 
-            {Number(
-              price || 0
-            ).toLocaleString()}
+            {
+
+              Number(
+                price || 0
+              ).toLocaleString()
+
+            }
 
           </div>
 
@@ -457,7 +360,7 @@ export default function ProductHero({
               styles.productHeroSecondary
             }
           >
-            近い用途のPCを見る
+            関連製品を見る
           </Link>
 
         </div>

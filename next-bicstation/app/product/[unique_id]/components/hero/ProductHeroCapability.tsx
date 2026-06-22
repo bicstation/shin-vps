@@ -1,23 +1,20 @@
 // ============================================================================
 // FILE:
 // app/product/[unique_id]/components/hero/ProductHeroCapability.tsx
-// Semantic Experience V3
 // ============================================================================
 
 import styles
-  from './hero.module.css'
+  from './styles/ProductHeroCapability.module.css'
 
-/* =========================================
+/* ============================================================================
 🔥 Props
-========================================= */
+============================================================================ */
 
 type Props = {
 
   product: any
 
   semanticRuntime?: {
-
-    semantic_summary?: string
 
     workflow_tags?: any[]
 
@@ -27,9 +24,9 @@ type Props = {
 
 }
 
-/* =========================================
+/* ============================================================================
 🔥 Helpers
-========================================= */
+============================================================================ */
 
 function getText(
   value: any
@@ -38,26 +35,32 @@ function getText(
   if (
     value == null
   ) {
+
     return ''
+
   }
 
   if (
     typeof value === 'string'
   ) {
+
     return value
+
   }
 
   if (
     typeof value === 'number'
   ) {
+
     return String(value)
+
   }
 
   return (
 
     value?.title
-    || value?.name
     || value?.label
+    || value?.name
     || value?.slug
     || ''
 
@@ -76,7 +79,9 @@ function parseStrengths(
   }
 
   if (
-    Array.isArray(strengths)
+    Array.isArray(
+      strengths
+    )
   ) {
 
     return strengths
@@ -86,11 +91,14 @@ function parseStrengths(
   try {
 
     const parsed =
+
       JSON.parse(
         strengths
       )
 
-    return Array.isArray(parsed)
+    return Array.isArray(
+      parsed
+    )
       ? parsed
       : []
 
@@ -104,9 +112,9 @@ function parseStrengths(
 
 }
 
-/* =========================================
-🔥 COMPONENT
-========================================= */
+/* ============================================================================
+🔥 Component
+============================================================================ */
 
 export default function ProductHeroCapability({
 
@@ -114,15 +122,6 @@ export default function ProductHeroCapability({
   semanticRuntime,
 
 }: Props) {
-
-  const summary =
-
-    semanticRuntime
-      ?.semantic_summary
-
-  const targetUser =
-
-    product?.target_user
 
   const strengths =
 
@@ -132,10 +131,45 @@ export default function ProductHeroCapability({
 
   const workflowTags =
 
-    (semanticRuntime?.workflow_tags || [])
-      .map(getText)
-      .filter(Boolean)
-      .slice(0, 6)
+    semanticRuntime
+      ?.workflow_tags
+
+      ||
+
+      []
+
+  const semanticLabels =
+
+    semanticRuntime
+      ?.semantic_labels
+
+      ||
+
+      []
+
+  const capabilityCards = [
+
+    ...strengths,
+
+    ...workflowTags.map(
+      getText
+    ),
+
+    ...semanticLabels.map(
+      getText
+    ),
+
+  ]
+    .filter(Boolean)
+    .slice(0, 12)
+
+  if (
+    capabilityCards.length === 0
+  ) {
+
+    return null
+
+  }
 
   return (
 
@@ -145,9 +179,9 @@ export default function ProductHeroCapability({
       }
     >
 
-      {/* ==================================
+      {/* ==========================================================
       HEADER
-      ================================== */}
+      ========================================================== */}
 
       <div
         className={
@@ -160,7 +194,7 @@ export default function ProductHeroCapability({
             styles.heroCapabilityLabel
           }
         >
-          SEMANTIC EXPERIENCE
+          CAPABILITIES
         </div>
 
         <h2
@@ -171,175 +205,62 @@ export default function ProductHeroCapability({
           このPCで実現できること
         </h2>
 
+        <p
+          className={
+            styles.heroCapabilityDescription
+          }
+        >
+          Semantic Runtime が検出した
+          利用シーン・ワークフロー・特徴を表示しています。
+        </p>
+
       </div>
 
-      {/* ==================================
-      SUMMARY
-      ================================== */}
+      {/* ==========================================================
+      GRID
+      ========================================================== */}
 
-      {summary && (
+      <div
+        className={
+          styles.heroCapabilityGrid
+        }
+      >
 
-        <div
-          className={
-            styles.heroCapabilitySummary
-          }
-        >
+        {
 
-          <div
-            className={
-              styles.heroCapabilityBlockLabel
-            }
-          >
-            PRODUCT IDENTITY
-          </div>
+          capabilityCards.map(
+            (
+              card,
+              index
+            ) => (
 
-          <p
-            className={
-              styles.heroCapabilityDescription
-            }
-          >
-            {summary}
-          </p>
-
-        </div>
-
-      )}
-
-      {/* ==================================
-      TARGET USER
-      ================================== */}
-
-      {targetUser && (
-
-        <div
-          className={
-            styles.heroCapabilitySummary
-          }
-        >
-
-          <div
-            className={
-              styles.heroCapabilityBlockLabel
-            }
-          >
-            TARGET USER
-          </div>
-
-          <p
-            className={
-              styles.heroCapabilityDescription
-            }
-          >
-            {targetUser}
-          </p>
-
-        </div>
-
-      )}
-
-      {/* ==================================
-      STRENGTHS
-      ================================== */}
-
-      {strengths.length > 0 && (
-
-        <>
-
-          <div
-            className={
-              styles.heroCapabilityBlockLabel
-            }
-          >
-            KEY STRENGTHS
-          </div>
-
-          <div
-            className={
-              styles.heroCapabilityGrid
-            }
-          >
-
-            {strengths.map(
-              (
-                strength,
-                index
-              ) => (
+              <div
+                key={index}
+                className={
+                  styles.heroCapabilityCard
+                }
+              >
 
                 <div
-                  key={index}
                   className={
-                    styles.heroCapabilityCard
+                    styles.heroCapabilityText
                   }
                 >
-
-                  <div
-                    className={
-                      styles.heroCapabilityText
-                    }
-                  >
-                    ✓ {strength}
-                  </div>
-
+                  ✓ {card}
                 </div>
 
-              )
-            )}
+              </div>
 
-          </div>
+            )
+          )
 
-        </>
+        }
 
-      )}
+      </div>
 
-      {/* ==================================
-      WORKFLOWS
-      ================================== */}
-
-      {workflowTags.length > 0 && (
-
-        <>
-
-          <div
-            className={
-              styles.heroCapabilityBlockLabel
-            }
-          >
-            RECOMMENDED WORKFLOWS
-          </div>
-
-          <div
-            className={
-              styles.heroCapabilityTags
-            }
-          >
-
-            {workflowTags.map(
-              (
-                tag,
-                index
-              ) => (
-
-                <div
-                  key={index}
-                  className={
-                    styles.heroCapabilityTag
-                  }
-                >
-                  {tag}
-                </div>
-
-              )
-            )}
-
-          </div>
-
-        </>
-
-      )}
-
-      {/* ==================================
+      {/* ==========================================================
       FOOTER
-      ================================== */}
+      ========================================================== */}
 
       <div
         className={
@@ -352,7 +273,7 @@ export default function ProductHeroCapability({
             styles.heroCapabilityFooterText
           }
         >
-          Semantic Authority Runtime に基づいて構築された製品体験サマリー
+          Backend Semantic Authority Runtime に基づく利用可能領域
         </div>
 
       </div>

@@ -333,8 +333,11 @@ return (
 
     <ProductHeroSection
       product={product}
+      semanticRuntime={
+        runtime?.product_semantic_runtime
+      }
     />
-
+    
     {/* ============================================================
     SEMANTIC
     ============================================================ */}

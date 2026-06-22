@@ -4,11 +4,12 @@ import ProductBreadcrumb
 import ProductHero
   from '../components/hero/ProductHero'
 
+import ProductAISummary
+  from '../components/hero/ProductAISummary'
+
 import ProductHeroCapability
   from '../components/hero/ProductHeroCapability'
 
-import ProductAISummary
-  from '../components/semantic/ProductAISummary'
 
 type Props = {
 
@@ -18,8 +19,7 @@ type Props = {
 
 }
 
-export default function
-ProductHeroSection({
+export default function ProductHeroSection({
 
   product,
   semanticRuntime,
@@ -45,6 +45,9 @@ ProductHeroSection({
 
       <ProductAISummary
         product={product}
+        semanticRuntime={
+          semanticRuntime
+        }
       />
 
       <ProductHeroCapability
@@ -53,13 +56,6 @@ ProductHeroSection({
           semanticRuntime
         }
       />
-
-      {/* <ProductHeroTrust
-        product={product}
-        semanticRuntime={
-          semanticRuntime
-        }
-      /> */}
 
     </>
 
