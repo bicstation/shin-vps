@@ -113,52 +113,52 @@ export default function ProductSemanticSection({
       Semantic Summary
       ========================================================== */}
 
-      <ProductSemanticSummary
+      {/* <ProductSemanticSummary
         semanticRuntime={
           semanticRuntime
         }
-      />
+      /> */}
 
       {/* ==========================================================
       Why This Product
       ========================================================== */}
 
-      <ProductSemanticReasons
+      {/* <ProductSemanticReasons
         semanticRuntime={
           semanticRuntime
         }
-      />
+      /> */}
 
       {/* ==========================================================
       Workflow Experience
       ========================================================== */}
 
-      <ProductWorkflowExperience
+      {/* <ProductWorkflowExperience
         workflowTags={
           semanticRuntime
             ?.workflow_tags
         }
-      />
+      /> */}
 
       {/* ==========================================================
       Meaning Breakdown
       ========================================================== */}
 
-      <ProductMeaningBreakdown
+      {/* <ProductMeaningBreakdown
         semanticRuntime={
           semanticRuntime
         }
-      />
+      /> */}
 
       {/* ==========================================================
       Semantic Details
       ========================================================== */}
 
-      <ProductSemanticAccordion
+      {/* <ProductSemanticAccordion
         semanticRuntime={
           semanticRuntime
         }
-      />
+      /> */}
 
     </section>
 

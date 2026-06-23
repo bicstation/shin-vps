@@ -55,9 +55,9 @@ ProductCTASection({
       {/* Price CTA */}
       {/* ============================= */}
 
-      <ProductPriceCTA
+      {/* <ProductPriceCTA
         product={product}
-      />
+      /> */}
 
       {/* ============================= */}
       {/* Final CTA */}

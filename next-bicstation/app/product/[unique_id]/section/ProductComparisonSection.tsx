@@ -53,25 +53,25 @@ ProductComparisonSection({
       {/* Better Choice Guide */}
       {/* ============================= */}
 
-      <ProductBetterChoiceGuide
+      {/* <ProductBetterChoiceGuide
         product={product}
-      />
+      /> */}
 
       {/* ============================= */}
       {/* Alternative List */}
       {/* ============================= */}
 
-      <ProductAlternativeList
+      {/* <ProductAlternativeList
         product={product}
-      />
+      /> */}
 
       {/* ============================= */}
       {/* Comparison Links */}
       {/* ============================= */}
 
-      <ProductComparisonLinks
+      {/* <ProductComparisonLinks
         product={product}
-      />
+      /> */}
 
     </section>
 

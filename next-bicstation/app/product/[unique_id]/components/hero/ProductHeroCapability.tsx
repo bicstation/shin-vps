@@ -148,7 +148,7 @@ export default function ProductHeroCapability({
                   styles.heroCapabilityTitle
                 }
               >
-                この製品で実現できること
+                このPCでできること
               </h2>
 
               <p

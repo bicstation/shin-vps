@@ -15,6 +15,16 @@ import styles
 🔥 Types
 ============================================================================ */
 
+type SemanticReason = {
+
+  slug?: string
+
+  title?: string
+
+  description?: string
+
+}
+
 type Props = {
 
   product: any
@@ -25,9 +35,12 @@ type Props = {
 
     workflow_tags?: string[]
 
+    semantic_reasons?: SemanticReason[]
+
   }
 
 }
+
 
 /* ============================================================================
 🔥 Workflow Label
@@ -76,47 +89,13 @@ export default function ProductHero({
 
 }: Props) {
 
-  const title =
-
-    product?.name
-
-    ||
-
-    'PRODUCT'
-
-  const image =
-
-    product?.image_url
-
-  const maker =
-
-    product?.maker
-
-    ||
-
-    'UNKNOWN'
-
-  const price =
-
-    product?.price
-
-  const semanticSummary =
-
-    semanticRuntime
-      ?.semantic_summary
-
-    ||
-
-    ''
-
-  const workflowTags =
-
-    semanticRuntime
-      ?.workflow_tags
-
-    ||
-
-    []
+  const title = product?.name || 'PRODUCT'
+  const image = product?.image_url 
+  const maker = product?.maker || 'UNKNOWN'
+  const price = product?.price 
+  const semanticSummary = semanticRuntime?.semantic_summary || ''
+  const workflowTags = semanticRuntime?.workflow_tags || []
+  const targetUser = product?.target_user
 
   return (
 
@@ -242,6 +221,40 @@ export default function ProductHero({
 
             )
 
+          }
+
+          {/* ======================================================
+          TARGET USER
+          ====================================================== */}
+
+          {
+            targetUser && (
+
+              <div
+                className={
+                  styles.productHeroTargetUser
+                }
+              >
+
+                <div
+                  className={
+                    styles.productHeroMiniLabel
+                  }
+                >
+                  FOR WHO
+                </div>
+
+                <p
+                  className={
+                    styles.productHeroTargetUserText
+                  }
+                >
+                  {targetUser}
+                </p>
+
+              </div>
+
+            )
           }
 
           {
