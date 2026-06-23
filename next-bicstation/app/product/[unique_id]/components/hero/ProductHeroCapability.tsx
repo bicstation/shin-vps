@@ -97,25 +97,14 @@ export default function ProductHeroCapability({
 
     []
 
-  const cards = [
-
-    ...workflowTags.map(
-      getWorkflowLabel
-    ),
-
-    ...semanticReasons
-      .slice(0, 6)
-      .map(
-        reason =>
-          reason.title
-      ),
-
-  ]
-    .filter(Boolean)
-    .slice(0, 12)
-
   if (
-    cards.length === 0
+
+    workflowTags.length === 0
+
+    &&
+
+    semanticReasons.length === 0
+
   ) {
 
     return null
@@ -131,85 +120,199 @@ export default function ProductHeroCapability({
     >
 
       {/* ==========================================================
-      HEADER
+      WORKFLOW
       ========================================================== */}
 
-      <div
-        className={
-          styles.heroCapabilityHeader
-        }
-      >
+      {
 
-        <div
-          className={
-            styles.heroCapabilityLabel
-          }
-        >
-          WORKFLOW EXPERIENCE
-        </div>
+        workflowTags.length > 0 && (
 
-        <h2
-          className={
-            styles.heroCapabilityTitle
-          }
-        >
-          この製品で実現できること
-        </h2>
+          <>
 
-        <p
-          className={
-            styles.heroCapabilityDescription
-          }
-        >
-          Semantic Runtime が判定した
-          利用シーンと主要な特徴です。
-        </p>
-
-      </div>
-
-      {/* ==========================================================
-      GRID
-      ========================================================== */}
-
-      <div
-        className={
-          styles.heroCapabilityGrid
-        }
-      >
-
-        {
-
-          cards.map(
-
-            (
-              card,
-              index
-            ) => (
+            <div
+              className={
+                styles.heroCapabilityHeader
+              }
+            >
 
               <div
-                key={index}
                 className={
-                  styles.heroCapabilityCard
+                  styles.heroCapabilityLabel
                 }
               >
-
-                <div
-                  className={
-                    styles.heroCapabilityText
-                  }
-                >
-                  ✓ {card}
-                </div>
-
+                WORKFLOW EXPERIENCE
               </div>
 
-            )
+              <h2
+                className={
+                  styles.heroCapabilityTitle
+                }
+              >
+                この製品で実現できること
+              </h2>
 
-          )
+              <p
+                className={
+                  styles.heroCapabilityDescription
+                }
+              >
+                このPCが得意とする利用シーンです。
+              </p>
 
-        }
+            </div>
 
-      </div>
+            <div
+              className={
+                styles.heroCapabilityGrid
+              }
+            >
+
+              {
+
+                workflowTags.map(
+
+                  (
+                    tag,
+                    index
+                  ) => (
+
+                    <div
+                      key={index}
+                      className={
+                        styles.heroCapabilityCard
+                      }
+                    >
+
+                      <div
+                        className={
+                          styles.heroCapabilityText
+                        }
+                      >
+                        {getWorkflowLabel(tag)}
+                      </div>
+
+                    </div>
+
+                  )
+
+                )
+
+              }
+
+            </div>
+
+          </>
+
+        )
+
+      }
+
+      {/* ==========================================================
+      REASONS
+      ========================================================== */}
+
+      {
+
+        semanticReasons.length > 0 && (
+
+          <>
+
+            <div
+              className={
+                styles.heroCapabilityHeader
+              }
+            >
+
+              <div
+                className={
+                  styles.heroCapabilityLabel
+                }
+              >
+                WHY THIS PRODUCT
+              </div>
+
+              <h2
+                className={
+                  styles.heroCapabilityTitle
+                }
+              >
+                この製品が選ばれる理由
+              </h2>
+
+              <p
+                className={
+                  styles.heroCapabilityDescription
+                }
+              >
+                Semantic Runtime が判定した
+                推薦根拠です。
+              </p>
+
+            </div>
+
+            <div
+              className={
+                styles.heroCapabilityGrid
+              }
+            >
+
+              {
+
+                semanticReasons
+                  .slice(0, 6)
+                  .map(
+
+                    (
+                      reason,
+                      index
+                    ) => (
+
+                      <div
+                        key={index}
+                        className={
+                          styles.heroCapabilityCard
+                        }
+                      >
+
+                        <div
+                          className={
+                            styles.heroCapabilityText
+                          }
+                        >
+                          {reason.title}
+                        </div>
+
+                        {
+
+                          reason.description && (
+
+                            <div
+                              className={
+                                styles.heroCapabilitySubText
+                              }
+                            >
+                              {reason.description}
+                            </div>
+
+                          )
+
+                        }
+
+                      </div>
+
+                    )
+
+                  )
+
+              }
+
+            </div>
+
+          </>
+
+        )
+
+      }
 
     </section>
 
