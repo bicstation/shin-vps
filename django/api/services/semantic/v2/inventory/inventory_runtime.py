@@ -45,13 +45,14 @@ def build_inventory_runtime(
 
         page = 1
 
+    
     try:
 
         page_size = int(page_size)
 
     except Exception:
 
-        page_size = 100
+        page_size = 10000
 
     if page < 1:
         page = 1
@@ -59,9 +60,9 @@ def build_inventory_runtime(
     if page_size < 1:
         page_size = 100
 
-    if page_size > 500:
-        page_size = 500
-
+    if page_size > 10000:
+        page_size = 10000  
+ 
     queryset = (
 
         PCProduct.objects

@@ -36,7 +36,7 @@ def semantic_product_list_v2(
 
     page_size = request.GET.get(
         "page_size",
-        100
+        10000
     )
 
     payload = (
