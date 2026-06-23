@@ -1,106 +1,134 @@
 // ============================================================================
 // FILE:
-// /home/maya/shin-vps/next-bicstation/app/product/[unique_id]/sections/ProductRelatedSection.tsx
+// /home/maya/shin-vps/next-bicstation/app/product/[unique_id]/section/ProductRelatedSection.tsx
 // ============================================================================
 
-/* =========================================
+/* ============================================================================
 🔥 Components
-========================================= */
+============================================================================ */
 
 import ProductRelated
-from '../components/recommendation/ProductRelated'
+  from '../components/recommendation/ProductRelated'
 
 import ProductSimilarUsage
-from '../components/recommendation/ProductSimilarUsage'
+  from '../components/recommendation/ProductSimilarUsage'
 
 import ProductNextIntent
-from '../components/recommendation/ProductNextIntent'
+  from '../components/recommendation/ProductNextIntent'
 
 import RelatedProducts
-from '../components/recommendation/RelatedProducts'
+  from '../components/recommendation/RelatedProducts'
 
-/* =========================================
-🔥 Props
-========================================= */
+import ProductRelatedIntents
+  from '../components/intent/ProductRelatedIntents'
+
+/* ============================================================================
+🔥 Types
+============================================================================ */
+
+type RelatedIntent = {
+
+  slug: string
+
+  title: string
+
+  description?: string | null
+
+}
 
 type Props = {
 
-product: any
+  product: any
 
-related: any[]
+  related: any[]
+
+  semanticRuntime?: {
+
+    related_intents?: RelatedIntent[]
+
+  }
+
 }
 
-/* =========================================
+/* ============================================================================
 🔥 Product Related Section
-========================================= */
+============================================================================ */
 
-export default function
-ProductRelatedSection({
+export default function ProductRelatedSection({
 
-product,
+  product,
 
-related,
+  related,
+
+  semanticRuntime,
 
 }: Props) {
 
-// ======================================
-// Empty Guard
-// ======================================
+  /* ==========================================================================
+  Guard
+  ========================================================================== */
 
-if (!product) {
+  if (!product) {
 
+    return null
 
-return null
+  }
 
+  /* ==========================================================================
+  Render
+  ========================================================================== */
 
-}
+  return (
 
-// ======================================
-// Render
-// ======================================
+    <section>
 
-return (
+      {/* ==========================================================
+      Related Discovery
+      ========================================================== */}
 
+      <ProductRelatedIntents
+        semanticRuntime={
+          semanticRuntime
+        }
+      />
 
-<section>
+      {/* ==========================================================
+      Related Narrative
+      ========================================================== */}
 
-  {/* ============================= */}
-  {/* Related Narrative */}
-  {/* ============================= */}
+      <ProductRelated
+        product={product}
+        related={related}
+      />
 
-  <ProductRelated
-    product={product}
-    related={related}
-  />
+      {/* ==========================================================
+      Similar Workflow
+      ========================================================== */}
 
-  {/* ============================= */}
-  {/* Similar Workflow */}
-  {/* ============================= */}
+      <ProductSimilarUsage
+        product={product}
+        related={related}
+      />
 
-  <ProductSimilarUsage
-    product={product}
-    related={related}
-  />
+      {/* ==========================================================
+      Next Intent
+      ========================================================== */}
 
-  {/* ============================= */}
-  {/* Next Intent */}
-  {/* ============================= */}
+      <ProductNextIntent
+        product={product}
+        related={related}
+      />
 
-  <ProductNextIntent
-    product={product}
-    related={related}
-  />
+      {/* ==========================================================
+      Exploration Products
+      ========================================================== */}
 
-  {/* ============================= */}
-  {/* Exploration Slider */}
-  {/* ============================= */}
+      <RelatedProducts
+        related={related}
+      />
 
-  <RelatedProducts
-    related={related}
-  />
+    </section>
 
-</section>
+  )
 
-
-)
 }

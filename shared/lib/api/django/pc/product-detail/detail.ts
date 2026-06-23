@@ -5,45 +5,6 @@
 // All rights reserved.
 // ============================================================================
 
-/**
- * ============================================================================
- * SHIN CORE LINX
- * Product Detail Runtime Gateway
- * ============================================================================
- *
- * PURPOSE
- *
- * GET /api/pc/products/{unique_id}/
- *
- * ↓
- *
- * Product Detail Runtime
- *
- * IMPORTANT
- *
- * This layer MUST NOT:
- *
- * ❌ generate meaning
- * ❌ generate semantic_summary
- * ❌ generate workflow_tags
- * ❌ generate related_intents
- * ❌ mutate backend authority
- *
- * RESPONSIBILITY
- *
- * Transport
- * ↓
- * Normalize
- * ↓
- * Runtime
- *
- * ============================================================================
- */
-
-/* ============================================================================
-🔥 Utils
-============================================================================ */
-
 import {
 
   buildEndpoint,
@@ -56,19 +17,11 @@ import {
 
 } from '../utils/safeFetch'
 
-/* ============================================================================
-🔥 Contracts
-============================================================================ */
-
 import type {
 
   ProductDetailRuntime,
 
 } from './contracts'
-
-/* ============================================================================
-🔥 Normalize
-============================================================================ */
 
 import {
 
@@ -76,17 +29,9 @@ import {
 
 } from './normalize'
 
-/* ============================================================================
-🔥 Endpoint
-============================================================================ */
-
 const PRODUCT_DETAIL_ENDPOINT =
 
   '/pc/products'
-
-/* ============================================================================
-🔥 Fetch Product Detail Runtime
-============================================================================ */
 
 export async function fetchProductDetail(
 
@@ -101,6 +46,7 @@ export async function fetchProductDetail(
     )
 
     return normalizeProductDetailRuntime()
+
   }
 
   const endpoint =
@@ -125,6 +71,7 @@ export async function fetchProductDetail(
 
     runtime:
       'product-detail-runtime',
+
   })
 
   console.log(
@@ -137,18 +84,139 @@ export async function fetchProductDetail(
       endpoint
     )
 
+  /* ==========================================================================
+  Raw Reality Capture
+  ========================================================================== */
+
   console.log(
-    '🔥 PRODUCT DETAIL RAW',
-    payload
+    '🔥 PRODUCT DETAIL RAW PAYLOAD',
+    JSON.stringify(
+      payload,
+      null,
+      2
+    )
   )
 
-  return normalizeProductDetailRuntime(
-    payload
+  console.log(
+    '🔥 PRODUCT DETAIL RAW SUMMARY',
+    {
+
+      unique_id:
+
+        payload?.data?.product
+          ?.unique_id,
+
+      name:
+
+        payload?.data?.product
+          ?.name,
+
+      semantic_authority:
+
+        payload?.semantic_authority,
+
+      authority_version:
+
+        payload?.authority_version,
+
+      ready:
+
+        payload?.ready,
+
+      has_compiled_runtime:
+
+        !!payload?.data
+          ?.compiled_runtime,
+
+      has_product_semantic_runtime:
+
+        !!payload?.data
+          ?.product_semantic_runtime,
+
+    }
   )
+
+  /* ==========================================================================
+  Normalize
+  ========================================================================== */
+
+  const runtime =
+
+    normalizeProductDetailRuntime(
+      payload
+    )
+
+  /* ==========================================================================
+  Runtime Reality Capture
+  ========================================================================== */
+
+  console.log(
+    '🔥 PRODUCT DETAIL RUNTIME',
+    {
+
+      product:
+
+        runtime?.product
+          ?.unique_id,
+
+      semantic_summary:
+
+        !!runtime
+          ?.product_semantic_runtime
+          ?.semantic_summary,
+
+      semantic_reasons:
+
+        runtime
+          ?.product_semantic_runtime
+          ?.semantic_reasons
+          ?.length,
+
+      workflow_tags:
+
+        runtime
+          ?.product_semantic_runtime
+          ?.workflow_tags
+          ?.length,
+
+      related_intents:
+
+        runtime
+          ?.product_semantic_runtime
+          ?.related_intents
+          ?.length,
+
+      grouped_attributes:
+
+        Object.keys(
+
+          runtime
+            ?.product_semantic_runtime
+            ?.grouped_attributes
+
+          || {}
+
+        ).length,
+
+      semantic_labels:
+
+        runtime
+          ?.compiled_runtime
+          ?.semantic_labels
+          ?.length,
+
+      runtime_profiles:
+
+        runtime
+          ?.compiled_runtime
+          ?.runtime_profiles
+          ?.length,
+
+    }
+  )
+
+  return runtime
+
 }
-
-/* ============================================================================
-🔥 Default Export
-============================================================================ */
 
 export default fetchProductDetail

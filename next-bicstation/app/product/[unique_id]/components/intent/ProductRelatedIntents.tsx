@@ -1,26 +1,25 @@
 // ============================================================================
 // FILE:
-// app/product/[unique_id]/components/semantic/ProductSemanticReasons.tsx
+// app/product/[unique_id]/components/intent/ProductRelatedIntents.tsx
 // ============================================================================
 
+import Link
+  from 'next/link'
+
 import styles
-  from './semantic.module.css'
+  from './intent.module.css'
 
 /* ============================================================================
 🔥 Types
 ============================================================================ */
 
-type SemanticReason = {
+type RelatedIntent = {
 
-  slug?: string
+  slug: string
 
-  title?: string
+  title: string
 
-  description?: string
-
-  role?: string
-
-  weight?: string | number
+  description?: string | null
 
 }
 
@@ -28,7 +27,7 @@ type Props = {
 
   semanticRuntime?: {
 
-    semantic_reasons?: SemanticReason[]
+    related_intents?: RelatedIntent[]
 
   }
 
@@ -38,16 +37,16 @@ type Props = {
 🔥 Component
 ============================================================================ */
 
-export default function ProductSemanticReasons({
+export default function ProductRelatedIntents({
 
   semanticRuntime,
 
 }: Props) {
 
-  const reasons =
+  const intents =
 
     semanticRuntime
-      ?.semantic_reasons
+      ?.related_intents
 
     ||
 
@@ -55,7 +54,7 @@ export default function ProductSemanticReasons({
 
   if (
 
-    reasons.length === 0
+    intents.length === 0
 
   ) {
 
@@ -67,7 +66,7 @@ export default function ProductSemanticReasons({
 
     <section
       className={
-        styles.semanticReasonsSection
+        styles.intentSection
       }
     >
 
@@ -77,102 +76,97 @@ export default function ProductSemanticReasons({
 
       <div
         className={
-          styles.semanticReasonsHeader
+          styles.header
         }
       >
 
         <div
           className={
-            styles.semanticReasonsLabel
+            styles.label
           }
         >
-          WHY THIS PRODUCT
+          RELATED DISCOVERY
         </div>
 
         <h2
           className={
-            styles.semanticReasonsTitle
+            styles.title
           }
         >
-          この製品が選ばれる理由
+          次に探索するカテゴリー
         </h2>
 
         <p
           className={
-            styles.semanticReasonsDescription
+            styles.description
           }
         >
-          この製品の価値を構成する
-          主要なポイントです。
+          この製品に関連する
+          Discovery Runtime を表示しています。
         </p>
 
       </div>
 
       {/* ==========================================================
-      GRID
+      INTENT GRID
       ========================================================== */}
 
       <div
         className={
-          styles.semanticReasonsGrid
+          styles.grid
         }
       >
 
         {
 
-          reasons.map(
+          intents.map(
 
             (
-              reason,
-              index
+              intent
             ) => (
 
-              <article
+              <Link
                 key={
-                  `${reason.slug || 'reason'}-${index}`
+                  intent.slug
+                }
+
+                href={
+                  `/discover/${intent.slug}`
                 }
 
                 className={
-                  styles.semanticReasonsCard
+                  styles.card
                 }
               >
 
                 <div
                   className={
-                    styles.semanticReasonsContent
+                    styles.cardContent
                   }
                 >
 
                   <h3
                     className={
-                      styles.semanticReasonsCardTitle
+                      styles.cardTitle
                     }
                   >
                     {
-
-                      reason.title
-
-                      ||
-
-                      reason.slug
-
-                      ||
-
-                      'Semantic Reason'
-
+                      intent.title
                     }
                   </h3>
 
                   {
 
-                    reason.description && (
+                    intent.description && (
 
                       <p
                         className={
-                          styles.semanticReasonsCardDescription
+                          styles.cardDescription
                         }
                       >
-                        {reason.description}
+                        {
+                          intent.description
+                        }
                       </p>
 
                     )
@@ -181,7 +175,15 @@ export default function ProductSemanticReasons({
 
                 </div>
 
-              </article>
+                <div
+                  className={
+                    styles.cardAction
+                  }
+                >
+                  探索する →
+                </div>
+
+              </Link>
 
             )
 

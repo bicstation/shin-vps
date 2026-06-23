@@ -6,60 +6,66 @@
 import styles
   from './styles/ProductAISummary.module.css'
 
-type Props = {
+/* ============================================================================
+🔥 Types
+============================================================================ */
 
-  product: any
+type SemanticReason = {
+
+  slug?: string
+
+  title?: string
+
+  description?: string
+
+}
+
+type Props = {
 
   semanticRuntime?: {
 
     semantic_summary?: string
 
+    semantic_reasons?: SemanticReason[]
+
+    workflow_tags?: string[]
+
   }
 
 }
 
-
-
 /* ============================================================================
-🔥 Helpers
+🔥 Workflow Labels
 ============================================================================ */
 
-function parseStrengths(
-  strengths: any
-): string[] {
+function getWorkflowLabel(
+  tag: string
+): string {
 
-  if (!strengths) {
+  const labels:
+    Record<string, string> = {
 
-    return []
+      'usage-ai':
+        'AI開発',
 
-  }
+      'usage-creator':
+        '動画編集',
 
-  if (
-    Array.isArray(strengths)
-  ) {
+      'usage-gaming':
+        'FPS Gaming',
 
-    return strengths
+      'usage-business':
+        'ビジネス',
 
-  }
+      'usage-mobile':
+        'モバイル',
 
-  try {
+    }
 
-    const parsed =
-      JSON.parse(
-        strengths
-      )
-
-    return Array.isArray(parsed)
-      ? parsed
-      : []
-
-  }
-
-  catch {
-
-    return []
-
-  }
+  return (
+    labels[tag]
+    || tag
+  )
 
 }
 
@@ -69,45 +75,45 @@ function parseStrengths(
 
 export default function ProductAISummary({
 
-  product,
   semanticRuntime,
 
 }: Props) {
-
-    console.log(
-    'SUMMARY',
-    semanticRuntime?.semantic_summary
-    )
-
-    console.log(
-    'TARGET USER',
-    product?.target_user
-    )
-
-    console.log(
-    'STRENGTHS',
-    product?.strengths
-    )
 
   const summary =
 
     semanticRuntime
       ?.semantic_summary
 
-  const targetUser =
+    ||
 
-    product?.target_user
+    ''
 
-  const strengths =
+  const workflowTags =
 
-    parseStrengths(
-      product?.strengths
-    )
+    semanticRuntime
+      ?.workflow_tags
+
+    ||
+
+    []
+
+  const reasons =
+
+    semanticRuntime
+      ?.semantic_reasons
+
+    ||
+
+    []
 
   if (
+
     !summary
-    && !targetUser
-    && strengths.length === 0
+
+    &&
+
+    workflowTags.length === 0
+
   ) {
 
     return null
@@ -122,6 +128,10 @@ export default function ProductAISummary({
       }
     >
 
+      {/* ==========================================================
+      HEADER
+      ========================================================== */}
+
       <div
         className={
           styles.aiSummaryHeader
@@ -133,7 +143,7 @@ export default function ProductAISummary({
             styles.aiSummaryLabel
           }
         >
-          AI SUMMARY
+          PRODUCT SUMMARY
         </div>
 
         <h2
@@ -141,10 +151,14 @@ export default function ProductAISummary({
             styles.aiSummaryTitle
           }
         >
-          この製品の要約
+          この製品はどんなPC？
         </h2>
 
       </div>
+
+      {/* ==========================================================
+      SUMMARY
+      ========================================================== */}
 
       {
 
@@ -155,14 +169,6 @@ export default function ProductAISummary({
               styles.aiSummaryBlock
             }
           >
-
-            <div
-              className={
-                styles.aiSummaryBlockLabel
-              }
-            >
-              SEMANTIC SUMMARY
-            </div>
 
             <p
               className={
@@ -178,31 +184,47 @@ export default function ProductAISummary({
 
       }
 
+      {/* ==========================================================
+      WORKFLOW
+      ========================================================== */}
+
       {
 
-        targetUser && (
+        workflowTags.length > 0 && (
 
           <div
             className={
-              styles.aiSummaryBlock
+              styles.aiSummaryWorkflow
             }
           >
 
-            <div
-              className={
-                styles.aiSummaryBlockLabel
-              }
-            >
-              TARGET USER
-            </div>
+            {
 
-            <p
-              className={
-                styles.aiSummaryText
-              }
-            >
-              {targetUser}
-            </p>
+              workflowTags.map(
+
+                (
+                  tag,
+                  index
+                ) => (
+
+                  <div
+                    key={index}
+                    className={
+                      styles.aiSummaryChip
+                    }
+                  >
+                    {
+                      getWorkflowLabel(
+                        tag
+                      )
+                    }
+                  </div>
+
+                )
+
+              )
+
+            }
 
           </div>
 
@@ -210,35 +232,28 @@ export default function ProductAISummary({
 
       }
 
+      {/* ==========================================================
+      HIGHLIGHTS
+      ========================================================== */}
+
       {
 
-        strengths.length > 0 && (
+        reasons.length > 0 && (
 
-          <div
+          <ul
             className={
-              styles.aiSummaryBlock
+              styles.aiSummaryList
             }
           >
 
-            <div
-              className={
-                styles.aiSummaryBlockLabel
-              }
-            >
-              KEY STRENGTHS
-            </div>
+            {
 
-            <ul
-              className={
-                styles.aiSummaryList
-              }
-            >
+              reasons
+                .slice(0, 4)
+                .map(
 
-              {
-
-                strengths.map(
                   (
-                    strength,
+                    reason,
                     index
                   ) => (
 
@@ -248,17 +263,20 @@ export default function ProductAISummary({
                         styles.aiSummaryItem
                       }
                     >
-                      {strength}
+                      {
+
+                        reason.title
+
+                      }
                     </li>
 
                   )
+
                 )
 
-              }
+            }
 
-            </ul>
-
-          </div>
+          </ul>
 
         )
 

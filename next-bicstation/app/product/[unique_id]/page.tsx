@@ -1,79 +1,83 @@
 // ============================================================================
 // FILE:
-// /home/maya/shin-vps/next-bicstation/app/product/[unique_id]/page.tsx
+// app/product/[unique_id]/page.tsx
 // ============================================================================
 
 /* ============================================================================
 🔥 API
 ============================================================================ */
 
+import {
+  fetchProductDetail,
+} from '@/shared/lib/api/django/pc/product-detail'
 
-import {  fetchProductDetail,} from '@/shared/lib/api/django/pc/product-detail'
-import {  fetchRelatedPC,} from '@/shared/lib/api/django/pc/related/related'
+import {
+  fetchRelatedPC,
+} from '@/shared/lib/api/django/pc/related/related'
 
 /* ============================================================================
 🔥 Next
 ============================================================================ */
 
-import type { Metadata, } from 'next'
+import type {
+  Metadata,
+} from 'next'
 
 /* ============================================================================
 🔥 Sections
 ============================================================================ */
 
 import ProductHeroSection
-from './section/ProductHeroSection'
+  from './section/ProductHeroSection'
 
 import ProductSemanticSection
-from './section/ProductSemanticSection'
+  from './section/ProductSemanticSection'
 
 import ProductSpecSection
-from './section/ProductSpecSection'
+  from './section/ProductSpecSection'
 
 import ProductComparisonSection
-from './section/ProductComparisonSection'
+  from './section/ProductComparisonSection'
 
 import ProductRelatedSection
-from './section/ProductRelatedSection'
+  from './section/ProductRelatedSection'
 
 import ProductCTASection
-from './section/ProductCTASection'
+  from './section/ProductCTASection'
 
 /* ============================================================================
 🔥 Common
 ============================================================================ */
 
 import ProductBreadcrumb
-from './components/common/ProductBreadcrumb'
+  from './components/common/ProductBreadcrumb'
 
 /* ============================================================================
 🔥 FAQ
 ============================================================================ */
 
 import ProductFaq
-from './components/faq/ProductFaq'
+  from './components/faq/ProductFaq'
 
 /* ============================================================================
 🔥 States
 ============================================================================ */
 
 import ProductEmptyState
-from './states/ProductEmptyState'
+  from './states/ProductEmptyState'
 
 /* ============================================================================
 🔥 Props
 ============================================================================ */
 
-// type Props = {
-//   semanticRuntime: any
-//   params: {
-//   unique_id: string
-//   }
-// }
-
 type Props = {
-  product: any
-  semanticRuntime: any
+
+  params: {
+
+    unique_id: string
+
+  }
+
 }
 
 /* ============================================================================
@@ -81,104 +85,85 @@ type Props = {
 ============================================================================ */
 
 export async function generateMetadata({
-params,
+
+  params,
+
 }: Props): Promise<Metadata> {
 
-// ==========================================================================
-// Unique ID
-// ==========================================================================
+  const runtime =
 
-const uniqueId =
-params.unique_id
+    await fetchProductDetail(
+      params.unique_id
+    )
 
-// ==========================================================================
-// Product
-// ==========================================================================
+  const product =
+    runtime?.product
 
-const runtime =
-await fetchProductDetail(
-  uniqueId
-)
+  if (!product) {
 
-console.log(
-  '🔥 PRODUCT DETAIL RUNTIME',
-  runtime
-)
+    return {
 
-const product =
-runtime?.product
+      title:
+        'PCが見つかりません',
 
+      description:
+        'SHIN CORE LINX',
 
-console.log(
-  '🔥 semantic runtime',
-  runtime?.product_semantic_runtime
-)
+    }
 
-// ==========================================================================
-// Empty
-// ==========================================================================
+  }
 
-if (!product) {
+  const title =
 
+    `${product.name} | SHIN CORE LINX`
 
-return {
+  const description =
 
-  title:
-    'PCが見つかりません',
+    runtime
+      ?.product_semantic_runtime
+      ?.semantic_summary
 
-  description:
-    'SHIN CORE LINX',
-}
+    ||
 
+    product.ai_summary
 
-}
+    ||
 
-// ==========================================================================
-// SEO
-// ==========================================================================
+    `${product.name} の詳細情報`
 
-const title =
+  return {
 
+    title,
 
-`${product.name} | SHIN CORE LINX`
+    description,
 
+    openGraph: {
 
-const description =
+      title,
 
+      description,
 
-product.ai_summary
-|| `${product.name} の詳細スペック・用途・関連PCを掲載しています。`
+      images:
 
+        product.image_url
 
-// ==========================================================================
-// Return
-// ==========================================================================
+          ? [
 
-return {
+              {
 
+                url:
+                  product.image_url,
 
-title,
+              },
 
-description,
+            ]
 
-openGraph: {
+          : [],
 
-  title,
+    },
 
-  description,
+  }
 
-  images: product.image_url
-    ? [
-        {
-          url:
-            product.image_url,
-        },
-      ]
-    : [],
-},
-
-
-}
 }
 
 /* ============================================================================
@@ -186,213 +171,209 @@ openGraph: {
 ============================================================================ */
 
 export default async function ProductPage({
-params,
+
+  params,
+
 }: Props) {
 
-// ==========================================================================
-// Unique ID
-// ==========================================================================
+  const uniqueId =
+    params.unique_id
 
-const uniqueId =
-params.unique_id
+  const runtime =
 
-// ==========================================================================
-// Product Runtime
-// ==========================================================================
+    await fetchProductDetail(
+      uniqueId
+    )
 
-const runtime =
-await fetchProductDetail(
-  uniqueId
-)
+  const product =
+    runtime?.product
 
-console.log(
-  '🔥 PRODUCT DETAIL RUNTIME',
-  runtime
-)
+  const semanticRuntime =
 
-const product =
-runtime?.product
+    runtime
+      ?.product_semantic_runtime
 
+  const related =
 
-// ==========================================================================
-// Related Runtime
-// ==========================================================================
+    await fetchRelatedPC(
+      uniqueId
+    )
 
-const related =
-await fetchRelatedPC(
-uniqueId
-)
+  if (!product) {
 
-// ==========================================================================
-// Empty
-// ==========================================================================
+    return (
 
-if (!product) {
+      <ProductEmptyState />
 
+    )
 
-return (
+  }
 
-  <ProductEmptyState />
+  const productSchema = {
 
-)
+    '@context':
+      'https://schema.org',
 
+    '@type':
+      'Product',
 
-}
+    name:
+      product.name,
 
-// ==========================================================================
-// JSON-LD
-// ==========================================================================
+    image:
+      product.image_url,
 
-const productSchema = {
+    description:
 
+      semanticRuntime
+        ?.semantic_summary
 
-'@context':
-  'https://schema.org',
+      ||
 
-'@type':
-  'Product',
+      product.ai_summary
 
-name:
-  product.name,
+      ||
 
-image:
-  product.image_url,
+      '',
 
-description:
-  product.ai_summary,
+    brand: {
 
-brand: {
+      '@type':
+        'Brand',
 
-  '@type':
-    'Brand',
+      name:
 
-  name:
-    product.maker_name
-    || product.maker,
-},
+        product.maker_name
 
-offers: {
+        ||
 
-  '@type':
-    'Offer',
+        product.maker,
 
-  price:
-    product.price,
+    },
 
-  priceCurrency:
-    'JPY',
+    offers: {
 
-  availability:
-    'https://schema.org/InStock',
-},
+      '@type':
+        'Offer',
 
+      price:
+        product.price,
 
-}
+      priceCurrency:
+        'JPY',
 
-/* ==========================================================================
-🔥 Render
-========================================================================== */
+      availability:
+        'https://schema.org/InStock',
 
-return (
+    },
 
+  }
 
-<>
+  return (
 
-  {/* ================================================================
-  JSON-LD
-  ================================================================ */}
+    <>
 
-  <script
-    type="application/ld+json"
+      {/* ==========================================================
+      JSON-LD
+      ========================================================== */}
 
-    dangerouslySetInnerHTML={{
-      __html:
-        JSON.stringify(
-          productSchema
-        ),
-    }}
-  />
-
-  {/* ================================================================
-  MAIN
-  ================================================================ */}
-
-  <main>
-
-    {/* ============================================================
-    BREADCRUMB
-    ============================================================ */}
-
-    <ProductBreadcrumb
-      product={product}
-    />
-
-    {/* ============================================================
-    HERO
-    ============================================================ */}
-
-    <ProductHeroSection
-      product={product}
-      semanticRuntime={
-        runtime?.product_semantic_runtime
-      }
-    />
-    
-    {/* ============================================================
-    SEMANTIC
-    ============================================================ */}
-
-      <ProductSemanticSection
-        product={product}
-        semanticRuntime={
-          runtime?.product_semantic_runtime
-        }
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html:
+            JSON.stringify(
+              productSchema
+            ),
+        }}
       />
-    {/* ============================================================
-    SPEC
-    ============================================================ */}
 
-    <ProductSpecSection
-      product={product}
-    />
+      {/* ==========================================================
+      MAIN
+      ========================================================== */}
 
-    {/* ============================================================
-    COMPARISON
-    ============================================================ */}
+      <main>
 
-    <ProductComparisonSection
-      product={product}
-    />
+        {/* ======================================================
+        Breadcrumb
+        ====================================================== */}
 
-    {/* ============================================================
-    RELATED
-    ============================================================ */}
+        <ProductBreadcrumb
+          product={product}
+        />
 
-    <ProductRelatedSection
-      product={product}
-      related={related}
-    />
+        {/* ======================================================
+        Hero
+        ====================================================== */}
 
-    {/* ============================================================
-    FAQ
-    ============================================================ */}
+        <ProductHeroSection
+          product={product}
+          semanticRuntime={
+            semanticRuntime
+          }
+        />
 
-    <ProductFaq
-      product={product}
-    />
+        {/* ======================================================
+        Semantic
+        ====================================================== */}
 
-    {/* ============================================================
-    CTA
-    ============================================================ */}
+        <ProductSemanticSection
+          product={product}
+          semanticRuntime={
+            semanticRuntime
+          }
+        />
 
-    <ProductCTASection
-      product={product}
-    />
+        {/* ======================================================
+        Specs
+        ====================================================== */}
 
-  </main>
+        <ProductSpecSection
+          product={product}
+        />
 
-</>
+        {/* ======================================================
+        Comparison
+        ====================================================== */}
 
+        <ProductComparisonSection
+          product={product}
+        />
 
-)
+        {/* ======================================================
+        Related
+        ====================================================== */}
+
+        <ProductRelatedSection
+          product={product}
+          related={related}
+          semanticRuntime={
+            semanticRuntime
+          }
+        />
+
+        {/* ======================================================
+        FAQ
+        ====================================================== */}
+
+        <ProductFaq
+          product={product}
+        />
+
+        {/* ======================================================
+        CTA
+        ====================================================== */}
+
+        <ProductCTASection
+          product={product}
+          semanticRuntime={
+            semanticRuntime
+          }
+        />
+
+      </main>
+
+    </>
+
+  )
+
 }

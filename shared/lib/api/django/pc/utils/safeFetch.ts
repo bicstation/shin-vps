@@ -191,12 +191,77 @@ safeFetch<T = any>(
   }
 
   // ======================================
-  // Semantic Runtime Debug
+  // Runtime Observability
+  // ======================================
+
+  const payload =
+
+    result.data as any
+
+  const runtimeSignals = {
+
+    semantic_runtime:
+
+      Boolean(
+
+        payload?.semantic_runtime ||
+
+        payload?.data?.semantic_runtime
+      ),
+
+    product_runtime:
+
+      Boolean(
+
+        payload?.product ||
+
+        payload?.data?.product
+      ),
+
+    compiled_runtime:
+
+      Boolean(
+
+        payload?.compiled_runtime ||
+
+        payload?.data?.compiled_runtime
+      ),
+
+    product_semantic_runtime:
+
+      Boolean(
+
+        payload?.product_semantic_runtime ||
+
+        payload?.data?.product_semantic_runtime
+      ),
+
+    adaptive_runtime:
+
+      Boolean(
+
+        payload?.adaptive_runtime ||
+
+        payload?.data?.adaptive_runtime
+      ),
+
+    semantic_related:
+
+      Boolean(
+
+        payload?.semantic_related ||
+
+        payload?.data?.semantic_related
+      ),
+  }
+
+  // ======================================
+  // Runtime Debug
   // ======================================
 
   console.log(
 
-    '🔥 SEMANTIC RUNTIME PAYLOAD',
+    '🔥 RUNTIME SIGNALS',
 
     {
 
@@ -206,96 +271,28 @@ safeFetch<T = any>(
 
       semantic_schema_version:
 
-        (result.data as any)
-          ?.semantic_schema_version,
+        payload?.semantic_schema_version,
 
-      has_semantic_runtime:
-
-        !!(result.data as any)
-          ?.semantic_runtime,
-
-      has_adaptive_runtime:
-
-        !!(result.data as any)
-          ?.adaptive_runtime,
-
-      has_semantic_related:
-
-        !!(result.data as any)
-          ?.semantic_related,
+      runtimeSignals,
 
       payload_keys:
 
         Object.keys(
-          (result.data as any) || {}
+          payload || {}
         ),
 
       payload_type:
 
-        Array.isArray(result.data)
+        Array.isArray(payload)
           ? 'array'
-          : typeof result.data,
+          : typeof payload,
 
       payload_exists:
 
-        !!result.data,
+        !!payload,
 
-      payload:
-        result.data,
+      payload,
     }
-  )
-
-  // ======================================
-  // Payload Safety
-  // ======================================
-
-  if (!result.data) {
-
-    console.error(
-
-      '🔥 EMPTY RUNTIME PAYLOAD',
-
-      {
-
-        runtime,
-
-        endpoint,
-      }
-    )
-
-    return null
-  }
-
-  // ======================================
-  // Completion
-  // ======================================
-
-  console.log(
-
-    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
-  )
-
-  console.log(
-
-    '✅ SAFE FETCH BRIDGE SUCCESS'
-  )
-
-  console.log(
-
-    {
-
-      runtime,
-
-      endpoint,
-
-      payload_received:
-        true,
-    }
-  )
-
-  console.log(
-
-    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
   )
 
   // ======================================

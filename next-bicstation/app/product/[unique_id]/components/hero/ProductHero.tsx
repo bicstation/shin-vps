@@ -11,6 +11,10 @@ import Link
 import styles
   from './styles/ProductHero.module.css'
 
+/* ============================================================================
+🔥 Types
+============================================================================ */
+
 type Props = {
 
   product: any
@@ -19,45 +23,43 @@ type Props = {
 
     semantic_summary?: string
 
-    grouped_attributes?: Record<
-      string,
-      any[]
-    >
+    workflow_tags?: string[]
 
   }
 
 }
 
 /* ============================================================================
-🔥 Helpers
+🔥 Workflow Label
 ============================================================================ */
 
-function getChipText(
-  value: any
+function getWorkflowLabel(
+  tag: string
 ): string {
 
-  if (!value) {
+  const labels:
+    Record<string, string> = {
 
-    return ''
+      'usage-ai':
+        'AI',
 
-  }
+      'usage-gaming':
+        'Gaming',
 
-  if (
-    typeof value === 'string'
-  ) {
+      'usage-creator':
+        'Creator',
 
-    return value
+      'usage-business':
+        'Business',
 
-  }
+      'usage-mobile':
+        'Mobile',
+
+    }
 
   return (
-
-    value.label
-    || value.title
-    || value.name
-    || value.slug
-    || ''
-
+    labels[tag]
+    || tag
   )
 
 }
@@ -69,6 +71,7 @@ function getChipText(
 export default function ProductHero({
 
   product,
+
   semanticRuntime,
 
 }: Props) {
@@ -76,7 +79,10 @@ export default function ProductHero({
   const title =
 
     product?.name
-    || 'PRODUCT'
+
+    ||
+
+    'PRODUCT'
 
   const image =
 
@@ -84,40 +90,33 @@ export default function ProductHero({
 
   const maker =
 
-    product?.maker_name
-    || product?.maker
-    || 'UNKNOWN'
+    product?.maker
+
+    ||
+
+    'UNKNOWN'
 
   const price =
 
     product?.price
 
-  const groupedAttributes =
+  const semanticSummary =
 
     semanticRuntime
-      ?.grouped_attributes
+      ?.semantic_summary
 
     ||
 
-    product
-      ?.grouped_attributes
+    ''
+
+  const workflowTags =
+
+    semanticRuntime
+      ?.workflow_tags
 
     ||
 
-    {}
-
-  const semanticChips = [
-
-    ...(groupedAttributes?.usage || []),
-
-    ...(groupedAttributes?.gpu || []),
-
-    ...(groupedAttributes?.cpu || []),
-
-  ]
-    .map(getChipText)
-    .filter(Boolean)
-    .slice(0, 6)
+    []
 
   return (
 
@@ -160,30 +159,6 @@ export default function ProductHero({
           >
             {maker}
           </div>
-
-          {
-
-            semanticChips
-              .slice(0, 2)
-              .map(
-                (
-                  chip,
-                  index
-                ) => (
-
-                  <div
-                    key={index}
-                    className={
-                      styles.productHeroTag
-                    }
-                  >
-                    {chip}
-                  </div>
-
-                )
-              )
-
-          }
 
         </div>
 
@@ -242,7 +217,7 @@ export default function ProductHero({
               styles.productHeroLabel
             }
           >
-            SEMANTIC PRODUCT RUNTIME
+            SEMANTIC PRODUCT EXPERIENCE
           </div>
 
           <h1
@@ -255,7 +230,23 @@ export default function ProductHero({
 
           {
 
-            semanticChips.length > 0 && (
+            semanticSummary && (
+
+              <p
+                className={
+                  styles.productHeroSummary
+                }
+              >
+                {semanticSummary}
+              </p>
+
+            )
+
+          }
+
+          {
+
+            workflowTags.length > 0 && (
 
               <div
                 className={
@@ -265,9 +256,10 @@ export default function ProductHero({
 
                 {
 
-                  semanticChips.map(
+                  workflowTags.map(
+
                     (
-                      chip,
+                      tag,
                       index
                     ) => (
 
@@ -277,10 +269,15 @@ export default function ProductHero({
                           styles.productHeroCapability
                         }
                       >
-                        ✓ {chip}
+                        {
+                          getWorkflowLabel(
+                            tag
+                          )
+                        }
                       </div>
 
                     )
+
                   )
 
                 }
@@ -346,12 +343,12 @@ export default function ProductHero({
         >
 
           <Link
-            href="#spec"
+            href="#semantic"
             className={
               styles.productHeroPrimary
             }
           >
-            スペックを見る
+            選ばれる理由を見る
           </Link>
 
           <Link

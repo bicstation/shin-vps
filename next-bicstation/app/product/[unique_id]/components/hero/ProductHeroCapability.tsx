@@ -7,108 +7,65 @@ import styles
   from './styles/ProductHeroCapability.module.css'
 
 /* ============================================================================
-🔥 Props
+🔥 Types
 ============================================================================ */
+
+type SemanticReason = {
+
+  slug?: string
+
+  title?: string
+
+  description?: string
+
+  role?: string
+
+}
 
 type Props = {
 
-  product: any
-
   semanticRuntime?: {
 
-    workflow_tags?: any[]
+    workflow_tags?: string[]
 
-    semantic_labels?: any[]
+    semantic_reasons?: SemanticReason[]
 
   }
 
 }
 
 /* ============================================================================
-🔥 Helpers
+🔥 Workflow Labels
 ============================================================================ */
 
-function getText(
-  value: any
+function getWorkflowLabel(
+  tag: string
 ): string {
 
-  if (
-    value == null
-  ) {
+  const labels:
+    Record<string, string> = {
 
-    return ''
+      'usage-ai':
+        'AI開発・生成AI',
 
-  }
+      'usage-gaming':
+        'FPS・ゲームプレイ',
 
-  if (
-    typeof value === 'string'
-  ) {
+      'usage-creator':
+        '動画編集・制作',
 
-    return value
+      'usage-business':
+        'ビジネス用途',
 
-  }
+      'usage-mobile':
+        'モバイル利用',
 
-  if (
-    typeof value === 'number'
-  ) {
-
-    return String(value)
-
-  }
+    }
 
   return (
-
-    value?.title
-    || value?.label
-    || value?.name
-    || value?.slug
-    || ''
-
+    labels[tag]
+    || tag
   )
-
-}
-
-function parseStrengths(
-  strengths: any
-): string[] {
-
-  if (!strengths) {
-
-    return []
-
-  }
-
-  if (
-    Array.isArray(
-      strengths
-    )
-  ) {
-
-    return strengths
-
-  }
-
-  try {
-
-    const parsed =
-
-      JSON.parse(
-        strengths
-      )
-
-    return Array.isArray(
-      parsed
-    )
-      ? parsed
-      : []
-
-  }
-
-  catch {
-
-    return []
-
-  }
 
 }
 
@@ -118,53 +75,47 @@ function parseStrengths(
 
 export default function ProductHeroCapability({
 
-  product,
   semanticRuntime,
 
 }: Props) {
-
-  const strengths =
-
-    parseStrengths(
-      product?.strengths
-    )
 
   const workflowTags =
 
     semanticRuntime
       ?.workflow_tags
 
-      ||
+    ||
 
-      []
+    []
 
-  const semanticLabels =
+  const semanticReasons =
 
     semanticRuntime
-      ?.semantic_labels
+      ?.semantic_reasons
 
-      ||
+    ||
 
-      []
+    []
 
-  const capabilityCards = [
-
-    ...strengths,
+  const cards = [
 
     ...workflowTags.map(
-      getText
+      getWorkflowLabel
     ),
 
-    ...semanticLabels.map(
-      getText
-    ),
+    ...semanticReasons
+      .slice(0, 6)
+      .map(
+        reason =>
+          reason.title
+      ),
 
   ]
     .filter(Boolean)
     .slice(0, 12)
 
   if (
-    capabilityCards.length === 0
+    cards.length === 0
   ) {
 
     return null
@@ -194,7 +145,7 @@ export default function ProductHeroCapability({
             styles.heroCapabilityLabel
           }
         >
-          CAPABILITIES
+          WORKFLOW EXPERIENCE
         </div>
 
         <h2
@@ -202,7 +153,7 @@ export default function ProductHeroCapability({
             styles.heroCapabilityTitle
           }
         >
-          このPCで実現できること
+          この製品で実現できること
         </h2>
 
         <p
@@ -210,8 +161,8 @@ export default function ProductHeroCapability({
             styles.heroCapabilityDescription
           }
         >
-          Semantic Runtime が検出した
-          利用シーン・ワークフロー・特徴を表示しています。
+          Semantic Runtime が判定した
+          利用シーンと主要な特徴です。
         </p>
 
       </div>
@@ -228,7 +179,8 @@ export default function ProductHeroCapability({
 
         {
 
-          capabilityCards.map(
+          cards.map(
+
             (
               card,
               index
@@ -252,29 +204,10 @@ export default function ProductHeroCapability({
               </div>
 
             )
+
           )
 
         }
-
-      </div>
-
-      {/* ==========================================================
-      FOOTER
-      ========================================================== */}
-
-      <div
-        className={
-          styles.heroCapabilityFooter
-        }
-      >
-
-        <div
-          className={
-            styles.heroCapabilityFooterText
-          }
-        >
-          Backend Semantic Authority Runtime に基づく利用可能領域
-        </div>
 
       </div>
 

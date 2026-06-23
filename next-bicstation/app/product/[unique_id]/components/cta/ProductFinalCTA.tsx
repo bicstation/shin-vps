@@ -1,4 +1,7 @@
-// next-bicstation/app/product/[unique_id]/components/cta/ProductFinalCTA.tsx
+// ============================================================================
+// FILE:
+// app/product/[unique_id]/components/cta/ProductFinalCTA.tsx
+// ============================================================================
 
 import Link
   from 'next/link'
@@ -6,13 +9,27 @@ import Link
 import styles
   from './cta.module.css'
 
+/* ============================================================================
+🔥 Props
+============================================================================ */
+
 type Props = {
+
   product: any
+
+  semanticRuntime?: {
+
+    semantic_summary?: string
+
+    workflow_tags?: string[]
+
+  }
+
 }
 
-/* =========================================
-🔥 HELPERS
-========================================= */
+/* ============================================================================
+🔥 Helpers
+============================================================================ */
 
 function buildPriceText(
   product: any
@@ -21,7 +38,9 @@ function buildPriceText(
   if (
     !product?.price
   ) {
+
     return null
+
   }
 
   return `¥${Number(
@@ -35,30 +54,93 @@ function buildCTA(
 ) {
 
   return (
+
     product?.affiliate_url
-    || product?.url
-    || '#'
+
+    ||
+
+    product?.url
+
+    ||
+
+    '#'
+
   )
 
 }
 
-/* =========================================
-🔥 COMPONENT
-========================================= */
+function getWorkflowLabel(
+  tag: string
+): string {
+
+  const labels:
+    Record<string, string> = {
+
+      'usage-ai':
+        'AI開発',
+
+      'usage-creator':
+        '動画編集',
+
+      'usage-gaming':
+        'FPS Gaming',
+
+      'usage-business':
+        'ビジネス',
+
+      'usage-mobile':
+        'モバイル',
+
+    }
+
+  return (
+    labels[tag]
+    || tag
+  )
+
+}
+
+/* ============================================================================
+🔥 Component
+============================================================================ */
 
 export default function ProductFinalCTA({
+
   product,
+
+  semanticRuntime,
+
 }: Props) {
 
   const price =
+
     buildPriceText(
       product
     )
 
   const href =
+
     buildCTA(
       product
     )
+
+  const summary =
+
+    semanticRuntime
+      ?.semantic_summary
+
+    ||
+
+    ''
+
+  const workflowTags =
+
+    semanticRuntime
+      ?.workflow_tags
+
+    ||
+
+    []
 
   return (
 
@@ -68,19 +150,15 @@ export default function ProductFinalCTA({
       }
     >
 
-      {/* ==================================
-      CARD
-      ================================== */}
-
       <div
         className={
           styles.finalCTACard
         }
       >
 
-        {/* ==============================
+        {/* ======================================================
         LABEL
-        ============================== */}
+        ====================================================== */}
 
         <div
           className={
@@ -90,52 +168,109 @@ export default function ProductFinalCTA({
           FINAL DECISION
         </div>
 
-        {/* ==============================
+        {/* ======================================================
         TITLE
-        ============================== */}
+        ====================================================== */}
 
         <h2
           className={
             styles.finalCTATitle
           }
         >
-          このPCを
-          最終候補としてチェックする
+          この製品を最終候補として確認する
         </h2>
 
-        {/* ==============================
-        DESCRIPTION
-        ============================== */}
+        {/* ======================================================
+        SUMMARY
+        ====================================================== */}
 
-        <p
-          className={
-            styles.finalCTADescription
-          }
-        >
-          gaming・AI・creator用途など、
-          幅広い用途で使いやすい
-          バランス構成です。
-        </p>
+        {
 
-        {/* ==============================
+          summary && (
+
+            <p
+              className={
+                styles.finalCTADescription
+              }
+            >
+              {summary}
+            </p>
+
+          )
+
+        }
+
+        {/* ======================================================
+        WORKFLOW
+        ====================================================== */}
+
+        {
+
+          workflowTags.length > 0 && (
+
+            <div
+              className={
+                styles.finalCTAChips
+              }
+            >
+
+              {
+
+                workflowTags.map(
+
+                  (
+                    tag,
+                    index
+                  ) => (
+
+                    <div
+                      key={index}
+                      className={
+                        styles.finalCTAChip
+                      }
+                    >
+                      {
+                        getWorkflowLabel(
+                          tag
+                        )
+                      }
+                    </div>
+
+                  )
+
+                )
+
+              }
+
+            </div>
+
+          )
+
+        }
+
+        {/* ======================================================
         PRICE
-        ============================== */}
+        ====================================================== */}
 
-        {price && (
+        {
 
-          <div
-            className={
-              styles.finalCTAPrice
-            }
-          >
-            {price}
-          </div>
+          price && (
 
-        )}
+            <div
+              className={
+                styles.finalCTAPrice
+              }
+            >
+              {price}
+            </div>
 
-        {/* ==============================
+          )
+
+        }
+
+        {/* ======================================================
         ACTIONS
-        ============================== */}
+        ====================================================== */}
 
         <div
           className={
@@ -148,11 +283,13 @@ export default function ProductFinalCTA({
 
             target="_blank"
 
+            rel="noopener noreferrer"
+
             className={
               styles.finalCTAPrimary
             }
           >
-            🔥 最新価格を見る
+            最新価格・在庫を確認する
           </Link>
 
           <Link
@@ -162,14 +299,14 @@ export default function ProductFinalCTA({
               styles.finalCTASecondary
             }
           >
-            ⚡ 他のランキングも比較
+            他のおすすめ製品も比較する
           </Link>
 
         </div>
 
-        {/* ==============================
+        {/* ======================================================
         FOOTER
-        ============================== */}
+        ====================================================== */}
 
         <div
           className={
@@ -182,8 +319,8 @@ export default function ProductFinalCTA({
               styles.finalCTAFooterText
             }
           >
-            ✔ comparison・semantic analysis をもとに、
-            安心して比較しやすい構成です。
+            購入前に価格・在庫・販売条件を
+            公式販売ページで確認できます。
           </div>
 
         </div>
@@ -193,4 +330,5 @@ export default function ProductFinalCTA({
     </section>
 
   )
+
 }

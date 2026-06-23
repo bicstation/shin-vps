@@ -1,0 +1,254 @@
+/* ============================================================================
+🔥 Product Workflow Experience
+SHIN CORE LINX
+============================================================================ */
+
+/* ============================================================================
+🔥 ROOT
+============================================================================ */
+
+.workflow {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 24px;
+
+}
+
+/* ============================================================================
+🔥 HEADER
+============================================================================ */
+
+.header {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 8px;
+
+}
+
+.title {
+
+  margin: 0;
+
+  color: #ffffff;
+
+  font-size: clamp(
+    28px,
+    3vw,
+    40px
+  );
+
+  font-weight: 900;
+
+  line-height: 1.1;
+
+}
+
+.description {
+
+  margin: 0;
+
+  color: #94a3b8;
+
+  font-size: 15px;
+
+  line-height: 1.7;
+
+}
+
+/* ============================================================================
+🔥 WORKFLOW CHIPS
+============================================================================ */
+
+.chips {
+
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 12px;
+
+}
+
+.chip {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  min-height: 44px;
+
+  padding: 0 18px;
+
+  border-radius: 999px;
+
+  background:
+    rgba(
+      59,
+      130,
+      246,
+      0.12
+    );
+
+  border:
+    1px solid
+    rgba(
+      59,
+      130,
+      246,
+      0.25
+    );
+
+  backdrop-filter:
+    blur(12px);
+
+  color:
+    #bfdbfe;
+
+  font-size: 13px;
+
+  font-weight: 800;
+
+  transition:
+    transform .2s ease,
+    background .2s ease,
+    border-color .2s ease;
+
+}
+
+.chip:hover {
+
+  transform:
+    translateY(-2px);
+
+  background:
+    rgba(
+      59,
+      130,
+      246,
+      0.18
+    );
+
+  border-color:
+    rgba(
+      96,
+      165,
+      250,
+      0.45
+    );
+
+}
+
+/* ============================================================================
+🔥 WORKFLOW CARD MODE
+Future V2
+============================================================================ */
+
+.cardGrid {
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(
+        220px,
+        1fr
+      )
+    );
+
+  gap: 16px;
+
+}
+
+.card {
+
+  padding: 20px;
+
+  border-radius: 20px;
+
+  background:
+    rgba(
+      255,
+      255,
+      255,
+      0.03
+    );
+
+  border:
+    1px solid
+    rgba(
+      255,
+      255,
+      255,
+      0.08
+    );
+
+}
+
+.cardTitle {
+
+  margin: 0 0 8px;
+
+  color: #ffffff;
+
+  font-size: 16px;
+
+  font-weight: 800;
+
+}
+
+.cardDescription {
+
+  margin: 0;
+
+  color: #94a3b8;
+
+  font-size: 14px;
+
+  line-height: 1.7;
+
+}
+
+/* ============================================================================
+🔥 MOBILE
+============================================================================ */
+
+@media (max-width: 640px) {
+
+  .title {
+
+    font-size:
+      clamp(
+        24px,
+        8vw,
+        32px
+      );
+
+  }
+
+  .chips {
+
+    gap: 10px;
+
+  }
+
+  .chip {
+
+    min-height: 40px;
+
+    padding:
+      0 14px;
+
+    font-size: 12px;
+
+  }
+
+}
