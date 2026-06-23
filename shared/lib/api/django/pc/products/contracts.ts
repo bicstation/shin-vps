@@ -5,6 +5,33 @@
 // All rights reserved.
 // ============================================================================
 
+/**
+ * ============================================================================
+ * SHIN CORE LINX
+ * Reality Inventory Runtime Contracts
+ * ============================================================================
+ *
+ * IMPORTANT
+ *
+ * Backend remains:
+ *
+ * Reality Authority
+ *
+ * Adapter remains:
+ *
+ * Projection Authority
+ *
+ * This contract represents:
+ *
+ * Reality Inventory Runtime
+ *
+ * NOT:
+ *
+ * UI Model
+ *
+ * ============================================================================
+ */
+
 /* ============================================================================
 🔥 Semantic Attribute
 ============================================================================ */
@@ -21,7 +48,7 @@ export interface SemanticAttribute {
 }
 
 /* ============================================================================
-🔥 Product Collection Item
+🔥 Product Item
 ============================================================================ */
 
 export interface PCProductItem {
@@ -34,6 +61,8 @@ export interface PCProductItem {
 
   unique_id: string
 
+  site_prefix?: string
+
   /* ========================================================================
   Basic
   ======================================================================== */
@@ -45,6 +74,12 @@ export interface PCProductItem {
   description?: string
 
   /* ========================================================================
+  Media
+  ======================================================================== */
+
+  image_url?: string
+
+  /* ========================================================================
   URLs
   ======================================================================== */
 
@@ -52,16 +87,14 @@ export interface PCProductItem {
 
   affiliate_url?: string
 
-  image_url?: string
-
   /* ========================================================================
-  Price
+  Pricing
   ======================================================================== */
 
   price?: number
 
   /* ========================================================================
-  Specs
+  Hardware
   ======================================================================== */
 
   cpu_model?: string
@@ -73,26 +106,10 @@ export interface PCProductItem {
   storage_gb?: number
 
   /* ========================================================================
-  Scores
+  Semantic
   ======================================================================== */
-
-  spec_score?: number
-
-  score_cpu?: number
-
-  score_gpu?: number
-
-  score_ai?: number
-
-  score_cost?: number
-
-  score_portable?: number
 
   semantic_score?: number
-
-  /* ========================================================================
-  Collection Semantics
-  ======================================================================== */
 
   semantic_role?: string
 
@@ -102,22 +119,22 @@ export interface PCProductItem {
 
   confidence?: number
 
-  icon?: string
-
-  color?: string
-
   /* ========================================================================
   Discovery
   ======================================================================== */
 
-  attributes?: SemanticAttribute[]
-
-  grouped_attributes?: Record<
-    string,
-    SemanticAttribute[]
-  >
+  grouped_attributes?:
+    Record<string, SemanticAttribute[]>
 
   semantic_schema_version?: number
+
+  /* ========================================================================
+  Metadata
+  ======================================================================== */
+
+  updated_at?: string
+
+  created_at?: string
 
   /* ========================================================================
   Raw Backup
@@ -127,18 +144,101 @@ export interface PCProductItem {
 }
 
 /* ============================================================================
+🔥 Inventory Meaning
+============================================================================ */
+
+export interface InventoryMeaning {
+
+  identity?: string
+
+  mission?: string
+
+  user_intent?: string
+
+  meaning_statement?: string
+
+  existence_reason?: string
+}
+
+/* ============================================================================
+🔥 Inventory SEO
+============================================================================ */
+
+export interface InventorySEO {
+
+  title?: string
+
+  description?: string
+
+  keywords?: string[]
+
+  canonical?: string
+
+  schema_jsonld?: any
+}
+
+/* ============================================================================
+🔥 Inventory Runtime
+============================================================================ */
+
+export interface InventoryRuntime {
+
+  count: number
+
+  page: number
+
+  page_size: number
+
+  has_next: boolean
+}
+
+/* ============================================================================
 🔥 Products Runtime
 ============================================================================ */
 
 export interface ProductsRuntime {
 
-  success: boolean
+  /* ========================================================================
+  Meaning Layer
+  ======================================================================== */
+
+  meaning?: InventoryMeaning
+
+  seo?: InventorySEO
+
+  /* ========================================================================
+  Inventory Runtime
+  ======================================================================== */
+
+  inventory: InventoryRuntime
+
+  /* ========================================================================
+  Products
+  ======================================================================== */
 
   products: PCProductItem[]
+
+  /* ========================================================================
+  Runtime Authority
+  ======================================================================== */
+
+  semantic_schema_version?: number
+
+  authority_version?: string
+
+  semantic_authority?: string
+
+  ready?: boolean
+
+  /* ========================================================================
+  Raw Backup
+  ======================================================================== */
+
+  raw?: any
 }
 
 /* ============================================================================
-🔥 Products Response
+🔥 Legacy Compatibility
 ============================================================================ */
 
 export type PCProductsResponse =

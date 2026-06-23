@@ -1,150 +1,284 @@
+// app/sitemap.ts
+
 import type {
-  MetadataRoute,
+MetadataRoute,
 } from 'next'
 
 import {
-  DiscoverDetailRuntime
-}
-from '@/shared/lib/api/django/pc/discover-detail'
+fetchProducts,
+} from '@/shared/lib/api/django/pc/products'
 
 import {
-  fetchSemanticRankingRuntime
-}
-from '@/shared/lib/api/django/pc/ranking'
+fetchNavigationRuntime,
+} from '@/shared/lib/api/django/pc/navigation'
 
 const BASE_URL =
-  'https://bicstation.com'
+'https://bicstation.com'
 
-type SitemapEntry = {
-  url: string
-  lastModified: Date
-  changeFrequency:
-    | 'always'
-    | 'hourly'
-    | 'daily'
-    | 'weekly'
-    | 'monthly'
-    | 'yearly'
-    | 'never'
-  priority: number
-}
+const INCLUDE_RANKING =
+false
 
 export default async function sitemap():
 Promise<MetadataRoute.Sitemap> {
 
-  const now = new Date()
+const now = new Date()
 
-  // ======================================
-  // TIER 1
-  // CORE DISCOVERY
-  // ======================================
+const urls: MetadataRoute.Sitemap = [
 
-  const corePages: SitemapEntry[] = [
-    {
-      url: `${BASE_URL}`,
-      lastModified: now,
-      changeFrequency: 'daily',
-      priority: 1.0,
-    },
-    {
-      url: `${BASE_URL}/discover`,
-      lastModified: now,
-      changeFrequency: 'daily',
-      priority: 0.9,
-    },
-    {
-      url: `${BASE_URL}/finder`,
-      lastModified: now,
-      changeFrequency: 'daily',
-      priority: 0.9,
-    },
-    {
-      url: `${BASE_URL}/ranking`,
-      lastModified: now,
-      changeFrequency: 'daily',
-      priority: 0.9,
-    },
-  ]
 
-  // ======================================
-  // DISCOVERY RUNTIME
-  // ======================================
+{
+  url:
+    `${BASE_URL}`,
 
-  const discoveryRuntime =
-    await DiscoverDetailRuntime()
+  lastModified:
+    now,
 
-  const discoveryPages: SitemapEntry[] =
-    discoveryRuntime.shelves.map(
-      (shelf) => ({
+  changeFrequency:
+    'daily',
+
+  priority:
+    1.0,
+},
+
+{
+  url:
+    `${BASE_URL}/discover`,
+
+  lastModified:
+    now,
+
+  changeFrequency:
+    'daily',
+
+  priority:
+    0.9,
+},
+
+{
+  url:
+    `${BASE_URL}/finder`,
+
+  lastModified:
+    now,
+
+  changeFrequency:
+    'daily',
+
+  priority:
+    0.9,
+},
+
+{
+  url:
+    `${BASE_URL}/ranking`,
+
+  lastModified:
+    now,
+
+  changeFrequency:
+    'daily',
+
+  priority:
+    0.9,
+},
+
+
+]
+
+/* =========================================================
+
+* Navigation Runtime
+* ======================================================= */
+
+try {
+
+
+const navigationRuntime =
+  await fetchNavigationRuntime()
+
+const navigationItems =
+  navigationRuntime?.navigation
+  ?? []
+
+urls.push(
+
+  ...navigationItems
+
+    .filter(
+      item =>
+        Boolean(
+          item?.slug
+        )
+    )
+
+    .map(
+      item => ({
+
         url:
-          `${BASE_URL}/discover/${shelf.slug}`,
-        lastModified: now,
-        changeFrequency: 'daily',
-        priority: 0.8,
+          `${BASE_URL}/discover/${item.slug}`,
+
+        lastModified:
+          now,
+
+        changeFrequency:
+          'daily' as const,
+
+        priority:
+          0.8,
+
       })
     )
 
-  // ======================================
-  // RANKING RUNTIME
-  // ======================================
+)
 
-  const rankingRuntime =
-    await fetchRankingRuntime()
+if (
+  INCLUDE_RANKING
+) {
 
-  const rankingPages: SitemapEntry[] =
-    rankingRuntime.rankings.map(
-      (ranking) => ({
-        url:
-          `${BASE_URL}/ranking/${ranking.slug}`,
-        lastModified: now,
-        changeFrequency: 'daily',
-        priority: 0.8,
-      })
-    )
+  urls.push(
 
-  // ======================================
-  // INVENTORY RUNTIME
-  // ======================================
+    ...navigationItems
 
-  const inventoryRuntime =
-    await fetchInventoryRuntime()
+      .filter(
+        item =>
+          Boolean(
+            item?.slug
+          )
+      )
 
-  const productPages: SitemapEntry[] =
-    inventoryRuntime.products.map(
-      (product) => ({
-        url:
-          `${BASE_URL}/product/${product.unique_id}`,
-        lastModified: now,
-        changeFrequency: 'weekly',
-        priority: 0.7,
-      })
-    )
+      .map(
+        item => ({
 
-  // ======================================
-  // MERGE
-  // ======================================
+          url:
+            `${BASE_URL}/ranking/${item.slug}`,
 
-  const urls = [
-    ...corePages,
-    ...discoveryPages,
-    ...rankingPages,
-    ...productPages,
-  ]
+          lastModified:
+            now,
 
-  // ======================================
-  // DEDUPLICATION
-  // ======================================
+          changeFrequency:
+            'daily' as const,
 
-  const uniqueUrls =
-    Array.from(
-      new Map(
-        urls.map((item) => [
-          item.url,
-          item,
-        ])
-      ).values()
-    )
+          priority:
+            0.8,
 
-  return uniqueUrls
+        })
+      )
+
+  )
+
 }
 
+console.log(
+  '🔥 SITEMAP NAVIGATION',
+  {
+    count:
+      navigationItems.length,
+  }
+)
+
+
+}
+
+catch (error) {
+
+
+console.error(
+  'SITEMAP NAVIGATION ERROR',
+  error
+)
+
+
+}
+
+/* =========================================================
+
+* Product Runtime
+* ======================================================= */
+
+try {
+
+
+const runtime =
+  await fetchProducts()
+
+const products =
+
+  runtime?.products
+  ?? []
+
+urls.push(
+
+  ...products
+
+    .filter(
+      product =>
+        Boolean(
+          product?.unique_id
+        )
+    )
+
+    .map(
+      product => ({
+
+        url:
+          `${BASE_URL}/product/${product.unique_id}`,
+
+        lastModified:
+          now,
+
+        changeFrequency:
+          'weekly' as const,
+
+        priority:
+          0.7,
+
+      })
+    )
+
+)
+
+console.log(
+  '🔥 SITEMAP PRODUCTS',
+  {
+    count:
+      products.length,
+  }
+)
+
+
+}
+
+catch (error) {
+
+
+console.error(
+  'SITEMAP PRODUCT ERROR',
+  error
+)
+
+
+}
+
+/* =========================================================
+
+* DEDUP
+* ======================================================= */
+
+return Array.from(
+
+
+new Map(
+
+  urls.map(
+    item => [
+      item.url,
+      item,
+    ]
+  )
+
+).values()
+
+
+)
+
+}

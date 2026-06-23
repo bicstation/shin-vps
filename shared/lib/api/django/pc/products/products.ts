@@ -1,7 +1,48 @@
 // ============================================================================
 // FILE:
 // /shared/lib/api/django/pc/products/products.ts
+// Copyright (c) 2024 Shin Corporation.
+// All rights reserved.
 // ============================================================================
+
+/**
+ * ============================================================================
+ * SHIN CORE LINX
+ * Reality Inventory Runtime Gateway
+ * ============================================================================
+ *
+ * PURPOSE
+ *
+ * GET /api/pc/products/
+ *
+ * ↓
+ *
+ * Reality Inventory Runtime
+ *
+ * IMPORTANT
+ *
+ * This layer MUST NOT:
+ *
+ * ❌ generate meaning
+ * ❌ generate seo
+ * ❌ generate inventory
+ * ❌ generate products
+ * ❌ mutate backend authority
+ *
+ * RESPONSIBILITY
+ *
+ * Transport
+ * ↓
+ * Normalize
+ * ↓
+ * Runtime
+ *
+ * ============================================================================
+ */
+
+/* ============================================================================
+🔥 Utils
+============================================================================ */
 
 import {
 
@@ -15,15 +56,23 @@ import {
 
 } from '../utils/safeFetch'
 
+/* ============================================================================
+🔥 Contracts
+============================================================================ */
+
 import type {
 
   ProductsRuntime,
 
 } from './contracts'
 
+/* ============================================================================
+🔥 Normalize
+============================================================================ */
+
 import {
 
-  normalizeProducts,
+  normalizeProductsRuntime,
 
 } from './normalize'
 
@@ -32,68 +81,35 @@ import {
 ============================================================================ */
 
 const PRODUCTS_ENDPOINT =
+
   '/pc/products/'
 
 /* ============================================================================
-🔥 Fetch Products
+🔥 Fetch Products Runtime
 ============================================================================ */
 
 export async function fetchProducts(
 
-  params?: Record<
-    string,
-    string | number | boolean
-  >
-
 ): Promise<ProductsRuntime> {
-
-  const query =
-
-    params
-
-      ? `?${
-          new URLSearchParams(
-            Object.entries(
-              params
-            ).reduce(
-              (
-                acc,
-                [key, value]
-              ) => {
-
-                acc[key] =
-                  String(value)
-
-                return acc
-
-              },
-              {} as Record<
-                string,
-                string
-              >
-            )
-          )
-        }`
-
-      : ''
-
-  const endpoint =
-
-    buildEndpoint(
-      `${PRODUCTS_ENDPOINT}${query}`
-    )
 
   console.log(
     '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
   )
 
   console.log(
-    '🔥 FETCH PRODUCTS'
+    '🔥 FETCH PRODUCTS RUNTIME'
   )
 
-  console.log({
-    endpoint,
-  })
+  const endpoint =
+
+    buildEndpoint(
+      PRODUCTS_ENDPOINT
+    )
+
+  console.log(
+    '🔥 PRODUCTS ENDPOINT',
+    endpoint
+  )
 
   console.log(
     '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
@@ -105,27 +121,58 @@ export async function fetchProducts(
       endpoint
     )
 
-  const products =
+  console.log(
+    '🔥 PRODUCTS RAW PAYLOAD',
+    {
 
-    normalizeProducts(
+      count:
+        payload?.data?.count,
+
+      page:
+        payload?.data?.page,
+
+      page_size:
+        payload?.data?.page_size,
+
+      has_next:
+        payload?.data?.has_next,
+
+      products:
+        payload?.data?.products?.length,
+    }
+  )
+
+  const runtime =
+
+    normalizeProductsRuntime(
       payload
     )
 
   console.log(
     '🔥 PRODUCTS RUNTIME',
     {
-      count:
-        products.length,
+
+      inventory_count:
+        runtime?.inventory?.count,
+
+      page:
+        runtime?.inventory?.page,
+
+      page_size:
+        runtime?.inventory?.page_size,
+
+      has_next:
+        runtime?.inventory?.has_next,
+
+      products:
+        runtime?.products?.length,
+
+      authority:
+        runtime?.semantic_authority,
     }
   )
 
-  return {
-
-    success:
-      !!payload,
-
-    products,
-  }
+  return runtime
 }
 
 /* ============================================================================
