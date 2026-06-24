@@ -21,6 +21,10 @@ def build_product_traversal(
 
     return {
 
+        # --------------------------------------------------
+        # Identity
+        # --------------------------------------------------
+
         "product_id":
             product.id,
 
@@ -41,6 +45,10 @@ def build_product_traversal(
                 ""
             ),
 
+        # --------------------------------------------------
+        # Commerce
+        # --------------------------------------------------
+
         "price":
             getattr(
                 product,
@@ -54,6 +62,10 @@ def build_product_traversal(
                 "image_url",
                 ""
             ),
+
+        # --------------------------------------------------
+        # Reality Layer
+        # --------------------------------------------------
 
         "semantic_attributes":
 
@@ -69,6 +81,47 @@ def build_product_traversal(
                 []
             ),
 
+        "reality_scores":
+
+            runtime.get(
+                "reality_scores",
+                {}
+            ),
+
+        # --------------------------------------------------
+        # Meaning Layer
+        # --------------------------------------------------
+
+        "product_type":
+
+            runtime.get(
+                "product_type"
+            ),
+
+        "primary_workflow":
+
+            runtime.get(
+                "primary_workflow"
+            ),
+
+        "workflow_score":
+
+            runtime.get(
+                "workflow_score",
+                0
+            ),
+
+        "semantic_score":
+
+            runtime.get(
+                "semantic_score",
+                0
+            ),
+
+        # --------------------------------------------------
+        # Workflow
+        # --------------------------------------------------
+
         "workflow_tags":
 
             runtime.get(
@@ -76,11 +129,56 @@ def build_product_traversal(
                 []
             ),
 
+        "workflows":
+
+            runtime.get(
+                "workflows",
+                []
+            ),
+
+        # --------------------------------------------------
+        # Human Labels
+        # --------------------------------------------------
+
         "semantic_labels":
 
             runtime.get(
                 "semantic_labels",
                 []
+            ),
+
+        # --------------------------------------------------
+        # Adaptive Runtime
+        # --------------------------------------------------
+
+        "adaptive_runtime":
+
+            runtime.get(
+                "adaptive_runtime",
+                {}
+            ),
+
+        # --------------------------------------------------
+        # Runtime Metadata
+        # --------------------------------------------------
+
+        "semantic_version":
+
+            runtime.get(
+                "semantic_version"
+            ),
+
+        "semantic_authority":
+
+            runtime.get(
+                "semantic_authority"
+            ),
+
+        "runtime_valid":
+
+            runtime.get(
+                "runtime_valid",
+                False
             ),
     }
 

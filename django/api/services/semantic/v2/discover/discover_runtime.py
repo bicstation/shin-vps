@@ -19,6 +19,9 @@ from api.services.semantic.v2.seo.seo_runtime import (
     build_discovery_seo,
 )
 
+from api.services.semantic.v2.discover.discover_insight_runtime import (
+    build_discover_insight_runtime,
+)
 
 # ==========================================================
 # DISCOVERY
@@ -36,6 +39,10 @@ def build_discover_runtime():
 
     meaning = (
         build_discovery_meaning()
+    )
+
+    insights = (
+        build_discover_insight_runtime()
     )
 
     # ------------------------------------------------------
@@ -204,7 +211,7 @@ def build_discover_runtime():
         # ----------------------------------------------
         # REALITY
         # ----------------------------------------------
-
+        
         "data": {
 
             "product_count":
@@ -223,6 +230,9 @@ def build_discover_runtime():
 
             "shelves":
                 shelves,
+
+            "insights":
+                insights,
         },
 
         # ----------------------------------------------

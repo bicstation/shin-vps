@@ -17,7 +17,6 @@ from api.services.semantic.v2.seo.seo_runtime import (
     build_finder_seo,
 )
 
-
 # ==========================================================
 # SCORE
 # ==========================================================
@@ -30,7 +29,6 @@ def calculate_match_score(
 ):
 
     if not filters:
-
         return 0
 
     groups = set(
@@ -41,9 +39,25 @@ def calculate_match_score(
         )
     )
 
-    return len(
-        groups & set(filters)
+    attributes = set(
+
+        product.get(
+            "semantic_attributes",
+            []
+        )
     )
+
+    score = 0
+
+    for value in filters:
+
+        if value in groups:
+            score += 3
+
+        if value in attributes:
+            score += 1
+
+    return score
 
 
 # ==========================================================
@@ -113,16 +127,6 @@ def build_finder_runtime(
 
     matches = []
     
-    print(
-        "🔥 FINDER FILTERS",
-        {
-            "filters":
-                filters,
-
-            "max_price":
-                max_price,
-        }
-    )
     
     for product in traversal.get(
         "products",
@@ -147,22 +151,6 @@ def build_finder_runtime(
             and
             price > max_price
         ):
-            
-            print(
-                "🔥 PRICE FILTER",
-                {
-                    "name":
-                        product.get(
-                            "name"
-                        ),
-
-                    "price":
-                        price,
-
-                    "max_price":
-                        max_price,
-                }
-            )
             
             continue
 
@@ -200,6 +188,16 @@ def build_finder_runtime(
                 0
             ),
 
+            x.get(
+                "semantic_score",
+                0
+            ),
+
+            x.get(
+                "workflow_score",
+                0
+            ),
+
             len(
 
                 x.get(
@@ -211,10 +209,7 @@ def build_finder_runtime(
 
         reverse=True,
     )
-
-    matches = (
-        matches[:limit]
-    )
+    
 
     # ------------------------------------------------------
     # SEO
