@@ -80,6 +80,11 @@ def persist_runtime(
 
         {}
     )
+    
+    product_type = semantic_runtime.get(
+        "product_type"
+    )
+    
 
     # =====================================================
     # OBSERVABILITY RUNTIME
@@ -111,6 +116,10 @@ def persist_runtime(
     # =====================================================
     # PROJECTION
     # =====================================================
+    
+    product.product_type = (
+        product_type
+    )
 
     product.workflow_tags = (
         workflow_tags
@@ -232,6 +241,8 @@ def persist_runtime(
             "semantic_runtime_compiled",
 
             "semantic_updated_at",
+            
+            "product_type",
         ]
     )
 

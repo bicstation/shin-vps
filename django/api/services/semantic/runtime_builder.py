@@ -70,6 +70,18 @@ from api.services.semantic.semantic_graph import (
 )
 
 # ==========================================================
+# ?????????
+# ==========================================================
+
+from api.utils.semantic.extraction.extract_pc_specs import (
+    extract_pc_specs,
+)
+
+from api.services.semantic.semantic_runtime import (
+    calculate_semantic_score,
+)
+
+# ==========================================================
 # TEXT SOURCES
 # ==========================================================
 
@@ -345,6 +357,10 @@ def build_meta_runtime(runtime):
         "compiled"
     )
 
+    runtime["semantic_score"] = (
+        calculate_semantic_score(runtime)
+    )
+
     return runtime
 
 
@@ -439,6 +455,31 @@ def build_product_runtime(
     runtime = build_full_semantic_runtime(
         source_text
     )
+    
+    specs = extract_pc_specs(
+        product
+    )
+
+    cpu_specs = specs.get("cpu", [])
+    gpu_specs = specs.get("gpu", [])
+    memory_specs = specs.get("memory", [])
+    storage_specs = specs.get("storage", [])
+    display_specs = specs.get("display", [])
+
+    if cpu_specs:
+        runtime["cpu_model"] = cpu_specs[0]
+
+    if gpu_specs:
+        runtime["gpu_model"] = gpu_specs[0]
+
+    if memory_specs:
+        runtime["memory_gb"] = memory_specs[0]
+
+    if storage_specs:
+        runtime["storage_gb"] = storage_specs[0]
+
+    if display_specs:
+        runtime["display_type"] = display_specs[0]
 
     # ======================================================
     # Product Identity
