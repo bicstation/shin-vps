@@ -13,16 +13,6 @@ import Link
   from 'next/link'
 
 /* ============================================================================
-🔥 Types
-============================================================================ */
-
-// import type {
-
-//   NavigationItem,
-
-// } from '../../types/discover'
-
-/* ============================================================================
 🔥 Styles
 ============================================================================ */
 
@@ -57,19 +47,34 @@ export default function UniverseCard({
 
 }: Props) {
 
+  const backgroundImage =
+
+    `/images/discover/${item.group_slug}.png`
+
   return (
 
     <Link
-
       href={
         `/discover/${item.group_slug}`
       }
-
       className={
         styles.universeCard
       }
-
+        style={{
+          backgroundImage:
+            `url(${backgroundImage})`,
+          backgroundSize:
+            'cover',
+          backgroundPosition:
+            'center',
+        }}
     >
+
+    <div
+      className={
+        styles.universeCardOverlay
+      }
+    />
 
       {/* ==========================================================
       ICON
@@ -80,21 +85,15 @@ export default function UniverseCard({
           styles.universeCardIcon
         }
       >
-
         <SemanticIcon
-
           icon={
             item.icon
           }
-
           color={
             item.color
           }
-
           size={24}
-
         />
-
       </div>
 
       {/* ==========================================================
@@ -106,27 +105,20 @@ export default function UniverseCard({
           styles.universeCardContent
         }
       >
-
         <h3
           className={
             styles.universeCardTitle
           }
         >
-
           {item.group_name}
-
         </h3>
-
         <p
           className={
             styles.universeCardDescription
           }
         >
-
           Semantic Attribute
-
         </p>
-
       </div>
 
       {/* ==========================================================
@@ -140,22 +132,13 @@ export default function UniverseCard({
       >
 
         <span>
-
           Explore
-
         </span>
-
         <span>
-
           →
-
         </span>
-
       </div>
-
     </Link>
-
-
 
   )
 

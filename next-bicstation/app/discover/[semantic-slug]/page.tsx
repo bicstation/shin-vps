@@ -54,6 +54,9 @@ import NotFoundState
 import Breadcrumb
   from './components/Breadcrumb'
 
+import FeaturedProduct
+  from './components/FeaturedProduct'
+
 /* ============================================================================
 🔥 Styles
 ============================================================================ */
@@ -241,65 +244,40 @@ export default function DiscoverDetailPage({
         runtime={runtime}
       />
 
-      {/* ==========================================================
-      Hero
-      ========================================================== */}
-
       <SemanticHero
-
-        runtime={
-          runtime
-        }
-
+        runtime={runtime}
       />
 
-      {/* ==========================================================
-      Aliases
-      ========================================================== */}
+      <FeaturedProduct
+        product={
+          runtime.sample_products[0]
+        }
+      />
 
       {
-
-        runtime.aliases.length > 0 && (
-
-          <SemanticAliases
-
-            aliases={
-              runtime.aliases
+        hasProducts && (
+          
+          <ProductGrid
+            products={
+              runtime.sample_products.slice(1)
             }
-
           />
 
         )
-
       }
-
-      {/* ==========================================================
-      Products
-      ========================================================== */}
 
       {
+        runtime.aliases.length > 0 && (
 
-        hasProducts
+          <SemanticAliases
+            aliases={runtime.aliases}
+          />
 
-          ? (
-
-            <ProductGrid
-
-              products={
-                runtime.sample_products
-              }
-
-            />
-
-          )
-
-          : (
-
-            <EmptyProducts />
-
-          )
-
+        )
       }
+
+
+
 
     </main>
 

@@ -9,11 +9,11 @@
 🔥 Types
 ============================================================================ */
 
-import type {
+// import type {
 
-  NavigationItem,
+//   NavigationItem,
 
-} from '../../types/discover'
+// } from '../../types/discover'
 
 /* ============================================================================
 🔥 Styles

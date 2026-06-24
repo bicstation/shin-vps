@@ -1,9 +1,16 @@
 // ============================================================================
 // FILE:
-// /app/discover/[semantic-slug]/components/SemanticHero.tsx
+// /app/discover/[semantic-slug]/components/RepresentativeProducts.tsx
 // ============================================================================
 
 'use client'
+
+/* ============================================================================
+🔥 Components
+============================================================================ */
+
+import ProductCard
+  from './ProductCard'
 
 /* ============================================================================
 🔥 Runtime
@@ -27,102 +34,94 @@ import styles
 ============================================================================ */
 
 type Props = {
+
   runtime:
     DiscoverDetailRuntime
+
 }
 
 /* ============================================================================
-🔥 Semantic Hero
+🔥 Representative Products
 ============================================================================ */
 
-export default function SemanticHero({
+export default function RepresentativeProducts({
 
   runtime,
 
 }: Props) {
 
-  const heroImage =
+  const products =
 
-    `/images/discover/${runtime.group_slug}.png`
+    runtime.sample_products
+      .slice(0, 3)
+
+  if (
+    products.length === 0
+  ) {
+    return null
+  }
 
   return (
 
     <section
       className={
-        styles.semanticHero
+        styles.representativeSection
       }
-
-      style={{
-
-        backgroundImage:
-          `url(${heroImage})`,
-
-      }}
     >
 
       <div
         className={
-          styles.semanticHeroOverlay
-        }
-      />
-
-      <div
-        className={
-          styles.semanticHeroContent
+          styles.sectionHeader
         }
       >
 
-        {/* LABEL */}
-
-        <div
+        <h2
           className={
-            styles.semanticHeroLabel
+            styles.sectionTitle
           }
         >
-          DISCOVER UNIVERSE
-        </div>
 
-        {/* TITLE */}
+          この世界を代表するPC
 
-        <h1
+        </h2>
+
+        <p
           className={
-            styles.semanticHeroTitle
+            styles.sectionDescription
           }
         >
-          {runtime.group_name}
-        </h1>
 
-        {/* DESCRIPTION */}
+          まず確認したい代表的なモデル
 
-        {
+        </p>
 
-          runtime.description && (
+      </div>
 
-            <p
-              className={
-                styles.semanticHeroDescription
+      <div
+        className={
+          styles.productGrid
+        }
+      >
+
+        {products.map(
+
+          (product) => (
+
+            <ProductCard
+
+              key={
+                product.unique_id
               }
-            >
-              {runtime.description}
-            </p>
+
+              product={
+                product
+              }
+
+            />
 
           )
 
-        }
-
-        {/* META */}
-
-        <div
-          className={
-            styles.semanticHeroMeta
-          }
-        >
-
-          {runtime.product_count ?? 0}
-
-          {' '}製品
-
-        </div>
+        )}
 
       </div>
 
@@ -131,5 +130,3 @@ export default function SemanticHero({
   )
 
 }
-
-

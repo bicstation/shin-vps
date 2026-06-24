@@ -142,6 +142,11 @@
 ============================================================================ */
 
 .universeCard {
+
+  position: relative;
+
+  overflow: hidden;
+
   display: flex;
 
   align-items: flex-start;
@@ -239,5 +244,33 @@
     grid-template-columns:
       1fr;
   }
+
+}
+
+
+.universeCardOverlay {
+
+  position: absolute;
+
+  inset: 0;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(2,6,23,.30),
+      rgba(2,6,23,.85)
+    );
+
+  pointer-events: none;
+
+}
+
+.universeCardContent,
+.universeCardIcon,
+.universeCardMeta {
+
+  position: relative;
+
+  z-index: 2;
 
 }

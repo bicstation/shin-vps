@@ -290,7 +290,7 @@ run_django compile_human_runtime \
 log "🧠 (04-3/12) Semantic Analyze"
 
 run_django compile_semantic_runtime \
-  --limit $AI_SEMANTIC_LIMIT \
+  # --limit $AI_SEMANTIC_LIMIT \
   --needs-runtime
 
 

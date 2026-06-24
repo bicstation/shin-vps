@@ -16,11 +16,11 @@ import styles
 🔥 Types
 ============================================================================ */
 
-import type {
+// import type {
 
-  DiscoverMeaning,
+//   DiscoverMeaning,
 
-} from '../../types/discover'
+// } from '../../types/discover'
 
 /* ============================================================================
 🔥 Props
@@ -60,7 +60,7 @@ export default function DiscoverHero({
           styles.heroLabel
         }
       >
-        SEMANTIC UNIVERSE
+        DISCOVERY GATEWAY
       </div>
 
       {/* ==========================================================
@@ -79,7 +79,7 @@ export default function DiscoverHero({
 
           ||
 
-          'Semantic Universe Gateway'
+          'PCの選び方から探す'
 
         }
 
@@ -101,7 +101,7 @@ export default function DiscoverHero({
 
           ||
 
-          'Semantic Universe への入口を提供する'
+          '用途・性能・メーカーなどから、自分に合うPCを見つける'
 
         }
 
