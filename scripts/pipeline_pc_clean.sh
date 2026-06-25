@@ -5,6 +5,32 @@
 # /home/maya/shin-vps/scripts/pc_pipeline_semantic.sh
 # ==========================================================
 
+# ./pipeline.sh \
+#     --import all \
+#     --transform all \
+#     --ai-spec 20 \
+#     --ai-summary 20 \
+#     --ai-semantic 20 \
+#     --runtime all \
+#     --image-cache 50
+# # AI処理を全部20件
+# ./pipeline.sh --local --ai 20
+# # Summaryだけ5件
+# ./pipeline.sh --local --ai 20 --ai-summary 5
+# # Semanticだけ全件
+# ./pipeline.sh --local --ai 20 --ai-semantic all
+# # AIは実行せず画像だけ
+# ./pipeline.sh --local --image-cache 100
+# 
+# # AI処理を全部20件
+# ./pipeline.sh --prod --ai 20
+# # Summaryだけ5件
+# ./pipeline.sh --prod --ai 20 --ai-summary 5
+# # Semanticだけ全件
+# ./pipeline.sh --prod --ai 20 --ai-semantic all
+# # AIは実行せず画像だけ
+# ./pipeline.sh --prod --image-cache 100
+
 set -e
 
 export PATH=/usr/local/bin:/usr/bin:/bin
@@ -15,10 +41,11 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 # Runtime Variables
 # ==========================================================
 
-AI_SPEC_LIMIT=10
-AI_SUMMARY_LIMIT=10
-AI_SEMANTIC_LIMIT=10
-IMAGE_CACHE_LIMIT=10
+AI_SPEC_LIMIT=0
+AI_SUMMARY_LIMIT=0
+AI_SEMANTIC_LIMIT=0
+IMAGE_CACHE_LIMIT=0
+
 
 # ==========================================================
 # Project Root Topology
@@ -38,57 +65,72 @@ source "$PROJECT_ROOT/.env.pc"
 
 RUNTIME="local"
 
-for ARG in "$@"
+
+while [ $# -gt 0 ]
 do
 
-  case "$ARG" in
+    case "$1" in
 
-    # ------------------------------------------------------
-    # Local
-    # ------------------------------------------------------
+        --ai)
 
-    --local)
+            AI_SPEC_LIMIT="$2"
+            AI_SUMMARY_LIMIT="$2"
+            AI_SEMANTIC_LIMIT="$2"
+            shift 2
+            ;;
 
-      RUNTIME="local"
-      ;;
+        --ai-spec)
 
-    # ------------------------------------------------------
-    # Staging
-    # ------------------------------------------------------
+            AI_SPEC_LIMIT="$2"
+            shift 2
+            ;;
 
-    --stg)
+        --ai-summary)
 
-      RUNTIME="stg"
-      ;;
+            AI_SUMMARY_LIMIT="$2"
+            shift 2
+            ;;
 
-    # ------------------------------------------------------
-    # Production
-    # ------------------------------------------------------
+        --ai-semantic)
 
-    --prod)
+            AI_SEMANTIC_LIMIT="$2"
+            shift 2
+            ;;
 
-      RUNTIME="prod"
-      ;;
+        --image-cache)
 
-    # ------------------------------------------------------
-    # Unknown
-    # ------------------------------------------------------
+            IMAGE_CACHE_LIMIT="$2"
+            shift 2
+            ;;
 
-    *)
+        --local)
 
-      echo "❌ Unknown argument: $ARG"
+            RUNTIME="local"
+            shift
+            ;;
 
-      echo ""
-      echo "Usage:"
-      echo "  ./pc_pipeline_.sh --local"
-      echo "  ./pc_pipeline_semantic.sh --stg"
-      echo "  ./pc_pipeline_semantic.sh --prod"
+        --stg)
 
-      exit 1
-      ;;
-  esac
+            RUNTIME="stg"
+            shift
+            ;;
+
+        --prod)
+
+            RUNTIME="prod"
+            shift
+            ;;
+
+        *)
+
+            echo "Unknown option: $1"
+            exit 1
+            ;;
+
+    esac
 
 done
+
 
 # ==========================================================
 # Environment Mapping
@@ -381,15 +423,17 @@ run_django audit_semantic_universe
 # ⑧ 08 Product Score Runtime
 # ==========================================================
 
-log "📊 (08/12) Update Product Scores"
-run_django update_product_scores
+# log "📊 (08/12) Update Product Scores"
+# run_django update_product_scores
 
 # ==========================================================
 # ⑨ 09 Semantic Runtime Build
 # ==========================================================
 
-log "🚀 (09/12) Build Semantic Runtime"
+# log "🚀 (09/12) Build Semantic Runtime"
+log "🚀 (09/12) Build Unified Runtime"
 # run_django rebuild_semantic_runtime
+run_django rebuild_unified_runtime
 
 # ==========================================================
 # ⑩ 10 Image Cache
@@ -433,23 +477,20 @@ check_api \
 # ==========================================================
 # ⑫ 11 Semantic Runtime Validation
 # ==========================================================
-
-
 log "🧠 (11-4/12) Validate Semantic Runtime"
 
-run_django shell -c "
-
+run_django shell <<'PYTHON'
 from api.models import PCProduct
 
-count = PCProduct.objects.exclude(
-    semantic_runtime__isnull=True
+count = PCProduct.objects.filter(
+    semantic_runtime__semantic_version='unified_v1'
 ).count()
 
-print(f'SEMANTIC_RUNTIME_COUNT={count}')
+print(f'UNIFIED_RUNTIME_COUNT={count}')
 
 if count <= 0:
-    raise Exception('semantic runtime empty')
-"
+    raise Exception('unified runtime empty')
+PYTHON
 
 # ==========================================================
 # ⑬ 12 Semantic Related Validation
@@ -457,7 +498,7 @@ if count <= 0:
 
 log "🔗 (12/12) Validate Semantic Related"
 
-run_django shell -c "
+run_django shell <<'PYTHON'
 
 from api.models import PCProduct
 
@@ -468,9 +509,12 @@ sample = PCProduct.objects.exclude(
 if not sample:
     raise Exception('no semantic sample')
 
-print(sample.name)
-print(sample.semantic_runtime)
-"
+print(sample.semantic_runtime.get('semantic_version'))
+print(sample.semantic_runtime.get('product_type'))
+print(sample.semantic_runtime.get('semantic_score'))
+print(sample.semantic_runtime.get('workflow_score'))
+
+PYTHON
 
 # ==========================================================
 # DONE

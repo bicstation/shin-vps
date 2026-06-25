@@ -32,15 +32,6 @@ def build_discover_universe_runtime():
         build_navigation_runtime()
     )
     
-    # universes = (
-
-    #     build_universe_index(
-
-    #         # navigation.get( "intents", [] )
-    #         authority.get("groups", [])
-    #     )
-    # )
-    
     universes = (
 
         authority.get(
@@ -60,7 +51,7 @@ def build_discover_universe_runtime():
     # ------------------------------------------------------
     # SUMMARY
     # ------------------------------------------------------
-
+    
     summary = {
 
         "navigation_count":
@@ -100,7 +91,34 @@ def build_discover_universe_runtime():
                 "product_count",
                 0
             ),
+
+        "average_semantic_score":
+
+            discover.get(
+                "data",
+                {}
+            ).get(
+                "insights",
+                {}
+            ).get(
+                "average_semantic_score",
+                0
+            ),
+
+        "average_workflow_score":
+
+            discover.get(
+                "data",
+                {}
+            ).get(
+                "insights",
+                {}
+            ).get(
+                "average_workflow_score",
+                0
+            ),
     }
+
 
     # ------------------------------------------------------
     # PAYLOAD
@@ -187,6 +205,15 @@ def build_discover_universe_runtime():
 # ==========================================================
 # UNIVERSE INDEX
 # ==========================================================
+"""
+Legacy helper.
+
+Reserved for future
+dynamic universe generation.
+
+Current V2 authority:
+authority_runtime.py
+"""
 
 def build_universe_index(
 
