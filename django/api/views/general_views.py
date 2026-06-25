@@ -566,7 +566,7 @@ class PCProductListAPIView(
             "-created_at",
         )
 
-        return queryset[:100]
+        return queryset
 
     # ======================================================
     # LIST
