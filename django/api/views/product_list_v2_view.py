@@ -28,16 +28,23 @@ from api.services.semantic.v2.inventory.inventory_runtime import (
 def semantic_product_list_v2(
     request,
 ):
-
-    page = request.GET.get(
-        "page",
-        1
+    page = int(
+        request.GET.get(
+            "page",
+            1,
+        )
     )
 
-    page_size = request.GET.get(
-        "page_size",
-        10000
+    page_size = min(
+        int(
+            request.GET.get(
+                "page_size",
+                20,
+            )
+        ),
+        100,
     )
+
 
     payload = (
 

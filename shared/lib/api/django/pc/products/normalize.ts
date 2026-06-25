@@ -46,155 +46,179 @@ export function normalizeProductsRuntime(
     )
 
       ? source.products.map(
-          (
-            item: any
-          ): PCProductItem => ({
+        (
+          item: any
+        ): PCProductItem => ({
 
-            /* ====================================
-            Identity
-            ==================================== */
+          /* ====================================
+          Identity
+          ==================================== */
 
-            id:
-              item?.id,
+          id:
+            item?.id,
 
-            unique_id:
-              item?.unique_id || '',
+          unique_id:
+            item?.unique_id || '',
 
-            site_prefix:
-              item?.site_prefix,
+          site_prefix:
+            item?.site_prefix,
 
-            /* ====================================
-            Basic
-            ==================================== */
+          /* ====================================
+          Basic
+          ==================================== */
 
-            name:
-              item?.name || '',
+          name:
+            item?.name || '',
 
-            maker:
-              item?.maker,
+          maker:
+            item?.maker,
 
-            description:
-              item?.description,
+          description:
+            item?.description,
 
-            /* ====================================
-            Media
-            ==================================== */
+          /* ====================================
+          Media
+          ==================================== */
 
-            image_url:
-              item?.image_url,
+          image_url:
+            item?.image_url,
 
-            /* ====================================
-            URLs
-            ==================================== */
+          /* ====================================
+          URLs
+          ==================================== */
 
-            url:
-              item?.url,
+          url:
+            item?.url,
 
-            affiliate_url:
-              item?.affiliate_url,
+          affiliate_url:
+            item?.affiliate_url,
 
-            /* ====================================
-            Pricing
-            ==================================== */
+          /* ====================================
+          Pricing
+          ==================================== */
 
-            price:
-              item?.price,
+          price:
+            item?.price,
 
-            /* ====================================
-            Hardware
-            ==================================== */
+          /* ====================================
+          Hardware
+          ==================================== */
 
-            cpu_model:
-              item?.cpu_model,
+          cpu_model:
+            item?.cpu_model,
 
-            gpu_model:
-              item?.gpu_model,
+          gpu_model:
+            item?.gpu_model,
 
-            memory_gb:
-              item?.memory_gb,
+          memory_gb:
+            item?.memory_gb,
 
-            storage_gb:
-              item?.storage_gb,
+          storage_gb:
+            item?.storage_gb,
 
-            /* ====================================
-            Semantic
-            ==================================== */
+          /* ====================================
+          Semantic
+          ==================================== */
 
-            semantic_score:
-              item?.semantic_score,
+          semantic_score:
+            item?.semantic_score,
 
-            semantic_role:
-              item?.semantic_role,
+          semantic_role:
+            item?.semantic_role,
 
-            semantic_weight:
-              item?.semantic_weight,
+          semantic_weight:
+            item?.semantic_weight,
 
-            recommendation_reason:
-              item?.recommendation_reason,
+          recommendation_reason:
+            item?.recommendation_reason,
 
-            confidence:
-              item?.confidence,
+          confidence:
+            item?.confidence,
 
-            /* ====================================
-            Discovery
-            ==================================== */
+          /* ====================================
+          Discovery
+          ==================================== */
 
-            grouped_attributes:
+          grouped_attributes:
 
-              item?.grouped_attributes
+            item?.grouped_attributes
 
-              ||
+            ||
 
-              {},
+            {},
 
-            semantic_schema_version:
+          semantic_schema_version:
 
-              item?.semantic_schema_version,
+            item?.semantic_schema_version,
 
-            /* ====================================
-            Metadata
-            ==================================== */
+          /* ====================================
+          Metadata
+          ==================================== */
 
-            created_at:
-              item?.created_at,
+          created_at:
+            item?.created_at,
 
-            updated_at:
-              item?.updated_at,
+          updated_at:
+            item?.updated_at,
 
-            /* ====================================
-            Raw Backup
-            ==================================== */
+          /* ====================================
+          Raw Backup
+          ==================================== */
 
-            raw:
-              item,
-          })
-        )
+          raw:
+            item,
+        })
+      )
 
       : []
+
+  /* ========================================================================
+  Observability
+  ======================================================================== */
 
   console.log(
     '🔥 PRODUCTS NORMALIZE',
     {
 
-      count:
+      products:
         products.length,
 
-      inventory_count:
+      count:
         source?.count,
 
       page:
         source?.page,
 
+      page_size:
+        source?.page_size,
+
       has_next:
         source?.has_next,
+
+      semantic_schema_version:
+        payload?.semantic_schema_version,
+
+      authority_version:
+        payload?.authority_version,
+
+      semantic_authority:
+        payload?.semantic_authority,
+
+      ready:
+        payload?.ready,
     }
   )
 
+
   /* ========================================================================
-  Runtime
+  Runtime Projection
   ======================================================================== */
 
   return {
+
+    /* ====================================
+    Meaning
+    ==================================== */
 
     meaning:
 
@@ -204,6 +228,10 @@ export function normalizeProductsRuntime(
 
       {},
 
+    /* ====================================
+    SEO
+    ==================================== */
+
     seo:
 
       payload?.seo
@@ -212,22 +240,37 @@ export function normalizeProductsRuntime(
 
       {},
 
-    inventory: {
+    /* ====================================
+    Inventory Reality
+    ==================================== */
 
-      count:
-        source?.count || 0,
+    count:
 
-      page:
-        source?.page || 1,
+      source?.count ?? 0,
 
-      page_size:
-        source?.page_size || 0,
+    page:
 
-      has_next:
-        !!source?.has_next,
-    },
+      source?.page ?? 1,
+
+    page_size:
+
+      source?.page_size ?? 0,
+
+    has_next:
+
+      Boolean(
+        source?.has_next
+      ),
+
+    /* ====================================
+    Products
+    ==================================== */
 
     products,
+
+    /* ====================================
+    Runtime Authority
+    ==================================== */
 
     semantic_schema_version:
 
@@ -245,11 +288,16 @@ export function normalizeProductsRuntime(
 
       payload?.ready,
 
+    /* ====================================
+    Raw Backup
+    ==================================== */
+
     raw:
 
       payload,
   }
 }
+
 
 /* ============================================================================
 🔥 Default Export

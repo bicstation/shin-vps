@@ -85,10 +85,24 @@ const PRODUCTS_ENDPOINT =
   '/pc/products/'
 
 /* ============================================================================
+🔥 Fetch Options
+============================================================================ */
+
+export interface FetchProductsOptions {
+
+  page?: number
+
+  pageSize?: number
+
+}
+
+/* ============================================================================
 🔥 Fetch Products Runtime
 ============================================================================ */
 
 export async function fetchProducts(
+
+  options?: FetchProductsOptions
 
 ): Promise<ProductsRuntime> {
 
@@ -100,10 +114,60 @@ export async function fetchProducts(
     '🔥 FETCH PRODUCTS RUNTIME'
   )
 
+  /* ========================================================================
+  Query
+  ======================================================================== */
+
+  const query =
+
+    new URLSearchParams()
+
+  if (
+
+    options?.page !== undefined
+
+  ) {
+
+    query.set(
+
+      'page',
+
+      String(options.page)
+
+    )
+
+  }
+
+  if (
+
+    options?.pageSize !== undefined
+
+  ) {
+
+    query.set(
+
+      'page_size',
+
+      String(options.pageSize)
+
+    )
+
+  }
+
+  /* ========================================================================
+  Endpoint
+  ======================================================================== */
+
   const endpoint =
 
     buildEndpoint(
-      PRODUCTS_ENDPOINT
+
+      query.toString()
+
+        ? `${PRODUCTS_ENDPOINT}?${query.toString()}`
+
+        : PRODUCTS_ENDPOINT
+
     )
 
   console.log(
@@ -139,6 +203,18 @@ export async function fetchProducts(
 
       products:
         payload?.data?.products?.length,
+
+      semantic_schema_version:
+        payload?.semantic_schema_version,
+
+      authority_version:
+        payload?.authority_version,
+
+      semantic_authority:
+        payload?.semantic_authority,
+
+      ready:
+        payload?.ready,
     }
   )
 
@@ -152,27 +228,37 @@ export async function fetchProducts(
     '🔥 PRODUCTS RUNTIME',
     {
 
-      inventory_count:
-        runtime?.inventory?.count,
+      count:
+        runtime?.count,
 
       page:
-        runtime?.inventory?.page,
+        runtime?.page,
 
       page_size:
-        runtime?.inventory?.page_size,
+        runtime?.page_size,
 
       has_next:
-        runtime?.inventory?.has_next,
+        runtime?.has_next,
 
       products:
         runtime?.products?.length,
 
-      authority:
+      semantic_schema_version:
+        runtime?.semantic_schema_version,
+
+      authority_version:
+        runtime?.authority_version,
+
+      semantic_authority:
         runtime?.semantic_authority,
+
+      ready:
+        runtime?.ready,
     }
   )
 
   return runtime
+
 }
 
 /* ============================================================================

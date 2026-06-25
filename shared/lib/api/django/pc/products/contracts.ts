@@ -29,6 +29,14 @@
  *
  * UI Model
  *
+ * Adapter SHALL:
+ *
+ * Transport
+ * Normalize
+ * Project
+ *
+ * ONLY
+ *
  * ============================================================================
  */
 
@@ -124,7 +132,7 @@ export interface PCProductItem {
   ======================================================================== */
 
   grouped_attributes?:
-    Record<string, SemanticAttribute[]>
+  Record<string, SemanticAttribute[]>
 
   semantic_schema_version?: number
 
@@ -132,9 +140,9 @@ export interface PCProductItem {
   Metadata
   ======================================================================== */
 
-  updated_at?: string
-
   created_at?: string
+
+  updated_at?: string
 
   /* ========================================================================
   Raw Backup
@@ -178,21 +186,6 @@ export interface InventorySEO {
 }
 
 /* ============================================================================
-🔥 Inventory Runtime
-============================================================================ */
-
-export interface InventoryRuntime {
-
-  count: number
-
-  page: number
-
-  page_size: number
-
-  has_next: boolean
-}
-
-/* ============================================================================
 🔥 Products Runtime
 ============================================================================ */
 
@@ -207,10 +200,16 @@ export interface ProductsRuntime {
   seo?: InventorySEO
 
   /* ========================================================================
-  Inventory Runtime
+  Inventory Reality
   ======================================================================== */
 
-  inventory: InventoryRuntime
+  count: number
+
+  page: number
+
+  page_size: number
+
+  has_next: boolean
 
   /* ========================================================================
   Products
