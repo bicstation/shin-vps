@@ -1,15 +1,14 @@
 #!/bin/bash
 # ============================================================================
 # SHIN CORE LINX
-# Catalog Experience V1
+# Ranking Experience V2
 # Frontend Scaffold
 # ============================================================================
 
-BASE="/home/maya/shin-vps/next-bicstation/app/catalog"
-
+BASE="/home/maya/shin-dev/shin-vps/next-bicstation/app/ranking"
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "Creating Catalog Experience V1"
+echo "Creating Ranking Experience V2"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 # ----------------------------------------------------------------------------
@@ -22,7 +21,7 @@ mkdir -p "$BASE/styles"
 mkdir -p "$BASE/types"
 
 # ----------------------------------------------------------------------------
-# Pages
+# Page
 # ----------------------------------------------------------------------------
 
 touch "$BASE/page.tsx"
@@ -33,40 +32,41 @@ touch "$BASE/page.tsx"
 
 touch "$BASE/components/Breadcrumb.tsx"
 
-touch "$BASE/components/CatalogHero.tsx"
+touch "$BASE/components/RankingHero.tsx"
 
-touch "$BASE/components/CatalogSummary.tsx"
+touch "$BASE/components/FeaturedRanking.tsx"
 
-touch "$BASE/components/ProductGrid.tsx"
+touch "$BASE/components/RankingTabs.tsx"
 
-touch "$BASE/components/ProductCard.tsx"
+touch "$BASE/components/RankingSummary.tsx"
 
-touch "$BASE/components/Pagination.tsx"
+touch "$BASE/components/RankingGrid.tsx"
 
-touch "$BASE/components/EmptyProducts.tsx"
+touch "$BASE/components/RankingCard.tsx"
+
+touch "$BASE/components/EmptyRanking.tsx"
 
 # ----------------------------------------------------------------------------
 # Hooks
 # ----------------------------------------------------------------------------
 
-touch "$BASE/hooks/useCatalog.ts"
+touch "$BASE/hooks/useRanking.ts"
 
 # ----------------------------------------------------------------------------
 # Types
 # ----------------------------------------------------------------------------
 
-touch "$BASE/types/catalog.ts"
+touch "$BASE/types/ranking.ts"
 
 # ----------------------------------------------------------------------------
 # Styles
 # ----------------------------------------------------------------------------
 
-touch "$BASE/styles/catalog.module.css"
+touch "$BASE/styles/ranking.module.css"
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "Catalog Experience V1 Scaffold Complete"
+echo "Ranking Experience V2 Scaffold Complete"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 tree "$BASE"
-

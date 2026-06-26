@@ -1,18 +1,46 @@
 // ============================================================================
 // FILE:
-// /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/components/RankingCardGrid.tsx
+// /app/ranking/components/RankingCardGrid.tsx
+// Copyright (c) 2024 Shin Corporation.
+// All rights reserved.
 // ============================================================================
 
-import styles from '../RankingPage.module.css'
+'use client'
 
-import RankingCard from './RankingCard'
+/* ============================================================================
+🔥 Components
+============================================================================ */
 
-import {
-  getHumanSummary,
-} from '../lib/humanSummary'
+import RankingCard
+    from './RankingCard'
+
+/* ============================================================================
+🔥 Types
+============================================================================ */
+
+import type {
+
+    RankingItem,
+
+} from '../types/ranking'
+
+/* ============================================================================
+🔥 Styles
+============================================================================ */
+
+import styles
+    from '../styles/ranking.module.css'
+
+/* ============================================================================
+🔥 Props
+============================================================================ */
 
 type Props = {
-  items: any[]
+
+    items:
+
+        RankingItem[]
+
 }
 
 /* ============================================================================
@@ -20,30 +48,53 @@ type Props = {
 ============================================================================ */
 
 export default function RankingCardGrid({
-  items,
+
+    items,
+
 }: Props) {
 
-  return (
+    return (
 
-    <section className={styles.cardSection}>
-
-      <div className={styles.cardGrid}>
-
-        {items.map((attr: any) => (
-
-          <RankingCard
-            key={attr.slug}
-            attr={attr}
-            summary={
-              getHumanSummary(attr)
+        <section
+            className={
+                styles.rankingSection
             }
-          />
+        >
 
-        ))}
+            <div
+                className={
+                    styles.rankingGrid
+                }
+            >
 
-      </div>
+                {
 
-    </section>
+                    items.map(
 
-  )
+                        item => (
+
+                            <RankingCard
+
+                                key={
+                                    item.slug
+                                }
+
+                                item={
+                                    item
+                                }
+
+                            />
+
+                        )
+
+                    )
+
+                }
+
+            </div>
+
+        </section>
+
+    )
+
 }

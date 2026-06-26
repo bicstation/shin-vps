@@ -1,0 +1,591 @@
+/* ============================================================================
+FILE:
+/app/ranking/styles/ranking.module.css
+============================================================================ */
+
+/* ============================================================================
+🔥 Layout
+============================================================================ */
+
+.ranking {
+
+    max-width: 1280px;
+
+    margin: 0 auto;
+
+    padding: 2rem;
+
+}
+
+/* ============================================================================
+🔥 Breadcrumb
+============================================================================ */
+
+.breadcrumb {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: .75rem;
+
+    margin-bottom: 2rem;
+
+    font-size: .95rem;
+
+    font-weight: 500;
+
+}
+
+.breadcrumb a {
+
+    color: #64748b;
+
+    text-decoration: none;
+
+}
+
+.breadcrumb a:hover {
+
+    color: #2563eb;
+
+}
+
+.breadcrumb span {
+
+    color: #94a3b8;
+
+}
+
+.breadcrumb span:last-child {
+
+    color: #0f172a;
+
+    font-weight: 700;
+
+}
+
+/* ============================================================================
+🔥 Hero
+============================================================================ */
+
+.rankingHero {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 3rem;
+
+    margin-bottom: 2rem;
+
+    padding: 3rem;
+
+    border-radius: 24px;
+
+    overflow: hidden;
+
+    background:
+
+        linear-gradient(
+            90deg,
+            rgba(8,18,48,.95) 0%,
+            rgba(25,45,120,.85) 45%,
+            rgba(25,45,120,.35) 100%
+        ),
+
+        url('/images/ranking/ranking_hero.png');
+
+    background-size: cover;
+
+    background-position: center right;
+
+    color: #fff;
+
+}
+
+.rankingHeroContent {
+
+    flex: 1;
+
+    max-width: 720px;
+
+}
+
+.rankingHeroLabel {
+
+    display: inline-block;
+
+    padding: .45rem 1rem;
+
+    border-radius: 999px;
+
+    background: rgba(255,255,255,.14);
+
+    font-size: .8rem;
+
+    font-weight: 700;
+
+    letter-spacing: .08em;
+
+    text-transform: uppercase;
+
+}
+
+.rankingHeroTitle {
+
+    margin-top: 1.2rem;
+
+    font-size: 2.7rem;
+
+    font-weight: 700;
+
+}
+
+.rankingHeroSubtitle {
+
+    margin-top: .8rem;
+
+    font-size: 1.2rem;
+
+    color: rgba(255,255,255,.95);
+
+}
+
+.rankingHeroDescription {
+
+    margin-top: 1.2rem;
+
+    max-width: 720px;
+
+    line-height: 1.8;
+
+    color: rgba(255,255,255,.82);
+
+}
+
+.rankingHeroStats {
+
+    display: flex;
+
+    gap: 1rem;
+
+    margin-top: 2rem;
+
+    flex-wrap: wrap;
+
+}
+
+.rankingHeroStat {
+
+    min-width: 160px;
+
+    padding: 1rem;
+
+    border-radius: 18px;
+
+    background: rgba(255,255,255,.12);
+
+    backdrop-filter: blur(8px);
+
+}
+
+.rankingHeroStatLabel {
+
+    display: block;
+
+    font-size: .8rem;
+
+    color: rgba(255,255,255,.75);
+
+}
+
+.rankingHeroStatValue {
+
+    display: block;
+
+    margin-top: .5rem;
+
+    font-size: 1.6rem;
+
+    font-weight: 700;
+
+}
+
+.rankingHeroVisual {
+
+    flex: 0 0 420px;
+
+}
+
+/* ============================================================================
+🔥 Featured Ranking
+============================================================================ */
+
+.featuredRanking {
+
+    margin: 2.5rem 0;
+
+}
+
+.featuredLabel {
+
+    margin-bottom: 1rem;
+
+    color: #2563eb;
+
+    font-weight: 700;
+
+    letter-spacing: .08em;
+
+    text-transform: uppercase;
+
+}
+
+.featuredCard {
+
+    padding: 2rem;
+
+    border-radius: 20px;
+
+    background: linear-gradient(135deg,#ffffff,#f8fbff);
+
+    border: 1px solid #dbeafe;
+
+    box-shadow: 0 10px 30px rgba(15,23,42,.08);
+
+}
+
+.featuredTitle {
+
+    font-size: 2rem;
+
+    margin-bottom: 1rem;
+
+}
+
+.featuredDescription {
+
+    color: #475569;
+
+    line-height: 1.8;
+
+}
+
+.featuredMeta {
+
+    display: flex;
+
+    gap: 1rem;
+
+    margin-top: 1.5rem;
+
+    color: #64748b;
+
+}
+
+.featuredButton {
+
+    display: inline-block;
+
+    margin-top: 2rem;
+
+    padding: .9rem 1.5rem;
+
+    border-radius: 12px;
+
+    background: #2563eb;
+
+    color: #fff;
+
+    text-decoration: none;
+
+    font-weight: 700;
+
+}
+
+/* ============================================================================
+🔥 Tabs
+============================================================================ */
+
+.rankingTabs {
+
+    display: flex;
+
+    gap: .75rem;
+
+    flex-wrap: wrap;
+
+    margin: 2rem 0;
+
+}
+
+.rankingTab,
+
+.rankingTabActive {
+
+    padding: .75rem 1.3rem;
+
+    border-radius: 999px;
+
+    border: 1px solid #dbeafe;
+
+    background: #fff;
+
+    cursor: pointer;
+
+    font-weight: 600;
+
+    transition: .2s;
+
+}
+
+.rankingTab:hover {
+
+    border-color: #2563eb;
+
+}
+
+.rankingTabActive {
+
+    background: #2563eb;
+
+    color: #fff;
+
+}
+
+/* ============================================================================
+🔥 Summary
+============================================================================ */
+
+.rankingSummary {
+
+    display: grid;
+
+    grid-template-columns: repeat(3,1fr);
+
+    gap: 1rem;
+
+    margin: 2rem 0;
+
+}
+
+.summaryItem {
+
+    padding: 1.5rem;
+
+    border-radius: 18px;
+
+    border: 1px solid #e5e7eb;
+
+    background: #fff;
+
+}
+
+.summaryLabel {
+
+    display: block;
+
+    color: #64748b;
+
+}
+
+.summaryValue {
+
+    display: block;
+
+    margin-top: .5rem;
+
+    font-size: 1.8rem;
+
+    font-weight: 700;
+
+}
+
+/* ============================================================================
+🔥 Grid
+============================================================================ */
+
+.rankingSection {
+
+    margin-top: 2rem;
+
+}
+
+.rankingGrid {
+
+    display: grid;
+
+    grid-template-columns: repeat(auto-fill,minmax(320px,1fr));
+
+    gap: 1.5rem;
+
+}
+
+/* ============================================================================
+🔥 Card
+============================================================================ */
+
+.rankingCard {
+
+    display: flex;
+
+    flex-direction: column;
+
+    padding: 1.6rem;
+
+    border-radius: 20px;
+
+    border: 1px solid #e5e7eb;
+
+    background: #fff;
+
+    text-decoration: none;
+
+    color: inherit;
+
+    transition: .2s;
+
+}
+
+.rankingCard:hover {
+
+    transform: translateY(-6px);
+
+    box-shadow: 0 14px 30px rgba(15,23,42,.10);
+
+}
+
+.rankingCardIcon {
+
+    font-size: 2rem;
+
+}
+
+.rankingCardTitle {
+
+    margin-top: 1rem;
+
+    font-size: 1.3rem;
+
+}
+
+.rankingCardDescription {
+
+    margin-top: .8rem;
+
+    color: #64748b;
+
+    line-height: 1.7;
+
+}
+
+.rankingCardMeta {
+
+    display: flex;
+
+    gap: 1rem;
+
+    margin-top: auto;
+
+    padding-top: 1.5rem;
+
+    color: #64748b;
+
+    font-size: .9rem;
+
+}
+
+.rankingCardFooter {
+
+    margin-top: 1rem;
+
+}
+
+.rankingCardLink {
+
+    color: #2563eb;
+
+    font-weight: 700;
+
+}
+
+/* ============================================================================
+🔥 Empty
+============================================================================ */
+
+.emptyRanking {
+
+    padding: 5rem 2rem;
+
+    text-align: center;
+
+    border: 2px dashed #dbeafe;
+
+    border-radius: 24px;
+
+}
+
+.emptyRankingTitle {
+
+    font-size: 1.8rem;
+
+    margin-bottom: 1rem;
+
+}
+
+.emptyRankingText {
+
+    color: #64748b;
+
+    line-height: 1.8;
+
+}
+
+/* ============================================================================
+🔥 Responsive
+============================================================================ */
+
+@media (max-width:768px) {
+
+    .ranking {
+
+        padding: 1rem;
+
+    }
+
+    .rankingHero {
+
+        flex-direction: column;
+
+        padding: 2rem;
+
+    }
+
+    .rankingHeroTitle {
+
+        font-size: 2rem;
+
+    }
+
+    .rankingSummary {
+
+        grid-template-columns: 1fr;
+
+    }
+
+    .rankingGrid {
+
+        grid-template-columns: 1fr;
+
+    }
+
+    .rankingHeroStats {
+
+        flex-direction: column;
+
+    }
+
+}

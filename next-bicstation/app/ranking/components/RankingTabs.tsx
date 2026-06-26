@@ -1,203 +1,235 @@
 // ============================================================================
 // FILE:
-// /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/components/RankingTabs.tsx
+// /app/ranking/components/RankingTabs.tsx
+// Copyright (c) 2024 Shin Corporation.
+// All rights reserved.
 // ============================================================================
 
 'use client'
 
-import styles from '../RankingPage.module.css'
-
-import {
-  PRESENTATION_COPY,
-} from '../lib/presentationCopy'
-
-type Props = {
-  groupedAttributes: any
-  groupKeys: string[]
-  activeGroup: string | null
-  onChangeGroup: (
-    groupKey: string
-  ) => void
-}
-
 /* ============================================================================
-🔥 Hero Semantic Groups
+🔥 React
 ============================================================================ */
 
-const HERO_GROUPS = [
-  'gpu',
-  'cpu',
-  'usage',
-]
+import {
+
+    useMemo,
+
+} from 'react'
+
+/* ============================================================================
+🔥 Styles
+============================================================================ */
+
+import styles
+    from '../styles/ranking.module.css'
+
+/* ============================================================================
+🔥 Types
+============================================================================ */
+
+import type {
+
+    RankingItem,
+
+} from '../types/ranking'
+
+/* ============================================================================
+🔥 Props
+============================================================================ */
+
+type Props = {
+
+    items:
+
+        RankingItem[]
+
+    activeType?:
+
+        string
+
+    onSelect?: (
+
+        type: string
+
+    ) => void
+
+}
 
 /* ============================================================================
 🔥 Ranking Tabs
 ============================================================================ */
 
 export default function RankingTabs({
-  groupedAttributes,
-  groupKeys,
-  activeGroup,
-  onChangeGroup,
+
+    items,
+
+    activeType = 'all',
+
+    onSelect,
+
 }: Props) {
 
-  /* ==========================================================================
-  🔥 Semantic Hierarchy
-  ========================================================================== */
+    /* =========================================================================
+    🔥 Runtime Groups
+    ========================================================================= */
 
-  const heroGroups =
-    groupKeys.filter(
-      (groupKey) =>
-        HERO_GROUPS.includes(groupKey)
-    )
+    const groups =
 
-  const normalGroups =
-    groupKeys.filter(
-      (groupKey) =>
-        !HERO_GROUPS.includes(groupKey)
-    )
+        useMemo(() => {
 
-  return (
+            const types =
 
-    <section className={styles.tabSection}>
+                new Set<string>()
 
-      <div className={styles.tabWrapper}>
+            items.forEach(
 
-        {/* ================================================================
-        HERO TABS
-        ================================================================ */}
+                item =>
 
-        <div className={styles.heroTabGrid}>
+                    types.add(
 
-          {heroGroups.map((groupKey) => {
+                        item.type
 
-            const group =
-              groupedAttributes[groupKey]
-
-            const meta =
-              group?.meta || {}
-
-            const presentation =
-              PRESENTATION_COPY[groupKey]
-
-            const isActive =
-              activeGroup === groupKey
-
-            return (
-
-              <button
-                key={groupKey}
-                onClick={() =>
-                  onChangeGroup(groupKey)
-                }
-                className={`
-                  ${styles.heroTab}
-                  ${isActive
-                    ? styles.heroTabActive
-                    : ''
-                  }
-                `}
-              >
-
-                {/* Glow */}
-                <div className={styles.heroTabGlow} />
-
-                {/* Inner */}
-                <div className={styles.heroTabInner}>
-
-                  {/* Label */}
-                  <div className={styles.heroTabLabel}>
-
-                    {meta.name}
-
-                  </div>
-
-                  {/* Title */}
-                  <div className={styles.heroTabTitle}>
-
-                    {presentation?.title
-                      || meta.name}
-
-                  </div>
-
-                  {/* Description */}
-                  <div className={styles.heroTabDescription}>
-
-                    {presentation?.subtitle
-                      || meta.description}
-
-                  </div>
-
-                </div>
-
-              </button>
+                    )
 
             )
-          })}
 
-        </div>
+            return [
 
-        {/* ================================================================
-        NORMAL TABS
-        ================================================================ */}
+                'all',
 
-        <div className={styles.tabContainer}>
+                ...Array.from(
 
-          {normalGroups.map((groupKey) => {
+                    types
 
-            const group =
-              groupedAttributes[groupKey]
+                ),
 
-            const meta =
-              group?.meta || {}
+            ]
 
-            const presentation =
-              PRESENTATION_COPY[groupKey]
+        }, [
 
-            const isActive =
-              activeGroup === groupKey
+            items,
 
-            return (
+        ])
 
-              <button
-                key={groupKey}
-                onClick={() =>
-                  onChangeGroup(groupKey)
-                }
-                className={`
-                  ${styles.tabButton}
-                  ${isActive
-                    ? styles.tabButtonActive
-                    : ''
-                  }
-                `}
-              >
+    /* =========================================================================
+    🔥 Label
+    ========================================================================= */
 
-                {/* Name */}
-                <div className={styles.tabName}>
+    function getLabel(
 
-                  {meta.name}
+        type: string
 
-                </div>
+    ) {
 
-                {/* Description */}
-                <div className={styles.tabDescription}>
+        switch (
 
-                  {presentation?.subtitle
-                    || meta.description}
+            type
 
-                </div>
+        ) {
 
-              </button>
+            case 'all':
 
-            )
-          })}
+                return 'すべて'
 
-        </div>
+            case 'usage':
 
-      </div>
+                return '用途別'
 
-    </section>
+            case 'performance':
 
-  )
+                return '性能別'
+
+            case 'price':
+
+                return '価格帯'
+
+            case 'maker':
+
+                return 'メーカー'
+
+            case 'new':
+
+                return '新着'
+
+            default:
+
+                return type
+
+        }
+
+    }
+
+    /* =========================================================================
+    🔥 Render
+    ========================================================================= */
+
+    return (
+
+        <section
+            className={
+                styles.rankingTabs
+            }
+        >
+
+            {
+
+                groups.map(
+
+                    type => (
+
+                        <button
+
+                            key={
+
+                                type
+
+                            }
+
+                            type="button"
+
+                            className={
+
+                                type === activeType
+
+                                    ? styles.rankingTabActive
+
+                                    : styles.rankingTab
+
+                            }
+
+                            onClick={() =>
+
+                                onSelect?.(
+
+                                    type
+
+                                )
+
+                            }
+
+                        >
+
+                            {
+
+                                getLabel(
+
+                                    type
+
+                                )
+
+                            }
+
+                        </button>
+
+                    )
+
+                )
+
+            }
+
+        </section>
+
+    )
+
 }

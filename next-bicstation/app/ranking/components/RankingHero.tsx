@@ -1,112 +1,37 @@
 // ============================================================================
 // FILE:
-// /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/components/RankingHero.tsx
+// /app/ranking/components/RankingHero.tsx
+// Copyright (c) 2024 Shin Corporation.
+// All rights reserved.
 // ============================================================================
 
 'use client'
 
-import styles from '../RankingPage.module.css'
+/* ============================================================================
+🔥 Types
+============================================================================ */
+
+import type {
+
+    RankingRuntime,
+
+} from '../types/ranking'
+
+/* ============================================================================
+🔥 Styles
+============================================================================ */
+
+import styles
+    from '../styles/ranking.module.css'
+
+/* ============================================================================
+🔥 Props
+============================================================================ */
 
 type Props = {
-  activeGroup?: string | null
-}
 
-/* ============================================================================
-🔥 Hero Floating Labels
-============================================================================ */
-
-const HERO_FLOATING_LABELS: Record<
-  string,
-  {
-    top: string
-    middle: string
-    bottom: string
-  }
-> = {
-
-  gpu: {
-    top: 'RTX',
-    middle: 'AI GPU',
-    bottom: 'Gaming',
-  },
-
-  cpu: {
-    top: 'Core Ultra',
-    middle: 'Ryzen AI',
-    bottom: 'Compute',
-  },
-
-  usage: {
-    top: 'Gaming',
-    middle: 'Creator',
-    bottom: 'Business',
-  },
-
-  maker: {
-    top: 'ASUS',
-    middle: 'MSI',
-    bottom: 'DELL',
-  },
-
-  device: {
-    top: 'Laptop',
-    middle: 'Desktop',
-    bottom: 'WS',
-  },
-
-}
-
-/* ============================================================================
-🔥 Hero Runtime Copy
-============================================================================ */
-
-const HERO_COPY: Record<
-  string,
-  {
-    eyebrow: string
-    title: string
-    description: string
-  }
-> = {
-
-  gpu: {
-
-    eyebrow:
-      'GPU PERFORMANCE RUNTIME',
-
-    title:
-      'GPU性能から\n未来のPCを探索',
-
-    description:
-      'RTX・AI・クリエイターGPUを中心に、\nsemantic performance runtime として比較探索。',
-
-  },
-
-  cpu: {
-
-    eyebrow:
-      'CPU PERFORMANCE RUNTIME',
-
-    title:
-      'CPU性能とAI処理能力を探索',
-
-    description:
-      'Core Ultra・Ryzen AIなど、\n次世代CPU performance runtime を可視化。',
-
-  },
-
-  usage: {
-
-    eyebrow:
-      'USAGE DISCOVERY RUNTIME',
-
-    title:
-      '用途から\n理想のPCを発見',
-
-    description:
-      'Gaming・Creator・Business向けPCを、\nsemantic UX runtime として探索。',
-
-  },
+    runtime:
+        RankingRuntime
 
 }
 
@@ -115,130 +40,202 @@ const HERO_COPY: Record<
 ============================================================================ */
 
 export default function RankingHero({
-  activeGroup,
+
+    runtime,
+
 }: Props) {
 
-  const heroCopy =
-    HERO_COPY[
-      activeGroup || ''
-    ]
+    /* =========================================================================
+    🔥 Runtime
+    ========================================================================= */
 
-  const floating =
-    HERO_FLOATING_LABELS[
-      activeGroup || ''
-    ]
+    const totalRankings =
 
-  return (
+        runtime.navigation.length
 
-    <section className={styles.hero}>
+    /* =========================================================================
+    🔥 Presentation
+    =========================================================================
+    TODO:
+    Replace with Presentation Runtime after Backend V2 adoption.
 
-      {/* Background */}
-      <div className={styles.heroNoise} />
+    presentation.title
+    presentation.subtitle
+    presentation.description
+    ========================================================================= */
 
-      <div className={styles.heroGlow} />
+    const title =
 
-      {/* Runtime Orb */}
-      <div className={styles.heroEnergyCore} />
+        'PCランキングから探す'
 
-      {/* Inner */}
-      <div className={styles.heroInner}>
+    const subtitle =
 
-        {/* Badge */}
-        <div className={styles.heroBadge}>
+        '用途・性能・価格・メーカーなど、あなたに合ったランキングから最適なPCを見つけましょう。'
 
-          <div className={styles.heroBadgeDot} />
+    const description =
 
-          SHIN CORE LINX
+        '総合ランキングをはじめ、AI・ゲーミング・クリエイター・ビジネスなど、目的別ランキングからおすすめ製品を比較できます。'
 
-        </div>
+    /* =========================================================================
+    🔥 Render
+    ========================================================================= */
 
-        {/* Content */}
-        <div className={styles.heroContent}>
+    return (
 
-          {/* ============================================================
-          LEFT
-          ============================================================ */}
+        <section
+            className={
+                styles.rankingHero
+            }
+        >
 
-          <div className={styles.heroLeft}>
+            {/* ==========================================================
+            LEFT
+            ========================================================== */}
 
-            <div className={styles.heroEyebrow}>
+            <div
+                className={
+                    styles.rankingHeroContent
+                }
+            >
 
-              {heroCopy?.eyebrow
-                || 'SEMANTIC DISCOVERY RUNTIME'}
+                {/* ======================================================
+                LABEL
+                ====================================================== */}
+
+                <div
+                    className={
+                        styles.rankingHeroLabel
+                    }
+                >
+
+                    RANKING EXPERIENCE
+
+                </div>
+
+                {/* ======================================================
+                TITLE
+                ====================================================== */}
+
+                <h1
+                    className={
+                        styles.rankingHeroTitle
+                    }
+                >
+
+                    {title}
+
+                </h1>
+
+                {/* ======================================================
+                SUBTITLE
+                ====================================================== */}
+
+                <p
+                    className={
+                        styles.rankingHeroSubtitle
+                    }
+                >
+
+                    {subtitle}
+
+                </p>
+
+                {/* ======================================================
+                DESCRIPTION
+                ====================================================== */}
+
+                <p
+                    className={
+                        styles.rankingHeroDescription
+                    }
+                >
+
+                    {description}
+
+                </p>
+
+                {/* ======================================================
+                STATS
+                ====================================================== */}
+
+                <div
+                    className={
+                        styles.rankingHeroStats
+                    }
+                >
+
+                    <div
+                        className={
+                            styles.rankingHeroStat
+                        }
+                    >
+
+                        <span
+                            className={
+                                styles.rankingHeroStatLabel
+                            }
+                        >
+
+                            公開ランキング
+
+                        </span>
+
+                        <strong
+                            className={
+                                styles.rankingHeroStatValue
+                            }
+                        >
+
+                            {totalRankings}
+
+                        </strong>
+
+                    </div>
+
+                    <div
+                        className={
+                            styles.rankingHeroStat
+                        }
+                    >
+
+                        <span
+                            className={
+                                styles.rankingHeroStatLabel
+                            }
+                        >
+
+                            Featured
+
+                        </span>
+
+                        <strong
+                            className={
+                                styles.rankingHeroStatValue
+                            }
+                        >
+
+                            ALL
+
+                        </strong>
+
+                    </div>
+
+                </div>
 
             </div>
 
-            <h1 className={styles.heroTitle}>
+            {/* ==========================================================
+            RIGHT
+            ========================================================== */}
 
-              {(heroCopy?.title
-                ||
-                'あなたに最適な\nPCカテゴリを探索'
-              )
-                .split('\n')
-                .map((line) => (
-                  <div key={line}>
-                    {line}
-                  </div>
-                ))}
+            <div
+                className={
+                    styles.rankingHeroVisual
+                }
+            />
 
-            </h1>
+        </section>
 
-            <p className={styles.heroDescription}>
+    )
 
-              {(heroCopy?.description
-                ||
-                'semantic ontology runtime を、人間中心UXへ翻訳。'
-              )
-                .split('\n')
-                .map((line) => (
-                  <div key={line}>
-                    {line}
-                  </div>
-                ))}
-
-            </p>
-
-          </div>
-
-          {/* ============================================================
-          RIGHT
-          ============================================================ */}
-
-          <div className={styles.heroOrbArea}>
-
-            {/* Orb */}
-            <div className={styles.heroOrb} />
-
-            <div className={styles.heroOrbRing} />
-
-            <div className={styles.heroOrbRing2} />
-
-            {/* Floating Labels */}
-            <div className={styles.heroFloating}>
-
-              {floating?.top || 'Gaming'}
-
-            </div>
-
-            <div className={styles.heroFloating2}>
-
-              {floating?.middle || 'AI'}
-
-            </div>
-
-            <div className={styles.heroFloating3}>
-
-              {floating?.bottom || 'Creator'}
-
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
-
-    </section>
-
-  )
 }

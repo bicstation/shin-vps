@@ -1,153 +1,52 @@
 // ============================================================================
 // FILE:
-// /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/types/ranking.ts
+// /app/ranking/types/ranking.ts
+// Copyright (c) 2024 Shin Corporation.
+// All rights reserved.
 // ============================================================================
 
-/* ============================================================================
-🔥 Semantic Attribute
-============================================================================ */
-
-export type SemanticAttribute = {
-
-  slug?: string
-
-  name?: string
-
-  icon?: string
-
-  color?: string
-
-  count?: number
-
-  semantic_role?: string
-
-  semantic_weight?: number
-
-}
+/**
+ * ============================================================================
+ * SHIN CORE LINX
+ * Ranking Experience V2
+ * ============================================================================
+ *
+ * Frontend Experience Types
+ *
+ * Backend
+ * ↓
+ * Adapter
+ * ↓
+ * Frontend
+ *
+ * Frontend SHALL consume the Navigation Runtime directly.
+ *
+ * ============================================================================
+ */
 
 /* ============================================================================
-🔥 Semantic Group Meta
+🔥 Navigation Runtime
 ============================================================================ */
 
-export type SemanticGroupMeta = {
+import type {
 
-  name?: string
+    NavigationRuntime,
+    NavigationRuntimeItem,
 
-  short_name?: string
-
-  description?: string
-
-  icon?: string
-
-  color?: string
-
-  semantic_role?: string
-
-  semantic_weight?: number
-
-}
+} from '@/shared/lib/api/django/pc/navigation/contracts'
 
 /* ============================================================================
-🔥 Semantic Group Runtime
+🔥 Ranking Runtime
 ============================================================================ */
 
-export type SemanticGroupRuntime = {
+export type RankingRuntime =
 
-  meta?: SemanticGroupMeta
-
-  items?: SemanticAttribute[]
-
-}
+    NavigationRuntime
 
 /* ============================================================================
-🔥 Semantic Grouped Attributes Runtime
+🔥 Ranking Item
 ============================================================================ */
 
-export type SemanticGroupedAttributesRuntime =
+export type RankingItem =
 
-  Record<
-    string,
-    SemanticGroupRuntime
-  >
-
-/* ============================================================================
-🔥 Ranking Runtime Props
-============================================================================ */
-
-export type RankingRuntimeProps = {
-
-  groupedAttributes:
-    SemanticGroupedAttributesRuntime
-
-  groupKeys:
-    string[]
-
-  initialGroup:
-    string | null
-
-}
-
-/* ============================================================================
-🔥 Ranking Tabs Props
-============================================================================ */
-
-export type RankingTabsProps = {
-
-  groupedAttributes:
-    SemanticGroupedAttributesRuntime
-
-  groupKeys:
-    string[]
-
-  activeGroup:
-    string | null
-
-  onChangeGroup:
-    (
-      groupKey: string
-    ) => void
-
-}
-
-/* ============================================================================
-🔥 Ranking Active Header Props
-============================================================================ */
-
-export type RankingActiveHeaderProps = {
-
-  meta?: SemanticGroupMeta
-
-  presentation?: {
-
-    title?: string
-
-    subtitle?: string
-
-    hero?: string
-
-  }
-
-}
-
-/* ============================================================================
-🔥 Ranking Card Props
-============================================================================ */
-
-export type RankingCardProps = {
-
-  attr?: SemanticAttribute
-
-  summary?: string
-
-}
-
-/* ============================================================================
-🔥 Ranking Card Grid Props
-============================================================================ */
-
-export type RankingCardGridProps = {
-
-  items?:
-    SemanticAttribute[]
-
-}
+    NavigationRuntimeItem

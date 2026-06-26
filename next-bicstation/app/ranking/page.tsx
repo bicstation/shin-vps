@@ -1,60 +1,233 @@
 // ============================================================================
 // FILE:
-// /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/page.tsx
+// /app/ranking/page.tsx
+// Copyright (c) 2024 Shin Corporation.
+// All rights reserved.
 // ============================================================================
 
-import {
-  fetchSemanticGroupedAttributes,
-} from '@/shared/lib/api/django/pc/semantic/fetchSemanticGroupedAttributes'
-
-import {
-  RankingRuntime,
-} from './components'
+'use client'
 
 /* ============================================================================
-🔥 Dynamic Runtime
+🔥 Hook
 ============================================================================ */
 
-export const dynamic =
-  'force-dynamic'
+import useRanking
+    from './hooks/useRanking'
 
 /* ============================================================================
-🔥 Page
+🔥 Components
 ============================================================================ */
 
-export default async function RankingPage() {
+import Breadcrumb
+    from './components/Breadcrumb'
 
-  /* ==========================================================================
-  🔥 Fetch Runtime
-  ========================================================================== */
+import RankingHero
+    from './components/RankingHero'
 
-  const data =
-    await fetchSemanticGroupedAttributes()
+import FeaturedRanking
+    from './components/FeaturedRanking'
 
-  /* ==========================================================================
-  🔥 Semantic Runtime
-  ========================================================================== */
+import RankingTabs
+    from './components/RankingTabs'
 
-  const groupedAttributes =
-    data.grouped_attributes || {}
+import RankingSummary
+    from './components/RankingSummary'
 
-  const groupKeys =
-    Object.keys(groupedAttributes)
+import RankingCardGrid
+    from './components/RankingCardGrid'
 
-  const initialGroup =
-    groupKeys[0] || null
+import EmptyRanking
+    from './components/EmptyRanking'
 
-  /* ==========================================================================
-  🔥 Render
-  ========================================================================== */
+/* ============================================================================
+🔥 Styles
+============================================================================ */
 
-  return (
+import styles
+    from './styles/ranking.module.css'
 
-    <RankingRuntime
-      groupedAttributes={groupedAttributes}
-      groupKeys={groupKeys}
-      initialGroup={initialGroup}
-    />
+/* ============================================================================
+🔥 Ranking Experience
+============================================================================ */
 
-  )
+export default function RankingPage() {
+
+    /* =========================================================================
+    🔥 Runtime
+    ========================================================================= */
+
+    const {
+
+        runtime,
+
+        loading,
+
+        error,
+
+    } = useRanking()
+
+    /* =========================================================================
+    🔥 Loading
+    ========================================================================= */
+
+    if (
+
+        loading
+
+    ) {
+
+        return (
+
+            <main
+                className={
+                    styles.ranking
+                }
+            >
+
+                Loading...
+
+            </main>
+
+        )
+
+    }
+
+    /* =========================================================================
+    🔥 Error
+    ========================================================================= */
+
+    if (
+
+        error ||
+
+        !runtime
+
+    ) {
+
+        return (
+
+            <main
+                className={
+                    styles.ranking
+                }
+            >
+
+                Ranking Runtime Error
+
+            </main>
+
+        )
+
+    }
+
+    /* =========================================================================
+    🔥 Runtime
+    ========================================================================= */
+
+    const items =
+
+        runtime.navigation
+
+    const hasItems =
+
+        items.length > 0
+
+    /* =========================================================================
+    🔥 Render
+    ========================================================================= */
+
+    return (
+
+        <main
+            className={
+                styles.ranking
+            }
+        >
+
+            {/* ==========================================================
+            Breadcrumb
+            ========================================================== */}
+
+            <Breadcrumb />
+
+            {/* ==========================================================
+            Hero
+            ========================================================== */}
+
+            <RankingHero
+
+                runtime={
+                    runtime
+                }
+
+            />
+
+            {/* ==========================================================
+            Featured Ranking
+            ========================================================== */}
+
+            <FeaturedRanking
+
+                items={
+                    items
+                }
+
+            />
+
+            {/* ==========================================================
+            Ranking Tabs
+            ========================================================== */}
+
+            <RankingTabs
+
+                items={
+                    items
+                }
+
+            />
+
+            {/* ==========================================================
+            Summary
+            ========================================================== */}
+
+            <RankingSummary
+
+                items={
+                    items
+                }
+
+            />
+
+            {/* ==========================================================
+            Ranking Grid
+            ========================================================== */}
+
+            {
+
+                hasItems
+
+                    ? (
+
+                        <RankingCardGrid
+
+                            items={
+                                items
+                            }
+
+                        />
+
+                    )
+
+                    : (
+
+                        <EmptyRanking />
+
+                    )
+
+            }
+
+        </main>
+
+    )
+
 }

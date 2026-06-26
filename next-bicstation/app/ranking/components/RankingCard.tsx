@@ -1,47 +1,45 @@
 // ============================================================================
 // FILE:
-// /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/components/RankingCard.tsx
+// /app/ranking/components/RankingCard.tsx
+// Copyright (c) 2024 Shin Corporation.
+// All rights reserved.
 // ============================================================================
 
-import Link from 'next/link'
-
-import styles from '../RankingPage.module.css'
-
-import {
-  getHumanSummary,
-} from '../lib/humanSummary'
-
-type Props = {
-  attr: {
-    slug?: string
-    name?: string
-    count?: number
-    icon?: string
-    color?: string
-    semantic_role?: string
-    semantic_weight?: number
-  }
-
-  summary?: string
-}
+'use client'
 
 /* ============================================================================
-🔥 Semantic Role Label
+🔥 Next
 ============================================================================ */
 
-const ROLE_LABELS: Record<
-  string,
-  string
-> = {
+import Link
+    from 'next/link'
 
-  primary:
-    'メインカテゴリ',
+/* ============================================================================
+🔥 Types
+============================================================================ */
 
-  secondary:
-    '人気カテゴリ',
+import type {
 
-  highlight:
-    '注目カテゴリ',
+    RankingItem,
+
+} from '../types/ranking'
+
+/* ============================================================================
+🔥 Styles
+============================================================================ */
+
+import styles
+    from '../styles/ranking.module.css'
+
+/* ============================================================================
+🔥 Props
+============================================================================ */
+
+type Props = {
+
+    item:
+
+        RankingItem
 
 }
 
@@ -50,193 +48,157 @@ const ROLE_LABELS: Record<
 ============================================================================ */
 
 export default function RankingCard({
-  attr,
-  summary,
+
+    item,
+
 }: Props) {
 
-  /* ==========================================================================
-  🔥 Human Summary
-  ========================================================================== */
+    return (
 
-  const humanSummary =
-    summary
-    ||
-    getHumanSummary(attr)
+        <Link
 
-  /* ==========================================================================
-  🔥 Semantic Role
-  ========================================================================== */
+            href={`/ranking/${item.slug}`}
 
-  const semanticRoleLabel =
-    ROLE_LABELS[
-      attr.semantic_role || ''
-    ]
+            className={
+                styles.rankingCard
+            }
 
-  /* ==========================================================================
-  🔥 Product Count
-  ========================================================================== */
+        >
 
-  const productCountLabel =
-    attr.count
-      ? `${attr.count}モデル比較可能`
-      : null
+            {/* ==========================================================
+            Icon
+            ========================================================== */}
 
-  /* ==========================================================================
-  🔥 Render
-  ========================================================================== */
+            {
 
-  return (
+                item.icon && (
 
-    <Link
-      href={`/ranking/${attr.slug}`}
-      className={styles.card}
-    >
+                    <div
+                        className={
+                            styles.rankingCardIcon
+                        }
+                    >
 
-      {/* ================================================================
-      GLOW
-      ================================================================ */}
+                        {item.icon}
 
-      <div className={styles.cardGlow} />
+                    </div>
 
-      {/* ================================================================
-      COUNT
-      ================================================================ */}
+                )
 
-      {productCountLabel && (
+            }
 
-        <div className={styles.cardCountBox}>
+            {/* ==========================================================
+            Title
+            ========================================================== */}
 
-          <div className={styles.cardCount}>
+            <h3
+                className={
+                    styles.rankingCardTitle
+                }
+            >
 
-            {attr.count}
+                {
 
-          </div>
+                    item.title
 
-          <div className={styles.cardCountLabel}>
+                    ||
 
-            models
+                    item.name
 
-          </div>
+                }
 
-        </div>
+            </h3>
 
-      )}
+            {/* ==========================================================
+            Description
+            ========================================================== */}
 
-      {/* ================================================================
-      CONTENT
-      ================================================================ */}
+            <p
+                className={
+                    styles.rankingCardDescription
+                }
+            >
 
-      <div className={styles.cardContent}>
+                {
 
-        {/* ============================================================
-        TOP LINE
-        ============================================================ */}
+                    item.description
 
-        {semanticRoleLabel && (
+                    ||
 
-          <div className={styles.cardTopLine}>
+                    'おすすめランキングをご覧いただけます。'
 
-            {semanticRoleLabel}
+                }
 
-          </div>
+            </p>
 
-        )}
+            {/* ==========================================================
+            Meta
+            ========================================================== */}
 
-        {/* ============================================================
-        HUMAN SUMMARY
-        ============================================================ */}
+            <div
+                className={
+                    styles.rankingCardMeta
+                }
+            >
 
-        <div className={styles.cardEyebrow}>
+                {
 
-          {humanSummary}
+                    item.product_count !== undefined && (
 
-        </div>
+                        <span>
 
-        {/* ============================================================
-        TITLE
-        ============================================================ */}
+                            {item.product_count.toLocaleString()}
 
-        <h3 className={styles.cardTitle}>
+                            件の商品
 
-          {attr.name}
+                        </span>
 
-        </h3>
+                    )
 
-        {/* ============================================================
-        DESCRIPTION
-        ============================================================ */}
+                }
 
-        <p className={styles.cardDescription}>
+                {
 
-          semantic ontology runtime による
-          次世代PC discovery category。
+                    item.attribute_count !== undefined && (
 
-        </p>
+                        <span>
 
-        {/* ============================================================
-        SLUG
-        ============================================================ */}
+                            {item.attribute_count}
 
-        <div className={styles.cardSlug}>
+                            属性
 
-          {attr.slug}
+                        </span>
 
-        </div>
+                    )
 
-      </div>
+                }
 
-      {/* ================================================================
-      FOOTER
-      ================================================================ */}
+            </div>
 
-      <div className={styles.cardFooter}>
+            {/* ==========================================================
+            Footer
+            ========================================================== */}
 
-        {/* Icon */}
-        {attr.icon && (
+            <div
+                className={
+                    styles.rankingCardFooter
+                }
+            >
 
-          <div className={styles.cardBadge}>
+                <span
+                    className={
+                        styles.rankingCardLink
+                    }
+                >
 
-            {attr.icon}
+                    ランキングを見る →
 
-          </div>
+                </span>
 
-        )}
+            </div>
 
-        {/* Color */}
-        {attr.color && (
+        </Link>
 
-          <div className={styles.cardBadge}>
+    )
 
-            {attr.color}
-
-          </div>
-
-        )}
-
-        {/* Semantic Weight */}
-        {attr.semantic_weight && (
-
-          <div className={styles.cardBadge}>
-
-            score {attr.semantic_weight}
-
-          </div>
-
-        )}
-
-      </div>
-
-      {/* ================================================================
-      CTA
-      ================================================================ */}
-
-      <div className={styles.cardArrow}>
-
-        →
-
-      </div>
-
-    </Link>
-
-  )
 }
