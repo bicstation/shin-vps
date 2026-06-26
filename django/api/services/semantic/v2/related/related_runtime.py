@@ -17,6 +17,10 @@ from api.services.semantic.v2.seo.seo_runtime import (
     build_related_seo,
 )
 
+from api.services.semantic.v2.presentation.presentation_runtime import (
+    build_related_presentation,
+)
+
 
 # ==========================================================
 # SCORE
@@ -61,6 +65,10 @@ def build_related_runtime(
     meaning = (
         build_related_meaning()
     )
+    
+    presentation = (
+        build_related_presentation()
+    )
 
     try:
 
@@ -80,6 +88,9 @@ def build_related_runtime(
 
             "meaning":
                 meaning,
+            
+            "presentation":
+                presentation,
 
             "seo":
                 {},

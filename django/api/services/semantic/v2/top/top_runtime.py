@@ -21,6 +21,10 @@ from api.services.semantic.v2.seo.seo_runtime import (
     build_top_seo,
 )
 
+from api.services.semantic.v2.presentation.presentation_runtime import (
+    build_top_presentation,
+)
+
 
 # ==========================================================
 # FEATURED PRODUCTS
@@ -78,6 +82,10 @@ def build_top_runtime():
 
     meaning = (
         build_top_meaning()
+    )
+    
+    presentation = (
+        build_top_presentation()
     )
 
     # ------------------------------------------------------
@@ -180,6 +188,13 @@ def build_top_runtime():
 
         "meaning":
             meaning,
+        
+        # ----------------------------------------------
+        # PRESENTATION
+        # ---------------------------------------------- 
+        
+        "presentation":
+            presentation,
 
         # ----------------------------------------------
         # SEO

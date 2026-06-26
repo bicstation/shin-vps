@@ -23,6 +23,10 @@ from api.services.semantic.v2.discover.discover_insight_runtime import (
     build_discover_insight_runtime,
 )
 
+from api.services.semantic.v2.presentation.presentation_runtime import (
+    build_discovery_presentation,
+)
+
 # ==========================================================
 # DISCOVERY
 # ==========================================================
@@ -39,6 +43,10 @@ def build_discover_runtime():
 
     meaning = (
         build_discovery_meaning()
+    )
+    
+    presentation = (
+        build_discovery_presentation()
     )
 
     insights = (
@@ -200,6 +208,13 @@ def build_discover_runtime():
 
         "meaning":
             meaning,
+
+        # ----------------------------------------------
+        # PRESENTATION
+        # ---------------------------------------------- 
+        
+        "presentation":
+            presentation,
 
         # ----------------------------------------------
         # SEO

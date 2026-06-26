@@ -89,12 +89,10 @@ FILE:
 
     background:
 
-        linear-gradient(
-            90deg,
-            rgba(8,18,48,.95) 0%,
-            rgba(25,45,120,.85) 45%,
-            rgba(25,45,120,.35) 100%
-        ),
+        linear-gradient(90deg,
+            rgba(8, 18, 48, .95) 0%,
+            rgba(25, 45, 120, .85) 45%,
+            rgba(25, 45, 120, .35) 100%),
 
         url('/images/ranking/ranking_hero.png');
 
@@ -122,7 +120,7 @@ FILE:
 
     border-radius: 999px;
 
-    background: rgba(255,255,255,.14);
+    background: rgba(255, 255, 255, .14);
 
     font-size: .8rem;
 
@@ -150,7 +148,7 @@ FILE:
 
     font-size: 1.2rem;
 
-    color: rgba(255,255,255,.95);
+    color: rgba(255, 255, 255, .95);
 
 }
 
@@ -162,7 +160,7 @@ FILE:
 
     line-height: 1.8;
 
-    color: rgba(255,255,255,.82);
+    color: rgba(255, 255, 255, .82);
 
 }
 
@@ -186,7 +184,7 @@ FILE:
 
     border-radius: 18px;
 
-    background: rgba(255,255,255,.12);
+    background: rgba(255, 255, 255, .12);
 
     backdrop-filter: blur(8px);
 
@@ -198,7 +196,7 @@ FILE:
 
     font-size: .8rem;
 
-    color: rgba(255,255,255,.75);
+    color: rgba(255, 255, 255, .75);
 
 }
 
@@ -250,11 +248,11 @@ FILE:
 
     border-radius: 20px;
 
-    background: linear-gradient(135deg,#ffffff,#f8fbff);
+    background: linear-gradient(135deg, #ffffff, #f8fbff);
 
     border: 1px solid #dbeafe;
 
-    box-shadow: 0 10px 30px rgba(15,23,42,.08);
+    box-shadow: 0 10px 30px rgba(15, 23, 42, .08);
 
 }
 
@@ -364,7 +362,7 @@ FILE:
 
     display: grid;
 
-    grid-template-columns: repeat(3,1fr);
+    grid-template-columns: repeat(3, 1fr);
 
     gap: 1rem;
 
@@ -418,7 +416,7 @@ FILE:
 
     display: grid;
 
-    grid-template-columns: repeat(auto-fill,minmax(320px,1fr));
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
 
     gap: 1.5rem;
 
@@ -454,7 +452,7 @@ FILE:
 
     transform: translateY(-6px);
 
-    box-shadow: 0 14px 30px rgba(15,23,42,.10);
+    box-shadow: 0 14px 30px rgba(15, 23, 42, .10);
 
 }
 
@@ -773,7 +771,7 @@ FILE:
 
     background-position: center;
 
-    opacity: .22;
+    opacity: .35;
 
 }
 
@@ -785,12 +783,9 @@ FILE:
 
     background:
 
-        linear-gradient(
-            135deg,
-            rgba(8,18,48,.82),
-            rgba(12,24,72,.60)
-        );
-
+        linear-gradient(135deg,
+            rgba(8, 18, 48, .60),
+            rgba(8, 18, 48, .35));
 }
 
 .summaryContent {
@@ -815,7 +810,7 @@ FILE:
 
     margin-top: .8rem;
 
-    color: rgba(255,255,255,.82);
+    color: rgba(255, 255, 255, .82);
 
     font-size: .92rem;
 

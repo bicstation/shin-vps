@@ -4,6 +4,11 @@ from api.services.semantic.v2.authority.semantic_registry import (
     build_semantic_registry,
 )
 
+from api.services.semantic.v2.presentation.presentation_runtime import (
+    build_product_presentation,
+)
+
+
 
 # ==========================================================
 # HELPERS
@@ -109,6 +114,10 @@ def build_product_semantic_runtime(
         _build_group_index(
             registry
         )
+    )
+    
+    presentation = (
+        build_product_presentation()
     )
 
     # ------------------------------------------------------
@@ -281,6 +290,14 @@ def build_product_semantic_runtime(
 
         "semantic_labels":
             semantic_labels,
+
+        # ----------------------------------------------
+        # PRESENTATION
+        # ---------------------------------------------- 
+        
+        "presentation":
+            presentation,
+
 
         "workflow_tags":
             workflow_tags,

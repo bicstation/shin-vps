@@ -16,7 +16,9 @@ from api.services.semantic.v2.meaning.meaning_runtime import (
 from api.services.semantic.v2.seo.seo_runtime import (
     build_ranking_seo,
 )
-
+from api.services.semantic.v2.presentation.presentation_runtime import (
+    build_ranking_presentation,
+)
 
 # ==========================================================
 # SCORE
@@ -57,7 +59,11 @@ def build_ranking_runtime(
     meaning = (
         build_ranking_meaning()
     )
-
+    
+    presentation = (
+        build_ranking_presentation()
+    )
+    
     products = []
 
     # ------------------------------------------------------
@@ -167,6 +173,13 @@ def build_ranking_runtime(
 
         "meaning":
             meaning,
+
+        # ----------------------------------------------
+        # PRESENTATION
+        # ----------------------------------------------
+
+        "presentation":
+            presentation,
 
         # ----------------------------------------------
         # SEO

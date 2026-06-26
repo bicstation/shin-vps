@@ -17,6 +17,11 @@ from api.services.semantic.v2.seo.seo_runtime import (
     build_finder_seo,
 )
 
+from api.services.semantic.v2.presentation.presentation_runtime import (
+    build_fibder_presentation,
+)
+
+
 # ==========================================================
 # SCORE
 # ==========================================================
@@ -89,6 +94,10 @@ def build_finder_runtime(
 
     selected_groups = (
         selected_groups or []
+    )
+
+    presentation = (
+        build_finder_presentation()
     )
 
     filters = list(
@@ -239,6 +248,13 @@ def build_finder_runtime(
 
         "meaning":
             meaning,
+
+        # ----------------------------------------------
+        # PRESENTATION
+        # ---------------------------------------------- 
+        
+        "presentation":
+            presentation,
 
         # ----------------------------------------------
         # SEO
