@@ -293,7 +293,7 @@ export default function ProductFinalCTA({
           </Link>
 
           <Link
-            href="/ranking"
+            href="/discover"
 
             className={
               styles.finalCTASecondary

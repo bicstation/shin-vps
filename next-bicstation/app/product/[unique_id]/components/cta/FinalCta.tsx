@@ -41,6 +41,31 @@ interface FinalCtaProps {
 }
 
 /* =========================================
+🔥 Purchase Link
+========================================= */
+
+function buildCTA(
+  product: any
+) {
+
+  return (
+
+    product?.affiliate_url
+
+    ||
+
+    product?.url
+
+    ||
+
+    null
+
+  )
+
+}
+
+
+/* =========================================
 🔥 Semantic Groups
 ========================================= */
 
@@ -161,8 +186,6 @@ FinalCta({
 
   summary,
 
-  finalUrl,
-
   isSoftware = false,
 
 }: FinalCtaProps) {
@@ -241,6 +264,12 @@ FinalCta({
       ?.semantic_confidence
       || 92
 
+  const href =
+
+    buildCTA(
+      product
+    )
+  
   // ======================================
   // Render
   // ======================================
@@ -469,7 +498,7 @@ FinalCta({
             />
 
           </div>
-
+          
           {/* ==================================
           RIGHT
           ================================== */}
@@ -517,48 +546,88 @@ FinalCta({
               }
             >
 
-              <a
-                id="buy"
+              {
 
-                href={
-                  finalUrl
-                  || '#'
-                }
+                href ? (
 
-                target="_blank"
+                  <a
+                    id="buy"
 
-                rel="
-                  nofollow
-                  noopener
-                  noreferrer
-                "
+                    href={
+                      href
+                    }
 
-                className={
-                  styles.ctaButton
-                }
-              >
+                    target="_blank"
 
-                <span
-                  className={
-                    styles.ctaMain
-                  }
-                >
+                    rel="
+                      nofollow
+                      noopener
+                      noreferrer
+                    "
 
-                  👉 在庫があるうちに確認する
+                    className={
+                      styles.ctaButton
+                    }
+                  >
 
-                </span>
+                    <span
+                      className={
+                        styles.ctaMain
+                      }
+                    >
 
-                <span
-                  className={
-                    styles.ctaSub
-                  }
-                >
+                      👉 最新価格・在庫を確認する
 
-                  公式ストアで詳細を見る
+                    </span>
 
-                </span>
+                    <span
+                      className={
+                        styles.ctaSub
+                      }
+                    >
 
-              </a>
+                      正規販売ページを開く
+
+                    </span>
+
+                  </a>
+
+                ) : (
+
+                  <button
+
+                    disabled
+
+                    className={
+                      styles.ctaButtonDisabled
+                    }
+                  >
+
+                    <span
+                      className={
+                        styles.ctaMain
+                      }
+                    >
+
+                      購入ページを準備中
+
+                    </span>
+
+                    <span
+                      className={
+                        styles.ctaSub
+                      }
+                    >
+
+                      リンク情報を確認しています
+
+                    </span>
+
+                  </button>
+
+                )
+
+              }
 
               {/* ========================= */}
               {/* Trust */}
@@ -584,14 +653,14 @@ FinalCta({
                 }
               >
 
-                ※価格・在庫は変動する場合があります
+                ※価格・在庫・販売条件は販売ページでご確認ください
 
               </div>
 
             </div>
 
           </div>
-
+  
         </div>
 
       </div>
