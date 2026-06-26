@@ -132,7 +132,7 @@ export interface PCProductItem {
   ======================================================================== */
 
   grouped_attributes?:
-  Record<string, SemanticAttribute[]>
+    Record<string, SemanticAttribute[]>
 
   semantic_schema_version?: number
 
@@ -169,6 +169,19 @@ export interface InventoryMeaning {
 }
 
 /* ============================================================================
+🔥 Presentation Runtime
+============================================================================ */
+
+export interface PresentationRuntime {
+
+  title?: string
+
+  subtitle?: string
+
+  description?: string
+}
+
+/* ============================================================================
 🔥 Inventory SEO
 ============================================================================ */
 
@@ -196,6 +209,8 @@ export interface ProductsRuntime {
   ======================================================================== */
 
   meaning?: InventoryMeaning
+
+  presentation?: PresentationRuntime
 
   seo?: InventorySEO
 

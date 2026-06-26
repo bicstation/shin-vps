@@ -15,6 +15,8 @@ import type {
 
   PCProductItem,
 
+  PresentationRuntime,
+
 } from './contracts'
 
 /* ============================================================================
@@ -36,6 +38,37 @@ export function normalizeProductsRuntime(
     {}
 
   /* ========================================================================
+  Presentation Runtime
+  ======================================================================== */
+
+  const presentation: PresentationRuntime = {
+
+    title:
+
+      payload?.presentation?.title
+
+      ||
+
+      '',
+
+    subtitle:
+
+      payload?.presentation?.subtitle
+
+      ||
+
+      '',
+
+    description:
+
+      payload?.presentation?.description
+
+      ||
+
+      '',
+  }
+
+  /* ========================================================================
   Products
   ======================================================================== */
 
@@ -46,129 +79,129 @@ export function normalizeProductsRuntime(
     )
 
       ? source.products.map(
-        (
-          item: any
-        ): PCProductItem => ({
+          (
+            item: any
+          ): PCProductItem => ({
 
-          /* ====================================
-          Identity
-          ==================================== */
+            /* ====================================
+            Identity
+            ==================================== */
 
-          id:
-            item?.id,
+            id:
+              item?.id,
 
-          unique_id:
-            item?.unique_id || '',
+            unique_id:
+              item?.unique_id || '',
 
-          site_prefix:
-            item?.site_prefix,
+            site_prefix:
+              item?.site_prefix,
 
-          /* ====================================
-          Basic
-          ==================================== */
+            /* ====================================
+            Basic
+            ==================================== */
 
-          name:
-            item?.name || '',
+            name:
+              item?.name || '',
 
-          maker:
-            item?.maker,
+            maker:
+              item?.maker,
 
-          description:
-            item?.description,
+            description:
+              item?.description,
 
-          /* ====================================
-          Media
-          ==================================== */
+            /* ====================================
+            Media
+            ==================================== */
 
-          image_url:
-            item?.image_url,
+            image_url:
+              item?.image_url,
 
-          /* ====================================
-          URLs
-          ==================================== */
+            /* ====================================
+            URLs
+            ==================================== */
 
-          url:
-            item?.url,
+            url:
+              item?.url,
 
-          affiliate_url:
-            item?.affiliate_url,
+            affiliate_url:
+              item?.affiliate_url,
 
-          /* ====================================
-          Pricing
-          ==================================== */
+            /* ====================================
+            Pricing
+            ==================================== */
 
-          price:
-            item?.price,
+            price:
+              item?.price,
 
-          /* ====================================
-          Hardware
-          ==================================== */
+            /* ====================================
+            Hardware
+            ==================================== */
 
-          cpu_model:
-            item?.cpu_model,
+            cpu_model:
+              item?.cpu_model,
 
-          gpu_model:
-            item?.gpu_model,
+            gpu_model:
+              item?.gpu_model,
 
-          memory_gb:
-            item?.memory_gb,
+            memory_gb:
+              item?.memory_gb,
 
-          storage_gb:
-            item?.storage_gb,
+            storage_gb:
+              item?.storage_gb,
 
-          /* ====================================
-          Semantic
-          ==================================== */
+            /* ====================================
+            Semantic
+            ==================================== */
 
-          semantic_score:
-            item?.semantic_score,
+            semantic_score:
+              item?.semantic_score,
 
-          semantic_role:
-            item?.semantic_role,
+            semantic_role:
+              item?.semantic_role,
 
-          semantic_weight:
-            item?.semantic_weight,
+            semantic_weight:
+              item?.semantic_weight,
 
-          recommendation_reason:
-            item?.recommendation_reason,
+            recommendation_reason:
+              item?.recommendation_reason,
 
-          confidence:
-            item?.confidence,
+            confidence:
+              item?.confidence,
 
-          /* ====================================
-          Discovery
-          ==================================== */
+            /* ====================================
+            Discovery
+            ==================================== */
 
-          grouped_attributes:
+            grouped_attributes:
 
-            item?.grouped_attributes
+              item?.grouped_attributes
 
-            ||
+              ||
 
-            {},
+              {},
 
-          semantic_schema_version:
+            semantic_schema_version:
 
-            item?.semantic_schema_version,
+              item?.semantic_schema_version,
 
-          /* ====================================
-          Metadata
-          ==================================== */
+            /* ====================================
+            Metadata
+            ==================================== */
 
-          created_at:
-            item?.created_at,
+            created_at:
+              item?.created_at,
 
-          updated_at:
-            item?.updated_at,
+            updated_at:
+              item?.updated_at,
 
-          /* ====================================
-          Raw Backup
-          ==================================== */
+            /* ====================================
+            Raw Backup
+            ==================================== */
 
-          raw:
-            item,
-        })
-      )
+            raw:
+              item,
+          })
+        )
 
       : []
 
@@ -195,6 +228,8 @@ export function normalizeProductsRuntime(
       has_next:
         source?.has_next,
 
+      presentation,
+
       semantic_schema_version:
         payload?.semantic_schema_version,
 
@@ -208,7 +243,6 @@ export function normalizeProductsRuntime(
         payload?.ready,
     }
   )
-
 
   /* ========================================================================
   Runtime Projection
@@ -227,6 +261,12 @@ export function normalizeProductsRuntime(
       ||
 
       {},
+
+    /* ====================================
+    Presentation
+    ==================================== */
+
+    presentation,
 
     /* ====================================
     SEO
@@ -297,7 +337,6 @@ export function normalizeProductsRuntime(
       payload,
   }
 }
-
 
 /* ============================================================================
 🔥 Default Export

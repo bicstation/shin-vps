@@ -248,7 +248,7 @@ export default function CatalogPage() {
       Summary
       ========================================================== */}
 
-            <CatalogSummary
+            {/* <CatalogSummary
 
                 count={
                     runtime.count
@@ -262,7 +262,7 @@ export default function CatalogPage() {
                     runtime.page_size
                 }
 
-            />
+            /> */}
 
             {/* ==========================================================
       Products

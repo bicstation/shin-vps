@@ -13,6 +13,10 @@ from api.services.semantic.v2.meaning.meaning_runtime import (
     build_inventory_meaning,
 )
 
+from api.services.semantic.v2.presentation.presentation_runtime import (
+    build_inventory_presentation,
+)
+
 from api.services.semantic.v2.seo.seo_runtime import (
     build_inventory_seo,
 )
@@ -37,22 +41,19 @@ def build_inventory_runtime(
         build_inventory_meaning()
     )
 
+    presentation = (
+        build_inventory_presentation()
+    )
+
     try:
-
         page = int(page)
-
     except Exception:
-
         page = 1
 
-    
     try:
-
         page_size = int(page_size)
-
     except Exception:
-
-        page_size = 10000
+        page_size = 100
 
     if page < 1:
         page = 1
@@ -61,17 +62,13 @@ def build_inventory_runtime(
         page_size = 100
 
     if page_size > 10000:
-        page_size = 10000  
- 
+        page_size = 10000
+
     queryset = (
 
         PCProduct.objects
-        
-        .all()
 
-        # .filter(
-        #     # is_active=True
-        # )
+        .all()
 
         .order_by(
             "-updated_at"
@@ -132,11 +129,18 @@ def build_inventory_runtime(
     return {
 
         # ----------------------------------------------
-        # STATIC AUTHORITY
+        # MEANING
         # ----------------------------------------------
 
         "meaning":
             meaning,
+
+        # ----------------------------------------------
+        # PRESENTATION
+        # ----------------------------------------------
+
+        "presentation":
+            presentation,
 
         # ----------------------------------------------
         # SEO
@@ -146,7 +150,7 @@ def build_inventory_runtime(
             seo,
 
         # ----------------------------------------------
-        # REALITY
+        # DATA
         # ----------------------------------------------
 
         "data": {
@@ -172,19 +176,16 @@ def build_inventory_runtime(
         # ----------------------------------------------
 
         "semantic_schema_version":
-
             authority.get(
                 "semantic_schema_version"
             ),
 
         "authority_version":
-
             authority.get(
                 "authority_version"
             ),
 
         "semantic_authority":
-
             authority.get(
                 "semantic_authority"
             ),

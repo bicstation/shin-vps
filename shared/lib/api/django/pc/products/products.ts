@@ -24,6 +24,7 @@
  * This layer MUST NOT:
  *
  * ❌ generate meaning
+ * ❌ generate presentation
  * ❌ generate seo
  * ❌ generate inventory
  * ❌ generate products
@@ -189,31 +190,44 @@ export async function fetchProducts(
     '🔥 PRODUCTS RAW PAYLOAD',
     {
 
+      presentation:
+
+        payload?.presentation,
+
       count:
+
         payload?.data?.count,
 
       page:
+
         payload?.data?.page,
 
       page_size:
+
         payload?.data?.page_size,
 
       has_next:
+
         payload?.data?.has_next,
 
       products:
+
         payload?.data?.products?.length,
 
       semantic_schema_version:
+
         payload?.semantic_schema_version,
 
       authority_version:
+
         payload?.authority_version,
 
       semantic_authority:
+
         payload?.semantic_authority,
 
       ready:
+
         payload?.ready,
     }
   )
@@ -228,32 +242,63 @@ export async function fetchProducts(
     '🔥 PRODUCTS RUNTIME',
     {
 
+      presentation:
+
+        runtime?.presentation,
+
       count:
+
         runtime?.count,
 
       page:
+
         runtime?.page,
 
       page_size:
+
         runtime?.page_size,
 
       has_next:
+
         runtime?.has_next,
 
       products:
+
         runtime?.products?.length,
 
       semantic_schema_version:
+
         runtime?.semantic_schema_version,
 
       authority_version:
+
         runtime?.authority_version,
 
       semantic_authority:
+
         runtime?.semantic_authority,
 
       ready:
+
         runtime?.ready,
+    }
+  )
+
+  console.log(
+    '🔥 PRESENTATION RUNTIME',
+    {
+
+      title:
+
+        runtime?.presentation?.title,
+
+      subtitle:
+
+        runtime?.presentation?.subtitle,
+
+      description:
+
+        runtime?.presentation?.description,
     }
   )
 

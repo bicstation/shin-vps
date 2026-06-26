@@ -13,7 +13,7 @@
 
 import type {
 
-    CatalogRuntime,
+  CatalogRuntime,
 
 } from '../types/catalog'
 
@@ -22,7 +22,7 @@ import type {
 ============================================================================ */
 
 import styles
-    from '../styles/catalog.module.css'
+  from '../styles/catalog.module.css'
 
 /* ============================================================================
 🔥 Props
@@ -30,7 +30,7 @@ import styles
 
 type Props = {
 
-    runtime:
+  runtime:
     CatalogRuntime
 
 }
@@ -41,78 +41,257 @@ type Props = {
 
 export default function CatalogHero({
 
-    runtime,
+  runtime,
 
 }: Props) {
 
-    return (
+  return (
 
-        <section
-            className={
-                styles.catalogHero
-            }
+    <section
+      className={
+        styles.catalogHero
+      }
+    >
+
+      {/* ==========================================================
+      LEFT
+      ========================================================== */}
+
+      <div
+        className={
+          styles.catalogHeroContent
+        }
+      >
+
+        {/* ======================================================
+        LABEL
+        ====================================================== */}
+
+        <div
+          className={
+            styles.catalogHeroLabel
+          }
         >
 
-            {/* ==========================================================
-      LABEL
-      ========================================================== */}
+          PRODUCT CATALOG
 
-            <div
-                className={
-                    styles.catalogHeroLabel
-                }
+        </div>
+
+        {/* ======================================================
+        TITLE
+        ====================================================== */}
+
+        <h1
+          className={
+            styles.catalogHeroTitle
+          }
+        >
+
+          {
+
+            runtime.presentation?.title
+
+            ||
+
+            runtime.seo?.title
+
+            ||
+
+            runtime.meaning?.identity
+
+            ||
+
+            'PC商品一覧'
+
+          }
+
+        </h1>
+
+        {/* ======================================================
+        SUBTITLE
+        ====================================================== */}
+
+        {
+
+          runtime.presentation?.subtitle && (
+
+            <h2
+              className={
+                styles.catalogHeroSubtitle
+              }
             >
 
-                PRODUCT CATALOG
+              {
 
-            </div>
+                runtime.presentation.subtitle
 
-            {/* ==========================================================
-      TITLE
-      ========================================================== */}
+              }
 
-            <h1
-                className={
-                    styles.catalogHeroTitle
-                }
+            </h2>
+
+          )
+
+        }
+
+        {/* ======================================================
+        DESCRIPTION
+        ====================================================== */}
+
+        <p
+          className={
+            styles.catalogHeroDescription
+          }
+        >
+
+          {
+
+            runtime.presentation?.description
+
+            ||
+
+            runtime.seo?.description
+
+            ||
+
+            runtime.meaning?.mission
+
+            ||
+
+            '用途・メーカー・価格を問わず、登録されているすべてのPCを一覧で比較できます。'
+
+          }
+
+        </p>
+
+        {/* ======================================================
+        SUMMARY
+        ====================================================== */}
+
+        <div
+          className={
+            styles.catalogHeroStats
+          }
+        >
+
+          <div
+            className={
+              styles.catalogHeroStat
+            }
+          >
+
+            <span
+              className={
+                styles.catalogHeroStatLabel
+              }
             >
 
-                {
+              総商品数
 
-                    runtime.meaning?.identity
+            </span>
 
-                    ||
-
-                    'すべてのPC一覧'
-
-                }
-
-            </h1>
-
-            {/* ==========================================================
-      DESCRIPTION
-      ========================================================== */}
-
-            <p
-                className={
-                    styles.catalogHeroDescription
-                }
+            <strong
+              className={
+                styles.catalogHeroStatValue
+              }
             >
 
-                {
+              {
 
-                    runtime.meaning?.mission
+                runtime.count.toLocaleString()
 
-                    ||
+              }
 
-                    'すべてのPCを一覧から比較・検索できます。'
+            </strong>
 
-                }
+          </div>
 
-            </p>
+          <div
+            className={
+              styles.catalogHeroStat
+            }
+          >
 
-        </section>
+            <span
+              className={
+                styles.catalogHeroStatLabel
+              }
+            >
 
-    )
+              現在のページ
+
+            </span>
+
+            <strong
+              className={
+                styles.catalogHeroStatValue
+              }
+            >
+
+              {
+
+                runtime.page
+
+              }
+
+            </strong>
+
+          </div>
+
+          <div
+            className={
+              styles.catalogHeroStat
+            }
+          >
+
+            <span
+              className={
+                styles.catalogHeroStatLabel
+              }
+            >
+
+              表示件数
+
+            </span>
+
+            <strong
+              className={
+                styles.catalogHeroStatValue
+              }
+            >
+
+              {
+
+                runtime.page_size
+
+              }
+
+            </strong>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      {/* ==========================================================
+      RIGHT
+      ========================================================== */}
+
+      <div
+        className={
+          styles.catalogHeroVisual
+        }
+      >
+
+        {/*
+          Catalog Hero Image
+          CSS Background / Runtime Image
+        */}
+
+      </div>
+
+    </section>
+
+  )
 
 }
