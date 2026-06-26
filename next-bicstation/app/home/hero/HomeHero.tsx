@@ -195,7 +195,7 @@ export default function HomeHero({
       >
 
         <Link
-          href="/ranking/all"
+          href="/ranking/"
 
           className={
             styles.heroPrimaryButton

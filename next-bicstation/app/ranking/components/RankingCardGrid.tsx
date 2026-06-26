@@ -55,11 +55,41 @@ export default function RankingCardGrid({
 
     return (
 
+
         <section
             className={
                 styles.rankingSection
             }
         >
+
+            <header
+                className={
+                    styles.rankingSectionHeader
+                }
+            >
+
+                <h2
+                    className={
+                        styles.rankingSectionTitle
+                    }
+                >
+
+                    公開中のランキング
+
+                </h2>
+
+                <p
+                    className={
+                        styles.rankingSectionDescription
+                    }
+                >
+
+                    用途・価格帯・メーカーなど、
+                    公開中のランキングから比較できます。
+
+                </p>
+
+            </header>
 
             <div
                 className={
@@ -67,29 +97,14 @@ export default function RankingCardGrid({
                 }
             >
 
-                {
+                {items.map(item => (
 
-                    items.map(
+                    <RankingCard
+                        key={item.slug}
+                        item={item}
+                    />
 
-                        item => (
-
-                            <RankingCard
-
-                                key={
-                                    item.slug
-                                }
-
-                                item={
-                                    item
-                                }
-
-                            />
-
-                        )
-
-                    )
-
-                }
+                ))}
 
             </div>
 

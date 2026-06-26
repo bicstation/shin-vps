@@ -15,6 +15,13 @@ import Link
     from 'next/link'
 
 /* ============================================================================
+🔥 Semantic Icon
+============================================================================ */
+
+import SemanticIcon
+    from '@/shared/lib/ui/semantic/SemanticIcon'
+
+/* ============================================================================
 🔥 Types
 ============================================================================ */
 
@@ -37,9 +44,7 @@ import styles
 
 type Props = {
 
-    item:
-
-        RankingItem
+    item: RankingItem
 
 }
 
@@ -53,6 +58,34 @@ export default function RankingCard({
 
 }: Props) {
 
+    /* =========================================================================
+    🔥 Presentation Assets
+    ========================================================================= */
+
+    const backgroundImage =
+
+        `/images/ranking/${item.slug}.png`
+
+    const title =
+
+        item.title
+
+        ||
+
+        item.name
+
+    const description =
+
+        item.description
+
+        ||
+
+        'おすすめランキングをご覧いただけます。'
+
+    /* =========================================================================
+    🔥 Render
+    ========================================================================= */
+
     return (
 
         <Link
@@ -63,115 +96,141 @@ export default function RankingCard({
                 styles.rankingCard
             }
 
+            style={{
+
+                backgroundImage:
+
+                    `url(${backgroundImage})`,
+
+                backgroundSize:
+
+                    'cover',
+
+                backgroundPosition:
+
+                    'center',
+
+            }}
+
         >
+
+            {/* ==========================================================
+            Overlay
+            ========================================================== */}
+
+            <div
+                className={
+                    styles.rankingCardOverlay
+                }
+            />
 
             {/* ==========================================================
             Icon
             ========================================================== */}
 
-            {
-
-                item.icon && (
-
-                    <div
-                        className={
-                            styles.rankingCardIcon
-                        }
-                    >
-
-                        {item.icon}
-
-                    </div>
-
-                )
-
-            }
-
-            {/* ==========================================================
-            Title
-            ========================================================== */}
-
-            <h3
+            <div
                 className={
-                    styles.rankingCardTitle
+                    styles.rankingCardIcon
                 }
             >
 
-                {
+                <SemanticIcon
 
-                    item.title
+                    icon={
+                        item.icon
+                    }
 
-                    ||
+                    color={
+                        item.color
+                    }
 
-                    item.name
+                    size={28}
 
-                }
+                />
 
-            </h3>
-
-            {/* ==========================================================
-            Description
-            ========================================================== */}
-
-            <p
-                className={
-                    styles.rankingCardDescription
-                }
-            >
-
-                {
-
-                    item.description
-
-                    ||
-
-                    'おすすめランキングをご覧いただけます。'
-
-                }
-
-            </p>
+            </div>
 
             {/* ==========================================================
-            Meta
+            Content
             ========================================================== */}
 
             <div
                 className={
-                    styles.rankingCardMeta
+                    styles.rankingCardContent
                 }
             >
 
-                {
+                {/* ======================================================
+                Title
+                ====================================================== */}
 
-                    item.product_count !== undefined && (
+                <h3
+                    className={
+                        styles.rankingCardTitle
+                    }
+                >
 
-                        <span>
+                    {title}
 
-                            {item.product_count.toLocaleString()}
+                </h3>
 
-                            件の商品
+                {/* ======================================================
+                Description
+                ====================================================== */}
 
-                        </span>
+                <p
+                    className={
+                        styles.rankingCardDescription
+                    }
+                >
 
-                    )
+                    {description}
 
-                }
+                </p>
 
-                {
+                {/* ======================================================
+                Meta
+                ====================================================== */}
 
-                    item.attribute_count !== undefined && (
+                <div
+                    className={
+                        styles.rankingCardMeta
+                    }
+                >
 
-                        <span>
+                    {
 
-                            {item.attribute_count}
+                        item.product_count !== undefined && (
 
-                            属性
+                            <span>
 
-                        </span>
+                                {item.product_count.toLocaleString()}
 
-                    )
+                                件の商品
 
-                }
+                            </span>
+
+                        )
+
+                    }
+
+                    {
+
+                        item.attribute_count !== undefined && (
+
+                            <span>
+
+                                {item.attribute_count}
+
+                                カテゴリ
+
+                            </span>
+
+                        )
+
+                    }
+
+                </div>
 
             </div>
 
