@@ -7,6 +7,9 @@
 
 'use client'
 
+
+import { useMemo, useState,} from 'react'
+
 /* ============================================================================
 🔥 Hook
 ============================================================================ */
@@ -65,6 +68,67 @@ export default function RankingPage() {
         error,
 
     } = useRanking()
+
+
+    /* =========================================================================
+    🔥 Active Tab
+    ============================================================================ */
+
+    const [
+
+        activeType,
+
+        setActiveType,
+
+    ] = useState(
+
+        'all'
+
+    )
+
+    /* =========================================================================
+    🔥 Filtered Items
+    ============================================================================ */
+
+    const filteredItems =
+
+        useMemo(() => {
+
+            if (
+
+                !runtime
+
+            ) {
+
+                return []
+
+            }
+
+            if (
+
+                activeType === 'all'
+
+            ) {
+
+                return runtime.navigation
+
+            }
+
+            return runtime.navigation.filter(
+
+                item =>
+
+                    item.type === activeType
+
+            )
+
+        }, [
+
+            runtime,
+
+            activeType,
+
+        ])
 
     /* =========================================================================
     🔥 Loading
@@ -125,12 +189,10 @@ export default function RankingPage() {
     ========================================================================= */
 
     const items =
-
         runtime.navigation
 
     const hasItems =
-
-        items.length > 0
+        filteredItems.length > 0
 
     /* =========================================================================
     🔥 Render
@@ -180,9 +242,11 @@ export default function RankingPage() {
 
             <RankingTabs
 
-                items={
-                    items
-                }
+                items={items}
+
+                activeType={activeType}
+
+                onSelect={setActiveType}
 
             />
 
@@ -191,12 +255,11 @@ export default function RankingPage() {
             ========================================================== */}
 
             <RankingSummary
-
-                items={
-                    items
+                 items={
+                    filteredItems
                 }
-
             />
+
 
             {/* ==========================================================
             Ranking Grid
@@ -210,9 +273,7 @@ export default function RankingPage() {
 
                         <RankingCardGrid
 
-                            items={
-                                items
-                            }
+                             items={filteredItems}
 
                         />
 
@@ -225,6 +286,8 @@ export default function RankingPage() {
                     )
 
             }
+
+
 
         </main>
 

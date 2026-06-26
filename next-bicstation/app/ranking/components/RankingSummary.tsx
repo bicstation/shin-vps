@@ -79,6 +79,78 @@ export default function RankingSummary({
         )
 
     /* =========================================================================
+    🔥 Dashboard Cards
+    ========================================================================= */
+
+    const cards = [
+
+        {
+
+            label:
+
+                '公開ランキング',
+
+            value:
+
+                rankingCount,
+
+            description:
+
+                '現在公開中のランキング',
+
+            image:
+
+                '/images/ranking/stats-ranking.png',
+
+        },
+
+        {
+
+            label:
+
+                'ランキング種別',
+
+            value:
+
+                categoryCount,
+
+            description:
+
+                '用途・デバイス・モニター',
+
+            image:
+
+                '/images/ranking/stats-category.png',
+
+        },
+
+        {
+
+            label:
+
+                'Featured Ranking',
+
+            value:
+
+                hasFeatured
+
+                    ? '公開中'
+
+                    : '準備中',
+
+            description:
+
+                '総合ランキング',
+
+            image:
+
+                '/images/ranking/stats-featured.png',
+
+        },
+
+    ]
+
+    /* =========================================================================
     🔥 Render
     ========================================================================= */
 
@@ -90,109 +162,103 @@ export default function RankingSummary({
             }
         >
 
-            {/* ==========================================================
-            Ranking Count
-            ========================================================== */}
+            {
 
-            <div
-                className={
-                    styles.summaryItem
-                }
-            >
+                cards.map((
 
-                <span
-                    className={
-                        styles.summaryLabel
-                    }
-                >
+                    card,
 
-                    公開ランキング
+                    index
 
-                </span>
+                ) => (
 
-                <strong
-                    className={
-                        styles.summaryValue
-                    }
-                >
+                    <div
 
-                    {rankingCount}
+                        key={index}
 
-                </strong>
+                        className={
+                            styles.summaryItem
+                        }
 
-            </div>
+                    >
 
-            {/* ==========================================================
-            Category Count
-            ========================================================== */}
+                        {/* ======================================================
+                        Background
+                        ====================================================== */}
 
-            <div
-                className={
-                    styles.summaryItem
-                }
-            >
+                        <div
 
-                <span
-                    className={
-                        styles.summaryLabel
-                    }
-                >
+                            className={
+                                styles.summaryBackground
+                            }
 
-                    ランキング種別
+                            style={{
 
-                </span>
+                                backgroundImage:
 
-                <strong
-                    className={
-                        styles.summaryValue
-                    }
-                >
+                                    `url(${card.image})`,
 
-                    {categoryCount}
+                            }}
 
-                </strong>
+                        />
 
-            </div>
+                        {/* ======================================================
+                        Overlay
+                        ====================================================== */}
 
-            {/* ==========================================================
-            Featured
-            ========================================================== */}
+                        <div
+                            className={
+                                styles.summaryOverlay
+                            }
+                        />
 
-            <div
-                className={
-                    styles.summaryItem
-                }
-            >
+                        {/* ======================================================
+                        Content
+                        ====================================================== */}
 
-                <span
-                    className={
-                        styles.summaryLabel
-                    }
-                >
+                        <div
+                            className={
+                                styles.summaryContent
+                            }
+                        >
 
-                    総合ランキング
+                            <span
+                                className={
+                                    styles.summaryLabel
+                                }
+                            >
 
-                </span>
+                                {card.label}
 
-                <strong
-                    className={
-                        styles.summaryValue
-                    }
-                >
+                            </span>
 
-                    {
+                            <strong
+                                className={
+                                    styles.summaryValue
+                                }
+                            >
 
-                        hasFeatured
+                                {card.value}
 
-                            ? '公開中'
+                            </strong>
 
-                            : '準備中'
+                            <p
+                                className={
+                                    styles.summaryDescription
+                                }
+                            >
 
-                    }
+                                {card.description}
 
-                </strong>
+                            </p>
 
-            </div>
+                        </div>
+
+                    </div>
+
+                ))
+
+            }
 
         </section>
 
