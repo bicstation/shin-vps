@@ -4,10 +4,6 @@ from api.services.semantic.v2.topology.topology_runtime import (
     build_topology_runtime,
 )
 
-from api.services.semantic.v2.authority.authority_runtime import (
-    build_authority_runtime,
-)
-
 from api.services.semantic.v2.traversal.traversal_builder import (
     build_traversal_runtime,
 )
@@ -48,10 +44,6 @@ def calculate_product_count(
 
 def build_navigation_runtime():
 
-    authority = (
-        build_authority_runtime()
-    )
-
     topology = (
         build_topology_runtime()
     )
@@ -69,7 +61,7 @@ def build_navigation_runtime():
     )
 
     intents = []
-    
+
     # ==========================================================
     # GROUPS
     # ==========================================================
@@ -79,12 +71,6 @@ def build_navigation_runtime():
         []
     ):
 
-        group_slug = (
-            group.get(
-                "slug"
-            )
-        )
-               
         parent_group = (
             group.get(
                 "parent_group"
@@ -101,7 +87,7 @@ def build_navigation_runtime():
             continue
 
         # ------------------------------------------------------
-        # Reality Count
+        # Reality
         # ------------------------------------------------------
 
         product_count = (
@@ -110,7 +96,9 @@ def build_navigation_runtime():
 
                 products,
 
-                group_slug,
+                group.get(
+                    "slug"
+                ),
             )
         )
 
@@ -120,71 +108,31 @@ def build_navigation_runtime():
 
         intents.append({
 
-            "slug":
-                group_slug,
-
-            "name":
-                group.get(
-                    "name"
-                ),
-                
-            "title":
-                group.get(
-                    "title"
-                ),
-
-            "description":
-                group.get(
-                    "description"
-                ),
- 
-            "type":
-                group.get(
-                    "type"
-                ),
-
-            "icon":
-                group.get(
-                    "icon"
-                ),
-
-            "color":
-                group.get(
-                    "color"
-                ),
-
-            "parent_group":
-                parent_group,
-
-            "attribute_count":
-
-                len(
-                    group.get(
-                        "attributes",
-                        []
-                    )
-                ),
+            # Presentation Authority
+            **group,
 
             # Reality
             "product_count":
                 product_count,
         })
 
-
-
     # ------------------------------------------------------
     # SORT
     # ------------------------------------------------------
 
-    intents = sorted(
-
-        intents,
+    intents.sort(
 
         key=lambda x: (
 
             x.get(
                 "parent_group",
                 ""
+            ),
+
+            int(
+                x.get(
+                    "priority"
+                ) or 0
             ),
 
             -x.get(
@@ -199,15 +147,9 @@ def build_navigation_runtime():
         )
     )
 
-
-    print(
-        "🔥 NAVIGATION SAMPLE",
-        intents[0]
-    )
-
-    # ==========================================================
+    # ------------------------------------------------------
     # DEBUG
-    # ==========================================================
+    # ------------------------------------------------------
 
     if intents:
 
@@ -216,7 +158,6 @@ def build_navigation_runtime():
             intents[0]
         )
 
-    
     # ------------------------------------------------------
     # PAYLOAD
     # ------------------------------------------------------
@@ -228,23 +169,22 @@ def build_navigation_runtime():
 
         "semantic_schema_version":
 
-            authority.get(
+            topology.get(
                 "semantic_schema_version"
             ),
 
         "authority_version":
 
-            authority.get(
+            topology.get(
                 "authority_version"
             ),
 
         "semantic_authority":
 
-            authority.get(
+            topology.get(
                 "semantic_authority"
             ),
 
         "ready":
             True,
     }
-    

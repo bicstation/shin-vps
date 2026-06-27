@@ -13,19 +13,21 @@ from api.services.semantic.v2.meaning.meaning_runtime import (
     build_ranking_meaning,
 )
 
-from api.services.semantic.v2.seo.seo_runtime import (
-    build_ranking_seo,
-)
 from api.services.semantic.v2.presentation.presentation_runtime import (
     build_ranking_presentation,
 )
+
+from api.services.semantic.v2.seo.seo_runtime import (
+    build_ranking_seo,
+)
+
 
 # ==========================================================
 # SCORE
 # ==========================================================
 
 def calculate_product_score(
-    product
+    product,
 ):
 
     return len(
@@ -46,24 +48,31 @@ def build_ranking_runtime(
     group_slug=None,
 
     limit=100,
+
 ):
+
+    # ------------------------------------------------------
+    # AUTHORITY
+    # ------------------------------------------------------
 
     authority = (
         build_authority_runtime()
+    )
+
+    meaning = (
+        build_ranking_meaning()
+    )
+
+    presentation = (
+        build_ranking_presentation(
+            group_slug
+        )
     )
 
     traversal = (
         build_traversal_runtime()
     )
 
-    meaning = (
-        build_ranking_meaning()
-    )
-    
-    presentation = (
-        build_ranking_presentation()
-    )
-    
     products = []
 
     # ------------------------------------------------------
@@ -88,19 +97,18 @@ def build_ranking_runtime(
             )
         )
 
-        group_name = (
-            "All Products"
-        )
-
     # ------------------------------------------------------
     # GROUP
     # ------------------------------------------------------
 
     else:
 
-        for product in traversal.get(
-            "products",
-            []
+        for product in (
+
+            traversal.get(
+                "products",
+                []
+            )
         ):
 
             groups = set(
@@ -117,8 +125,42 @@ def build_ranking_runtime(
                     product
                 )
 
+    # ------------------------------------------------------
+    # GROUP NAME
+    # ------------------------------------------------------
+
+    if (
+
+        group_slug
+
+        and
+
+        group_slug != "all"
+
+    ):
+
         group_name = (
+
+            presentation.get(
+                "name"
+            )
+
+            or
+
             group_slug
+        )
+
+    else:
+
+        group_name = (
+
+            presentation.get(
+                "title"
+            )
+
+            or
+
+            "All Products"
         )
 
     # ------------------------------------------------------
@@ -129,18 +171,14 @@ def build_ranking_runtime(
 
         products,
 
-        key=lambda x:
+        key=lambda product:
 
             calculate_product_score(
-                x
+                product
             ),
 
         reverse=True,
-    )
-
-    products = (
-        products[:limit]
-    )
+    )[:limit]
 
     # ------------------------------------------------------
     # SEO
@@ -150,14 +188,11 @@ def build_ranking_runtime(
 
         build_ranking_seo(
 
-            meaning=
-                meaning,
+            meaning=meaning,
 
-            group_name=
-                group_name,
+            group_name=group_name,
 
-            product_count=
-                len(products),
+            product_count=len(products),
         )
     )
 
@@ -168,14 +203,14 @@ def build_ranking_runtime(
     return {
 
         # ----------------------------------------------
-        # STATIC AUTHORITY
+        # Meaning Authority
         # ----------------------------------------------
 
         "meaning":
             meaning,
 
         # ----------------------------------------------
-        # PRESENTATION
+        # Presentation Authority
         # ----------------------------------------------
 
         "presentation":
@@ -189,7 +224,7 @@ def build_ranking_runtime(
             seo,
 
         # ----------------------------------------------
-        # REALITY
+        # Reality
         # ----------------------------------------------
 
         "data": {
@@ -208,7 +243,7 @@ def build_ranking_runtime(
         },
 
         # ----------------------------------------------
-        # AUTHORITY
+        # Authority
         # ----------------------------------------------
 
         "semantic_schema_version":

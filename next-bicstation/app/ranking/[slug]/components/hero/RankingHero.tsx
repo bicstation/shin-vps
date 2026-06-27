@@ -1,6 +1,6 @@
 // ============================================================================
 // FILE:
-// /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/[slug]/components/hero/RankingHero.tsx
+// /home/maya/shin-vps/next-bicstation/app/ranking/[slug]/components/hero/RankingHero.tsx
 // Copyright (c) 2024 Shin Corporation.
 // All rights reserved.
 // ============================================================================
@@ -23,10 +23,6 @@ import type {
 
 import styles
     from '../../styles/hero/hero.module.css'
-
-
-import getRankingBadge
-    from '../../lib/getRankingBadge'
 
 /* ============================================================================
 🔥 Props
@@ -53,19 +49,16 @@ export default function RankingHero({
 }: Props) {
 
     /* =========================================================================
-    🔥 Meaning Layer
+    🔥 Runtime
     ========================================================================= */
 
     const meaning =
-
         runtime.meaning
 
     const presentation =
-
         runtime.presentation
 
     const seo =
-
         runtime.seo
 
     /* =========================================================================
@@ -75,11 +68,9 @@ export default function RankingHero({
     const title =
 
         presentation?.title
-
         ??
 
         seo?.title
-
         ??
 
         'PCランキング'
@@ -87,7 +78,6 @@ export default function RankingHero({
     const subtitle =
 
         presentation?.subtitle
-
         ??
 
         ''
@@ -95,36 +85,29 @@ export default function RankingHero({
     const description =
 
         presentation?.description
-
         ??
 
         seo?.description
-
         ??
 
         ''
 
-    /* =========================================================================
-    🔥 Hero
-    ========================================================================= */
-
     const badge =
 
         meaning?.identity
-
         ??
 
         'FEATURED RANKING'
 
+    /* =========================================================================
+    🔥 Assets
+    ========================================================================= */
+
     const heroImage =
 
-         '/images/ranking/ranking_hero.png'
-    
-    /* ============================================================================
-    🔥 Hero Emblem
-    ============================================================================ */
+        '/images/ranking/ranking_hero.png'
 
-    const heroEmblem =
+    const heroCore =
 
         '/images/ranking/ranking_ai_core.png'
 
@@ -135,7 +118,6 @@ export default function RankingHero({
     const chips =
 
         runtime.semantic_labels
-
         ??
 
         []
@@ -155,8 +137,15 @@ export default function RankingHero({
                 backgroundImage: `
 
 linear-gradient(
-rgba(5,15,40,.82),
-rgba(5,15,40,.72)
+
+90deg,
+
+rgba(2,8,25,.96) 0%,
+
+rgba(2,8,25,.88) 45%,
+
+rgba(2,8,25,.55) 100%
+
 ),
 
 url(${heroImage})
@@ -172,166 +161,220 @@ url(${heroImage})
             <div className={styles.runtimeHeroInner}>
 
                 {/* ======================================================
-                Hero Emblem
+                Left
                 ====================================================== */}
 
-                <img
+                <div
+                    className={
+                        styles.runtimeHeroVisual
+                    }
+                >
 
-                    src={heroEmblem}
+                    <img
 
-                    alt="Ranking Core"
+                        src={heroCore}
 
-                    className={styles.runtimeHeroEmblem}
+                        alt="Ranking AI Core"
 
-                />
+                        className={
+                            styles.runtimeHeroEmblem
+                        }
 
-                {/* ======================================================
-                Title
-                ====================================================== */}
-
-                <h1 className={styles.runtimeHeroTitle}>
-
-                    {title}
-
-                </h1>
-
-                {/* ======================================================
-                Subtitle
-                ====================================================== */}
-
-                {
-
-                    subtitle && (
-
-                        <div className={styles.runtimeHeroSubtitle}>
-
-                            {subtitle}
-
-                        </div>
-
-                    )
-
-                }
-
-                {/* ======================================================
-                Description
-                ====================================================== */}
-
-                {
-
-                    description && (
-
-                        <p className={styles.runtimeHeroDescription}>
-
-                            {description}
-
-                        </p>
-
-                    )
-
-                }
-
-                {/* ======================================================
-                Metrics
-                ====================================================== */}
-
-                <div className={styles.runtimeHeroMetrics}>
-
-                    <div className={styles.runtimeHeroMetric}>
-
-                        <span>
-
-                            掲載製品
-
-                        </span>
-
-                        <strong>
-
-                            {totalProducts}
-
-                        </strong>
-
-                    </div>
-
-                    <div className={styles.runtimeHeroMetric}>
-
-                        <span>
-
-                            ランキング
-
-                        </span>
-
-                        <strong>
-
-                            公開中
-
-                        </strong>
-
-                    </div>
-
-                    <div className={styles.runtimeHeroMetric}>
-
-                        <span>
-
-                            Experience
-
-                        </span>
-
-                        <strong>
-
-                            V2
-
-                        </strong>
-
-                    </div>
+                    />
 
                 </div>
 
                 {/* ======================================================
-                Semantic Chips
+                Right
                 ====================================================== */}
 
-                {
+                <div
+                    className={
+                        styles.runtimeHeroContent
+                    }
+                >
 
-                    chips.length > 0 && (
+                    <div
+                        className={
+                            styles.runtimeHeroBadge
+                        }
+                    >
 
-                        <div className={styles.runtimeHeroChips}>
+                        {badge}
 
-                            {
+                    </div>
 
-                                chips.map(
+                    <h1
+                        className={
+                            styles.runtimeHeroTitle
+                        }
+                    >
 
-                                    (
+                        {title}
 
-                                        chip,
+                    </h1>
 
-                                        index,
+                    {
 
-                                    ) => (
+                        subtitle && (
 
-                                        <div
+                            <div
+                                className={
+                                    styles.runtimeHeroSubtitle
+                                }
+                            >
 
-                                            key={index}
+                                {subtitle}
 
-                                            className={styles.runtimeHeroChip}
+                            </div>
 
-                                        >
+                        )
 
-                                            {chip}
+                    }
 
-                                        </div>
+                    {
 
-                                    )
+                        description && (
 
-                                )
+                            <p
+                                className={
+                                    styles.runtimeHeroDescription
+                                }
+                            >
 
+                                {description}
+
+                            </p>
+
+                        )
+
+                    }
+
+                    {/* ==================================================
+                    Metrics
+                    ================================================== */}
+
+                    <div
+                        className={
+                            styles.runtimeHeroMetrics
+                        }
+                    >
+
+                        <div
+                            className={
+                                styles.runtimeHeroMetric
                             }
+                        >
+
+                            <span>
+
+                                掲載製品
+
+                            </span>
+
+                            <strong>
+
+                                {totalProducts}
+
+                            </strong>
 
                         </div>
 
-                    )
+                        <div
+                            className={
+                                styles.runtimeHeroMetric
+                            }
+                        >
 
-                }
+                            <span>
+
+                                ランキング
+
+                            </span>
+
+                            <strong>
+
+                                公開中
+
+                            </strong>
+
+                        </div>
+
+                        <div
+                            className={
+                                styles.runtimeHeroMetric
+                            }
+                        >
+
+                            <span>
+
+                                EXPERIENCE
+
+                            </span>
+
+                            <strong>
+
+                                V2
+
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                    {/* ==================================================
+                    Semantic Labels
+                    ================================================== */}
+
+                    {
+
+                        chips.length > 0 && (
+
+                            <div
+                                className={
+                                    styles.runtimeHeroChips
+                                }
+                            >
+
+                                {
+
+                                    chips.map(
+
+                                        (
+
+                                            chip,
+
+                                            index,
+
+                                        ) => (
+
+                                            <span
+
+                                                key={index}
+
+                                                className={
+                                                    styles.runtimeHeroChip
+                                                }
+
+                                            >
+
+                                                {chip}
+
+                                            </span>
+
+                                        )
+
+                                    )
+
+                                }
+
+                            </div>
+
+                        )
+
+                    }
+
+                </div>
 
             </div>
 

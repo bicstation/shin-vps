@@ -1,11 +1,4 @@
 /* ============================================================================
-FILE:
-/home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/[slug]/styles/hero/hero.module.css
-Copyright (c) 2024 Shin Corporation.
-All rights reserved.
-============================================================================ */
-
-/* ============================================================================
 🔥 Hero
 ============================================================================ */
 
@@ -15,20 +8,21 @@ All rights reserved.
 
     overflow: hidden;
 
-    border-radius: 32px;
-
-    min-height: 520px;
+    isolation: isolate;
 
     display: flex;
 
     align-items: center;
 
-    isolation: isolate;
+    min-height: 620px;
+
+    border-radius: 32px;
 
     background-color: #081426;
 
     box-shadow:
-        0 40px 80px rgba(0,0,0,.35);
+
+        0 40px 90px rgba(0, 0, 0, .35);
 
 }
 
@@ -44,17 +38,19 @@ All rights reserved.
 
     background:
 
-        radial-gradient(
-            circle at 80% 20%,
-            rgba(0,180,255,.22),
-            transparent 45%
-        ),
+        radial-gradient(circle at 85% 15%,
 
-        linear-gradient(
-            135deg,
-            rgba(5,15,40,.92),
-            rgba(5,15,40,.72)
-        );
+            rgba(0, 180, 255, .18),
+
+            transparent 42%),
+
+        linear-gradient(90deg,
+
+            rgba(2, 8, 25, .95),
+
+            rgba(2, 8, 25, .85) 45%,
+
+            rgba(2, 8, 25, .55));
 
     z-index: 1;
 
@@ -76,11 +72,67 @@ All rights reserved.
 
     margin: 0 auto;
 
-    padding:
+    padding: 80px;
 
-        96px
+    display: flex;
 
-        72px;
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 96px;
+
+}
+
+/* ============================================================================
+🔥 Visual
+============================================================================ */
+
+.runtimeHeroVisual {
+
+    flex: 0 0 340px;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+}
+
+/* ============================================================================
+🔥 Emblem
+============================================================================ */
+
+.runtimeHeroEmblem {
+
+    width: 240px;
+
+    max-width: 100%;
+
+    object-fit: contain;
+
+    animation:
+
+        floating 6s ease-in-out infinite;
+
+    filter:
+
+        drop-shadow(0 0 45px rgba(0, 180, 255, .35));
+
+}
+
+/* ============================================================================
+🔥 Content
+============================================================================ */
+
+.runtimeHeroContent {
+
+    flex: 1;
+
+    display: flex;
+
+    flex-direction: column;
 
 }
 
@@ -94,31 +146,25 @@ All rights reserved.
 
     align-items: center;
 
-    padding:
+    width: fit-content;
 
-        8px
-
-        18px;
+    padding: 8px 20px;
 
     border-radius: 999px;
 
-    background:
+    background: rgba(255, 255, 255, .10);
 
-        rgba(255,255,255,.12);
+    border: 1px solid rgba(255, 255, 255, .16);
 
-    border:
+    backdrop-filter: blur(18px);
 
-        1px solid rgba(255,255,255,.18);
-
-    backdrop-filter: blur(12px);
-
-    color: #fff;
+    color: #ffffff;
 
     font-size: .82rem;
 
     font-weight: 700;
 
-    letter-spacing: .12em;
+    letter-spacing: .14em;
 
     text-transform: uppercase;
 
@@ -130,23 +176,17 @@ All rights reserved.
 
 .runtimeHeroTitle {
 
-    margin-top: 28px;
+    margin-top: 26px;
 
-    font-size:
+    color: #ffffff;
 
-        clamp(
-            2.8rem,
-            6vw,
-            4.6rem
-        );
+    font-size: clamp(3rem, 5vw, 4.8rem);
 
     line-height: 1.08;
 
     font-weight: 800;
 
-    color: #fff;
-
-    max-width: 900px;
+    max-width: 760px;
 
 }
 
@@ -158,13 +198,11 @@ All rights reserved.
 
     margin-top: 18px;
 
-    color:
+    color: #74d8ff;
 
-        rgba(120,220,255,.95);
+    font-size: 1rem;
 
     font-weight: 700;
-
-    font-size: 1.05rem;
 
     letter-spacing: .08em;
 
@@ -178,17 +216,15 @@ All rights reserved.
 
 .runtimeHeroDescription {
 
-    margin-top: 28px;
+    margin-top: 24px;
 
-    max-width: 760px;
+    max-width: 700px;
 
-    font-size: 1.15rem;
+    color: rgba(255, 255, 255, .82);
+
+    font-size: 1.08rem;
 
     line-height: 1.9;
-
-    color:
-
-        rgba(255,255,255,.82);
 
 }
 
@@ -202,31 +238,23 @@ All rights reserved.
 
     flex-wrap: wrap;
 
-    gap: 20px;
+    gap: 18px;
 
-    margin-top: 48px;
+    margin-top: 42px;
 
 }
 
 .runtimeHeroMetric {
 
-    min-width: 170px;
+    min-width: 165px;
 
-    padding:
-
-        22px
-
-        24px;
+    padding: 22px;
 
     border-radius: 18px;
 
-    background:
+    background: rgba(255, 255, 255, .06);
 
-        rgba(255,255,255,.08);
-
-    border:
-
-        1px solid rgba(255,255,255,.12);
+    border: 1px solid rgba(255, 255, 255, .10);
 
     backdrop-filter: blur(18px);
 
@@ -236,15 +264,13 @@ All rights reserved.
 
     display: block;
 
-    color:
+    color: rgba(255, 255, 255, .60);
 
-        rgba(255,255,255,.62);
-
-    font-size: .82rem;
-
-    letter-spacing: .08em;
+    font-size: .8rem;
 
     text-transform: uppercase;
+
+    letter-spacing: .08em;
 
 }
 
@@ -254,9 +280,9 @@ All rights reserved.
 
     margin-top: 10px;
 
-    font-size: 1.8rem;
+    color: #ffffff;
 
-    color: #fff;
+    font-size: 1.9rem;
 
     font-weight: 800;
 
@@ -274,69 +300,87 @@ All rights reserved.
 
     gap: 12px;
 
-    margin-top: 48px;
+    margin-top: 42px;
 
 }
 
 .runtimeHeroChip {
 
-    padding:
-
-        10px
-
-        18px;
+    padding: 10px 18px;
 
     border-radius: 999px;
 
-    background:
+    background: rgba(0, 180, 255, .10);
 
-        rgba(0,170,255,.12);
-
-    border:
-
-        1px solid rgba(0,170,255,.28);
+    border: 1px solid rgba(0, 180, 255, .24);
 
     color: #b9ebff;
 
-    font-size: .9rem;
+    font-size: .88rem;
 
     font-weight: 600;
-
-    backdrop-filter: blur(12px);
 
 }
 
 /* ============================================================================
-🔥 Responsive
+🔥 Animation
 ============================================================================ */
 
-@media (max-width: 1024px) {
+@keyframes floating {
 
-    .runtimeHeroInner {
+    0% {
 
-        padding:
-
-            72px
-
-            40px;
+        transform: translateY(0);
 
     }
 
-    .runtimeHeroTitle {
+    50% {
 
-        font-size:
+        transform: translateY(-10px);
 
-            clamp(
-                2.2rem,
-                8vw,
-                3.5rem
-            );
+    }
+
+    100% {
+
+        transform: translateY(0);
 
     }
 
 }
 
-@media (max-width: 768px) {
+/* ============================================================================
+🔥 Tablet
+============================================================================ */
+
+@media (max-width:1024px) {
+
+    .runtimeHeroInner {
+
+        padding: 60px 40px;
+
+        gap: 48px;
+
+    }
+
+    .runtimeHeroVisual {
+
+        flex: 0 0 260px;
+
+    }
+
+    .runtimeHeroEmblem {
+
+        width: 190px;
+
+    }
+
+}
+
+/* ============================================================================
+🔥 Mobile
+============================================================================ */
+
+@media (max-width:768px) {
 
     .runtimeHero {
 
@@ -348,82 +392,55 @@ All rights reserved.
 
     .runtimeHeroInner {
 
-        padding:
+        flex-direction: column;
 
-            48px
+        text-align: center;
 
-            24px;
+        padding: 48px 24px;
+
+        gap: 32px;
+
+    }
+
+    .runtimeHeroVisual {
+
+        flex: none;
+
+    }
+
+    .runtimeHeroContent {
+
+        align-items: center;
+
+    }
+
+    .runtimeHeroTitle {
+
+        max-width: none;
+
+    }
+
+    .runtimeHeroDescription {
+
+        max-width: none;
 
     }
 
     .runtimeHeroMetrics {
 
-        flex-direction: column;
+        justify-content: center;
 
     }
 
     .runtimeHeroMetric {
 
-        width: 100%;
+        width: 160px;
 
     }
 
-}
+    .runtimeHeroChips {
 
-
-.runtimeHeroEmblem {
-
-    width: 180px;
-
-    height: 180px;
-
-    object-fit: contain;
-
-    margin: 32px 0;
-
-    filter:
-
-        drop-shadow(
-
-            0 0 40px
-
-            rgba(0,180,255,.35)
-
-        );
-
-}
-
-.runtimeHeroEmblem {
-
-    animation:
-
-        floating 6s ease-in-out infinite;
-
-}
-
-@keyframes floating {
-
-    0% {
-
-        transform:
-
-            translateY(0);
-
-    }
-
-    50% {
-
-        transform:
-
-            translateY(-8px);
-
-    }
-
-    100% {
-
-        transform:
-
-            translateY(0);
+        justify-content: center;
 
     }
 

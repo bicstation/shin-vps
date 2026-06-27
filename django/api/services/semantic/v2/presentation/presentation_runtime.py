@@ -1,6 +1,175 @@
 # -*- coding: utf-8 -*-
 # api/services/semantic/v2/presentation/presentation_runtime.py
 
+# ==========================================================
+# IMPORT
+# ==========================================================
+
+from api.services.semantic.v2.authority.slug_metadata import (
+    get_slug,
+)
+
+
+# ==========================================================
+# SLUG PRESENTATION
+# ==========================================================
+
+def build_slug_presentation(
+
+    slug,
+
+    default_title,
+
+    default_subtitle,
+
+    default_description,
+
+):
+
+    metadata = {}
+
+    if slug:
+
+        metadata = (
+            get_slug(slug)
+            or {}
+        )
+
+    return {
+
+        # --------------------------------------------------
+        # Identity
+        # --------------------------------------------------
+
+        "slug":
+            metadata.get(
+                "slug",
+                slug,
+            ),
+
+        "name":
+            metadata.get(
+                "name",
+                "",
+            ),
+
+        # --------------------------------------------------
+        # Presentation
+        # --------------------------------------------------
+
+        "title":
+            metadata.get(
+                "title",
+                default_title,
+            ),
+
+        "subtitle":
+            metadata.get(
+                "subtitle",
+                default_subtitle,
+            ),
+
+        "description":
+            metadata.get(
+                "description",
+                default_description,
+            ),
+
+        # --------------------------------------------------
+        # SEO
+        # --------------------------------------------------
+
+        "seo_title":
+            metadata.get(
+                "seo_title",
+                "",
+            ),
+
+        "seo_description":
+            metadata.get(
+                "seo_description",
+                "",
+            ),
+
+        "canonical_path":
+            metadata.get(
+                "canonical_path",
+                "",
+            ),
+
+        "schema_type":
+            metadata.get(
+                "schema_type",
+                "",
+            ),
+
+        # --------------------------------------------------
+        # Presentation Theme
+        # --------------------------------------------------
+
+        "icon_key":
+            metadata.get(
+                "icon_key",
+                "",
+            ),
+
+        "theme_key":
+            metadata.get(
+                "theme_key",
+                "",
+            ),
+
+        "color_key":
+            metadata.get(
+                "color_key",
+                "",
+            ),
+
+        # --------------------------------------------------
+        # OGP
+        # --------------------------------------------------
+
+        "og_title":
+            metadata.get(
+                "og_title",
+                "",
+            ),
+
+        "og_description":
+            metadata.get(
+                "og_description",
+                "",
+            ),
+
+        "og_image":
+            metadata.get(
+                "og_image",
+                "",
+            ),
+
+        # --------------------------------------------------
+        # Runtime
+        # --------------------------------------------------
+
+        "priority":
+            metadata.get(
+                "priority",
+                "",
+            ),
+
+        "visibility":
+            metadata.get(
+                "visibility",
+                "",
+            ),
+
+        "is_adult":
+            metadata.get(
+                "is_adult",
+                "0",
+            ),
+    }
+
 
 # ==========================================================
 # TOP
@@ -28,44 +197,57 @@ def build_top_presentation():
 # DISCOVERY
 # ==========================================================
 
-def build_discovery_presentation():
+def build_discovery_presentation(
 
-    return {
+    slug=None,
 
-        "title":
+):
+
+    return build_slug_presentation(
+
+        slug=slug,
+
+        default_title=
             "PCを探す",
 
-        "subtitle":
+        default_subtitle=
             "目的から最適なカテゴリーを選ぶ",
 
-        "description":
+        default_description=
             (
                 "用途や目的に応じたカテゴリから"
                 "最適なPCを探すことができます。"
             ),
-    }
+    )
+
 
 
 # ==========================================================
 # RANKING
 # ==========================================================
 
-def build_ranking_presentation():
+def build_ranking_presentation(
 
-    return {
+    group_slug=None,
 
-        "title":
+):
+
+    return build_slug_presentation(
+
+        slug=group_slug,
+
+        default_title=
             "PCランキング",
 
-        "subtitle":
+        default_subtitle=
             "目的に合わせたおすすめPC",
 
-        "description":
+        default_description=
             (
                 "用途ごとにおすすめのPCを"
                 "ランキング形式で比較できます。"
             ),
-    }
+    )
 
 
 # ==========================================================
@@ -154,3 +336,6 @@ def build_inventory_presentation():
                 "一覧で比較できます。"
             ),
     }
+
+
+

@@ -283,3 +283,15 @@ def load_semantic_group_mappings():
         DEFAULT_TSV_DIR
         / "semantic_group_mappings.tsv"
     )
+
+# ==========================================================
+# SEMANTIC SLUG METADATA
+# ==========================================================
+
+def load_semantic_slug_metadata():
+
+    return load_tsv(
+
+        DEFAULT_TSV_DIR
+        / "semantic_slug_metadata.tsv"
+    )

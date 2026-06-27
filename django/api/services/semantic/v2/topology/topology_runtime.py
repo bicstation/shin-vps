@@ -92,14 +92,13 @@ def build_topology_runtime():
 
             group.get(
                 "is_active",
-                "1"
+                "1",
             )
 
-        ) not in (
+        ).lower() not in (
 
             "1",
             "true",
-            "True",
         ):
             continue
 
@@ -109,19 +108,11 @@ def build_topology_runtime():
             )
         )
 
-        group_metadata = (
-
-            metadata_index.get(
-                group_slug,
-                {}
-            )
-        )
-
         children = []
 
         for attribute_slug in mapping_index.get(
             group_slug,
-            []
+            [],
         ):
 
             attribute = (
@@ -130,48 +121,23 @@ def build_topology_runtime():
                 )
             )
 
-            if not attribute:
+            if attribute is None:
                 continue
-
-            attribute_metadata = (
-
-                metadata_index.get(
-                    attribute_slug,
-                    {}
-                )
-            )
 
             children.append({
 
-                # --------------------------
-                # Identity
-                # --------------------------
+                # ----------------------------------
+                # Presentation Authority
+                # ----------------------------------
 
-                "slug":
+                **metadata_index.get(
                     attribute_slug,
+                    {},
+                ),
 
-                # --------------------------
-                # Metadata Authority
-                # --------------------------
-
-                "name":
-                    attribute_metadata.get(
-                        "name"
-                    ),
-
-                "title":
-                    attribute_metadata.get(
-                        "title"
-                    ),
-
-                "description":
-                    attribute_metadata.get(
-                        "description"
-                    ),
-
-                # --------------------------
+                # ----------------------------------
                 # Semantic Authority
-                # --------------------------
+                # ----------------------------------
 
                 "type":
                     attribute.get(
@@ -207,33 +173,16 @@ def build_topology_runtime():
         topology.append({
 
             # ----------------------------------
-            # Identity
+            # Presentation Authority
             # ----------------------------------
 
-            "slug":
+            **metadata_index.get(
                 group_slug,
+                {},
+            ),
 
             # ----------------------------------
-            # Metadata Authority
-            # ----------------------------------
-
-            "name":
-                group_metadata.get(
-                    "name"
-                ),
-
-            "title":
-                group_metadata.get(
-                    "title"
-                ),
-
-            "description":
-                group_metadata.get(
-                    "description"
-                ),
-
-            # ----------------------------------
-            # Group Authority
+            # Semantic Authority
             # ----------------------------------
 
             "parent_group":
@@ -276,25 +225,19 @@ def build_topology_runtime():
         key=lambda row:
 
             int(
+
                 row.get(
                     "sort_order",
-                    999
+                    999,
                 )
-            )
+
+            ),
     )
 
     return {
 
-        # --------------------------------------
-        # Runtime
-        # --------------------------------------
-
         "groups":
             topology,
-
-        # --------------------------------------
-        # Authority Metadata
-        # --------------------------------------
 
         "semantic_schema_version":
 

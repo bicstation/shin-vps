@@ -11,11 +11,20 @@ from api.models import (
 # ==========================================================
 
 def build_product_traversal(
-    product
+
+    product,
+
+    runtime=None,
 ):
 
     runtime = (
+
+        runtime
+
+        or
+
         product.semantic_runtime
+
         or {}
     )
 
@@ -64,7 +73,7 @@ def build_product_traversal(
             ),
 
         # --------------------------------------------------
-        # Reality Layer
+        # Reality
         # --------------------------------------------------
 
         "semantic_attributes":
@@ -89,7 +98,7 @@ def build_product_traversal(
             ),
 
         # --------------------------------------------------
-        # Meaning Layer
+        # Meaning
         # --------------------------------------------------
 
         "product_type":
@@ -193,9 +202,7 @@ def build_traversal_runtime():
 
     products = (
 
-        PCProduct.objects
-
-        .filter(
+        PCProduct.objects.filter(
             is_active=True
         )
     )
@@ -215,7 +222,10 @@ def build_traversal_runtime():
             traversals.append(
 
                 build_product_traversal(
-                    product
+
+                    product=product,
+
+                    runtime=runtime,
                 )
             )
 
@@ -229,9 +239,7 @@ def build_traversal_runtime():
             "traversal_v2",
 
         "product_count":
-            len(
-                traversals
-            ),
+            len(traversals),
 
         "products":
             traversals,
@@ -249,7 +257,7 @@ def get_product_traversal(
     unique_id
 ):
 
-    for product in (
+    products = (
 
         build_traversal_runtime()
 
@@ -257,20 +265,19 @@ def get_product_traversal(
             "products",
             []
         )
-    ):
+    )
 
-        if (
+    return next(
 
-            product.get(
+        (
+            product
+
+            for product in products
+
+            if product.get(
                 "unique_id"
-            )
+            ) == unique_id
+        ),
 
-            ==
-
-            unique_id
-
-        ):
-
-            return product
-
-    return None
+        None,
+    )
