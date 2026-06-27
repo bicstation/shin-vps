@@ -18,7 +18,7 @@ from api.services.semantic.v2.seo.seo_runtime import (
 )
 
 from api.services.semantic.v2.presentation.presentation_runtime import (
-    build_fibder_presentation,
+    build_finder_presentation,
 )
 
 

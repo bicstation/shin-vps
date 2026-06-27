@@ -5,24 +5,39 @@
 // ============================================================================
 
 /**
+ * ============================================================================
  * SHIN CORE LINX
  * Ranking Runtime Gateway
+ * ============================================================================
  *
- * Responsibilities:
+ * PURPOSE
  *
- * - ranking runtime fetch
- * - backend runtime preservation
- * - frontend-safe runtime exposure
+ * GET /api/pc/ranking/{slug}/
  *
- * IMPORTANT:
+ * ↓
  *
- * Backend remains semantic authority.
- * This layer MUST NOT:
+ * Semantic Ranking Runtime
  *
- * ❌ rerank products
- * ❌ generate semantic meaning
- * ❌ mutate workflow tags
- * ❌ modify semantic labels
+ * IMPORTANT
+ *
+ * Backend remains:
+ *
+ * Semantic Authority
+ *
+ * Adapter remains:
+ *
+ * Projection Authority
+ *
+ * Adapter SHALL:
+ *
+ * Transport
+ * Normalize
+ * Project
+ * Observe
+ *
+ * ONLY
+ *
+ * ============================================================================
  */
 
 /* ============================================================================
@@ -30,7 +45,9 @@
 ============================================================================ */
 
 import type {
+
   SemanticRankingRuntime,
+
 } from './contracts'
 
 /* ============================================================================
@@ -38,18 +55,33 @@ import type {
 ============================================================================ */
 
 import {
+
   buildEndpoint,
+
 } from '../utils/buildEndpoint'
 
 import {
+
   safeFetch,
+
 } from '../utils/safeFetch'
+
+/* ============================================================================
+🔥 Normalize
+============================================================================ */
+
+import {
+
+  normalizeRanking,
+
+} from './normalize'
 
 /* ============================================================================
 🔥 Endpoint
 ============================================================================ */
 
 const RANKING_RUNTIME_ENDPOINT =
+
   '/pc/ranking'
 
 /* ============================================================================
@@ -58,109 +90,164 @@ const RANKING_RUNTIME_ENDPOINT =
 
 export async function fetchRankingRuntime(
 
-  slug: string = 'usage-gaming',
+  slug = 'usage-gaming',
 
-): Promise<SemanticRankingRuntime | null> {
+): Promise<SemanticRankingRuntime> {
 
-  // ======================================
-  // Empty Guard
-  // ======================================
+  /* ==========================================================================
+  Empty Guard
+  ========================================================================== */
 
   if (!slug) {
 
     console.warn(
+
       '⚠️ RANKING RUNTIME EMPTY SLUG'
+
     )
 
-    return null
+    return normalizeRanking()
+
   }
 
-  // ======================================
-  // Endpoint
-  // ======================================
+  /* ==========================================================================
+  Endpoint
+  ========================================================================== */
 
   const endpoint =
 
     buildEndpoint(
+
       `${RANKING_RUNTIME_ENDPOINT}/${slug}/`
+
     )
-
-  // ======================================
-  // Fetch
-  // ======================================
-
-  const response =
-
-    await safeFetch<SemanticRankingRuntime>(
-      endpoint
-    )
-
-  // ======================================
-  // Invalid Response
-  // ======================================
-
-  if (!response) {
-
-    console.error(
-      '🔥 RANKING RUNTIME FAILURE',
-      {
-        slug,
-        endpoint,
-      }
-    )
-
-    return null
-  }
-
-  // ======================================
-  // Runtime Debug
-  // ======================================
-
-  const source =
-
-    (response as any)?.data
-
-    ??
-
-    response
-
-    ??
-
-    {}
 
   console.log(
+
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+
+  )
+
+  console.log(
+
+    '🔥 FETCH RANKING RUNTIME'
+
+  )
+
+  console.log({
+
+    slug,
+
+    endpoint,
+
+  })
+
+  console.log(
+
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+
+  )
+
+  /* ==========================================================================
+  Fetch
+  ========================================================================== */
+
+  const payload =
+
+    await safeFetch<SemanticRankingRuntime>(
+
+      endpoint
+
+    )
+
+  /* ==========================================================================
+  Failure
+  ========================================================================== */
+
+  if (!payload) {
+
+    console.error(
+
+      '🔥 RANKING RUNTIME FAILURE',
+
+      {
+
+        slug,
+
+        endpoint,
+
+      }
+
+    )
+
+    return normalizeRanking()
+
+  }
+
+  /* ==========================================================================
+  Normalize
+  ========================================================================== */
+
+  const runtime =
+
+    normalizeRanking(
+
+      payload
+
+    )
+
+  /* ==========================================================================
+  Runtime Observability
+  ========================================================================== */
+
+  console.log(
+
     '🔥 RANKING RUNTIME',
+
     {
 
       slug,
 
       endpoint,
 
-      group_slug:
-        source?.group_slug,
+      presentation:
 
-      group_name:
-        source?.group_name,
+        runtime.presentation,
 
-      product_count:
+      products:
 
-        source?.product_count
+        runtime.products?.length,
 
-        ??
+      ranking:
 
-        source?.products?.length
+        runtime.ranking?.results?.length,
 
-        ??
+      semantic_schema_version:
 
-        0,
+        runtime.semantic_schema_version,
+
+      authority_version:
+
+        runtime.authority_version,
+
+      semantic_authority:
+
+        runtime.semantic_authority,
+
+      ready:
+
+        runtime.ready,
+
     }
+
   )
 
-  // ======================================
-  // Return
-  // ======================================
+  /* ==========================================================================
+  Success
+  ========================================================================== */
 
-  return response
+  return runtime
+
 }
 
 /* ============================================================================

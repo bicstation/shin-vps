@@ -1,157 +1,220 @@
 // ============================================================================
 // FILE:
 // /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/[slug]/page.tsx
+// Copyright (c) 2024 Shin Corporation.
+// All rights reserved.
 // ============================================================================
 
 import type {
-  Metadata,
+
+    Metadata,
+
 } from 'next'
 
 import {
-  fetchSemanticRankingRuntime,
+    fetchSemanticRankingRuntime,
 } from '@/shared/lib/api/django/pc/ranking/fetchSemanticRankingRuntime'
 
 import {
-  RankingRuntime,
-  RuntimeDebug,
-  RuntimeSchema,
+
+    RankingRuntime,
+
+    // RankingDebug,
+
+    // RankingSchema,
+
 } from './components'
 
 import styles from './RankingSlugPage.module.css'
 
-type PageProps = {
-  params: Promise<{
-    slug: string
-  }>
+/* ============================================================================
+🔥 Types
+============================================================================ */
 
-  searchParams: Promise<{
-    debug?: string
-  }>
+type PageProps = {
+
+    params: Promise<{
+
+        slug: string
+
+    }>
+
+    searchParams: Promise<{
+
+        debug?: string
+
+    }>
+
 }
 
 /* ============================================================================
-🔥 Metadata Runtime Bridge
+🔥 Metadata
 ============================================================================ */
 
-export async function
-generateMetadata({
+export async function generateMetadata({
 
-  params,
+    params,
 
 }: {
-  params: Promise<{
-    slug: string
-  }>
+
+    params: Promise<{
+
+        slug: string
+
+    }>
+
 }): Promise<Metadata> {
 
-  /* ==========================================================================
-  🔥 Params
-  ========================================================================== */
+    const {
 
-  const { slug } =
-    await params
+        slug,
 
-  /* ==========================================================================
-  🔥 Runtime Fetch
-  ========================================================================== */
+    } = await params
 
-  const runtime =
-    await fetchSemanticRankingRuntime(
-      slug
-    )
+    const runtime =
 
-  const seo =
-    runtime?.seo || {}
+        await fetchSemanticRankingRuntime(
 
-  /* ==========================================================================
-  🔥 Metadata
-  ========================================================================== */
+            slug,
 
-  return {
-
-    title:
-      seo?.title
-      || 'PCランキング',
-
-    description:
-      seo?.description
-      || 'おすすめPCランキング',
-
-    alternates: {
-
-      canonical:
-        seo?.canonical
-        || `/ranking/${slug}/`,
-    },
-
-    openGraph: {
-
-      title:
-        seo?.openGraph?.title
-        || seo?.title,
-
-      description:
-        seo?.openGraph?.description
-        || seo?.description,
-
-      url:
-        seo?.canonical
-        || `/ranking/${slug}/`,
-
-      siteName:
-        'SHIN CORE LINX',
-
-      images:
-
-        Array.isArray(
-          seo?.openGraph?.images
         )
 
-          ? seo.openGraph.images
+    const seo =
 
-          : [],
+        runtime?.seo ?? {}
 
-      locale:
-        'ja_JP',
+    return {
 
-      type:
-        'website',
-    },
+        title:
 
-    twitter: {
+            seo.title
 
-      card:
-        'summary_large_image',
+            ||
 
-      title:
-        seo?.twitter?.title
-        || seo?.title,
+            'PCランキング',
 
-      description:
-        seo?.twitter?.description
-        || seo?.description,
+        description:
 
-      images:
+            seo.description
 
-        Array.isArray(
-          seo?.twitter?.images
-        )
+            ||
 
-          ? seo.twitter.images
+            'おすすめPCランキング',
 
-          : [],
-    },
+        alternates: {
 
-    keywords:
+            canonical:
 
-      Array.isArray(
-        seo?.keywords
-      )
+                seo.canonical
 
-        ? seo.keywords
+                ||
 
-        : [],
-  }
+                `/ranking/${slug}/`,
+
+        },
+
+        openGraph: {
+
+            title:
+
+                seo.openGraph?.title
+
+                ||
+
+                seo.title,
+
+            description:
+
+                seo.openGraph?.description
+
+                ||
+
+                seo.description,
+
+            url:
+
+                seo.canonical
+
+                ||
+
+                `/ranking/${slug}/`,
+
+            siteName:
+
+                'SHIN CORE LINX',
+
+            images:
+
+                Array.isArray(
+
+                    seo.openGraph?.images,
+
+                )
+
+                    ? seo.openGraph.images
+
+                    : [],
+
+            locale:
+
+                'ja_JP',
+
+            type:
+
+                'website',
+
+        },
+
+        twitter: {
+
+            card:
+
+                'summary_large_image',
+
+            title:
+
+                seo.twitter?.title
+
+                ||
+
+                seo.title,
+
+            description:
+
+                seo.twitter?.description
+
+                ||
+
+                seo.description,
+
+            images:
+
+                Array.isArray(
+
+                    seo.twitter?.images,
+
+                )
+
+                    ? seo.twitter.images
+
+                    : [],
+
+        },
+
+        keywords:
+
+            Array.isArray(
+
+                seo.keywords,
+
+            )
+
+                ? seo.keywords
+
+                : [],
+
+    }
+
 }
 
 /* ============================================================================
@@ -159,66 +222,81 @@ generateMetadata({
 ============================================================================ */
 
 export default async function RankingSlugPage({
-  params,
-  searchParams,
+
+    params,
+
+    searchParams,
+
 }: PageProps) {
 
-  /* ==========================================================================
-  🔥 Params
-  ========================================================================== */
+    const {
 
-  const { slug } =
-    await params
+        slug,
 
-  const { debug } =
-    await searchParams
+    } = await params
 
-  /* ==========================================================================
-  🔥 Runtime Fetch
-  ========================================================================== */
+    const {
 
-  const runtime =
-    await fetchSemanticRankingRuntime(
-      slug
+        debug,
+
+    } = await searchParams
+
+    const runtime =
+
+        await fetchSemanticRankingRuntime(
+
+            slug,
+
+        )
+
+    return (
+
+        <main
+            className={
+                styles.page
+            }
+        >
+
+            {/* ==========================================================
+            Schema
+            ========================================================== */}
+
+            {/* <RankingSchema
+                schemas={
+                    runtime?.schemas
+                }
+            /> */}
+
+            {/* ==========================================================
+            Ranking Experience
+            ========================================================== */}
+
+            <RankingRuntime
+                runtime={
+                    runtime
+                }
+            />
+
+            {/* ==========================================================
+            Debug
+            ========================================================== */}
+
+            {/* {
+
+                debug === '1' && (
+
+                    <RankingDebug
+                        runtime={
+                            runtime
+                        }
+                    />
+
+                )
+
+            } */}
+
+        </main>
+
     )
 
-  /* ==========================================================================
-  🔥 Render
-  ========================================================================== */
-
-  return (
-
-    <main className={styles.page}>
-
-      {/* ================================================================
-      Runtime Schema Injection
-      ================================================================ */}
-
-      <RuntimeSchema
-        schemas={runtime?.schemas}
-      />
-
-      {/* ================================================================
-      Runtime Experience
-      ================================================================ */}
-
-      <RankingRuntime
-        runtime={runtime}
-      />
-
-      {/* ================================================================
-      Debug
-      ================================================================ */}
-
-      {debug === '1' && (
-
-        <RuntimeDebug
-          runtime={runtime}
-        />
-
-      )}
-
-    </main>
-
-  )
 }

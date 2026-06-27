@@ -1,245 +1,258 @@
 // ============================================================================
 // FILE:
 // /shared/lib/api/django/pc/ranking/fetchSemanticRankingRuntime.ts
+// Copyright (c) 2024 Shin Corporation.
+// All rights reserved.
 // ============================================================================
 
 import type {
+
   SemanticRankingRuntime,
+
 } from './contracts'
 
 import {
+
   buildEndpoint,
+
 } from '../utils/buildEndpoint'
 
 import {
+
   safeFetch,
+
 } from '../utils/safeFetch'
 
 import {
+
   normalizeRanking,
+
 } from './normalize'
 
 const RANKING_RUNTIME_ENDPOINT =
+
   '/pc/ranking'
 
 export async function fetchSemanticRankingRuntime(
-  slug = 'all',
-): Promise<SemanticRankingRuntime | null> {
 
-  // ==========================================================================
-  // Empty Guard
-  // ==========================================================================
+  slug = 'all',
+
+): Promise<SemanticRankingRuntime> {
+
+  /* ==========================================================================
+  Empty Guard
+  ========================================================================== */
 
   if (!slug) {
 
     console.warn(
+
       '⚠️ SEMANTIC RANKING RUNTIME EMPTY SLUG'
+
     )
 
-    return null
+    return normalizeRanking()
+
   }
 
-  // ==========================================================================
-  // Endpoint
-  // ==========================================================================
+  /* ==========================================================================
+  Endpoint
+  ========================================================================== */
 
-  const endpoint = buildEndpoint(
-    `${RANKING_RUNTIME_ENDPOINT}/${slug}/`
-  )
+  const endpoint =
 
-  // ==========================================================================
-  // Fetch
-  // ==========================================================================
+    buildEndpoint(
 
-  const response =
-    await safeFetch<SemanticRankingRuntime>(
-      endpoint
+      `${RANKING_RUNTIME_ENDPOINT}/${slug}/`
+
     )
 
-  // ==========================================================================
-  // Runtime Debug
-  // ==========================================================================
+  /* ==========================================================================
+  Runtime Debug
+  ========================================================================== */
 
   console.log(
+
     '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+
   )
 
   console.log(
+
     '🔥 SEMANTIC RANKING RUNTIME FETCH'
+
   )
 
   console.log({
+
     slug,
+
     endpoint,
+
     pipeline:
-      'legacy-semantic-ranking-runtime',
+
+      'ranking-runtime-v2',
+
   })
 
   console.log(
+
     '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+
   )
+
+  /* ==========================================================================
+  Fetch
+  ========================================================================== */
+
+  const payload =
+
+    await safeFetch<SemanticRankingRuntime>(
+
+      endpoint
+
+    )
 
   console.log(
-    '🔥 RANKING RUNTIME RESPONSE',
-    response
+
+    '🔥 RANKING RAW PAYLOAD',
+
+    payload
+
   )
 
-  // ==========================================================================
-  // Raw Payload Visibility
-  // ==========================================================================
+  /* ==========================================================================
+  Failure
+  ========================================================================== */
 
-  console.log(
-    '🔥 RANKING RESPONSE JSON',
-    JSON.stringify(response, null, 2)
-  )
-
-  console.log(
-    '🔥 RESPONSE KEYS',
-    Object.keys(response || {})
-  )
-
-  console.log(
-    '🔥 TOPOLOGY CHECK',
-    {
-      rankingResults:
-        response?.ranking?.results?.length,
-
-      results:
-        (response as any)?.results?.length,
-
-      products:
-        (response as any)?.products?.length,
-
-      rankingProducts:
-        (response as any)
-          ?.ranking_products?.length,
-
-      items:
-        (response as any)?.items?.length,
-
-      groupedRankings:
-        (response as any)
-          ?.grouped_rankings
-          ? Object.keys(
-              (response as any)
-                .grouped_rankings
-            )
-          : null,
-    }
-  )
-
-  // ==========================================================================
-  // Invalid Response
-  // ==========================================================================
-
-  if (!response) {
+  if (!payload) {
 
     console.error(
+
       '🔥 SEMANTIC RANKING RUNTIME FAILURE',
+
       {
+
         slug,
+
         endpoint,
+
       }
+
     )
 
-    return {
-      success: false,
+    return normalizeRanking()
 
-      ranking: {
-        results: [],
-      },
-
-      raw: null,
-    }
   }
 
-  // ==========================================================================
-  // Normalize
-  // ==========================================================================
+  /* ==========================================================================
+  Normalize
+  ========================================================================== */
 
-  const normalized =
-    normalizeRanking(response)
+  const runtime =
 
-  // ==========================================================================
-  // Normalize Visibility
-  // ==========================================================================
+    normalizeRanking(
 
-  console.log(
-    '🔥 NORMALIZED RANKING',
-    normalized
-  )
+      payload
 
-  console.log(
-    '🔥 NORMALIZED RESULTS LENGTH',
-    normalized?.ranking?.results?.length
-  )
-
-    // ==========================================================================
-    // Runtime Payload
-    // ==========================================================================
-
-    const runtimePayload =
-      normalized as any
-
-    // ==========================================================================
-    // Canonical Product Continuity
-    // ==========================================================================
-
-    const products =
-
-      Array.isArray(
-        runtimePayload?.products
-      )
-
-        ? runtimePayload.products
-
-      : Array.isArray(
-          runtimePayload?.results
-        )
-
-        ? runtimePayload.results
-
-      : Array.isArray(
-          runtimePayload?.ranking?.results
-        )
-
-        ? runtimePayload.ranking.results
-
-      : Array.isArray(
-          runtimePayload?.items
-        )
-
-        ? runtimePayload.items
-
-      : Array.isArray(
-          runtimePayload?.ranking_products
-        )
-
-        ? runtimePayload.ranking_products
-
-      : []
-
-    // ==========================================================================
-    // Runtime Continuity Debug
-    // ==========================================================================
-
-    console.log(
-      '🔥 RUNTIME PRODUCTS CONTINUITY',
-      {
-        length: products.length,
-      }
     )
 
-    // ==========================================================================
-    // Canonical Runtime Contract
-    // ==========================================================================
+  /* ==========================================================================
+  Canonical Product Continuity
+  ========================================================================== */
 
-    return {
-      ...normalized,
+  const runtimePayload =
 
-      products,
+    runtime as any
+
+  const products =
+
+    Array.isArray(
+      runtimePayload?.products
+    )
+
+      ? runtimePayload.products
+
+    : Array.isArray(
+        runtimePayload?.results
+      )
+
+      ? runtimePayload.results
+
+    : Array.isArray(
+        runtimePayload?.ranking?.results
+      )
+
+      ? runtimePayload.ranking.results
+
+    : Array.isArray(
+        runtimePayload?.items
+      )
+
+      ? runtimePayload.items
+
+    : Array.isArray(
+        runtimePayload?.ranking_products
+      )
+
+      ? runtimePayload.ranking_products
+
+    : []
+
+  /* ==========================================================================
+  Runtime Observability
+  ========================================================================== */
+
+  console.log(
+
+    '🔥 RANKING RUNTIME',
+
+    {
+
+      presentation:
+
+        runtime.presentation,
+
+      products:
+
+        products.length,
+
+      ranking:
+
+        runtime.ranking?.results?.length,
+
+      semantic_schema_version:
+
+        runtime.semantic_schema_version,
+
+      authority_version:
+
+        runtime.authority_version,
+
+      semantic_authority:
+
+        runtime.semantic_authority,
+
+      ready:
+
+        runtime.ready,
+
     }
-  
+
+  )
+
+  /* ==========================================================================
+  Canonical Runtime Contract
+  ========================================================================== */
+
+  return {
+
+    ...runtime,
+
+    products,
+
+  }
+
 }
 
 export default fetchSemanticRankingRuntime

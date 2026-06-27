@@ -5,35 +5,39 @@
 // ============================================================================
 
 /**
+ * ============================================================================
  * SHIN CORE LINX
- * Ranking Collection Gateway
+ * Ranking Runtime Gateway
+ * ============================================================================
  *
- * IMPORTANT:
+ * PURPOSE
  *
- * This layer exists for:
+ * GET /api/pc/ranking/{slug}/
  *
- * frontend-safe semantic collection exposure
+ * ↓
  *
- * NOT:
+ * Ranking Runtime
  *
- * semantic ranking generation
+ * IMPORTANT
  *
- * Responsibilities:
+ * Backend remains:
  *
- * - ranking runtime fetch
- * - shallow-safe collection stabilization
- * - semantic runtime preservation
- * - frontend-safe ranking exposure
+ * Semantic Authority
  *
- * IMPORTANT:
+ * Adapter remains:
  *
- * This layer MUST NOT:
+ * Projection Authority
  *
- * ❌ rerank semantic collections
- * ❌ infer workflow meaning
- * ❌ generate semantic labels
- * ❌ mutate traversal semantics
- * ❌ generate grouped exploration
+ * Adapter SHALL:
+ *
+ * Transport
+ * Normalize
+ * Project
+ * Observe
+ *
+ * ONLY
+ *
+ * ============================================================================
  */
 
 /* ============================================================================
@@ -81,46 +85,34 @@ const RANKING_ENDPOINT =
   '/pc/ranking'
 
 /* ============================================================================
-🔥 Fetch Ranking
+🔥 Fetch Ranking Runtime
 ============================================================================ */
 
-/**
- * Frontend-safe ranking gateway.
- *
- * IMPORTANT:
- *
- * This layer intentionally avoids:
- *
- * - semantic inference
- * - workflow mutation
- * - traversal generation
- * - exploration rewriting
- *
- * Backend remains semantic authority.
- */
 export async function fetchRanking(
 
-  slug = 'score',
+  slug = 'all',
 
-): Promise<SemanticRankingRuntime | null> {
+): Promise<SemanticRankingRuntime> {
 
-  // ======================================
-  // Empty Guard
-  // ======================================
+  /* ==========================================================================
+  Empty Guard
+  ========================================================================== */
 
   if (!slug) {
 
     console.warn(
 
       '⚠️ RANKING EMPTY SLUG'
+
     )
 
-    return null
+    return normalizeRanking()
+
   }
 
-  // ======================================
-  // Endpoint
-  // ======================================
+  /* ==========================================================================
+  Endpoint
+  ========================================================================== */
 
   const endpoint =
 
@@ -130,21 +122,49 @@ export async function fetchRanking(
 
     )
 
-  // ======================================
-  // Fetch
-  // ======================================
+  console.log(
 
-  const response =
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+
+  )
+
+  console.log(
+
+    '🔥 FETCH RANKING RUNTIME'
+
+  )
+
+  console.log({
+
+    slug,
+
+    endpoint,
+
+  })
+
+  console.log(
+
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+
+  )
+
+  /* ==========================================================================
+  Fetch
+  ========================================================================== */
+
+  const payload =
 
     await safeFetch<SemanticRankingRuntime>(
+
       endpoint
+
     )
 
-  // ======================================
-  // Invalid Response
-  // ======================================
+  /* ==========================================================================
+  Failure
+  ========================================================================== */
 
-  if (!response) {
+  if (!payload) {
 
     console.error(
 
@@ -155,39 +175,75 @@ export async function fetchRanking(
         slug,
 
         endpoint,
+
       }
+
     )
 
-    return null
+    return normalizeRanking()
+
   }
 
-  // ======================================
-  // Runtime Debug
-  // ======================================
+  /* ==========================================================================
+  Normalize
+  ========================================================================== */
+
+  const runtime =
+
+    normalizeRanking(
+
+      payload
+
+    )
+
+  /* ==========================================================================
+  Runtime Observability
+  ========================================================================== */
 
   console.log(
 
-    '🔥 RANKING ENDPOINT:',
+    '🔥 RANKING RUNTIME',
 
-    endpoint
+    {
+
+      presentation:
+
+        runtime.presentation,
+
+      products:
+
+        runtime.products?.length,
+
+      ranking:
+
+        runtime.ranking?.results?.length,
+
+      semantic_schema_version:
+
+        runtime.semantic_schema_version,
+
+      authority_version:
+
+        runtime.authority_version,
+
+      semantic_authority:
+
+        runtime.semantic_authority,
+
+      ready:
+
+        runtime.ready,
+
+    }
+
   )
 
-  console.log(
+  /* ==========================================================================
+  Success
+  ========================================================================== */
 
-    '🔥 RANKING RESPONSE:',
+  return runtime
 
-    response
-  )
-
-  // ======================================
-  // Normalize
-  // ======================================
-
-  return normalizeRanking(
-
-    response
-
-  )
 }
 
 /* ============================================================================

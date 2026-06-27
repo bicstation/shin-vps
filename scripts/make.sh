@@ -1,72 +1,145 @@
 #!/bin/bash
+
 # ============================================================================
 # SHIN CORE LINX
-# Ranking Experience V2
-# Frontend Scaffold
+# Ranking Experience V2 Structure
 # ============================================================================
 
-BASE="/home/maya/shin-dev/shin-vps/next-bicstation/app/ranking"
+set -e
 
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "Creating Ranking Experience V2"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+ROOT="/home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/[slug]"
 
-# ----------------------------------------------------------------------------
-# Directories
-# ----------------------------------------------------------------------------
+echo "===================================================="
+echo "Creating Ranking Experience V2 Structure"
+echo "===================================================="
 
-mkdir -p "$BASE/components"
-mkdir -p "$BASE/hooks"
-mkdir -p "$BASE/styles"
-mkdir -p "$BASE/types"
-
-# ----------------------------------------------------------------------------
-# Page
-# ----------------------------------------------------------------------------
-
-touch "$BASE/page.tsx"
-
-# ----------------------------------------------------------------------------
+# ============================================================================
 # Components
-# ----------------------------------------------------------------------------
+# ============================================================================
 
-touch "$BASE/components/Breadcrumb.tsx"
+mkdir -p "$ROOT/components"
 
-touch "$BASE/components/RankingHero.tsx"
+mkdir -p "$ROOT/components/hero"
+mkdir -p "$ROOT/components/breadcrumbs"
+mkdir -p "$ROOT/components/flagship"
+mkdir -p "$ROOT/components/comparison"
+mkdir -p "$ROOT/components/ranking"
+mkdir -p "$ROOT/components/faq"
+mkdir -p "$ROOT/components/continuation"
+mkdir -p "$ROOT/components/debug"
+mkdir -p "$ROOT/components/seo"
 
-touch "$BASE/components/FeaturedRanking.tsx"
-
-touch "$BASE/components/RankingTabs.tsx"
-
-touch "$BASE/components/RankingSummary.tsx"
-
-touch "$BASE/components/RankingGrid.tsx"
-
-touch "$BASE/components/RankingCard.tsx"
-
-touch "$BASE/components/EmptyRanking.tsx"
-
-# ----------------------------------------------------------------------------
+# ============================================================================
 # Hooks
-# ----------------------------------------------------------------------------
+# ============================================================================
 
-touch "$BASE/hooks/useRanking.ts"
+mkdir -p "$ROOT/hooks"
 
-# ----------------------------------------------------------------------------
-# Types
-# ----------------------------------------------------------------------------
+# ============================================================================
+# Lib
+# ============================================================================
 
-touch "$BASE/types/ranking.ts"
+mkdir -p "$ROOT/lib"
 
-# ----------------------------------------------------------------------------
+mkdir -p "$ROOT/lib/hero"
+mkdir -p "$ROOT/lib/flagship"
+mkdir -p "$ROOT/lib/comparison"
+mkdir -p "$ROOT/lib/ranking"
+mkdir -p "$ROOT/lib/seo"
+mkdir -p "$ROOT/lib/shared"
+
+# ============================================================================
 # Styles
-# ----------------------------------------------------------------------------
+# ============================================================================
 
-touch "$BASE/styles/ranking.module.css"
+mkdir -p "$ROOT/styles"
 
-echo ""
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "Ranking Experience V2 Scaffold Complete"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+mkdir -p "$ROOT/styles/hero"
+mkdir -p "$ROOT/styles/breadcrumbs"
+mkdir -p "$ROOT/styles/flagship"
+mkdir -p "$ROOT/styles/comparison"
+mkdir -p "$ROOT/styles/ranking"
+mkdir -p "$ROOT/styles/faq"
+mkdir -p "$ROOT/styles/continuation"
+mkdir -p "$ROOT/styles/debug"
+mkdir -p "$ROOT/styles/seo"
 
-tree "$BASE"
+# ============================================================================
+# Types
+# ============================================================================
+
+mkdir -p "$ROOT/types"
+
+# ============================================================================
+# Root Files
+# ============================================================================
+
+touch "$ROOT/page.tsx"
+touch "$ROOT/RankingSlugPage.module.css"
+
+# ============================================================================
+# Components
+# ============================================================================
+
+touch "$ROOT/components/index.ts"
+touch "$ROOT/components/RankingRuntime.tsx"
+
+touch "$ROOT/components/hero/RankingHero.tsx"
+
+touch "$ROOT/components/breadcrumbs/RankingBreadcrumbs.tsx"
+
+touch "$ROOT/components/flagship/FlagshipCard.tsx"
+
+touch "$ROOT/components/comparison/ComparisonGrid.tsx"
+touch "$ROOT/components/comparison/ComparisonCard.tsx"
+
+touch "$ROOT/components/ranking/RankingList.tsx"
+touch "$ROOT/components/ranking/RankingListItem.tsx"
+
+touch "$ROOT/components/faq/RankingFAQ.tsx"
+
+touch "$ROOT/components/continuation/RankingContinuation.tsx"
+
+touch "$ROOT/components/debug/RankingDebug.tsx"
+
+touch "$ROOT/components/seo/RankingSEO.tsx"
+
+# ============================================================================
+# Hooks
+# ============================================================================
+
+touch "$ROOT/hooks/useRuntimeTheme.ts"
+touch "$ROOT/hooks/useSemanticHierarchy.ts"
+
+# ============================================================================
+# Types
+# ============================================================================
+
+touch "$ROOT/types/contracts.ts"
+
+# ============================================================================
+# Style Files
+# ============================================================================
+
+touch "$ROOT/styles/hero/hero.module.css"
+
+touch "$ROOT/styles/breadcrumbs/breadcrumbs.module.css"
+
+touch "$ROOT/styles/flagship/flagship.module.css"
+
+touch "$ROOT/styles/comparison/comparison.module.css"
+
+touch "$ROOT/styles/ranking/ranking.module.css"
+
+touch "$ROOT/styles/faq/faq.module.css"
+
+touch "$ROOT/styles/continuation/continuation.module.css"
+
+touch "$ROOT/styles/debug/debug.module.css"
+
+touch "$ROOT/styles/seo/seo.module.css"
+
+echo
+echo "Completed."
+echo
+t3 "$ROOT"
