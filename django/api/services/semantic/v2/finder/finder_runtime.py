@@ -5,7 +5,7 @@ from api.services.semantic.v2.authority.authority_runtime import (
     build_authority_runtime,
 )
 
-from api.services.semantic.v2.traversal.traversal_builder import (
+from api.services.semantic.v2.traversal.traversal_runtime import (
     build_traversal_runtime,
 )
 
@@ -68,11 +68,15 @@ def calculate_match_score(
 # ==========================================================
 # FINDER
 # ==========================================================
+
 def build_finder_runtime(
 
     selected_attributes=None,
+
     selected_groups=None,
+
     max_price=None,
+
     limit=100,
 ):
 
@@ -88,6 +92,10 @@ def build_finder_runtime(
         build_finder_meaning()
     )
 
+    presentation = (
+        build_finder_presentation()
+    )
+
     selected_attributes = (
         selected_attributes or []
     )
@@ -96,13 +104,10 @@ def build_finder_runtime(
         selected_groups or []
     )
 
-    presentation = (
-        build_finder_presentation()
-    )
-
     filters = list(
 
         set(
+
             selected_attributes
             +
             selected_groups
@@ -110,9 +115,9 @@ def build_finder_runtime(
     )
 
     # ------------------------------------------------------
-    # MATCH
+    # PRICE
     # ------------------------------------------------------
-    
+
     if max_price is not None:
 
         try:
@@ -121,22 +126,19 @@ def build_finder_runtime(
                 max_price
             )
 
-        except:
+        except (
+            TypeError,
+            ValueError,
+        ):
 
             max_price = None
 
-    filters = list(
-
-        set(
-            selected_attributes
-            +
-            selected_groups
-        )
-    )
+    # ------------------------------------------------------
+    # MATCH
+    # ------------------------------------------------------
 
     matches = []
-    
-    
+
     for product in traversal.get(
         "products",
         []
@@ -151,26 +153,37 @@ def build_finder_runtime(
 
             price = int(price)
 
-        except:
+        except (
+            TypeError,
+            ValueError,
+        ):
 
             price = 0
 
         if (
+
             max_price is not None
+
             and
+
             price > max_price
+
         ):
-            
+
             continue
 
         score = (
+
             calculate_match_score(
+
                 product,
+
                 filters,
             )
         )
 
         if filters and score <= 0:
+
             continue
 
         matches.append({
@@ -180,15 +193,12 @@ def build_finder_runtime(
 
             **product,
         })
-    
-    
+
     # ------------------------------------------------------
     # SORT
     # ------------------------------------------------------
 
-    matches = sorted(
-
-        matches,
+    matches.sort(
 
         key=lambda x: (
 
@@ -218,7 +228,10 @@ def build_finder_runtime(
 
         reverse=True,
     )
-    
+
+    matches = (
+        matches[:limit]
+    )
 
     # ------------------------------------------------------
     # SEO
@@ -228,11 +241,11 @@ def build_finder_runtime(
 
         build_finder_seo(
 
-            meaning=
-                meaning,
+            meaning=meaning,
 
-            product_count=
-                len(matches),
+            product_count=len(
+                matches
+            ),
         )
     )
 
@@ -243,16 +256,16 @@ def build_finder_runtime(
     return {
 
         # ----------------------------------------------
-        # STATIC AUTHORITY
+        # Meaning
         # ----------------------------------------------
 
         "meaning":
             meaning,
 
         # ----------------------------------------------
-        # PRESENTATION
-        # ---------------------------------------------- 
-        
+        # Presentation
+        # ----------------------------------------------
+
         "presentation":
             presentation,
 
@@ -264,26 +277,59 @@ def build_finder_runtime(
             seo,
 
         # ----------------------------------------------
-        # REALITY
+        # Reality
         # ----------------------------------------------
 
         "data": {
 
-            "filters":
-                filters,
+            "query": {
 
-            "result_count":
+                "selected_groups":
+                    selected_groups,
 
-                len(
-                    matches
-                ),
+                "selected_attributes":
+                    selected_attributes,
+
+                "filters":
+                    filters,
+
+                "max_price":
+                    max_price,
+            },
+
+            "summary": {
+
+                "group_count":
+
+                    len(
+                        selected_groups
+                    ),
+
+                "attribute_count":
+
+                    len(
+                        selected_attributes
+                    ),
+
+                "filter_count":
+
+                    len(
+                        filters
+                    ),
+
+                "result_count":
+
+                    len(
+                        matches
+                    ),
+            },
 
             "products":
                 matches,
         },
 
         # ----------------------------------------------
-        # AUTHORITY
+        # Authority
         # ----------------------------------------------
 
         "semantic_schema_version":
