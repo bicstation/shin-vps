@@ -1,0 +1,182 @@
+/* ============================================================================
+// FILE:
+// /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/[slug]/styles/debug/debug.module.css
+// Copyright (c) 2024 Shin Corporation.
+// All rights reserved.
+============================================================================ */
+
+/* ============================================================================
+🔥 Section
+============================================================================ */
+
+.section {
+
+    width: 100%;
+
+    max-width: 1400px;
+
+    margin: 80px auto;
+
+    padding: 0 24px;
+
+}
+
+/* ============================================================================
+🔥 Card
+============================================================================ */
+
+.card {
+
+    background:
+
+        linear-gradient(
+
+            180deg,
+
+            rgba(17,24,39,.98),
+
+            rgba(3,7,18,.98)
+
+        );
+
+    border: 1px solid rgba(255,255,255,.08);
+
+    border-radius: 20px;
+
+    overflow: hidden;
+
+    box-shadow:
+
+        0 20px 50px rgba(0,0,0,.35);
+
+}
+
+/* ============================================================================
+🔥 Header
+============================================================================ */
+
+.header {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    padding: 20px 28px;
+
+    border-bottom: 1px solid rgba(255,255,255,.08);
+
+}
+
+.title {
+
+    color: #ffffff;
+
+    font-size: 1.25rem;
+
+    font-weight: 700;
+
+}
+
+.badge {
+
+    padding: 6px 12px;
+
+    border-radius: 999px;
+
+    background: rgba(0,180,255,.12);
+
+    border: 1px solid rgba(0,180,255,.25);
+
+    color: #74d8ff;
+
+    font-size: .75rem;
+
+    font-weight: 700;
+
+    letter-spacing: .08em;
+
+    text-transform: uppercase;
+
+}
+
+/* ============================================================================
+🔥 Body
+============================================================================ */
+
+.body {
+
+    padding: 28px;
+
+}
+
+/* ============================================================================
+🔥 JSON
+============================================================================ */
+
+.json {
+
+    margin: 0;
+
+    overflow-x: auto;
+
+    white-space: pre-wrap;
+
+    word-break: break-word;
+
+    color: #dbeafe;
+
+    font-size: .85rem;
+
+    line-height: 1.8;
+
+    font-family:
+
+        "JetBrains Mono",
+
+        "Fira Code",
+
+        Consolas,
+
+        monospace;
+
+}
+
+/* ============================================================================
+🔥 Responsive
+============================================================================ */
+
+@media (max-width:768px) {
+
+    .section {
+
+        margin: 56px auto;
+
+        padding: 0 18px;
+
+    }
+
+    .header {
+
+        flex-direction: column;
+
+        align-items: flex-start;
+
+        gap: 12px;
+
+    }
+
+    .body {
+
+        padding: 20px;
+
+    }
+
+    .json {
+
+        font-size: .8rem;
+
+    }
+
+}

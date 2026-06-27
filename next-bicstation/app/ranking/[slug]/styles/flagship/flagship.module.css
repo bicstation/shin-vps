@@ -1,0 +1,358 @@
+/* ============================================================================
+FILE:
+/home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/[slug]/styles/flagship/flagship.module.css
+Copyright (c) 2024 Shin Corporation.
+All rights reserved.
+============================================================================ */
+
+/* ============================================================================
+🔥 Flagship
+============================================================================ */
+
+.flagship {
+
+    position: relative;
+
+    display: grid;
+
+    grid-template-columns: 460px 1fr;
+
+    gap: 48px;
+
+    width: 100%;
+
+    max-width: 1400px;
+
+    margin: 0 auto 72px;
+
+    padding: 48px;
+
+    border-radius: 32px;
+
+    overflow: hidden;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(12,24,46,.96),
+            rgba(7,14,30,.96)
+        );
+
+    border: 1px solid rgba(255,255,255,.08);
+
+    box-shadow:
+        0 24px 60px rgba(0,0,0,.35);
+
+}
+
+/* ============================================================================
+🔥 Rank
+============================================================================ */
+
+.rank {
+
+    position: absolute;
+
+    top: 32px;
+
+    right: 32px;
+
+    z-index: 20;
+
+    font-size: 5rem;
+
+    font-weight: 900;
+
+    color: rgba(255,255,255,.08);
+
+    line-height: 1;
+
+    user-select: none;
+
+}
+
+/* ============================================================================
+🔥 Image
+============================================================================ */
+
+.imageArea {
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+}
+
+.image {
+
+    width: 100%;
+
+    height: auto;
+
+    object-fit: contain;
+
+    transition: transform .35s ease;
+
+}
+
+.flagship:hover .image {
+
+    transform: scale(1.03);
+
+}
+
+/* ============================================================================
+🔥 Content
+============================================================================ */
+
+.content {
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+
+}
+
+/* ============================================================================
+🔥 Badge
+============================================================================ */
+
+.badge {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    width: fit-content;
+
+    padding: 8px 18px;
+
+    margin-bottom: 24px;
+
+    border-radius: 999px;
+
+    background:
+
+        rgba(0,180,255,.15);
+
+    border:
+
+        1px solid rgba(0,180,255,.28);
+
+    color: #84d9ff;
+
+    font-size: .82rem;
+
+    font-weight: 700;
+
+    letter-spacing: .12em;
+
+    text-transform: uppercase;
+
+}
+
+/* ============================================================================
+🔥 Title
+============================================================================ */
+
+.title {
+
+    font-size: clamp(2rem,4vw,3rem);
+
+    font-weight: 800;
+
+    line-height: 1.2;
+
+    color: #fff;
+
+}
+
+/* ============================================================================
+🔥 Brand
+============================================================================ */
+
+.brand {
+
+    margin-top: 14px;
+
+    color: rgba(255,255,255,.65);
+
+    font-size: 1rem;
+
+}
+
+/* ============================================================================
+🔥 Description
+============================================================================ */
+
+.description {
+
+    margin-top: 28px;
+
+    color: rgba(255,255,255,.82);
+
+    line-height: 1.9;
+
+    font-size: 1rem;
+
+}
+
+/* ============================================================================
+🔥 Chips
+============================================================================ */
+
+.chips {
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 12px;
+
+    margin-top: 28px;
+
+}
+
+.chip {
+
+    padding: 8px 16px;
+
+    border-radius: 999px;
+
+    background: rgba(255,255,255,.08);
+
+    border: 1px solid rgba(255,255,255,.12);
+
+    color: #cfefff;
+
+    font-size: .85rem;
+
+}
+
+/* ============================================================================
+🔥 Price
+============================================================================ */
+
+.price {
+
+    margin-top: 36px;
+
+    font-size: 2rem;
+
+    font-weight: 800;
+
+    color: #7fd9ff;
+
+}
+
+/* ============================================================================
+🔥 Button
+============================================================================ */
+
+.button {
+
+    display: inline-flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    width: fit-content;
+
+    margin-top: 32px;
+
+    padding: 16px 30px;
+
+    border-radius: 14px;
+
+    background: linear-gradient(
+
+        135deg,
+
+        #00bfff,
+
+        #1d6fff
+
+    );
+
+    color: #fff;
+
+    font-weight: 700;
+
+    text-decoration: none;
+
+    transition:
+
+        transform .25s ease,
+
+        box-shadow .25s ease;
+
+}
+
+.button:hover {
+
+    transform: translateY(-2px);
+
+    box-shadow:
+
+        0 10px 30px rgba(0,150,255,.35);
+
+}
+
+/* ============================================================================
+🔥 Responsive
+============================================================================ */
+
+@media (max-width: 1100px) {
+
+    .flagship {
+
+        grid-template-columns: 1fr;
+
+        padding: 36px;
+
+    }
+
+    .imageArea {
+
+        max-width: 520px;
+
+        margin: 0 auto;
+
+    }
+
+}
+
+@media (max-width: 768px) {
+
+    .flagship {
+
+        padding: 24px;
+
+        border-radius: 24px;
+
+        gap: 24px;
+
+    }
+
+    .rank {
+
+        font-size: 3.5rem;
+
+        top: 20px;
+
+        right: 20px;
+
+    }
+
+    .button {
+
+        width: 100%;
+
+    }
+
+}

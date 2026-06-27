@@ -1,0 +1,148 @@
+/* ============================================================================
+// FILE:
+// /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/[slug]/styles/comparison/comparison-grid.module.css
+// Copyright (c) 2024 Shin Corporation.
+// All rights reserved.
+============================================================================ */
+
+/* ============================================================================
+🔥 Section
+============================================================================ */
+
+.section {
+
+    width: 100%;
+
+    max-width: 1400px;
+
+    margin: 72px auto;
+
+    padding: 0 24px;
+
+}
+
+/* ============================================================================
+🔥 Header
+============================================================================ */
+
+.header {
+
+    margin-bottom: 40px;
+
+}
+
+.eyebrow {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    padding: 8px 16px;
+
+    border-radius: 999px;
+
+    background: rgba(0,180,255,.12);
+
+    border: 1px solid rgba(0,180,255,.25);
+
+    color: #74d8ff;
+
+    font-size: .78rem;
+
+    font-weight: 700;
+
+    letter-spacing: .12em;
+
+    text-transform: uppercase;
+
+}
+
+.title {
+
+    margin-top: 18px;
+
+    color: #ffffff;
+
+    font-size: clamp(2rem,3vw,2.8rem);
+
+    font-weight: 800;
+
+    line-height: 1.25;
+
+}
+
+.description {
+
+    margin-top: 14px;
+
+    max-width: 760px;
+
+    color: rgba(255,255,255,.72);
+
+    font-size: 1rem;
+
+    line-height: 1.8;
+
+}
+
+/* ============================================================================
+🔥 Grid
+============================================================================ */
+
+.grid {
+
+    display: grid;
+
+    grid-template-columns: repeat(3, minmax(0,1fr));
+
+    gap: 28px;
+
+    align-items: stretch;
+
+}
+
+/* ============================================================================
+🔥 Responsive
+============================================================================ */
+
+@media (max-width:1200px) {
+
+    .grid {
+
+        grid-template-columns: repeat(2, minmax(0,1fr));
+
+    }
+
+}
+
+@media (max-width:768px) {
+
+    .section {
+
+        margin: 56px auto;
+
+        padding: 0 18px;
+
+    }
+
+    .grid {
+
+        grid-template-columns: 1fr;
+
+        gap: 20px;
+
+    }
+
+    .header {
+
+        margin-bottom: 28px;
+
+    }
+
+    .title {
+
+        font-size: 1.8rem;
+
+    }
+
+}

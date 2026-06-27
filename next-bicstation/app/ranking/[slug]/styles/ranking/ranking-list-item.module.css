@@ -1,0 +1,392 @@
+/* ============================================================================
+// FILE:
+// /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/[slug]/styles/ranking/ranking-list-item.module.css
+// Copyright (c) 2024 Shin Corporation.
+// All rights reserved.
+============================================================================ */
+
+/* ============================================================================
+🔥 Item
+============================================================================ */
+
+.item {
+
+    display: grid;
+
+    grid-template-columns: 80px 180px 1fr 220px;
+
+    gap: 28px;
+
+    align-items: center;
+
+    padding: 28px;
+
+    border-radius: 24px;
+
+    background:
+
+        linear-gradient(
+
+            180deg,
+
+            rgba(16,24,42,.96),
+
+            rgba(8,14,26,.98)
+
+        );
+
+    border: 1px solid rgba(255,255,255,.08);
+
+    transition:
+
+        transform .25s ease,
+
+        border-color .25s ease,
+
+        box-shadow .25s ease;
+
+}
+
+.item:hover {
+
+    transform: translateY(-4px);
+
+    border-color: rgba(0,180,255,.30);
+
+    box-shadow:
+
+        0 18px 40px rgba(0,0,0,.30);
+
+}
+
+/* ============================================================================
+🔥 Rank
+============================================================================ */
+
+.rank {
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    width: 64px;
+
+    height: 64px;
+
+    border-radius: 50%;
+
+    background:
+
+        linear-gradient(
+
+            135deg,
+
+            #00bfff,
+
+            #2563eb
+
+        );
+
+    color: #ffffff;
+
+    font-size: 1.5rem;
+
+    font-weight: 800;
+
+}
+
+/* ============================================================================
+🔥 Image
+============================================================================ */
+
+.imageArea {
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+}
+
+.image {
+
+    width: 160px;
+
+    height: 160px;
+
+    object-fit: contain;
+
+}
+
+.imagePlaceholder {
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    width: 160px;
+
+    height: 160px;
+
+    border-radius: 18px;
+
+    border: 1px dashed rgba(255,255,255,.15);
+
+    color: rgba(255,255,255,.35);
+
+}
+
+/* ============================================================================
+🔥 Content
+============================================================================ */
+
+.content {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 12px;
+
+}
+
+.title {
+
+    color: #ffffff;
+
+    font-size: 1.35rem;
+
+    font-weight: 700;
+
+    line-height: 1.45;
+
+}
+
+.brand {
+
+    color: rgba(255,255,255,.60);
+
+    font-size: .95rem;
+
+}
+
+.description {
+
+    color: rgba(255,255,255,.74);
+
+    line-height: 1.8;
+
+    font-size: .95rem;
+
+}
+
+/* ============================================================================
+🔥 Chips
+============================================================================ */
+
+.chips {
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 10px;
+
+}
+
+.chip {
+
+    padding: 6px 12px;
+
+    border-radius: 999px;
+
+    background: rgba(255,255,255,.06);
+
+    border: 1px solid rgba(255,255,255,.08);
+
+    color: #d7f2ff;
+
+    font-size: .78rem;
+
+    white-space: nowrap;
+
+}
+
+/* ============================================================================
+🔥 Side
+============================================================================ */
+
+.side {
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: flex-end;
+
+    gap: 18px;
+
+}
+
+/* ============================================================================
+🔥 Price
+============================================================================ */
+
+.price {
+
+    color: #7adfff;
+
+    font-size: 1.5rem;
+
+    font-weight: 800;
+
+}
+
+/* ============================================================================
+🔥 Button
+============================================================================ */
+
+.button {
+
+    display: inline-flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    padding: 14px 28px;
+
+    border-radius: 12px;
+
+    background:
+
+        linear-gradient(
+
+            135deg,
+
+            #00bfff,
+
+            #2563eb
+
+        );
+
+    color: #ffffff;
+
+    text-decoration: none;
+
+    font-weight: 700;
+
+    transition:
+
+        opacity .2s ease,
+
+        transform .2s ease;
+
+}
+
+.button:hover {
+
+    opacity: .92;
+
+    transform: translateY(-2px);
+
+}
+
+/* ============================================================================
+🔥 Responsive
+============================================================================ */
+
+@media (max-width:1200px) {
+
+    .item {
+
+        grid-template-columns: 72px 140px 1fr;
+
+    }
+
+    .side {
+
+        grid-column: 1 / -1;
+
+        flex-direction: row;
+
+        justify-content: space-between;
+
+        align-items: center;
+
+        margin-top: 12px;
+
+    }
+
+}
+
+@media (max-width:768px) {
+
+    .item {
+
+        grid-template-columns: 1fr;
+
+        gap: 20px;
+
+        padding: 22px;
+
+        text-align: center;
+
+    }
+
+    .rank {
+
+        margin: 0 auto;
+
+    }
+
+    .image {
+
+        width: 200px;
+
+        height: 200px;
+
+    }
+
+    .imagePlaceholder {
+
+        width: 200px;
+
+        height: 200px;
+
+    }
+
+    .content {
+
+        align-items: center;
+
+    }
+
+    .chips {
+
+        justify-content: center;
+
+    }
+
+    .side {
+
+        flex-direction: column;
+
+        justify-content: center;
+
+        align-items: center;
+
+    }
+
+    .button {
+
+        width: 100%;
+
+    }
+
+}

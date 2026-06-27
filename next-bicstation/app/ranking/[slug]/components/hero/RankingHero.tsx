@@ -24,6 +24,10 @@ import type {
 import styles
     from '../../styles/hero/hero.module.css'
 
+
+import getRankingBadge
+    from '../../lib/getRankingBadge'
+
 /* ============================================================================
 🔥 Props
 ============================================================================ */
@@ -115,6 +119,14 @@ export default function RankingHero({
     const heroImage =
 
          '/images/ranking/ranking_hero.png'
+    
+    /* ============================================================================
+    🔥 Hero Emblem
+    ============================================================================ */
+
+    const heroEmblem =
+
+        '/images/ranking/ranking_ai_core.png'
 
     /* =========================================================================
     🔥 Semantic Chips
@@ -160,14 +172,18 @@ url(${heroImage})
             <div className={styles.runtimeHeroInner}>
 
                 {/* ======================================================
-                Badge
+                Hero Emblem
                 ====================================================== */}
 
-                <div className={styles.runtimeHeroBadge}>
+                <img
 
-                    {badge}
+                    src={heroEmblem}
 
-                </div>
+                    alt="Ranking Core"
+
+                    className={styles.runtimeHeroEmblem}
+
+                />
 
                 {/* ======================================================
                 Title

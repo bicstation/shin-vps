@@ -1,0 +1,312 @@
+/* ============================================================================
+// FILE:
+// /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/[slug]/styles/continuation/continuation.module.css
+// Copyright (c) 2024 Shin Corporation.
+// All rights reserved.
+============================================================================ */
+
+/* ============================================================================
+🔥 Section
+============================================================================ */
+
+.section {
+
+    width: 100%;
+
+    max-width: 1400px;
+
+    margin: 96px auto;
+
+    padding: 0 24px;
+
+}
+
+/* ============================================================================
+🔥 Card
+============================================================================ */
+
+.card {
+
+    position: relative;
+
+    overflow: hidden;
+
+    padding: 72px 56px;
+
+    border-radius: 32px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(18,28,48,.98),
+            rgba(8,14,28,.98)
+        );
+
+    border: 1px solid rgba(255,255,255,.08);
+
+    box-shadow:
+        0 30px 80px rgba(0,0,0,.35);
+
+}
+
+.card::before {
+
+    content: '';
+
+    position: absolute;
+
+    inset: 0;
+
+    background:
+
+        radial-gradient(
+
+            circle at top right,
+
+            rgba(0,180,255,.20),
+
+            transparent 45%
+
+        );
+
+    pointer-events: none;
+
+}
+
+/* ============================================================================
+🔥 Header
+============================================================================ */
+
+.eyebrow {
+
+    position: relative;
+
+    z-index: 1;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    padding: 8px 18px;
+
+    border-radius: 999px;
+
+    background: rgba(0,180,255,.12);
+
+    border: 1px solid rgba(0,180,255,.25);
+
+    color: #74d8ff;
+
+    font-size: .78rem;
+
+    font-weight: 700;
+
+    letter-spacing: .12em;
+
+    text-transform: uppercase;
+
+}
+
+.title {
+
+    position: relative;
+
+    z-index: 1;
+
+    margin-top: 24px;
+
+    color: #ffffff;
+
+    font-size: clamp(2.3rem,4vw,3.4rem);
+
+    font-weight: 800;
+
+    line-height: 1.25;
+
+}
+
+.description {
+
+    position: relative;
+
+    z-index: 1;
+
+    margin-top: 20px;
+
+    max-width: 720px;
+
+    color: rgba(255,255,255,.72);
+
+    font-size: 1.05rem;
+
+    line-height: 1.9;
+
+}
+
+/* ============================================================================
+🔥 Actions
+============================================================================ */
+
+.actions {
+
+    position: relative;
+
+    z-index: 1;
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 18px;
+
+    margin-top: 42px;
+
+}
+
+/* ============================================================================
+🔥 Primary Button
+============================================================================ */
+
+.primaryButton {
+
+    display: inline-flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    min-width: 220px;
+
+    padding: 16px 34px;
+
+    border-radius: 14px;
+
+    background:
+
+        linear-gradient(
+
+            135deg,
+
+            #00bfff,
+
+            #2563eb
+
+        );
+
+    color: #ffffff;
+
+    text-decoration: none;
+
+    font-weight: 700;
+
+    transition:
+
+        transform .2s ease,
+
+        opacity .2s ease,
+
+        box-shadow .2s ease;
+
+}
+
+.primaryButton:hover {
+
+    opacity: .95;
+
+    transform: translateY(-2px);
+
+    box-shadow:
+
+        0 12px 30px rgba(37,99,235,.35);
+
+}
+
+/* ============================================================================
+🔥 Secondary Button
+============================================================================ */
+
+.secondaryButton {
+
+    display: inline-flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    min-width: 220px;
+
+    padding: 16px 34px;
+
+    border-radius: 14px;
+
+    background: rgba(255,255,255,.05);
+
+    border: 1px solid rgba(255,255,255,.12);
+
+    color: #ffffff;
+
+    text-decoration: none;
+
+    font-weight: 700;
+
+    transition:
+
+        background .2s ease,
+
+        border-color .2s ease,
+
+        transform .2s ease;
+
+}
+
+.secondaryButton:hover {
+
+    background: rgba(255,255,255,.08);
+
+    border-color: rgba(0,180,255,.30);
+
+    transform: translateY(-2px);
+
+}
+
+/* ============================================================================
+🔥 Responsive
+============================================================================ */
+
+@media (max-width:768px) {
+
+    .section {
+
+        margin: 64px auto;
+
+        padding: 0 18px;
+
+    }
+
+    .card {
+
+        padding: 40px 28px;
+
+    }
+
+    .title {
+
+        font-size: 2rem;
+
+    }
+
+    .actions {
+
+        flex-direction: column;
+
+    }
+
+    .primaryButton,
+
+    .secondaryButton {
+
+        width: 100%;
+
+    }
+
+}

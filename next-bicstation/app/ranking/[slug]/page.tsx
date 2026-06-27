@@ -19,7 +19,7 @@ import {
 
     RankingRuntime,
 
-    // RankingDebug,
+    RankingDebug,
 
     // RankingSchema,
 
@@ -241,13 +241,28 @@ export default async function RankingSlugPage({
 
     } = await searchParams
 
+
     const runtime =
 
         await fetchSemanticRankingRuntime(
-
             slug,
+        )
+
+    if (!runtime) {
+
+        return (
+
+            <main
+                className={styles.page}
+            >
+
+                Ranking Runtime Not Found
+
+            </main>
 
         )
+
+    }
 
     return (
 
@@ -281,7 +296,7 @@ export default async function RankingSlugPage({
             Debug
             ========================================================== */}
 
-            {/* {
+            {
 
                 debug === '1' && (
 
@@ -293,7 +308,7 @@ export default async function RankingSlugPage({
 
                 )
 
-            } */}
+            }
 
         </main>
 

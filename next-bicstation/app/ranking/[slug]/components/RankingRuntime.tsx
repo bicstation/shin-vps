@@ -8,7 +8,7 @@
 'use client'
 
 /* ============================================================================
-🔥 Types
+🔥 Contracts
 ============================================================================ */
 
 import type {
@@ -25,17 +25,17 @@ import {
 
     RankingHero,
 
-    // RankingBreadcrumbs,
+    RankingBreadcrumbs,
 
-    // FlagshipCard,
+    FlagshipCard,
 
-    // ComparisonGrid,
+    ComparisonGrid,
 
-    // RankingList,
+    RankingList,
 
-    // RankingFAQ,
+    RankingFAQ,
 
-    // RankingContinuation,
+    RankingContinuation,
 
 } from './'
 
@@ -62,44 +62,31 @@ export default function RankingRuntime({
     /* =========================================================================
     🔥 Runtime
     ========================================================================= */
+   
+    const {
 
-    const products =
+        products = [],
 
-        runtime.products ?? []
+        breadcrumbs = [],
 
-    const breadcrumbs =
+        faq = [],
 
-        runtime.breadcrumbs ?? []
-
-    const faq =
-
-        runtime.faq ?? []
+    } = runtime
 
     /* =========================================================================
     🔥 Ranking Structure
     ========================================================================= */
 
-    const flagship =
 
+    const flagship =
         products[0]
 
     const comparisonProducts =
-
-        products.slice(
-
-            1,
-
-            4,
-
-        )
+        products.slice(1, 4)
 
     const rankingProducts =
+        products.slice(4)
 
-        products.slice(
-
-            4,
-
-        )
 
     /* =========================================================================
     🔥 Render
@@ -107,7 +94,7 @@ export default function RankingRuntime({
 
     return (
 
-        <div>
+        <main>
 
             {/* ==========================================================
             Hero
@@ -117,11 +104,7 @@ export default function RankingRuntime({
 
                 runtime={runtime}
 
-                totalProducts={
-
-                    products.length
-
-                }
+                totalProducts={products.length}
 
             />
 
@@ -129,115 +112,99 @@ export default function RankingRuntime({
             Breadcrumbs
             ========================================================== */}
 
-            {/* <RankingBreadcrumbs
+            <RankingBreadcrumbs
 
-                breadcrumbs={
+                breadcrumbs={breadcrumbs}
 
-                    breadcrumbs
-
-                }
-
-            /> */}
+            />
 
             {/* ==========================================================
             Flagship
             ========================================================== */}
 
-            {/* {
+            
 
-                flagship && (
+            {flagship && (
 
-                    <FlagshipCard
+                <FlagshipCard
 
-                        product={
+                    product={flagship}
 
-                            flagship
+                    rank={1}
 
-                        }
+                />
 
-                        rank={1}
+            )}
 
-                    />
-
-                )
-
-            } */}
+           
 
             {/* ==========================================================
             Comparison
             ========================================================== */}
 
-            {/* {
+            
 
-                comparisonProducts.length > 0 && (
+            {comparisonProducts.length > 0 && (
 
-                    <ComparisonGrid
+                <ComparisonGrid
 
-                        products={
+                    products={comparisonProducts}
 
-                            comparisonProducts
+                />
 
-                        }
+            )}
 
-                    />
-
-                )
-
-            } */}
+           
 
             {/* ==========================================================
             Ranking
             ========================================================== */}
 
-            {/* {
+            
 
-                rankingProducts.length > 0 && (
+            {rankingProducts.length > 0 && (
 
-                    <RankingList
+                <RankingList
 
-                        products={
+                    products={rankingProducts}
 
-                            rankingProducts
+                    startRank={5}
 
-                        }
+                />
 
-                        startRank={5}
+            )}
 
-                    />
-
-                )
-
-            } */}
+           
 
             {/* ==========================================================
             FAQ
             ========================================================== */}
 
-            {/* {
+            
 
-                faq.length > 0 && (
+            {faq.length > 0 && (
 
-                    <RankingFAQ
+                <RankingFAQ
 
-                        faq={
+                    faq={faq}
 
-                            faq
+                />
 
-                        }
+            )}
 
-                    />
-
-                )
-
-            } */}
+           
 
             {/* ==========================================================
             Continuation
             ========================================================== */}
 
-            {/* <RankingContinuation /> */}
+            
 
-        </div>
+            <RankingContinuation />
+
+           
+
+        </main>
 
     )
 
