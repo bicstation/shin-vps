@@ -9,16 +9,12 @@
 /* ============================================================================
 Adapter Runtime
 ============================================================================ */
+
 import {
-    fetchFinderRuntime,
-} from '@/shared/lib/api/django/pc/finder/gateway'
 
+    getFinder,
 
-import type {
-    FinderRuntimeContract,
-} from '@/shared/lib/api/django/pc/finder/contracts'
-
-
+} from '@/shared/lib/api/django/pc/finder'
 
 /* ============================================================================
 Request
@@ -42,9 +38,9 @@ export async function executeFinder(
 
     request: FinderRequest,
 
-): Promise<FinderRuntime> {
+) {
 
-    return await fetchFinderRuntime({
+    return await getFinder({
 
         groups:
 
