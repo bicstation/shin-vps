@@ -13,35 +13,38 @@
  *
  * PURPOSE
  *
- * Semantic Navigation Authority Exposure
+ * Navigation Runtime Exposure
+ *
+ * Backend
+ * ↓
+ * Runtime
+ * ↓
+ * Projection
+ * ↓
+ * Frontend
  *
  * IMPORTANT
  *
  * Backend remains:
  *
- * semantic authority
+ * Semantic Authority
  *
  * Adapter remains:
  *
- * continuity authority
+ * Projection Authority
  *
  * Frontend remains:
  *
- * rendering authority
+ * Rendering Authority
  *
- * RESPONSIBILITIES
+ * Adapter SHALL:
  *
- * - navigation runtime aggregation
- * - continuity-safe exports
- * - projection exposure
- * - observability exposure
+ * Transport
+ * Normalize
+ * Project
+ * Observe
  *
- * PROHIBITED
- *
- * - semantic inference
- * - runtime mutation
- * - projection mutation
- * - authority generation
+ * ONLY
  *
  * ============================================================================
  */
@@ -53,19 +56,19 @@
 export * from './contracts'
 
 /* ============================================================================
-🔥 Navigation Runtime
+🔥 Runtime Gateway
 ============================================================================ */
 
 export * from './navigation'
 
 /* ============================================================================
-🔥 Normalize
+🔥 Runtime Normalize
 ============================================================================ */
 
 export * from './normalize'
 
 /* ============================================================================
-🔥 Projection
+🔥 Runtime Projection
 ============================================================================ */
 
 export * from './adapter'
@@ -87,13 +90,16 @@ console.log({
   runtime:
     'navigation-runtime-layer',
 
-  semantic_authority:
+  authority:
     'backend',
 
-  projection:
+  transport:
     true,
 
   normalize:
+    true,
+
+  projection:
     true,
 
   observability:
@@ -101,6 +107,7 @@ console.log({
 
   continuity:
     'healthy',
+
 })
 
 console.log(

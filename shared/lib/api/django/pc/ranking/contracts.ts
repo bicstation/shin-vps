@@ -21,11 +21,41 @@ export interface RankingMeaning {
 
 export interface PresentationRuntime {
 
+  slug?: string
+
+  name?: string
+
   title?: string
 
   subtitle?: string
 
   description?: string
+
+  seo_title?: string
+
+  seo_description?: string
+
+  canonical_path?: string
+
+  schema_type?: string
+
+  icon_key?: string
+
+  theme_key?: string
+
+  color_key?: string
+
+  og_title?: string
+
+  og_description?: string
+
+  og_image?: string
+
+  priority?: string
+
+  visibility?: string
+
+  is_adult?: string
 }
 
 /* ============================================================================
@@ -48,6 +78,12 @@ export interface RankingRuntime {
 ============================================================================ */
 
 export interface SemanticRankingRuntime {
+
+  /* ========================================================================
+  Runtime Status
+  ======================================================================== */
+
+  success?: boolean
 
   /* ========================================================================
   Meaning Layer
@@ -85,11 +121,16 @@ export interface SemanticRankingRuntime {
 
   workflow_tags?: string[]
 
-  grouped_attributes?: Record<string, SemanticAttribute[]>
+  grouped_attributes?:
+    Record<
+      string,
+      SemanticAttribute[]
+    >
 
   semantic_graph?: any[]
 
-  render_hints?: Record<string, any>
+  render_hints?:
+    Record<string, any>
 
   /* ========================================================================
   SEO Extensions

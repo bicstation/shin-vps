@@ -1,61 +1,118 @@
 /* ============================================================================
-// FILE:
-// /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/[slug]/styles/ranking/ranking-list-item.module.css
-// Copyright (c) 2024 Shin Corporation.
-// All rights reserved.
-============================================================================ */
-
-/* ============================================================================
 🔥 Item
 ============================================================================ */
 
-.item {
+.item{
 
-    display: grid;
+    position:relative;
 
-    grid-template-columns: 80px 180px 1fr 220px;
+    display:grid;
 
-    gap: 28px;
+    grid-template-columns:220px 1fr 220px;
 
-    align-items: center;
+    gap:32px;
 
-    padding: 28px;
+    align-items:center;
 
-    border-radius: 24px;
+    padding:34px;
+
+    border-radius:28px;
+
+    overflow:hidden;
 
     background:
-
         linear-gradient(
-
-            180deg,
-
-            rgba(16,24,42,.96),
-
-            rgba(8,14,26,.98)
-
+            145deg,
+            rgba(10,18,36,.97),
+            rgba(6,12,26,.98)
         );
 
-    border: 1px solid rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.08);
+
+    box-shadow:
+        0 20px 50px rgba(0,0,0,.35);
 
     transition:
-
-        transform .25s ease,
-
-        border-color .25s ease,
-
-        box-shadow .25s ease;
+        transform .3s,
+        box-shadow .3s,
+        border-color .3s;
 
 }
 
-.item:hover {
+.item:hover{
 
-    transform: translateY(-4px);
+    transform:translateY(-4px);
 
-    border-color: rgba(0,180,255,.30);
+    border-color:rgba(0,180,255,.28);
 
     box-shadow:
+        0 35px 70px rgba(0,0,0,.45);
 
-        0 18px 40px rgba(0,0,0,.30);
+}
+
+/* ============================================================================
+🔥 Header
+============================================================================ */
+
+.header{
+
+    position:absolute;
+
+    top:20px;
+
+    left:24px;
+
+    right:24px;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    z-index:20;
+
+}
+
+/* ============================================================================
+🔥 Badge
+============================================================================ */
+
+.badge{
+
+    display:inline-flex;
+
+    align-items:center;
+
+    gap:10px;
+
+    padding:8px 18px;
+
+    border-radius:999px;
+
+    background:rgba(0,180,255,.10);
+
+    border:1px solid rgba(0,180,255,.22);
+
+    color:#8fdfff;
+
+    font-size:.82rem;
+
+    font-weight:700;
+
+    letter-spacing:.08em;
+
+    backdrop-filter:blur(14px);
+
+}
+
+.badgeIcon{
+
+    width:24px;
+
+    height:24px;
+
+    object-fit:contain;
 
 }
 
@@ -63,37 +120,17 @@
 🔥 Rank
 ============================================================================ */
 
-.rank {
+.rank{
 
-    display: flex;
+    font-size:4rem;
 
-    justify-content: center;
+    font-weight:900;
 
-    align-items: center;
+    line-height:1;
 
-    width: 64px;
+    color:rgba(255,255,255,.08);
 
-    height: 64px;
-
-    border-radius: 50%;
-
-    background:
-
-        linear-gradient(
-
-            135deg,
-
-            #00bfff,
-
-            #2563eb
-
-        );
-
-    color: #ffffff;
-
-    font-size: 1.5rem;
-
-    font-weight: 800;
+    user-select:none;
 
 }
 
@@ -101,43 +138,55 @@
 🔥 Image
 ============================================================================ */
 
-.imageArea {
+.imageArea{
 
-    display: flex;
+    display:flex;
 
-    justify-content: center;
+    justify-content:center;
 
-    align-items: center;
+    align-items:center;
 
-}
+    min-height:220px;
 
-.image {
-
-    width: 160px;
-
-    height: 160px;
-
-    object-fit: contain;
+    margin-top:40px;
 
 }
 
-.imagePlaceholder {
+.image{
 
-    display: flex;
+    width:180px;
 
-    justify-content: center;
+    height:180px;
 
-    align-items: center;
+    object-fit:contain;
 
-    width: 160px;
+    transition:.35s;
 
-    height: 160px;
+}
 
-    border-radius: 18px;
+.item:hover .image{
 
-    border: 1px dashed rgba(255,255,255,.15);
+    transform:scale(1.04);
 
-    color: rgba(255,255,255,.35);
+}
+
+.imagePlaceholder{
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    width:180px;
+
+    height:180px;
+
+    border-radius:20px;
+
+    border:1px dashed rgba(255,255,255,.15);
+
+    color:rgba(255,255,255,.35);
 
 }
 
@@ -145,43 +194,49 @@
 🔥 Content
 ============================================================================ */
 
-.content {
+.content{
 
-    display: flex;
+    display:flex;
 
-    flex-direction: column;
+    flex-direction:column;
 
-    gap: 12px;
+    justify-content:center;
 
-}
+    gap:14px;
 
-.title {
-
-    color: #ffffff;
-
-    font-size: 1.35rem;
-
-    font-weight: 700;
-
-    line-height: 1.45;
+    margin-top:32px;
 
 }
 
-.brand {
+.title{
 
-    color: rgba(255,255,255,.60);
+    color:#fff;
 
-    font-size: .95rem;
+    font-size:1.45rem;
+
+    font-weight:800;
+
+    line-height:1.45;
 
 }
 
-.description {
+.brand{
 
-    color: rgba(255,255,255,.74);
+    color:rgba(255,255,255,.60);
 
-    line-height: 1.8;
+    font-size:.95rem;
 
-    font-size: .95rem;
+}
+
+.description{
+
+    color:rgba(255,255,255,.78);
+
+    font-size:.96rem;
+
+    line-height:1.8;
+
+    max-width:720px;
 
 }
 
@@ -189,31 +244,47 @@
 🔥 Chips
 ============================================================================ */
 
-.chips {
+.chips{
 
-    display: flex;
+    display:flex;
 
-    flex-wrap: wrap;
+    flex-wrap:wrap;
 
-    gap: 10px;
+    gap:10px;
+
+    margin-top:8px;
 
 }
 
-.chip {
+.chip{
 
-    padding: 6px 12px;
+    display:inline-flex;
 
-    border-radius: 999px;
+    align-items:center;
 
-    background: rgba(255,255,255,.06);
+    padding:8px 14px;
 
-    border: 1px solid rgba(255,255,255,.08);
+    border-radius:999px;
 
-    color: #d7f2ff;
+    background:rgba(0,180,255,.08);
 
-    font-size: .78rem;
+    border:1px solid rgba(0,180,255,.18);
 
-    white-space: nowrap;
+    color:#c7f1ff;
+
+    font-size:.82rem;
+
+    text-decoration:none;
+
+    transition:.25s;
+
+}
+
+.chip:hover{
+
+    background:rgba(0,180,255,.18);
+
+    border-color:rgba(0,180,255,.32);
 
 }
 
@@ -221,171 +292,151 @@
 🔥 Side
 ============================================================================ */
 
-.side {
+.side{
 
-    display: flex;
+    display:flex;
 
-    flex-direction: column;
+    flex-direction:column;
 
-    align-items: flex-end;
+    justify-content:center;
 
-    gap: 18px;
+    align-items:flex-end;
 
-}
-
-/* ============================================================================
-🔥 Price
-============================================================================ */
-
-.price {
-
-    color: #7adfff;
-
-    font-size: 1.5rem;
-
-    font-weight: 800;
+    gap:22px;
 
 }
 
-/* ============================================================================
-🔥 Button
-============================================================================ */
+.price{
 
-.button {
+    color:#7adfff;
 
-    display: inline-flex;
+    font-size:2rem;
 
-    justify-content: center;
+    font-weight:800;
 
-    align-items: center;
+}
 
-    padding: 14px 28px;
+.button{
 
-    border-radius: 12px;
+    display:inline-flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    padding:16px 32px;
+
+    border-radius:999px;
 
     background:
-
         linear-gradient(
-
             135deg,
-
-            #00bfff,
-
-            #2563eb
-
+            #18b7ff,
+            #1577ff
         );
 
-    color: #ffffff;
+    color:#fff;
 
-    text-decoration: none;
+    text-decoration:none;
 
-    font-weight: 700;
+    font-weight:700;
 
-    transition:
-
-        opacity .2s ease,
-
-        transform .2s ease;
+    transition:.25s;
 
 }
 
-.button:hover {
+.button:hover{
 
-    opacity: .92;
+    transform:translateY(-2px);
 
-    transform: translateY(-2px);
+    box-shadow:
+        0 0 30px rgba(0,170,255,.35);
 
 }
 
 /* ============================================================================
-🔥 Responsive
+🔥 Tablet
 ============================================================================ */
 
-@media (max-width:1200px) {
+@media(max-width:1200px){
 
-    .item {
+    .item{
 
-        grid-template-columns: 72px 140px 1fr;
+        grid-template-columns:180px 1fr;
 
     }
 
-    .side {
+    .side{
 
-        grid-column: 1 / -1;
+        grid-column:1 / -1;
 
-        flex-direction: row;
+        flex-direction:row;
 
-        justify-content: space-between;
+        justify-content:space-between;
 
-        align-items: center;
-
-        margin-top: 12px;
+        align-items:center;
 
     }
 
 }
 
-@media (max-width:768px) {
+/* ============================================================================
+🔥 Mobile
+============================================================================ */
 
-    .item {
+@media(max-width:768px){
 
-        grid-template-columns: 1fr;
+    .item{
 
-        gap: 20px;
+        grid-template-columns:1fr;
 
-        padding: 22px;
+        text-align:center;
 
-        text-align: center;
+        padding:24px;
 
-    }
-
-    .rank {
-
-        margin: 0 auto;
+        gap:20px;
 
     }
 
-    .image {
+    .header{
 
-        width: 200px;
+        position:relative;
 
-        height: 200px;
+        inset:auto;
 
-    }
-
-    .imagePlaceholder {
-
-        width: 200px;
-
-        height: 200px;
+        margin-bottom:10px;
 
     }
 
-    .content {
+    .rank{
 
-        align-items: center;
-
-    }
-
-    .chips {
-
-        justify-content: center;
+        font-size:3rem;
 
     }
 
-    .side {
+    .content{
 
-        flex-direction: column;
+        margin-top:0;
 
-        justify-content: center;
-
-        align-items: center;
+        align-items:center;
 
     }
 
-    .button {
+    .chips{
 
-        width: 100%;
+        justify-content:center;
+
+    }
+
+    .side{
+
+        align-items:center;
+
+    }
+
+    .button{
+
+        width:100%;
 
     }
 

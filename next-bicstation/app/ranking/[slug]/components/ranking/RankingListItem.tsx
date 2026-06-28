@@ -1,8 +1,6 @@
 // ============================================================================
 // FILE:
-// /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/[slug]/components/ranking/RankingListItem.tsx
-// Copyright (c) 2024 Shin Corporation.
-// All rights reserved.
+// /app/ranking/[slug]/components/ranking/RankingListItem.tsx
 // ============================================================================
 
 'use client'
@@ -11,18 +9,23 @@
 🔥 Next
 ============================================================================ */
 
-import Link
-    from 'next/link'
+import Image from 'next/image'
+import Link from 'next/link'
 
 /* ============================================================================
 🔥 Contracts
 ============================================================================ */
 
 import type {
-
     RankingProduct,
-
 } from '../../types/contracts'
+
+/* ============================================================================
+🔥 Badge
+============================================================================ */
+
+import getRankingBadge
+    from '../../lib/getRankingBadge'
 
 /* ============================================================================
 🔥 Styles
@@ -82,10 +85,12 @@ export default function RankingListItem({
     const href =
 
         unique_id
-
             ? `/product/${unique_id}`
-
             : '#'
+
+    const badgeImage =
+
+        getRankingBadge(rank)
 
     /* =========================================================================
     🔥 Render
@@ -98,16 +103,48 @@ export default function RankingListItem({
         >
 
             {/* ==========================================================
-            Rank
+            Header
             ========================================================== */}
 
-            <div
-                className={styles.rank}
+            <header
+                className={styles.header}
             >
 
-                {rank}
+                <div
+                    className={styles.badge}
+                >
 
-            </div>
+                    <Image
+
+                        src={badgeImage}
+
+                        alt={`Ranking Core ${rank}`}
+
+                        width={26}
+
+                        height={26}
+
+                        className={styles.badgeIcon}
+
+                    />
+
+                    <span>
+
+                        RANKING CORE #{rank}
+
+                    </span>
+
+                </div>
+
+                <div
+                    className={styles.rank}
+                >
+
+                    #{rank}
+
+                </div>
+
+            </header>
 
             {/* ==========================================================
             Image
@@ -119,35 +156,37 @@ export default function RankingListItem({
 
                 {
 
-                    image_url
+                    image_url ? (
 
-                        ? (
+                        <Image
 
-                            <img
+                            src={image_url}
 
-                                src={image_url}
+                            alt={name ?? ''}
 
-                                alt={name ?? ''}
+                            width={260}
 
-                                className={styles.image}
+                            height={260}
 
-                            />
+                            className={styles.image}
 
-                        )
+                            unoptimized
 
-                        : (
+                        />
 
-                            <div
-                                className={
-                                    styles.imagePlaceholder
-                                }
-                            >
+                    ) : (
 
-                                NO IMAGE
+                        <div
+                            className={
+                                styles.imagePlaceholder
+                            }
+                        >
 
-                            </div>
+                            NO IMAGE
 
-                        )
+                        </div>
+
+                    )
 
                 }
 
@@ -195,7 +234,15 @@ export default function RankingListItem({
                             }
                         >
 
-                            {recommendation_reason}
+                            {
+
+                                recommendation_reason.length > 140
+
+                                    ? `${recommendation_reason.slice(0, 140)}…`
+
+                                    : recommendation_reason
+
+                            }
 
                         </p>
 
@@ -215,7 +262,7 @@ export default function RankingListItem({
 
                                 semantic_labels
 
-                                    .slice(0, 3)
+                                    .slice(0, 4)
 
                                     .map(
 
@@ -227,9 +274,11 @@ export default function RankingListItem({
 
                                         ) => (
 
-                                            <span
+                                            <Link
 
                                                 key={index}
+
+                                                href={`/discover/${encodeURIComponent(label)}`}
 
                                                 className={
                                                     styles.chip
@@ -239,7 +288,7 @@ export default function RankingListItem({
 
                                                 {label}
 
-                                            </span>
+                                            </Link>
 
                                         )
 
@@ -256,7 +305,7 @@ export default function RankingListItem({
             </div>
 
             {/* ==========================================================
-            Side
+            Footer
             ========================================================== */}
 
             <div
@@ -291,7 +340,7 @@ export default function RankingListItem({
 
                         >
 
-                            詳細を見る
+                            製品の詳細を見る
 
                         </Link>
 

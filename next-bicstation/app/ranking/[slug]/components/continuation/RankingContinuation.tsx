@@ -1,8 +1,6 @@
 // ============================================================================
 // FILE:
-// /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/[slug]/components/continuation/RankingContinuation.tsx
-// Copyright (c) 2024 Shin Corporation.
-// All rights reserved.
+// /app/ranking/[slug]/components/continuation/RankingContinuation.tsx
 // ============================================================================
 
 'use client'
@@ -11,8 +9,7 @@
 🔥 Next
 ============================================================================ */
 
-import Link
-    from 'next/link'
+import Link from 'next/link'
 
 /* ============================================================================
 🔥 Styles
@@ -29,42 +26,33 @@ export default function RankingContinuation() {
 
     return (
 
-        <section
-            className={styles.section}
-        >
+        <section className={styles.section}>
 
-            <div
-                className={styles.card}
-            >
+            <div className={styles.card}>
 
                 {/* ==========================================================
                 Header
                 ========================================================== */}
 
-                <div
-                    className={styles.eyebrow}
-                >
+                <div className={styles.eyebrow}>
 
-                    DISCOVER MORE
+                    NEXT DISCOVERY
 
                 </div>
 
-                <h2
-                    className={styles.title}
-                >
+                <h2 className={styles.title}>
 
-                    あなたに最適なPCを
-                    さらに探してみませんか？
+                    次の発見へ進みましょう
 
                 </h2>
 
-                <p
-                    className={styles.description}
-                >
+                <p className={styles.description}>
 
-                    ランキングだけではなく、
-                    用途・メーカー・性能・価格帯など、
-                    あなたに合った条件から製品を探すことができます。
+                    ランキングは代表的なおすすめです。
+
+                    用途・予算・メーカー・性能など、
+                    あなたに合った条件から、
+                    さらに最適なPCを見つけることができます。
 
                 </p>
 
@@ -72,19 +60,53 @@ export default function RankingContinuation() {
                 Actions
                 ========================================================== */}
 
-                <div
-                    className={styles.actions}
-                >
+                <div className={styles.actions}>
+
+                    <Link
+
+                        href="/pc-finder"
+
+                        className={styles.primaryCard}
+
+                    >
+
+                        <span className={styles.actionIcon}>🔍</span>
+
+                        <strong>
+
+                            Finder
+
+                        </strong>
+
+                        <small>
+
+                            条件から探す
+
+                        </small>
+
+                    </Link>
 
                     <Link
 
                         href="/discover"
 
-                        className={styles.primaryButton}
+                        className={styles.actionCard}
 
                     >
 
-                        製品を探す
+                        <span className={styles.actionIcon}>🌎</span>
+
+                        <strong>
+
+                            Discover
+
+                        </strong>
+
+                        <small>
+
+                            Semantic World
+
+                        </small>
 
                     </Link>
 
@@ -92,11 +114,23 @@ export default function RankingContinuation() {
 
                         href="/ranking"
 
-                        className={styles.secondaryButton}
+                        className={styles.actionCard}
 
                     >
 
-                        他のランキングを見る
+                        <span className={styles.actionIcon}>🏆</span>
+
+                        <strong>
+
+                            Ranking
+
+                        </strong>
+
+                        <small>
+
+                            他のランキング
+
+                        </small>
 
                     </Link>
 

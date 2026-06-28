@@ -1,73 +1,145 @@
 /* ============================================================================
-FILE:
-/home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/[slug]/styles/flagship/flagship.module.css
-Copyright (c) 2024 Shin Corporation.
-All rights reserved.
-============================================================================ */
-
-/* ============================================================================
 🔥 Flagship
 ============================================================================ */
 
-.flagship {
+.flagship{
 
-    position: relative;
+    position:relative;
 
-    display: grid;
+    overflow:hidden;
 
-    grid-template-columns: 460px 1fr;
+    display:grid;
 
-    gap: 48px;
+    grid-template-columns:460px 1fr;
 
-    width: 100%;
+    gap:56px;
 
-    max-width: 1400px;
+    width:100%;
 
-    margin: 0 auto 72px;
+    max-width:1400px;
 
-    padding: 48px;
+    margin:0 auto 72px;
 
-    border-radius: 32px;
+    padding:56px;
 
-    overflow: hidden;
+    border-radius:36px;
 
     background:
         linear-gradient(
             145deg,
-            rgba(12,24,46,.96),
-            rgba(7,14,30,.96)
+            rgba(9,18,38,.97),
+            rgba(5,11,25,.98)
         );
 
-    border: 1px solid rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.08);
 
     box-shadow:
-        0 24px 60px rgba(0,0,0,.35);
+        0 35px 80px rgba(0,0,0,.45);
+
+    transition:
+        transform .35s,
+        box-shadow .35s;
 
 }
+
+.flagship:hover{
+
+    transform:translateY(-4px);
+
+    box-shadow:
+        0 50px 100px rgba(0,0,0,.55);
+
+}
+
+/* ============================================================================
+🔥 Header
+============================================================================ */
+.header{
+
+    position:absolute;
+
+    top:32px;
+
+    left:40px;
+
+    right:40px;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    z-index:30;
+
+}
+
+.headerLeft{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:18px;
+
+}
+
+.badgeCore{
+
+    width:64px;
+
+    height:64px;
+
+    object-fit:contain;
+
+    filter:
+
+        drop-shadow(
+
+            0 0 18px
+
+            rgba(0,180,255,.35)
+
+        );
+
+    animation:
+
+        floating 5s ease-in-out infinite;
+
+}
+
 
 /* ============================================================================
 🔥 Rank
 ============================================================================ */
 
-.rank {
+.rank{
 
-    position: absolute;
+    font-size:6rem;
 
-    top: 32px;
+    font-weight:900;
 
-    right: 32px;
+    color:rgba(255,255,255,.05);
 
-    z-index: 20;
+    user-select:none;
 
-    font-size: 5rem;
+    line-height:1;
 
-    font-weight: 900;
+}
 
-    color: rgba(255,255,255,.08);
+/* ============================================================================
+🔥 Body
+============================================================================ */
 
-    line-height: 1;
+.body{
 
-    user-select: none;
+    display:grid;
+
+    grid-template-columns:460px 1fr;
+
+    gap:56px;
+
+    width:100%;
 
 }
 
@@ -75,31 +147,106 @@ All rights reserved.
 🔥 Image
 ============================================================================ */
 
-.imageArea {
+.imageArea{
 
-    display: flex;
+    position:relative;
 
-    justify-content: center;
+    display:flex;
 
-    align-items: center;
+    justify-content:center;
 
-}
+    align-items:center;
 
-.image {
+    min-height:460px;
 
-    width: 100%;
+    isolation:isolate;
 
-    height: auto;
-
-    object-fit: contain;
-
-    transition: transform .35s ease;
+    overflow:hidden;
 
 }
 
-.flagship:hover .image {
+/* ============================================================================
+🔥 AI Core Decoration
+============================================================================ */
 
-    transform: scale(1.03);
+.coreDecoration{
+
+    position:absolute;
+
+    top:50%;
+
+    left:50%;
+
+    width:340px;
+
+    height:340px;
+
+    transform:translate(-50%,-50%);
+
+    opacity:.12;
+
+    z-index:0;
+
+    pointer-events:none;
+
+    user-select:none;
+
+    mix-blend-mode:screen;
+
+    object-fit:contain;
+
+    animation:
+
+        pulseCore 5s ease-in-out infinite;
+
+}
+
+/* ============================================================================
+🔥 Product
+============================================================================ */
+
+.image{
+
+    position:relative;
+
+    z-index:2;
+
+    width:92%;
+
+    object-fit:contain;
+
+    transition:
+        transform .35s;
+
+}
+
+.flagship:hover .image{
+
+    transform:scale(1.04);
+
+}
+
+.imagePlaceholder{
+
+    position:relative;
+
+    z-index:2;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    width:100%;
+
+    height:320px;
+
+    border-radius:24px;
+
+    background:rgba(255,255,255,.05);
+
+    color:#7ba9c7;
 
 }
 
@@ -107,13 +254,13 @@ All rights reserved.
 🔥 Content
 ============================================================================ */
 
-.content {
+.content{
 
-    display: flex;
+    display:flex;
 
-    flex-direction: column;
+    flex-direction:column;
 
-    justify-content: center;
+    justify-content:center;
 
 }
 
@@ -121,37 +268,33 @@ All rights reserved.
 🔥 Badge
 ============================================================================ */
 
-.badge {
+.badge{
 
-    display: inline-flex;
+    display:inline-flex;
 
-    align-items: center;
+    align-items:center;
 
-    width: fit-content;
+    width:fit-content;
 
-    padding: 8px 18px;
+    padding:8px 20px;
 
-    margin-bottom: 24px;
+    border-radius:999px;
 
-    border-radius: 999px;
+    background:rgba(255,255,255,.08);
 
-    background:
+    border:1px solid rgba(255,255,255,.18);
 
-        rgba(0,180,255,.15);
+    backdrop-filter:blur(18px);
 
-    border:
+    color:#ffffff;
 
-        1px solid rgba(0,180,255,.28);
+    font-size:.82rem;
 
-    color: #84d9ff;
+    font-weight:700;
 
-    font-size: .82rem;
+    letter-spacing:.12em;
 
-    font-weight: 700;
-
-    letter-spacing: .12em;
-
-    text-transform: uppercase;
+    text-transform:uppercase;
 
 }
 
@@ -159,15 +302,17 @@ All rights reserved.
 🔥 Title
 ============================================================================ */
 
-.title {
+.title{
 
-    font-size: clamp(2rem,4vw,3rem);
+    margin-top:26px;
 
-    font-weight: 800;
+    font-size:clamp(2.4rem,4vw,3.8rem);
 
-    line-height: 1.2;
+    font-weight:800;
 
-    color: #fff;
+    line-height:1.18;
+
+    color:#fff;
 
 }
 
@@ -175,13 +320,13 @@ All rights reserved.
 🔥 Brand
 ============================================================================ */
 
-.brand {
+.brand{
 
-    margin-top: 14px;
+    margin-top:16px;
 
-    color: rgba(255,255,255,.65);
+    color:rgba(255,255,255,.65);
 
-    font-size: 1rem;
+    font-size:1rem;
 
 }
 
@@ -189,15 +334,17 @@ All rights reserved.
 🔥 Description
 ============================================================================ */
 
-.description {
+.description{
 
-    margin-top: 28px;
+    margin-top:28px;
 
-    color: rgba(255,255,255,.82);
+    color:rgba(255,255,255,.84);
 
-    line-height: 1.9;
+    line-height:1.9;
 
-    font-size: 1rem;
+    font-size:1.05rem;
+
+    max-width:760px;
 
 }
 
@@ -205,31 +352,39 @@ All rights reserved.
 🔥 Chips
 ============================================================================ */
 
-.chips {
+.chips{
 
-    display: flex;
+    display:flex;
 
-    flex-wrap: wrap;
+    flex-wrap:wrap;
 
-    gap: 12px;
+    gap:12px;
 
-    margin-top: 28px;
+    margin-top:28px;
 
 }
 
-.chip {
+.chip{
 
-    padding: 8px 16px;
+    padding:10px 18px;
 
-    border-radius: 999px;
+    border-radius:999px;
 
-    background: rgba(255,255,255,.08);
+    background:rgba(0,180,255,.10);
 
-    border: 1px solid rgba(255,255,255,.12);
+    border:1px solid rgba(0,180,255,.22);
 
-    color: #cfefff;
+    color:#bdeeff;
 
-    font-size: .85rem;
+    font-size:.88rem;
+
+    transition:.25s;
+
+}
+
+.chip:hover{
+
+    background:rgba(0,180,255,.18);
 
 }
 
@@ -237,15 +392,15 @@ All rights reserved.
 🔥 Price
 ============================================================================ */
 
-.price {
+.price{
 
-    margin-top: 36px;
+    margin-top:34px;
 
-    font-size: 2rem;
+    font-size:2.2rem;
 
-    font-weight: 800;
+    font-weight:800;
 
-    color: #7fd9ff;
+    color:#76d8ff;
 
 }
 
@@ -253,105 +408,169 @@ All rights reserved.
 🔥 Button
 ============================================================================ */
 
-.button {
+.button{
 
-    display: inline-flex;
+    display:inline-flex;
 
-    justify-content: center;
+    justify-content:center;
 
-    align-items: center;
+    align-items:center;
 
-    width: fit-content;
+    width:fit-content;
 
-    margin-top: 32px;
+    margin-top:36px;
 
-    padding: 16px 30px;
+    padding:16px 34px;
 
-    border-radius: 14px;
+    border-radius:999px;
 
-    background: linear-gradient(
+    background:
 
-        135deg,
+        linear-gradient(
+            135deg,
+            #18b7ff,
+            #1577ff
+        );
 
-        #00bfff,
+    color:#fff;
 
-        #1d6fff
+    font-weight:700;
 
-    );
+    text-decoration:none;
 
-    color: #fff;
-
-    font-weight: 700;
-
-    text-decoration: none;
-
-    transition:
-
-        transform .25s ease,
-
-        box-shadow .25s ease;
+    transition:.25s;
 
 }
 
-.button:hover {
+.button:hover{
 
-    transform: translateY(-2px);
+    transform:translateY(-2px);
 
     box-shadow:
 
-        0 10px 30px rgba(0,150,255,.35);
+        0 0 35px rgba(0,170,255,.45);
 
 }
 
 /* ============================================================================
-🔥 Responsive
+🔥 Animation
 ============================================================================ */
 
-@media (max-width: 1100px) {
+@keyframes rotateCore{
 
-    .flagship {
+    from{
 
-        grid-template-columns: 1fr;
-
-        padding: 36px;
+        transform:rotate(0deg);
 
     }
 
-    .imageArea {
+    to{
 
-        max-width: 520px;
-
-        margin: 0 auto;
+        transform:rotate(360deg);
 
     }
 
 }
 
-@media (max-width: 768px) {
+@keyframes pulseCore{
 
-    .flagship {
+    0%,100%{
 
-        padding: 24px;
-
-        border-radius: 24px;
-
-        gap: 24px;
+        opacity:.14;
 
     }
 
-    .rank {
+    50%{
 
-        font-size: 3.5rem;
-
-        top: 20px;
-
-        right: 20px;
+        opacity:.22;
 
     }
 
-    .button {
+}
 
-        width: 100%;
+/* ============================================================================
+🔥 Tablet
+============================================================================ */
+
+@media(max-width:1100px){
+
+    .flagship{
+
+        padding:42px;
+
+    }
+
+    .body{
+
+        grid-template-columns:1fr;
+
+    }
+
+    .imageArea{
+
+        position:relative;
+
+        display:flex;
+
+        justify-content:center;
+
+        align-items:center;
+
+        isolation:isolate;
+
+    }
+
+    /* .imageArea{
+
+        min-height:360px;
+
+    } */
+
+}
+
+/* ============================================================================
+🔥 Mobile
+============================================================================ */
+
+@media(max-width:768px){
+
+    .flagship{
+
+        padding:24px;
+
+        border-radius:24px;
+
+    }
+
+    .header{
+
+        left:24px;
+
+        right:24px;
+
+    }
+
+    .rank{
+
+        font-size:4rem;
+
+    }
+
+    .imageArea{
+
+        min-height:260px;
+
+    }
+
+    .coreDecoration{
+
+        width:420px;
+
+    }
+
+    .button{
+
+        width:100%;
 
     }
 

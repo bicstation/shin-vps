@@ -1,8 +1,6 @@
 // ============================================================================
 // FILE:
 // /app/ranking/components/RankingHero.tsx
-// Copyright (c) 2024 Shin Corporation.
-// All rights reserved.
 // ============================================================================
 
 'use client'
@@ -46,22 +44,15 @@ export default function RankingHero({
 }: Props) {
 
     /* =========================================================================
-    🔥 Runtime
+    🔥 Runtime (Canonical Runtime V2)
     ========================================================================= */
 
     const totalRankings =
 
-        runtime.navigation.length
+        runtime.intents.length
 
     /* =========================================================================
     🔥 Presentation
-    =========================================================================
-    TODO:
-    Replace with Presentation Runtime after Backend V2 adoption.
-
-    presentation.title
-    presentation.subtitle
-    presentation.description
     ========================================================================= */
 
     const title =
@@ -88,75 +79,43 @@ export default function RankingHero({
             }
         >
 
-            {/* ==========================================================
-            LEFT
-            ========================================================== */}
-
             <div
                 className={
                     styles.rankingHeroContent
                 }
             >
 
-                {/* ======================================================
-                LABEL
-                ====================================================== */}
-
                 <div
                     className={
                         styles.rankingHeroLabel
                     }
                 >
-
                     RANKING EXPERIENCE
-
                 </div>
-
-                {/* ======================================================
-                TITLE
-                ====================================================== */}
 
                 <h1
                     className={
                         styles.rankingHeroTitle
                     }
                 >
-
                     {title}
-
                 </h1>
-
-                {/* ======================================================
-                SUBTITLE
-                ====================================================== */}
 
                 <p
                     className={
                         styles.rankingHeroSubtitle
                     }
                 >
-
                     {subtitle}
-
                 </p>
-
-                {/* ======================================================
-                DESCRIPTION
-                ====================================================== */}
 
                 <p
                     className={
                         styles.rankingHeroDescription
                     }
                 >
-
                     {description}
-
                 </p>
-
-                {/* ======================================================
-                STATS
-                ====================================================== */}
 
                 <div
                     className={
@@ -175,9 +134,7 @@ export default function RankingHero({
                                 styles.rankingHeroStatLabel
                             }
                         >
-
                             公開ランキング
-
                         </span>
 
                         <strong
@@ -185,9 +142,7 @@ export default function RankingHero({
                                 styles.rankingHeroStatValue
                             }
                         >
-
                             {totalRankings}
-
                         </strong>
 
                     </div>
@@ -203,9 +158,7 @@ export default function RankingHero({
                                 styles.rankingHeroStatLabel
                             }
                         >
-
                             Featured
-
                         </span>
 
                         <strong
@@ -213,9 +166,7 @@ export default function RankingHero({
                                 styles.rankingHeroStatValue
                             }
                         >
-
                             ALL
-
                         </strong>
 
                     </div>
@@ -223,10 +174,6 @@ export default function RankingHero({
                 </div>
 
             </div>
-
-            {/* ==========================================================
-            RIGHT
-            ========================================================== */}
 
             <div
                 className={

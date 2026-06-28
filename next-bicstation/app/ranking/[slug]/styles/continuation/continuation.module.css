@@ -1,23 +1,16 @@
 /* ============================================================================
-// FILE:
-// /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/[slug]/styles/continuation/continuation.module.css
-// Copyright (c) 2024 Shin Corporation.
-// All rights reserved.
-============================================================================ */
-
-/* ============================================================================
 🔥 Section
 ============================================================================ */
 
-.section {
+.section{
 
-    width: 100%;
+    width:100%;
 
-    max-width: 1400px;
+    max-width:1400px;
 
-    margin: 96px auto;
+    margin:96px auto;
 
-    padding: 0 24px;
+    padding:0 24px;
 
 }
 
@@ -25,51 +18,53 @@
 🔥 Card
 ============================================================================ */
 
-.card {
+.card{
 
-    position: relative;
+    position:relative;
 
-    overflow: hidden;
+    overflow:hidden;
 
-    padding: 72px 56px;
+    padding:72px 56px;
 
-    border-radius: 32px;
+    border-radius:36px;
 
     background:
         linear-gradient(
-            135deg,
-            rgba(18,28,48,.98),
+            145deg,
+            rgba(15,25,46,.98),
             rgba(8,14,28,.98)
         );
 
-    border: 1px solid rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.08);
 
     box-shadow:
-        0 30px 80px rgba(0,0,0,.35);
+        0 35px 90px rgba(0,0,0,.40);
 
 }
 
-.card::before {
+.card::before{
 
-    content: '';
+    content:"";
 
-    position: absolute;
+    position:absolute;
 
-    inset: 0;
+    inset:0;
 
     background:
 
         radial-gradient(
-
-            circle at top right,
-
+            circle at 90% 20%,
             rgba(0,180,255,.20),
+            transparent 42%
+        ),
 
-            transparent 45%
-
+        radial-gradient(
+            circle at 10% 80%,
+            rgba(0,120,255,.10),
+            transparent 50%
         );
 
-    pointer-events: none;
+    pointer-events:none;
 
 }
 
@@ -77,69 +72,69 @@
 🔥 Header
 ============================================================================ */
 
-.eyebrow {
+.eyebrow{
 
-    position: relative;
+    position:relative;
 
-    z-index: 1;
+    z-index:1;
 
-    display: inline-flex;
+    display:inline-flex;
 
-    align-items: center;
+    align-items:center;
 
-    padding: 8px 18px;
+    padding:8px 18px;
 
-    border-radius: 999px;
+    border-radius:999px;
 
-    background: rgba(0,180,255,.12);
+    background:rgba(0,180,255,.12);
 
-    border: 1px solid rgba(0,180,255,.25);
+    border:1px solid rgba(0,180,255,.25);
 
-    color: #74d8ff;
+    color:#74d8ff;
 
-    font-size: .78rem;
+    font-size:.78rem;
 
-    font-weight: 700;
+    font-weight:700;
 
-    letter-spacing: .12em;
+    letter-spacing:.12em;
 
-    text-transform: uppercase;
-
-}
-
-.title {
-
-    position: relative;
-
-    z-index: 1;
-
-    margin-top: 24px;
-
-    color: #ffffff;
-
-    font-size: clamp(2.3rem,4vw,3.4rem);
-
-    font-weight: 800;
-
-    line-height: 1.25;
+    text-transform:uppercase;
 
 }
 
-.description {
+.title{
 
-    position: relative;
+    position:relative;
 
-    z-index: 1;
+    z-index:1;
 
-    margin-top: 20px;
+    margin-top:24px;
 
-    max-width: 720px;
+    color:#fff;
 
-    color: rgba(255,255,255,.72);
+    font-size:clamp(2.3rem,4vw,3.5rem);
 
-    font-size: 1.05rem;
+    font-weight:800;
 
-    line-height: 1.9;
+    line-height:1.2;
+
+}
+
+.description{
+
+    position:relative;
+
+    z-index:1;
+
+    margin-top:22px;
+
+    max-width:760px;
+
+    color:rgba(255,255,255,.74);
+
+    line-height:1.9;
+
+    font-size:1.05rem;
 
 }
 
@@ -147,125 +142,127 @@
 🔥 Actions
 ============================================================================ */
 
-.actions {
+.actions{
 
-    position: relative;
+    position:relative;
 
-    z-index: 1;
+    z-index:1;
 
-    display: flex;
+    display:grid;
 
-    flex-wrap: wrap;
+    grid-template-columns:repeat(3,minmax(0,1fr));
 
-    gap: 18px;
+    gap:22px;
 
-    margin-top: 42px;
+    margin-top:52px;
 
 }
 
 /* ============================================================================
-🔥 Primary Button
+🔥 Cards
 ============================================================================ */
 
-.primaryButton {
+.primaryCard,
 
-    display: inline-flex;
+.actionCard{
 
-    justify-content: center;
+    display:flex;
 
-    align-items: center;
+    flex-direction:column;
 
-    min-width: 220px;
+    align-items:flex-start;
 
-    padding: 16px 34px;
+    gap:12px;
 
-    border-radius: 14px;
+    padding:28px;
+
+    border-radius:22px;
+
+    text-decoration:none;
+
+    transition:.28s;
+
+}
+
+.primaryCard{
 
     background:
 
         linear-gradient(
-
             135deg,
-
-            #00bfff,
-
+            #12b6ff,
             #2563eb
-
         );
 
-    color: #ffffff;
-
-    text-decoration: none;
-
-    font-weight: 700;
-
-    transition:
-
-        transform .2s ease,
-
-        opacity .2s ease,
-
-        box-shadow .2s ease;
+    color:#fff;
 
 }
 
-.primaryButton:hover {
+.primaryCard:hover{
 
-    opacity: .95;
-
-    transform: translateY(-2px);
+    transform:translateY(-5px);
 
     box-shadow:
 
-        0 12px 30px rgba(37,99,235,.35);
+        0 20px 45px rgba(0,120,255,.35);
+
+}
+
+.actionCard{
+
+    background:rgba(255,255,255,.05);
+
+    border:1px solid rgba(255,255,255,.08);
+
+    color:#fff;
+
+}
+
+.actionCard:hover{
+
+    transform:translateY(-5px);
+
+    border-color:rgba(0,180,255,.35);
+
+    background:rgba(255,255,255,.08);
 
 }
 
 /* ============================================================================
-🔥 Secondary Button
+🔥 Icon
 ============================================================================ */
 
-.secondaryButton {
+.actionIcon{
 
-    display: inline-flex;
+    font-size:2.4rem;
 
-    justify-content: center;
-
-    align-items: center;
-
-    min-width: 220px;
-
-    padding: 16px 34px;
-
-    border-radius: 14px;
-
-    background: rgba(255,255,255,.05);
-
-    border: 1px solid rgba(255,255,255,.12);
-
-    color: #ffffff;
-
-    text-decoration: none;
-
-    font-weight: 700;
-
-    transition:
-
-        background .2s ease,
-
-        border-color .2s ease,
-
-        transform .2s ease;
+    line-height:1;
 
 }
 
-.secondaryButton:hover {
+/* ============================================================================
+🔥 Title
+============================================================================ */
 
-    background: rgba(255,255,255,.08);
+.primaryCard strong,
 
-    border-color: rgba(0,180,255,.30);
+.actionCard strong{
 
-    transform: translateY(-2px);
+    font-size:1.25rem;
+
+    font-weight:800;
+
+}
+
+.primaryCard small,
+
+.actionCard small{
+
+    color:rgba(255,255,255,.78);
+
+    font-size:.92rem;
+
+    line-height:1.6;
 
 }
 
@@ -273,39 +270,59 @@
 🔥 Responsive
 ============================================================================ */
 
-@media (max-width:768px) {
+@media(max-width:1100px){
 
-    .section {
+    .actions{
 
-        margin: 64px auto;
-
-        padding: 0 18px;
+        grid-template-columns:1fr;
 
     }
 
-    .card {
+}
 
-        padding: 40px 28px;
+@media(max-width:768px){
 
-    }
+    .section{
 
-    .title {
+        margin:64px auto;
 
-        font-size: 2rem;
-
-    }
-
-    .actions {
-
-        flex-direction: column;
+        padding:0 18px;
 
     }
 
-    .primaryButton,
+    .card{
 
-    .secondaryButton {
+        padding:40px 24px;
 
-        width: 100%;
+        border-radius:28px;
+
+    }
+
+    .title{
+
+        font-size:2rem;
+
+    }
+
+    .description{
+
+        font-size:.95rem;
+
+    }
+
+    .actions{
+
+        gap:18px;
+
+        margin-top:36px;
+
+    }
+
+    .primaryCard,
+
+    .actionCard{
+
+        padding:22px;
 
     }
 

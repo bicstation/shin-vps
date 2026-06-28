@@ -1,8 +1,6 @@
 // ============================================================================
 // FILE:
-// /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/[slug]/components/breadcrumbs/RankingBreadcrumbs.tsx
-// Copyright (c) 2024 Shin Corporation.
-// All rights reserved.
+// /app/ranking/[slug]/components/breadcrumbs/RankingBreadcrumbs.tsx
 // ============================================================================
 
 'use client'
@@ -58,11 +56,7 @@ export default function RankingBreadcrumbs({
 
 }: Props) {
 
-    if (
-
-        breadcrumbs.length === 0
-
-    ) {
+    if (breadcrumbs.length === 0) {
 
         return null
 
@@ -82,109 +76,120 @@ export default function RankingBreadcrumbs({
 
                 {
 
-                    breadcrumbs.map(
+                    breadcrumbs.map((item, index) => {
 
-                        (
+                        const title =
 
-                            item,
+                            item.title
+                            ??
 
-                            index,
+                            item.name
+                            ??
 
-                        ) => {
+                            item.label
+                            ??
 
-                            const title =
+                            ''
 
-                                item.title
+                        const href =
 
-                                ??
+                            item.href
+                            ??
 
-                                item.name
+                            item.url
+                            ??
 
-                                ??
+                            '#'
 
-                                item.label
+                        const isLast =
 
-                                ??
+                            index === breadcrumbs.length - 1
 
-                                ''
+                        return (
 
-                            const href =
+                            <li
 
-                                item.url
+                                key={`${href}-${index}`}
 
-                                ??
+                                className={styles.item}
 
-                                item.href
+                            >
 
-                                ??
+                                {
 
-                                '#'
+                                    isLast
 
-                            const isLast =
+                                        ? (
 
-                                index ===
+                                            <span
 
-                                breadcrumbs.length - 1
+                                                className={styles.current}
 
-                            return (
+                                                aria-current="page"
 
-                                <li
+                                            >
 
-                                    key={`${href}-${index}`}
+                                                {title}
 
-                                    className={styles.item}
+                                            </span>
 
-                                >
+                                        )
 
-                                    {
+                                        : (
 
-                                        isLast
+                                            <>
 
-                                            ? (
+                                                <Link
 
-                                                <span className={styles.current}>
+                                                    href={href}
+
+                                                    className={styles.link}
+
+                                                >
+
+                                                    {
+
+                                                        index === 0 && (
+
+                                                            <span
+                                                                className={styles.home}
+                                                            >
+
+                                                                🏠
+
+                                                            </span>
+
+                                                        )
+
+                                                    }
 
                                                     {title}
 
+                                                </Link>
+
+                                                <span
+
+                                                    className={styles.separator}
+
+                                                    aria-hidden="true"
+
+                                                >
+
+                                                    ›
+
                                                 </span>
 
-                                            )
+                                            </>
 
-                                            : (
+                                        )
 
-                                                <>
+                                }
 
-                                                    <Link
+                            </li>
 
-                                                        href={href}
+                        )
 
-                                                        className={styles.link}
-
-                                                    >
-
-                                                        {title}
-
-                                                    </Link>
-
-                                                    <span className={styles.separator}>
-
-                                                        /
-
-                                                    </span>
-
-                                                </>
-
-                                            )
-
-                                    }
-
-                                </li>
-
-                            )
-
-                        }
-
-                    )
+                    })
 
                 }
 

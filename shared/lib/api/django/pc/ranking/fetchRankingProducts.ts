@@ -67,6 +67,32 @@ export async function fetchRankingProducts(
 
     )
 
+  console.log(
+
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+
+  )
+
+  console.log(
+
+    '🔥 FETCH RANKING PRODUCTS'
+
+  )
+
+  console.log({
+
+    type,
+
+    endpoint,
+
+  })
+
+  console.log(
+
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+
+  )
+
   /* ========================================================================
   Fetch
   ======================================================================== */
@@ -78,20 +104,6 @@ export async function fetchRankingProducts(
       endpoint
 
     )
-
-  console.log(
-
-    '🔥 FETCH RANKING PRODUCTS',
-
-    {
-
-      endpoint,
-
-      payload,
-
-    }
-
-  )
 
   /* ========================================================================
   Failure
@@ -105,9 +117,9 @@ export async function fetchRankingProducts(
 
       {
 
-        endpoint,
-
         type,
+
+        endpoint,
 
       }
 
@@ -130,7 +142,7 @@ export async function fetchRankingProducts(
     )
 
   /* ========================================================================
-  Runtime Debug
+  Runtime Observability
   ======================================================================== */
 
   console.log(
@@ -139,17 +151,49 @@ export async function fetchRankingProducts(
 
     {
 
+      type,
+
+      endpoint,
+
+      meaning:
+
+        runtime.meaning,
+
       presentation:
 
         runtime.presentation,
 
+      seo:
+
+        runtime.seo,
+
+      runtime:
+
+        runtime.runtime,
+
+      ranking: {
+
+        group_slug:
+
+          runtime.ranking?.group_slug,
+
+        group_name:
+
+          runtime.ranking?.group_name,
+
+        product_count:
+
+          runtime.ranking?.product_count,
+
+        results:
+
+          runtime.ranking?.results?.length,
+
+      },
+
       products:
 
         runtime.products?.length,
-
-      ranking:
-
-        runtime.ranking?.results?.length,
 
       semantic_schema_version:
 

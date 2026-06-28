@@ -51,7 +51,7 @@ export async function fetchDiscoverDetail(
 ): Promise<DiscoverDetailRuntime> {
 
   if (!slug) {
-
+  
     return {
 
       found: false,
@@ -95,9 +95,18 @@ export async function fetchDiscoverDetail(
       endpoint
     )
 
-  return normalizeDiscoverDetailRuntime(
-    payload
-  )
+    console.log("🔥 AFTER SAFEFETCH")
+
+    const runtime = normalizeDiscoverDetailRuntime(payload)
+
+    console.log("🔥 AFTER NORMALIZE")
+
+    return runtime
+
+
+  // // return normalizeDiscoverDetailRuntime(
+  //   payload
+  // )
 }
 
 /* ============================================================================

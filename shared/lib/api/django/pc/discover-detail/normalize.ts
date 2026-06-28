@@ -63,11 +63,17 @@ export function normalizeDiscoverDetailRuntime(
     '🔥 DISCOVER DETAIL NORMALIZE',
     {
 
+      found:
+        payload?.found,
+
       group_slug:
         source?.group_slug,
 
       group_name:
         source?.group_name,
+
+      attribute:
+        source?.attribute,
 
       product_count:
         source?.product_count,
@@ -83,6 +89,10 @@ export function normalizeDiscoverDetailRuntime(
   return {
 
     found:
+
+      payload?.found
+
+      ??
 
       source?.found
 
@@ -154,6 +164,18 @@ export function normalizeDiscoverDetailRuntime(
 
       '',
 
+    // ------------------------------------------------------
+    // Attribute Projection
+    // ------------------------------------------------------
+
+    attribute:
+
+      source?.attribute
+
+      ??
+
+      undefined,
+
     product_count:
 
       source?.product_count
@@ -178,7 +200,7 @@ export function normalizeDiscoverDetailRuntime(
         source?.related_groups
       )
 
-        ? source.related_groups
+        ? source?.related_groups
 
         : [],
 
@@ -194,6 +216,10 @@ export function normalizeDiscoverDetailRuntime(
 
     ready:
 
+      payload?.ready
+
+      ??
+
       source?.ready
 
       ??
@@ -201,6 +227,7 @@ export function normalizeDiscoverDetailRuntime(
       false,
 
     raw:
+
       payload,
   }
 }

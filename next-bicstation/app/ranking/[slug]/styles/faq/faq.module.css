@@ -1,11 +1,4 @@
 /* ============================================================================
-// FILE:
-// /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/[slug]/styles/faq/faq.module.css
-// Copyright (c) 2024 Shin Corporation.
-// All rights reserved.
-============================================================================ */
-
-/* ============================================================================
 🔥 Section
 ============================================================================ */
 
@@ -27,7 +20,7 @@
 
 .header {
 
-    margin-bottom: 40px;
+    margin-bottom: 44px;
 
 }
 
@@ -37,7 +30,7 @@
 
     align-items: center;
 
-    padding: 8px 16px;
+    padding: 8px 18px;
 
     border-radius: 999px;
 
@@ -67,21 +60,57 @@
 
     font-weight: 800;
 
-    line-height: 1.25;
+    line-height: 1.2;
 
 }
 
 .description {
 
-    margin-top: 14px;
+    margin-top: 16px;
 
-    max-width: 720px;
+    max-width: 760px;
 
     color: rgba(255,255,255,.72);
 
-    font-size: 1rem;
+    line-height: 1.9;
 
-    line-height: 1.8;
+}
+
+.summary {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 14px;
+
+    margin-top: 28px;
+
+    padding: 14px 22px;
+
+    border-radius: 16px;
+
+    background: rgba(255,255,255,.05);
+
+    border: 1px solid rgba(255,255,255,.08);
+
+}
+
+.summary span {
+
+    color: rgba(255,255,255,.60);
+
+    font-size: .85rem;
+
+}
+
+.summary strong {
+
+    color: #7fd8ff;
+
+    font-size: 1.5rem;
+
+    font-weight: 800;
 
 }
 
@@ -95,7 +124,7 @@
 
     flex-direction: column;
 
-    gap: 20px;
+    gap: 22px;
 
 }
 
@@ -107,45 +136,36 @@
 
     overflow: hidden;
 
-    border-radius: 20px;
+    border-radius: 22px;
 
     background:
-
         linear-gradient(
-
             180deg,
-
-            rgba(18,28,48,.95),
-
-            rgba(10,16,30,.98)
-
+            rgba(18,28,48,.96),
+            rgba(9,16,30,.99)
         );
 
     border: 1px solid rgba(255,255,255,.08);
 
     transition:
-
-        border-color .2s ease,
-
-        transform .2s ease,
-
-        box-shadow .2s ease;
+        .25s;
 
 }
 
 .item:hover {
 
+    transform: translateY(-2px);
+
     border-color: rgba(0,180,255,.30);
 
     box-shadow:
-
-        0 16px 40px rgba(0,0,0,.28);
+        0 18px 42px rgba(0,0,0,.32);
 
 }
 
 .item[open] {
 
-    border-color: rgba(0,180,255,.40);
+    border-color: rgba(0,180,255,.45);
 
 }
 
@@ -155,21 +175,19 @@
 
 .question {
 
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
     cursor: pointer;
 
     list-style: none;
 
-    padding: 24px 28px;
-
-    color: #ffffff;
-
-    font-size: 1.1rem;
-
-    font-weight: 700;
+    padding: 26px 30px;
 
     user-select: none;
-
-    position: relative;
 
 }
 
@@ -179,29 +197,85 @@
 
 }
 
-.question::after {
+.questionLeft {
 
-    content: '+';
+    display: flex;
 
-    position: absolute;
+    align-items: center;
 
-    right: 28px;
+    gap: 18px;
 
-    top: 50%;
+    color: #ffffff;
 
-    transform: translateY(-50%);
+    font-size: 1.05rem;
 
-    font-size: 1.4rem;
-
-    color: #74d8ff;
-
-    transition: transform .2s ease;
+    font-weight: 700;
 
 }
 
-.item[open] .question::after {
+.q,
 
-    content: '−';
+.a {
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    flex-shrink: 0;
+
+    width: 34px;
+
+    height: 34px;
+
+    border-radius: 50%;
+
+    font-size: .82rem;
+
+    font-weight: 800;
+
+}
+
+.q {
+
+    background: rgba(0,180,255,.18);
+
+    border: 1px solid rgba(0,180,255,.30);
+
+    color: #7fd8ff;
+
+}
+
+.a {
+
+    background: rgba(255,255,255,.08);
+
+    border: 1px solid rgba(255,255,255,.12);
+
+    color: #ffffff;
+
+}
+
+/* ============================================================================
+🔥 Icon
+============================================================================ */
+
+.icon {
+
+    color: #74d8ff;
+
+    font-size: 1.6rem;
+
+    font-weight: 300;
+
+    transition: transform .25s ease;
+
+}
+
+.item[open] .icon {
+
+    transform: rotate(45deg);
 
 }
 
@@ -211,13 +285,41 @@
 
 .answer {
 
-    padding: 0 28px 28px;
+    display: flex;
 
-    color: rgba(255,255,255,.75);
+    gap: 18px;
+
+    padding: 0 30px 30px;
+
+    color: rgba(255,255,255,.78);
 
     line-height: 1.9;
 
-    font-size: .96rem;
+    animation: fadeIn .25s ease;
+
+}
+
+/* ============================================================================
+🔥 Animation
+============================================================================ */
+
+@keyframes fadeIn {
+
+    from {
+
+        opacity: 0;
+
+        transform: translateY(-6px);
+
+    }
+
+    to {
+
+        opacity: 1;
+
+        transform: translateY(0);
+
+    }
 
 }
 
@@ -225,45 +327,65 @@
 🔥 Responsive
 ============================================================================ */
 
-@media (max-width:768px) {
+@media (max-width:768px){
 
-    .section {
+    .section{
 
-        margin: 56px auto;
+        margin:56px auto;
 
-        padding: 0 18px;
-
-    }
-
-    .header {
-
-        margin-bottom: 28px;
+        padding:0 18px;
 
     }
 
-    .title {
+    .header{
 
-        font-size: 1.8rem;
-
-    }
-
-    .question {
-
-        padding: 20px;
-
-        padding-right: 56px;
+        margin-bottom:32px;
 
     }
 
-    .question::after {
+    .title{
 
-        right: 20px;
+        font-size:1.8rem;
 
     }
 
-    .answer {
+    .summary{
 
-        padding: 0 20px 20px;
+        width:100%;
+
+        justify-content:space-between;
+
+    }
+
+    .question{
+
+        padding:20px;
+
+    }
+
+    .questionLeft{
+
+        gap:14px;
+
+        font-size:.95rem;
+
+    }
+
+    .answer{
+
+        padding:0 20px 20px;
+
+        gap:14px;
+
+    }
+
+    .q,
+
+    .a{
+
+        width:30px;
+
+        height:30px;
 
     }
 

@@ -1,6 +1,6 @@
 // ============================================================================
 // FILE:
-// /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/[slug]/components/flagship/FlagshipCard.tsx
+// /home/maya/shin-vps/next-bicstation/app/ranking/[slug]/components/flagship/FlagshipCard.tsx
 // Copyright (c) 2024 Shin Corporation.
 // All rights reserved.
 // ============================================================================
@@ -19,9 +19,7 @@ import Link from 'next/link'
 ============================================================================ */
 
 import type {
-
     RankingProduct,
-
 } from '../../types/contracts'
 
 /* ============================================================================
@@ -55,12 +53,6 @@ export default function FlagshipCard({
 
 }: Props) {
 
-    /* =========================================================================
-    🔥 Product
-    ========================================================================= */
-
-    console.log(product)
-
     const {
 
         unique_id,
@@ -84,55 +76,97 @@ export default function FlagshipCard({
     const href =
 
         unique_id
-
             ? `/product/${unique_id}`
-
             : '#'
-
-    /* =========================================================================
-    🔥 Render
-    ========================================================================= */
 
     return (
 
         <section className={styles.flagship}>
 
             {/* ==========================================================
-            Rank
+            Header
             ========================================================== */}
+            <header className={styles.header}>
 
-            <div className={styles.rank}>
+                <div className={styles.headerLeft}>
 
-                #{rank}
+                    <div className={styles.badge}>
 
-            </div>
+                        FEATURED PRODUCT
+
+                    </div>
+
+                    <Image
+
+                        src="/images/ranking/ranking_core_1.png"
+
+                        alt="Ranking Core"
+
+                        width={64}
+
+                        height={64}
+
+                        className={styles.badgeCore}
+
+                        priority
+
+                    />
+
+                </div>
+
+                <div className={styles.rank}>
+
+                    #{rank}
+
+                </div>
+
+            </header>
+
 
             {/* ==========================================================
-            Image
+            Body
             ========================================================== */}
 
-            <div className={styles.imageArea}>
+            <div
+                className={styles.body}
+            >
 
-                {
+                {/* ======================================================
+                Visual
+                ====================================================== */}
 
-                    image_url
+                <div
+                    className={styles.imageArea}
+                >
+                    {
 
-                        ? (
-                            <img
+                        image_url ? (
+
+                            <Image
 
                                 src={image_url}
 
                                 alt={name ?? ''}
 
-                                className={styles.image}
+                                width={520}
+
+                                height={520}
+
+                                className={
+                                    styles.image
+                                }
+
+                                unoptimized
 
                             />
-  
-                        )
 
-                        : (
+                        ) : (
 
-                            <div className={styles.imagePlaceholder}>
+                            <div
+                                className={
+                                    styles.imagePlaceholder
+                                }
+                            >
 
                                 NO IMAGE
 
@@ -140,131 +174,157 @@ export default function FlagshipCard({
 
                         )
 
-                }
-
-            </div>
-
-            {/* ==========================================================
-            Content
-            ========================================================== */}
-
-            <div className={styles.content}>
-
-                <div className={styles.badge}>
-
-                    FEATURED RANKING
+                    }
 
                 </div>
 
-                <h2 className={styles.title}>
+                {/* ======================================================
+                Content
+                ====================================================== */}
 
-                    {name ?? 'Unknown Product'}
+                <div
+                    className={styles.content}
+                >
 
-                </h2>
+                    <h2
+                        className={styles.title}
+                    >
 
-                {
+                        {name ?? 'Unknown Product'}
 
-                    (maker || brand) && (
+                    </h2>
 
-                        <div className={styles.brand}>
+                    {
 
-                            {maker ?? brand}
+                        (maker || brand) && (
 
-                        </div>
+                            <div
+                                className={styles.brand}
+                            >
 
-                    )
+                                {maker ?? brand}
 
-                }
+                            </div>
 
-                {
+                        )
 
-                    recommendation_reason && (
+                    }
 
-                        <p className={styles.description}>
+                    {
 
-                            {recommendation_reason}
+                        recommendation_reason && (
 
-                        </p>
+                            <p
+                                className={
+                                    styles.description
+                                }
+                            >
 
-                    )
+                                {recommendation_reason}
 
-                }
+                            </p>
 
-                {
+                        )
 
-                    semantic_labels.length > 0 && (
+                    }
 
-                        <div className={styles.chips}>
+                    {
 
-                            {
+                        semantic_labels.length > 0 && (
 
-                                semantic_labels.map(
+                            <div
+                                className={styles.chips}
+                            >
 
-                                    (
+                                {
 
-                                        label,
+                                    semantic_labels.map(
 
-                                        index,
+                                        (
 
-                                    ) => (
+                                            label,
 
-                                        <span
+                                            index,
 
-                                            key={index}
+                                        ) => (
 
-                                            className={styles.chip}
+                                            <span
 
-                                        >
+                                                key={index}
 
-                                            {label}
+                                                className={
+                                                    styles.chip
+                                                }
 
-                                        </span>
+                                            >
+
+                                                {label}
+
+                                            </span>
+
+                                        )
 
                                     )
 
-                                )
+                                }
 
-                            }
+                            </div>
 
-                        </div>
+                        )
 
-                    )
+                    }
 
-                }
+                    {/* ==================================================
+                    Footer
+                    ================================================== */}
 
-                {
+                    <div
+                        className={styles.footer}
+                    >
 
-                    typeof price === 'number' && (
+                        {
 
-                        <div className={styles.price}>
+                            typeof price === 'number' && (
 
-                            ¥{price.toLocaleString()}
+                                <div
+                                    className={
+                                        styles.price
+                                    }
+                                >
 
-                        </div>
+                                    ¥{price.toLocaleString()}
 
-                    )
+                                </div>
 
-                }
+                            )
 
-                {
+                        }
 
-                    unique_id && (
+                        {
 
-                        <Link
+                            unique_id && (
 
-                            href={href}
+                                <Link
 
-                            className={styles.button}
+                                    href={href}
 
-                        >
+                                    className={
+                                        styles.button
+                                    }
 
-                            詳細を見る
+                                >
 
-                        </Link>
+                                    製品の詳細を見る
 
-                    )
+                                </Link>
 
-                }
+                            )
+
+                        }
+
+                    </div>
+
+                </div>
 
             </div>
 

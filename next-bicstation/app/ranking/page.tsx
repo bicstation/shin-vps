@@ -7,8 +7,12 @@
 
 'use client'
 
+import {
 
-import { useMemo, useState,} from 'react'
+    useMemo,
+    useState,
+
+} from 'react'
 
 /* ============================================================================
 🔥 Hook
@@ -69,10 +73,9 @@ export default function RankingPage() {
 
     } = useRanking()
 
-
     /* =========================================================================
     🔥 Active Tab
-    ============================================================================ */
+    ========================================================================= */
 
     const [
 
@@ -87,8 +90,16 @@ export default function RankingPage() {
     )
 
     /* =========================================================================
+    🔥 Canonical Runtime
+    ========================================================================= */
+
+    const items =
+
+        runtime?.intents ?? []
+
+    /* =========================================================================
     🔥 Filtered Items
-    ============================================================================ */
+    ========================================================================= */
 
     const filteredItems =
 
@@ -96,25 +107,15 @@ export default function RankingPage() {
 
             if (
 
-                !runtime
-
-            ) {
-
-                return []
-
-            }
-
-            if (
-
                 activeType === 'all'
 
             ) {
 
-                return runtime.navigation
+                return items
 
             }
 
-            return runtime.navigation.filter(
+            return items.filter(
 
                 item =>
 
@@ -124,7 +125,7 @@ export default function RankingPage() {
 
         }, [
 
-            runtime,
+            items,
 
             activeType,
 
@@ -188,10 +189,8 @@ export default function RankingPage() {
     🔥 Runtime
     ========================================================================= */
 
-    const items =
-        runtime.navigation
-
     const hasItems =
+
         filteredItems.length > 0
 
     /* =========================================================================
@@ -242,11 +241,17 @@ export default function RankingPage() {
 
             <RankingTabs
 
-                items={items}
+                items={
+                    items
+                }
 
-                activeType={activeType}
+                activeType={
+                    activeType
+                }
 
-                onSelect={setActiveType}
+                onSelect={
+                    setActiveType
+                }
 
             />
 
@@ -255,11 +260,12 @@ export default function RankingPage() {
             ========================================================== */}
 
             <RankingSummary
-                 items={
+
+                items={
                     filteredItems
                 }
-            />
 
+            />
 
             {/* ==========================================================
             Ranking Grid
@@ -273,7 +279,9 @@ export default function RankingPage() {
 
                         <RankingCardGrid
 
-                             items={filteredItems}
+                            items={
+                                filteredItems
+                            }
 
                         />
 
@@ -287,10 +295,9 @@ export default function RankingPage() {
 
             }
 
-
-
         </main>
 
     )
 
 }
+

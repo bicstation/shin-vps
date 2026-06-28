@@ -13,26 +13,17 @@
  *
  * PURPOSE
  *
- * Runtime Shape
- *
- * ↓
- *
- * Stable Runtime Contract
- *
- * IMPORTANT
- *
- * This layer MUST NOT:
- *
- * ❌ generate semantic meaning
- * ❌ create navigation intent
- * ❌ perform UI projection
- * ❌ fabricate runtime values
- *
- * RESPONSIBILITY
- *
  * Backend Runtime
  * ↓
- * Runtime Contract
+ * Stable Runtime Contract
+ *
+ * Adapter SHALL:
+ *
+ * Transport
+ * Normalize
+ * Project
+ *
+ * ONLY
  *
  * ============================================================================
  */
@@ -44,7 +35,6 @@
 import type {
 
   NavigationRuntime,
-  NavigationRuntimeResponse,
   NavigationRuntimeItem,
 
 } from './contracts'
@@ -59,147 +49,216 @@ export function normalizeNavigation(
 
 ): NavigationRuntime {
 
-  /* ========================================================================
-  Compatibility Layer
-  ======================================================================== */
+  /* ==========================================================================
+  Empty Guard
+  ========================================================================== */
+
+  if (!payload) {
+
+    return {
+
+      meaning: {},
+
+      presentation: {},
+
+      seo: {},
+
+      intents: [],
+
+      semantic_schema_version: 1,
+
+      authority_version: '',
+
+      semantic_authority: '',
+
+      ready: false,
+
+      raw: null,
+
+    }
+
+  }
+
+  /* ==========================================================================
+  Runtime Source
+  ========================================================================== */
 
   const source =
 
     payload?.data
-    ?? payload
-    ?? {}
 
-  /* ========================================================================
-  Navigation
-  ======================================================================== */
+    ??
 
-  const navigation: NavigationRuntimeItem[] =
+    payload
+
+    ??
+
+    {}
+
+  /* ==========================================================================
+  Navigation Intents
+  ========================================================================== */
+
+  const intents: NavigationRuntimeItem[] =
 
     Array.isArray(
-      source?.navigation
+
+      source?.intents
+
     )
+
+      ? source.intents
+
+    : Array.isArray(
+
+        source?.navigation
+
+      )
 
       ? source.navigation
 
-      : Array.isArray(
-          source?.intents
-        )
+    : Array.isArray(
 
-          ? source.intents
+        source?.items
 
-          : Array.isArray(
-              source?.items
-            )
+      )
 
-              ? source.items
+      ? source.items
 
-              : []  
+    : []
 
-
-  /* ========================================================================
-  Observatory
-  ======================================================================== */
+  /* ==========================================================================
+  Observability
+  ========================================================================== */
 
   console.log(
+
     '🔥 NAVIGATION NORMALIZE',
+
     {
 
-      source_shape:
+      source:
 
-        Array.isArray(
-          source?.navigation
-        )
+        Array.isArray(source?.intents)
+
+          ? 'intents'
+
+        : Array.isArray(source?.navigation)
 
           ? 'navigation'
 
-          : Array.isArray(
-              source?.intents
-            )
+        : Array.isArray(source?.items)
 
-              ? 'intents'
+          ? 'items'
 
-              : Array.isArray(
-                  source?.items
-                )
+        : 'unknown',
 
-                  ? 'items'
+      intents:
 
-                  : 'unknown',
+        intents.length,
 
-      items:
-        navigation.length,
+      meaning:
+
+        payload?.meaning,
+
+      presentation:
+
+        payload?.presentation,
+
+      semantic_schema_version:
+
+        payload?.semantic_schema_version,
 
       authority_version:
-        source?.authority_version,
+
+        payload?.authority_version,
 
       semantic_authority:
-        source?.semantic_authority,
+
+        payload?.semantic_authority,
+
+      ready:
+
+        payload?.ready,
 
       sample:
-        navigation?.[0],
+
+        intents?.[0],
+
     }
+
   )
 
-
-  /* ========================================================================
-  Return
-  ======================================================================== */
+  /* ==========================================================================
+  Runtime Projection
+  ========================================================================== */
 
   return {
 
-    semantic_authority:
+    meaning:
 
-      source?.semantic_authority
+      payload?.meaning
 
       ||
 
-      'backend',
+      {},
+
+    presentation:
+
+      payload?.presentation
+
+      ||
+
+      {},
+
+    seo:
+
+      payload?.seo
+
+      ||
+
+      {},
+
+    intents,
+
+    semantic_schema_version:
+
+      payload?.semantic_schema_version
+
+      ??
+
+      1,
 
     authority_version:
 
-      source?.authority_version
+      payload?.authority_version
 
-      ||
+      ??
 
-      'unknown',
+      '',
 
-    navigation,
+    semantic_authority:
+
+      payload?.semantic_authority
+
+      ??
+
+      '',
+
+    ready:
+
+      payload?.ready
+
+      ??
+
+      false,
 
     raw:
+
       payload,
+
   }
-}
 
-/* ============================================================================
-🔥 Normalize Navigation Response
-============================================================================ */
-
-export function normalizeNavigationResponse(
-
-  payload?: any
-
-): NavigationRuntimeResponse {
-
-  const runtime =
-
-    normalizeNavigation(
-      payload
-    )
-
-  return {
-
-    success:
-      true,
-
-    semantic_authority:
-      runtime.semantic_authority,
-
-    authority_version:
-      runtime.authority_version,
-
-    navigation:
-      runtime.navigation,
-  }
 }
 
 /* ============================================================================

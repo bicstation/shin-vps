@@ -67,10 +67,6 @@ export async function fetchSemanticRankingRuntime(
 
     )
 
-  /* ==========================================================================
-  Runtime Debug
-  ========================================================================== */
-
   console.log(
 
     '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
@@ -158,48 +154,6 @@ export async function fetchSemanticRankingRuntime(
     )
 
   /* ==========================================================================
-  Canonical Product Continuity
-  ========================================================================== */
-
-  const runtimePayload =
-
-    runtime as any
-
-  const products =
-
-    Array.isArray(
-      runtimePayload?.products
-    )
-
-      ? runtimePayload.products
-
-    : Array.isArray(
-        runtimePayload?.results
-      )
-
-      ? runtimePayload.results
-
-    : Array.isArray(
-        runtimePayload?.ranking?.results
-      )
-
-      ? runtimePayload.ranking.results
-
-    : Array.isArray(
-        runtimePayload?.items
-      )
-
-      ? runtimePayload.items
-
-    : Array.isArray(
-        runtimePayload?.ranking_products
-      )
-
-      ? runtimePayload.ranking_products
-
-    : []
-
-  /* ==========================================================================
   Runtime Observability
   ========================================================================== */
 
@@ -209,17 +163,49 @@ export async function fetchSemanticRankingRuntime(
 
     {
 
+      slug,
+
+      endpoint,
+
+      meaning:
+
+        runtime.meaning,
+
       presentation:
 
         runtime.presentation,
 
+      seo:
+
+        runtime.seo,
+
+      runtime:
+
+        runtime.runtime,
+
+      ranking: {
+
+        group_slug:
+
+          runtime.ranking?.group_slug,
+
+        group_name:
+
+          runtime.ranking?.group_name,
+
+        product_count:
+
+          runtime.ranking?.product_count,
+
+        results:
+
+          runtime.ranking?.results?.length,
+
+      },
+
       products:
 
-        products.length,
-
-      ranking:
-
-        runtime.ranking?.results?.length,
+        runtime.products?.length,
 
       semantic_schema_version:
 
@@ -242,16 +228,10 @@ export async function fetchSemanticRankingRuntime(
   )
 
   /* ==========================================================================
-  Canonical Runtime Contract
+  Success
   ========================================================================== */
 
-  return {
-
-    ...runtime,
-
-    products,
-
-  }
+  return runtime
 
 }
 

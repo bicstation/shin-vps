@@ -12,9 +12,7 @@
 ============================================================================ */
 
 import type {
-
     SemanticRankingRuntime,
-
 } from '../types/contracts'
 
 /* ============================================================================
@@ -22,21 +20,13 @@ import type {
 ============================================================================ */
 
 import {
-
     RankingHero,
-
     RankingBreadcrumbs,
-
     FlagshipCard,
-
     ComparisonGrid,
-
     RankingList,
-
     RankingFAQ,
-
     RankingContinuation,
-
 } from './'
 
 /* ============================================================================
@@ -66,9 +56,7 @@ export default function RankingRuntime({
     const {
 
         products = [],
-
         breadcrumbs = [],
-
         faq = [],
 
     } = runtime
@@ -101,11 +89,8 @@ export default function RankingRuntime({
             ========================================================== */}
 
             <RankingHero
-
                 runtime={runtime}
-
                 totalProducts={products.length}
-
             />
 
             {/* ==========================================================
@@ -113,25 +98,18 @@ export default function RankingRuntime({
             ========================================================== */}
 
             <RankingBreadcrumbs
-
                 breadcrumbs={breadcrumbs}
-
             />
 
             {/* ==========================================================
             Flagship
-            ========================================================== */}
-
-            
+            ========================================================== */}           
 
             {flagship && (
 
                 <FlagshipCard
-
                     product={flagship}
-
                     rank={1}
-
                 />
 
             )}
@@ -147,9 +125,7 @@ export default function RankingRuntime({
             {comparisonProducts.length > 0 && (
 
                 <ComparisonGrid
-
                     products={comparisonProducts}
-
                 />
 
             )}
@@ -165,44 +141,33 @@ export default function RankingRuntime({
             {rankingProducts.length > 0 && (
 
                 <RankingList
-
                     products={rankingProducts}
-
                     startRank={5}
-
                 />
 
             )}
 
-           
 
-            {/* ==========================================================
-            FAQ
-            ========================================================== */}
-
-            
-
-            {faq.length > 0 && (
-
-                <RankingFAQ
-
-                    faq={faq}
-
-                />
-
-            )}
-
-           
 
             {/* ==========================================================
             Continuation
             ========================================================== */}
 
-            
-
             <RankingContinuation />
 
-           
+
+           {/* ==========================================================
+            FAQ
+            ========================================================== */}
+
+            {faq.length > 0 && (
+
+                <RankingFAQ
+                    runtime={runtime}
+                />
+
+            )}
+
 
         </main>
 

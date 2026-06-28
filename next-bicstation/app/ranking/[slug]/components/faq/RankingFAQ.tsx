@@ -1,8 +1,6 @@
 // ============================================================================
 // FILE:
-// /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/[slug]/components/faq/RankingFAQ.tsx
-// Copyright (c) 2024 Shin Corporation.
-// All rights reserved.
+// /app/ranking/[slug]/components/faq/RankingFAQ.tsx
 // ============================================================================
 
 'use client'
@@ -12,9 +10,7 @@
 ============================================================================ */
 
 import type {
-
     SemanticRankingRuntime,
-
 } from '../../types/contracts'
 
 /* ============================================================================
@@ -56,65 +52,60 @@ export default function RankingFAQ({
 
 }: Props) {
 
-    /* =========================================================================
-    🔥 Runtime
-    ========================================================================= */
-
     const faq =
 
         runtime.faq ?? []
 
-    if (
-
-        faq.length === 0
-
-    ) {
+    if (faq.length === 0) {
 
         return null
 
     }
 
-    /* =========================================================================
-    🔥 Render
-    ========================================================================= */
-
     return (
 
-        <section
-            className={styles.section}
-        >
+        <section className={styles.section}>
 
             {/* ==========================================================
             Header
             ========================================================== */}
 
-            <header
-                className={styles.header}
-            >
+            <header className={styles.header}>
 
-                <div
-                    className={styles.eyebrow}
-                >
+                <div className={styles.eyebrow}>
 
-                    FAQ
+                    RUNTIME FAQ
 
                 </div>
 
-                <h2
-                    className={styles.title}
-                >
+                <h2 className={styles.title}>
 
                     よくある質問
 
                 </h2>
 
-                <p
-                    className={styles.description}
-                >
+                <p className={styles.description}>
 
-                    ランキングに関するよくある質問をまとめました。
+                    ランキングの選定基準や評価方法など、
+                    よくいただく質問をまとめています。
 
                 </p>
+
+                <div className={styles.summary}>
+
+                    <span>
+
+                        FAQ
+
+                    </span>
+
+                    <strong>
+
+                        {faq.length}
+
+                    </strong>
+
+                </div>
 
             </header>
 
@@ -122,9 +113,7 @@ export default function RankingFAQ({
             FAQ
             ========================================================== */}
 
-            <div
-                className={styles.list}
-            >
+            <div className={styles.list}>
 
                 {
 
@@ -150,11 +139,33 @@ export default function RankingFAQ({
                                     className={styles.question}
                                 >
 
-                                    {
+                                    <div
+                                        className={styles.questionLeft}
+                                    >
 
-                                        item.question
+                                        <span
+                                            className={styles.q}
+                                        >
 
-                                    }
+                                            Q
+
+                                        </span>
+
+                                        <span>
+
+                                            {item.question}
+
+                                        </span>
+
+                                    </div>
+
+                                    <span
+                                        className={styles.icon}
+                                    >
+
+                                        +
+
+                                    </span>
 
                                 </summary>
 
@@ -162,11 +173,19 @@ export default function RankingFAQ({
                                     className={styles.answer}
                                 >
 
-                                    {
+                                    <span
+                                        className={styles.a}
+                                    >
 
-                                        item.answer
+                                        A
 
-                                    }
+                                    </span>
+
+                                    <div>
+
+                                        {item.answer}
+
+                                    </div>
 
                                 </div>
 

@@ -29,6 +29,38 @@
  */
 
 /* ============================================================================
+🔥 Discover Detail Attribute
+============================================================================ */
+
+export interface DiscoverDetailAttribute {
+
+  type?: string
+
+  name?: string
+
+  slug?: string
+
+  title?: string
+
+  description?: string
+
+  order?: string
+
+  is_adult?: string
+
+  semantic_role?: string
+
+  semantic_weight?: string
+
+  icon?: string
+
+  color?: string
+
+  is_ranking_enabled?: string
+
+}
+
+/* ============================================================================
 🔥 Discover Detail Product
 ============================================================================ */
 
@@ -43,6 +75,7 @@ export interface DiscoverDetailProduct {
   price?: number
 
   image_url?: string
+
 }
 
 /* ============================================================================
@@ -69,6 +102,8 @@ export interface DiscoverDetailRuntimeResponse {
 
   description?: string
 
+  attribute?: DiscoverDetailAttribute
+
   product_count?: number
 
   aliases: string[]
@@ -78,6 +113,7 @@ export interface DiscoverDetailRuntimeResponse {
   sample_products: DiscoverDetailProduct[]
 
   ready?: boolean
+
 }
 
 /* ============================================================================
@@ -104,6 +140,8 @@ export interface DiscoverDetailRuntime {
 
   description?: string
 
+  attribute?: DiscoverDetailAttribute
+
   product_count?: number
 
   aliases: string[]
@@ -115,4 +153,5 @@ export interface DiscoverDetailRuntime {
   ready?: boolean
 
   raw?: any
+
 }

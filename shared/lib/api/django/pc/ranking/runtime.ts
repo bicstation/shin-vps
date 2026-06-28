@@ -210,17 +210,45 @@ export async function fetchRankingRuntime(
 
       endpoint,
 
+      meaning:
+
+        runtime.meaning,
+
       presentation:
 
         runtime.presentation,
 
+      seo:
+
+        runtime.seo,
+
+      runtime:
+
+        runtime.runtime,
+
+      ranking: {
+
+        group_slug:
+
+          runtime.ranking?.group_slug,
+
+        group_name:
+
+          runtime.ranking?.group_name,
+
+        product_count:
+
+          runtime.ranking?.product_count,
+
+        results:
+
+          runtime.ranking?.results?.length,
+
+      },
+
       products:
 
         runtime.products?.length,
-
-      ranking:
-
-        runtime.ranking?.results?.length,
 
       semantic_schema_version:
 

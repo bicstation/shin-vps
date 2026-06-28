@@ -21,20 +21,19 @@
  *
  * IMPORTANT
  *
- * This layer MUST NOT:
+ * Backend remains:
  *
- * ❌ generate semantic meaning
- * ❌ infer navigation intent
- * ❌ mutate authority data
- * ❌ fabricate runtime values
+ * Semantic Authority
  *
- * RESPONSIBILITY
+ * Adapter remains:
  *
- * Runtime
- * ↓
- * Projection
- * ↓
- * UI Contract
+ * Projection Authority
+ *
+ * Adapter SHALL:
+ *
+ * Project
+ *
+ * ONLY
  *
  * ============================================================================
  */
@@ -61,18 +60,29 @@ export interface NavigationIntent {
 
   title?: string
 
+  subtitle?: string
+
   description?: string
+
+  type?: string
 
   icon?: string
 
   color?: string
 
+  parentGroup?: string
+
+  sortOrder?: number | string
+
   productCount?: number
+
+  attributes?: any[]
 }
 
 /* ============================================================================
 🔥 Project Navigation Item
 ============================================================================ */
+
 export function projectNavigationIntent(
 
   runtime?: NavigationRuntimeItem
@@ -82,28 +92,56 @@ export function projectNavigationIntent(
   return {
 
     slug:
-      runtime?.slug || '',
+
+      runtime?.slug ?? '',
 
     label:
-      runtime?.name || '',
+
+      runtime?.name ?? '',
 
     title:
-      runtime?.title || '',
+
+      runtime?.title ?? '',
+
+    subtitle:
+
+      runtime?.subtitle ?? '',
 
     description:
-      runtime?.description || '',
+
+      runtime?.description ?? '',
+
+    type:
+
+      runtime?.type,
 
     icon:
-      runtime?.icon || '',
+
+      runtime?.icon ?? '',
 
     color:
-      runtime?.color || '',
+
+      runtime?.color ?? '',
+
+    parentGroup:
+
+      runtime?.parent_group,
+
+    sortOrder:
+
+      runtime?.sort_order,
 
     productCount:
-      runtime?.product_count || 0,
-  }
-}
 
+      runtime?.product_count ?? 0,
+
+    attributes:
+
+      runtime?.attributes ?? [],
+
+  }
+
+}
 
 /* ============================================================================
 🔥 Project Navigation Collection
@@ -115,21 +153,18 @@ export function projectNavigationIntents(
 
 ): NavigationIntent[] {
 
-  if (
-
-    !Array.isArray(
-      runtimes
-    )
-
-  ) {
+  if (!Array.isArray(runtimes)) {
 
     return []
+
   }
 
   const projected =
 
     runtimes.map(
+
       projectNavigationIntent
+
     )
 
   console.log(
@@ -139,17 +174,23 @@ export function projectNavigationIntents(
     {
 
       runtime_count:
+
         runtimes.length,
 
       projected_count:
+
         projected.length,
 
       sample:
+
         projected?.[0],
+
     }
+
   )
 
   return projected
+
 }
 
 /* ============================================================================

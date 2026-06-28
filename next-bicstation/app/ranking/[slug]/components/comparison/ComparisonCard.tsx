@@ -1,8 +1,6 @@
 // ============================================================================
 // FILE:
-// /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/[slug]/components/comparison/ComparisonCard.tsx
-// Copyright (c) 2024 Shin Corporation.
-// All rights reserved.
+// app/ranking/[slug]/components/comparison/ComparisonCard.tsx
 // ============================================================================
 
 'use client'
@@ -11,18 +9,15 @@
 🔥 Next
 ============================================================================ */
 
-import Link
-    from 'next/link'
+import Image from 'next/image'
+import Link from 'next/link'
 
 /* ============================================================================
 🔥 Contracts
 ============================================================================ */
 
-import type {
-
-    RankingProduct,
-
-} from '../../types/contracts'
+import type { RankingProduct,} from '../../types/contracts'
+import getRankingBadge from '../../lib/getRankingBadge'
 
 /* ============================================================================
 🔥 Styles
@@ -55,10 +50,6 @@ export default function ComparisonCard({
 
 }: Props) {
 
-    /* =========================================================================
-    🔥 Product
-    ========================================================================= */
-
     const {
 
         unique_id,
@@ -80,16 +71,12 @@ export default function ComparisonCard({
     } = product
 
     const href =
-
         unique_id
-
             ? `/product/${unique_id}`
-
             : '#'
-
-    /* =========================================================================
-    🔥 Render
-    ========================================================================= */
+    
+    const badge =
+        getRankingBadge(rank)
 
     return (
 
@@ -98,16 +85,48 @@ export default function ComparisonCard({
         >
 
             {/* ==========================================================
-            Rank
+            Header
             ========================================================== */}
 
-            <div
-                className={styles.rank}
+            <header
+                className={styles.header}
             >
 
-                #{rank}
+                <div
+                    className={styles.badge}
+                >
 
-            </div>
+
+                    <Image
+
+                        src={badge}
+
+                        alt={`Ranking Core ${rank}`}
+
+                        width={44}
+
+                        height={44}
+
+                        className={styles.badgeIcon}
+
+                    />
+
+                    <span>
+                        TOP ${rank}
+                    </span>
+
+
+                </div>
+
+                <div
+                    className={styles.rank}
+                >
+
+                    #{rank}
+
+                </div>
+
+            </header>
 
             {/* ==========================================================
             Image
@@ -123,13 +142,19 @@ export default function ComparisonCard({
 
                         ? (
 
-                            <img
+                            <Image
 
                                 src={image_url}
 
                                 alt={name ?? ''}
 
+                                width={420}
+
+                                height={420}
+
                                 className={styles.image}
+
+                                unoptimized
 
                             />
 
@@ -225,11 +250,15 @@ export default function ComparisonCard({
 
                                             index,
 
+                                            slug,
+
                                         ) => (
 
-                                            <span
+                                            <Link
 
                                                 key={index}
+
+                                                href={`/discover/${encodeURIComponent(slug)}`}
 
                                                 className={
                                                     styles.chip
@@ -239,7 +268,7 @@ export default function ComparisonCard({
 
                                                 {label}
 
-                                            </span>
+                                            </Link>
 
                                         )
 
@@ -253,41 +282,55 @@ export default function ComparisonCard({
 
                 }
 
-                {
+                {/* ======================================================
+                Footer
+                ====================================================== */}
 
-                    typeof price === 'number' && (
+                <div
+                    className={styles.footer}
+                >
 
-                        <div
-                            className={styles.price}
-                        >
+                    {
 
-                            ¥{price.toLocaleString()}
+                        typeof price === 'number' && (
 
-                        </div>
+                            <div
+                                className={
+                                    styles.price
+                                }
+                            >
 
-                    )
+                                ¥{price.toLocaleString()}
 
-                }
+                            </div>
 
-                {
+                        )
 
-                    unique_id && (
+                    }
 
-                        <Link
+                    {
 
-                            href={href}
+                        unique_id && (
 
-                            className={styles.button}
+                            <Link
 
-                        >
+                                href={href}
 
-                            詳細を見る
+                                className={
+                                    styles.button
+                                }
 
-                        </Link>
+                            >
 
-                    )
+                                詳細を見る
 
-                }
+                            </Link>
+
+                        )
+
+                    }
+
+                </div>
 
             </div>
 

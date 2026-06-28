@@ -1,32 +1,61 @@
-// ============================================================================
-// FILE:
-// /home/maya/shin-dev/shin-vps/shared/lib/api/django/pc/navigation/contracts.ts
-// Copyright (c) 2024 Shin Corporation.
-// All rights reserved.
-// ============================================================================
+/* ============================================================================
+🔥 Navigation Meaning
+============================================================================ */
 
-/**
- * ============================================================================
- * SHIN CORE LINX
- * Navigation Runtime Contracts
- * ============================================================================
- *
- * IMPORTANT
- *
- * Backend remains:
- *
- * semantic authority
- *
- * This contract represents:
- *
- * Runtime Reality
- *
- * NOT:
- *
- * UI Projection
- *
- * ============================================================================
- */
+export interface NavigationMeaning {
+
+  identity?: string
+
+  mission?: string
+
+  user_intent?: string
+
+  meaning_statement?: string
+
+  existence_reason?: string
+}
+
+/* ============================================================================
+🔥 Presentation Runtime
+============================================================================ */
+
+export interface NavigationPresentation {
+
+  title?: string
+
+  subtitle?: string
+
+  description?: string
+}
+
+/* ============================================================================
+🔥 Navigation Attribute
+============================================================================ */
+
+export interface NavigationAttribute {
+
+  slug: string
+
+  name: string
+
+  title?: string
+
+  subtitle?: string
+
+  description?: string
+
+  type?: string
+
+  icon?: string
+
+  color?: string
+
+  semantic_role?: string
+
+  semantic_weight?: number | string
+
+  is_ranking_enabled?: boolean | string
+}
 
 /* ============================================================================
 🔥 Navigation Runtime Item
@@ -38,41 +67,25 @@ export interface NavigationRuntimeItem {
 
   name: string
 
-  /**
-   * Semantic Slug Metadata
-   */
-
   title?: string
+
+  subtitle?: string
 
   description?: string
 
   type: string
 
+  parent_group?: string
+
   icon?: string
 
   color?: string
 
-  parent_group?: string
-
-  attribute_count?: number
+  sort_order?: number | string
 
   product_count?: number
-}
 
-
-/* ============================================================================
-🔥 Navigation Runtime Response
-============================================================================ */
-
-export interface NavigationRuntimeResponse {
-
-  success?: boolean
-
-  semantic_authority?: string
-
-  authority_version?: string
-
-  navigation: NavigationRuntimeItem[]
+  attributes?: NavigationAttribute[]
 }
 
 /* ============================================================================
@@ -81,11 +94,50 @@ export interface NavigationRuntimeResponse {
 
 export interface NavigationRuntime {
 
-  semantic_authority?: string
+  /* ========================================================================
+  Runtime Status
+  ======================================================================== */
+
+  success?: boolean
+
+  /* ========================================================================
+  Meaning
+  ======================================================================== */
+
+  meaning?: NavigationMeaning
+
+  presentation?: NavigationPresentation
+
+  seo?: any
+
+  /* ========================================================================
+  Navigation
+  ======================================================================== */
+
+  intents: NavigationRuntimeItem[]
+
+  /* ========================================================================
+  Runtime Authority
+  ======================================================================== */
+
+  semantic_schema_version?: number
 
   authority_version?: string
 
-  navigation: NavigationRuntimeItem[]
+  semantic_authority?: string
+
+  ready?: boolean
+
+  /* ========================================================================
+  Raw Backup
+  ======================================================================== */
 
   raw?: any
 }
+
+/* ============================================================================
+🔥 Legacy Compatibility
+============================================================================ */
+
+export type NavigationRuntimeResponse =
+  NavigationRuntime

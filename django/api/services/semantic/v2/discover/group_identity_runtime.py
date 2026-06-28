@@ -331,7 +331,7 @@ def build_group_identity_runtime(
         # ------------------------------------------------------
         # REALITY
         # ------------------------------------------------------
-
+        
         "data": {
 
             "group_slug":
@@ -369,6 +369,13 @@ def build_group_identity_runtime(
                     "sort_order"
                 ),
 
+            # ----------------------------------
+            # Attribute Projection
+            # ----------------------------------
+
+            "attribute":
+                attribute,
+
             "product_count":
                 product_count,
 
@@ -381,6 +388,8 @@ def build_group_identity_runtime(
             "sample_products":
                 sample_products,
         },
+
+
 
         # ------------------------------------------------------
         # AUTHORITY

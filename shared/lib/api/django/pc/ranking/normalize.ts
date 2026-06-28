@@ -25,15 +25,32 @@ export function normalizeRanking(
 
     return {
 
+      success: false,
+
       meaning: {},
 
       presentation: {},
 
       seo: {},
 
-      products: [],
+      runtime: {
+
+        count: 0,
+
+        page: 1,
+
+        page_size: 0,
+
+        has_next: false,
+      },
 
       ranking: {
+
+        group_slug: '',
+
+        group_name: '',
+
+        product_count: 0,
 
         results: [],
 
@@ -42,8 +59,9 @@ export function normalizeRanking(
         page: 1,
 
         limit: 0,
-
       },
+
+      products: [],
 
       semantic_runtime: {},
 
@@ -66,8 +84,6 @@ export function normalizeRanking(
       semantic_authority: '',
 
       ready: false,
-
-      success: false,
 
       raw: null,
     }
@@ -119,24 +135,12 @@ export function normalizeRanking(
     : []
 
   /* ==========================================================================
-  Ranking Metadata
+  Runtime Metadata
   ========================================================================== */
 
-  const total =
+  const productCount =
 
     source?.product_count
-
-    ??
-
-    source?.count
-
-    ??
-
-    source?.total
-
-    ??
-
-    source?.ranking?.total
 
     ??
 
@@ -154,13 +158,13 @@ export function normalizeRanking(
 
     1
 
-  const limit =
+  const pageSize =
 
-    source?.limit
+    source?.page_size
 
     ??
 
-    source?.page_size
+    source?.limit
 
     ??
 
@@ -169,6 +173,14 @@ export function normalizeRanking(
     ??
 
     rankingResults.length
+
+  const hasNext =
+
+    Boolean(
+
+      source?.has_next
+
+    )
 
   const group_slug =
 
@@ -187,7 +199,7 @@ export function normalizeRanking(
     ''
 
   /* ==========================================================================
-  Canonical Products
+  Canonical Projection
   ========================================================================== */
 
   const products =
@@ -204,23 +216,23 @@ export function normalizeRanking(
 
     {
 
-      source:
-
-        payload?.data
-
-          ? 'semantic-v3'
-
-          : 'legacy',
-
       group_slug,
 
       group_name,
 
-      total,
+      product_count:
+
+        productCount,
 
       page,
 
-      limit,
+      page_size:
+
+        pageSize,
+
+      has_next:
+
+        hasNext,
 
       products:
 
@@ -230,6 +242,21 @@ export function normalizeRanking(
 
         payload?.presentation,
 
+      semantic_schema_version:
+
+        payload?.semantic_schema_version,
+
+      authority_version:
+
+        payload?.authority_version,
+
+      semantic_authority:
+
+        payload?.semantic_authority,
+
+      ready:
+
+        payload?.ready,
     }
 
   )
@@ -274,7 +301,22 @@ export function normalizeRanking(
 
       {},
 
-    products,
+    runtime: {
+
+      count:
+
+        productCount,
+
+      page,
+
+      page_size:
+
+        pageSize,
+
+      has_next:
+
+        hasNext,
+    },
 
     ranking: {
 
@@ -282,17 +324,26 @@ export function normalizeRanking(
 
       group_name,
 
+      product_count:
+
+        productCount,
+
       results:
 
         rankingResults,
 
-      total,
+      total:
+
+        productCount,
 
       page,
 
-      limit,
+      limit:
 
+        pageSize,
     },
+
+    products,
 
     semantic_runtime:
 

@@ -52,14 +52,21 @@ export default function RankingHero({
     🔥 Runtime
     ========================================================================= */
 
-    const meaning =
-        runtime.meaning
+    const {
 
-    const presentation =
-        runtime.presentation
+        meaning,
 
-    const seo =
-        runtime.seo
+        presentation,
+
+        seo,
+
+        semantic_labels = [],
+
+        semantic_authority,
+
+        ready,
+
+    } = runtime
 
     /* =========================================================================
     🔥 Presentation
@@ -103,7 +110,7 @@ export default function RankingHero({
     🔥 Assets
     ========================================================================= */
 
-    const heroImage =
+    const heroBackground =
 
         '/images/ranking/ranking_hero.png'
 
@@ -112,15 +119,12 @@ export default function RankingHero({
         '/images/ranking/ranking_ai_core.png'
 
     /* =========================================================================
-    🔥 Semantic Chips
+    🔥 Semantic Labels
     ========================================================================= */
 
     const chips =
 
-        runtime.semantic_labels
-        ??
-
-        []
+        semantic_labels.filter(Boolean)
 
     /* =========================================================================
     🔥 Render
@@ -142,13 +146,13 @@ linear-gradient(
 
 rgba(2,8,25,.96) 0%,
 
-rgba(2,8,25,.88) 45%,
+rgba(2,8,25,.88) 42%,
 
-rgba(2,8,25,.55) 100%
+rgba(2,8,25,.58) 100%
 
 ),
 
-url(${heroImage})
+url(${heroBackground})
 
                 `,
 
@@ -161,13 +165,11 @@ url(${heroImage})
             <div className={styles.runtimeHeroInner}>
 
                 {/* ======================================================
-                Left
+                Hero Visual
                 ====================================================== */}
 
                 <div
-                    className={
-                        styles.runtimeHeroVisual
-                    }
+                    className={styles.runtimeHeroVisual}
                 >
 
                     <img
@@ -176,28 +178,22 @@ url(${heroImage})
 
                         alt="Ranking AI Core"
 
-                        className={
-                            styles.runtimeHeroEmblem
-                        }
+                        className={styles.runtimeHeroEmblem}
 
                     />
 
                 </div>
 
                 {/* ======================================================
-                Right
+                Hero Content
                 ====================================================== */}
 
                 <div
-                    className={
-                        styles.runtimeHeroContent
-                    }
+                    className={styles.runtimeHeroContent}
                 >
 
                     <div
-                        className={
-                            styles.runtimeHeroBadge
-                        }
+                        className={styles.runtimeHeroBadge}
                     >
 
                         {badge}
@@ -205,9 +201,7 @@ url(${heroImage})
                     </div>
 
                     <h1
-                        className={
-                            styles.runtimeHeroTitle
-                        }
+                        className={styles.runtimeHeroTitle}
                     >
 
                         {title}
@@ -219,9 +213,7 @@ url(${heroImage})
                         subtitle && (
 
                             <div
-                                className={
-                                    styles.runtimeHeroSubtitle
-                                }
+                                className={styles.runtimeHeroSubtitle}
                             >
 
                                 {subtitle}
@@ -237,9 +229,7 @@ url(${heroImage})
                         description && (
 
                             <p
-                                className={
-                                    styles.runtimeHeroDescription
-                                }
+                                className={styles.runtimeHeroDescription}
                             >
 
                                 {description}
@@ -255,15 +245,11 @@ url(${heroImage})
                     ================================================== */}
 
                     <div
-                        className={
-                            styles.runtimeHeroMetrics
-                        }
+                        className={styles.runtimeHeroMetrics}
                     >
 
                         <div
-                            className={
-                                styles.runtimeHeroMetric
-                            }
+                            className={styles.runtimeHeroMetric}
                         >
 
                             <span>
@@ -281,40 +267,51 @@ url(${heroImage})
                         </div>
 
                         <div
-                            className={
-                                styles.runtimeHeroMetric
-                            }
+                            className={styles.runtimeHeroMetric}
                         >
 
                             <span>
 
-                                ランキング
+                                Runtime
 
                             </span>
 
                             <strong>
 
-                                公開中
+                                {
+
+                                    ready
+
+                                        ? 'READY'
+
+                                        : 'WAIT'
+
+                                }
 
                             </strong>
 
                         </div>
 
                         <div
-                            className={
-                                styles.runtimeHeroMetric
-                            }
+                            className={styles.runtimeHeroMetric}
                         >
 
                             <span>
 
-                                EXPERIENCE
+                                Authority
 
                             </span>
 
                             <strong>
 
-                                V2
+                                {
+
+                                    semantic_authority
+                                    ??
+
+                                    '-'
+
+                                }
 
                             </strong>
 
@@ -331,9 +328,7 @@ url(${heroImage})
                         chips.length > 0 && (
 
                             <div
-                                className={
-                                    styles.runtimeHeroChips
-                                }
+                                className={styles.runtimeHeroChips}
                             >
 
                                 {
@@ -352,9 +347,7 @@ url(${heroImage})
 
                                                 key={index}
 
-                                                className={
-                                                    styles.runtimeHeroChip
-                                                }
+                                                className={styles.runtimeHeroChip}
 
                                             >
 
@@ -373,6 +366,28 @@ url(${heroImage})
                         )
 
                     }
+
+                    {/* ==================================================
+                    Actions
+                    ================================================== */}
+
+                    <div
+                        className={styles.runtimeHeroActions}
+                    >
+
+                        <a
+
+                            href="/discover"
+
+                            className={styles.runtimeHeroPrimaryButton}
+
+                        >
+
+                            関連カテゴリを見る
+
+                        </a>
+
+                    </div>
 
                 </div>
 
