@@ -1,52 +1,73 @@
 #!/bin/bash
 
-# ============================================================================
-# SHIN CORE LINX
-# Ranking Runtime Inspector V1
-# ============================================================================
+BASE="/home/maya/shin-vps/next-bicstation/app/pc-finder"
 
-BASE="/home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/[slug]"
+mkdir -p "$BASE"
 
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "Creating Ranking Runtime Observatory..."
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+mkdir -p "$BASE/components"
+mkdir -p "$BASE/hooks"
+mkdir -p "$BASE/lib"
+mkdir -p "$BASE/styles"
+mkdir -p "$BASE/types"
+mkdir -p "$BASE/states"
+mkdir -p "$BASE/assets"
 
-# ============================================================================
-# Directories
-# ============================================================================
+mkdir -p "$BASE/sections/hero"
+mkdir -p "$BASE/sections/intent"
+mkdir -p "$BASE/sections/budget"
+mkdir -p "$BASE/sections/search"
+mkdir -p "$BASE/sections/recommendation"
+mkdir -p "$BASE/sections/results"
+mkdir -p "$BASE/sections/ranking"
 
-mkdir -p "$BASE/observatory/components"
-mkdir -p "$BASE/observatory/styles"
+touch "$BASE/page.tsx"
+touch "$BASE/loading.tsx"
+touch "$BASE/error.tsx"
 
-# ============================================================================
-# Components
-# ============================================================================
+touch "$BASE/styles/pcFinder.module.css"
 
-touch "$BASE/observatory/components/RuntimeInspector.tsx"
-touch "$BASE/observatory/components/RuntimeCoverage.tsx"
-touch "$BASE/observatory/components/RuntimeConsumption.tsx"
-touch "$BASE/observatory/components/RuntimeDiagnostics.tsx"
+touch "$BASE/types/finder.ts"
 
-# ============================================================================
-# Styles
-# ============================================================================
+touch "$BASE/hooks/useFinder.ts"
+touch "$BASE/hooks/useFinderState.ts"
 
-touch "$BASE/observatory/styles/inspector.module.css"
+touch "$BASE/lib/finderActions.ts"
 
-# ============================================================================
-# Types
-# ============================================================================
+touch "$BASE/states/FinderLoading.tsx"
+touch "$BASE/states/FinderEmpty.tsx"
+touch "$BASE/states/FinderError.tsx"
 
-touch "$BASE/observatory/types.ts"
+touch "$BASE/components/HeroAssistant.tsx"
+touch "$BASE/components/IntentCard.tsx"
+touch "$BASE/components/BudgetButton.tsx"
+touch "$BASE/components/SearchButton.tsx"
+touch "$BASE/components/RecommendationReason.tsx"
+touch "$BASE/components/ProductCard.tsx"
+touch "$BASE/components/RankingCTA.tsx"
 
-# ============================================================================
-# Barrel Export
-# ============================================================================
+touch "$BASE/sections/hero/HeroSection.tsx"
+touch "$BASE/sections/hero/HeroSection.module.css"
 
-touch "$BASE/observatory/index.ts"
+touch "$BASE/sections/intent/IntentSection.tsx"
+touch "$BASE/sections/intent/IntentSection.module.css"
 
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "✅ Ranking Runtime Observatory Created"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+touch "$BASE/sections/budget/BudgetSection.tsx"
+touch "$BASE/sections/budget/BudgetSection.module.css"
 
-tree "$BASE/observatory"
+touch "$BASE/sections/search/SearchSection.tsx"
+touch "$BASE/sections/search/SearchSection.module.css"
+
+touch "$BASE/sections/recommendation/RecommendationSection.tsx"
+touch "$BASE/sections/recommendation/RecommendationSection.module.css"
+
+touch "$BASE/sections/results/ResultsSection.tsx"
+touch "$BASE/sections/results/ResultsSection.module.css"
+
+touch "$BASE/sections/ranking/RankingSection.tsx"
+touch "$BASE/sections/ranking/RankingSection.module.css"
+
+echo "==========================================="
+echo " SHIN CORE LINX Finder Structure Created"
+echo "==========================================="
+
+tree "$BASE"

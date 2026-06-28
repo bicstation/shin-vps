@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# /home/maya/shin-dev/shin-vps/django/api/views/finder_v2_view.py
+# api/views/finder_v2_view.py
 
 from rest_framework.decorators import (
     api_view,
@@ -20,72 +20,124 @@ from api.services.semantic.v2.finder.finder_runtime import (
 
 
 # ==========================================================
+# DEBUG
+# ==========================================================
+
+def log_finder_request(
+
+    attributes,
+
+    groups,
+
+    max_price,
+
+    limit,
+
+):
+
+    print(
+
+        "🔥 FINDER REQUEST",
+
+        {
+
+            "attributes":
+                attributes,
+
+            "groups":
+                groups,
+
+            "max_price":
+                max_price,
+
+            "limit":
+                limit,
+        },
+    )
+
+
+# ==========================================================
 # FINDER V2
 # ==========================================================
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def semantic_finder_v2(
-    request
+    request,
 ):
 
-    payload = (
+    payload = request.data
+
+    attributes = (
+
+        payload.get(
+
+            "attributes",
+
+            [],
+        )
+    )
+
+    groups = (
+
+        payload.get(
+
+            "groups",
+
+            [],
+        )
+    )
+
+    max_price = (
+
+        payload.get(
+            "max_price"
+        )
+    )
+
+    limit = (
+
+        payload.get(
+
+            "limit",
+
+            100,
+        )
+    )
+
+    log_finder_request(
+
+        attributes=
+            attributes,
+
+        groups=
+            groups,
+
+        max_price=
+            max_price,
+
+        limit=
+            limit,
+    )
+
+    runtime = (
 
         build_finder_runtime(
 
             selected_attributes=
-                request.data.get(
-                    "attributes",
-                    []
-                ),
+                attributes,
 
             selected_groups=
-                request.data.get(
-                    "groups",
-                    []
-                ),
-                
+                groups,
+
             max_price=
-                request.data.get(
-                    "max_price"
-                ),
+                max_price,
 
             limit=
-                request.data.get(
-                    "limit",
-                    100
-                ),
+                limit,
         )
     )
 
-    print(
-        "🔥 REQUEST DATA",
-        request.data
-    )
-    
-    
-    print(
-        "🔥 FINDER REQUEST",
-        {
-            "attributes":
-                request.data.get(
-                    "attributes",
-                    []
-                ),
-
-            "groups":
-                request.data.get(
-                    "groups",
-                    []
-                ),
-
-            "max_price":
-                request.data.get(
-                    "max_price"
-                ),
-        }
-    )
-
     return Response(
-        payload
+        runtime
     )

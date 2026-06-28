@@ -1,228 +1,162 @@
-// ResultsSection.tsx
+// ============================================================================
+// FILE:
+// /app/pc-finder/sections/results/ResultsSection.tsx
+// ============================================================================
+
 'use client'
 
-/* =========================================
-🔥 Components
-========================================= */
+/* ============================================================================
+Components
+============================================================================ */
 
-import FinderResults
-  from '../../components/FinderResults'
+import ProductCard
+    from '../../components/ProductCard'
 
-/* =========================================
-🔥 Styles
-========================================= */
+/* ============================================================================
+Styles
+============================================================================ */
 
 import styles
-  from './ResultsSection.module.css'
+    from './ResultsSection.module.css'
 
-/* =========================================
-🔥 Props
-========================================= */
+/* ============================================================================
+Types
+============================================================================ */
+
+import type {
+
+    FinderProduct,
+
+} from '../../types/finder'
+
+/* ============================================================================
+Props
+============================================================================ */
 
 type Props = {
 
-  results: any[]
+    products: FinderProduct[]
 
-  semanticUsage: string
 }
 
-/* =========================================
-🔥 Results Section
-========================================= */
+/* ============================================================================
+Results Section
+============================================================================ */
 
-export default function
-ResultsSection({
+export default function ResultsSection({
 
-  results,
-
-  semanticUsage,
+    products,
 
 }: Props) {
 
-  // ======================================
-  // Safe
-  // ======================================
+    return (
 
-  if (
-    !Array.isArray(
-      results
+        <section
+            className={
+                styles.section
+            }
+        >
+
+            <div
+                className={
+                    styles.header
+                }
+            >
+
+                <span
+                    className={
+                        styles.badge
+                    }
+                >
+
+                    RESULTS
+
+                </span>
+
+                <h2
+                    className={
+                        styles.title
+                    }
+                >
+
+                    おすすめの製品
+
+                </h2>
+
+                <p
+                    className={
+                        styles.description
+                    }
+                >
+
+                    Semantic Reality が選択条件に最も一致すると判断した製品です。
+
+                </p>
+
+            </div>
+
+            {
+
+                products.length === 0
+
+                    ? (
+
+                        <div
+                            className={
+                                styles.empty
+                            }
+                        >
+
+                            条件に一致する製品は見つかりませんでした。
+
+                        </div>
+
+                    )
+
+                    : (
+
+                        <div
+                            className={
+                                styles.grid
+                            }
+                        >
+
+                            {
+
+                                products.map(
+
+                                    product => (
+
+                                        <ProductCard
+
+                                            key={
+
+                                                product.unique_id
+
+                                            }
+
+                                            product={
+
+                                                product
+
+                                            }
+
+                                        />
+
+                                    )
+
+                                )
+
+                            }
+
+                        </div>
+
+                    )
+
+            }
+
+        </section>
+
     )
-    ||
-    !results.length
-  ) {
 
-    return null
-
-  }
-
-  // ======================================
-  // Top Result
-  // ======================================
-
-  const topResult =
-
-    results?.[0]
-    || null
-
-  // ======================================
-  // Debug
-  // ======================================
-
-  console.log(
-    '🔥 ResultsSection',
-    {
-
-      semanticUsage,
-
-      resultCount:
-        results.length,
-
-      firstResult:
-
-        topResult
-        ? {
-
-            unique_id:
-              topResult
-                ?.unique_id,
-
-            name:
-              topResult
-                ?.name,
-
-            maker:
-              topResult
-                ?.maker,
-
-          }
-
-        : null,
-
-    }
-  )
-
-  // ======================================
-  // Render
-  // ======================================
-
-  return (
-
-    <section
-      className={
-        styles.section
-      }
-    >
-
-      {/* ==================================
-      Header
-      ================================== */}
-
-      <div
-        className={
-          styles.header
-        }
-      >
-
-        {/* ============================= */}
-        {/* Label */}
-        {/* ============================= */}
-
-        <div
-          className={
-            styles.label
-          }
-        >
-
-          SEMANTIC RESULTS
-
-        </div>
-
-        {/* ============================= */}
-        {/* Title */}
-        {/* ============================= */}
-
-        <h2
-          className={
-            styles.title
-          }
-        >
-
-          おすすめPC一覧
-
-        </h2>
-
-        {/* ============================= */}
-        {/* Description */}
-        {/* ============================= */}
-
-        <p
-          className={
-            styles.description
-          }
-        >
-
-          semantic recommendation /
-          workload analysis /
-          budget optimization
-          に基づく推奨結果。
-
-        </p>
-
-      </div>
-
-      {/* ==================================
-      Semantic
-      ================================== */}
-
-      <div
-        className={
-          styles.semanticBox
-        }
-      >
-
-        <div
-          className={
-            styles.semanticLabel
-          }
-        >
-
-          ACTIVE SEMANTIC
-
-        </div>
-
-        <div
-          className={
-            styles.semanticValue
-          }
-        >
-
-          {semanticUsage}
-
-        </div>
-
-      </div>
-
-      {/* ==================================
-      Results
-      ================================== */}
-
-      <div
-        className={
-          styles.results
-        }
-      >
-
-        <FinderResults
-
-          results={
-            results
-          }
-
-        />
-
-      </div>
-
-    </section>
-
-  )
 }

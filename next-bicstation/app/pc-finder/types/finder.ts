@@ -1,276 +1,195 @@
-// /types/finder.ts
+// ============================================================================
+// FILE:
+// /app/pc-finder/types/finder.ts
+// Copyright (c) 2026 Shin Corporation.
+// ============================================================================
 
-/* =========================================
-🔥 Finder Purpose
-========================================= */
+/* ============================================================================
+Meaning
+============================================================================ */
 
-export type FinderPurpose =
+export interface FinderMeaning {
 
-  | 'gaming'
-  | 'creator'
-  | 'business'
-  | 'ai'
+    identity: string
 
-/* =========================================
-🔥 Semantic Attribute
-========================================= */
+    mission: string
 
-export type SemanticAttribute = {
+    user_intent: string
 
-  id?: number
+    meaning_statement: string
 
-  type?: string
+    existence_reason: string
 
-  name?: string
-
-  slug?: string
-
-  semantic_role?: string
-
-  semantic_weight?: number
-
-  icon?: string
-
-  color?: string
 }
 
-/* =========================================
-🔥 Grouped Attributes
-========================================= */
+/* ============================================================================
+Presentation
+============================================================================ */
 
-export type GroupedAttributes = Record<
-  string,
-  SemanticAttribute[]
->
+export interface FinderPresentation {
 
-/* =========================================
-🔥 Radar Chart
-========================================= */
+    title: string
 
-export type RadarChartValue = {
+    subtitle: string
 
-  label: string
+    description: string
 
-  value: number
 }
 
-/* =========================================
-🔥 Product
-========================================= */
+/* ============================================================================
+SEO
+============================================================================ */
 
-export type FinderProduct = {
+export interface FinderSEO {
 
-  /* =====================================
-  Identity
-  ===================================== */
+    title: string
 
-  unique_id?: string
+    description: string
 
-  name?: string
+    keywords: string[]
 
-  maker?: string
+    canonical: string
 
-  description?: string
-
-  /* =====================================
-  Media
-  ===================================== */
-
-  image_url?: string
-
-  /* =====================================
-  Price
-  ===================================== */
-
-  price?: number
-
-  /* =====================================
-  Specs
-  ===================================== */
-
-  cpu_model?: string
-
-  gpu_model?: string
-
-  memory_gb?: number
-
-  storage_gb?: number
-
-  /* =====================================
-  Scores
-  ===================================== */
-
-  spec_score?: number
-
-  semantic_score?: number
-
-  recommendation_score?: number
-
-  confidence?: number
-
-  /* =====================================
-  Semantic
-  ===================================== */
-
-  attributes?: SemanticAttribute[]
-
-  grouped_attributes?: GroupedAttributes
-
-  semantic_schema_version?: number
-
-  /* =====================================
-  AI
-  ===================================== */
-
-  ai_summary?: string
-
-  recommendation_reasoning?: string[]
-
-  recommendation_summary?: string
 }
 
-/* =========================================
-🔥 Finder API Response
-========================================= */
+/* ============================================================================
+Query
+============================================================================ */
 
-export type FinderApiResponse = {
+export interface FinderQuery {
 
-  results?: FinderProduct[]
+    selected_groups: string[]
 
-  products?: FinderProduct[]
+    selected_attributes: string[]
 
-  semantic_schema_version?: number
+    filters: string[]
+
+    max_price: number | null
+
 }
 
-/* =========================================
-🔥 Finder Query
-========================================= */
+/* ============================================================================
+Summary
+============================================================================ */
 
-export type FinderQuery = {
+export interface FinderSummary {
 
-  purpose?: FinderPurpose
+    group_count: number
 
-  usage?: string
+    attribute_count: number
 
-  gpu?: string
+    filter_count: number
 
-  cpu?: string
+    result_count: number
 
-  maker?: string
+    has_result: boolean
 
-  memory?: string
-
-  storage?: string
-
-  max_price?: number
 }
 
-/* =========================================
-🔥 Finder State
-========================================= */
+/* ============================================================================
+Workflow
+============================================================================ */
 
-export type FinderState = {
+export interface FinderWorkflow {
 
-  purpose: FinderPurpose
+    workflow: string
 
-  budget: number
+    confidence: number
 
-  loading: boolean
+    score_bonus: number
 
-  results: FinderProduct[]
+    semantic_role: string
 
-  featuredProduct?: FinderProduct | null
-
-  semanticUsage: string
 }
 
-/* =========================================
-🔥 Finder Recommendation
-========================================= */
+/* ============================================================================
+Adaptive Runtime
+============================================================================ */
 
-export type FinderRecommendation = {
+export interface FinderAdaptiveRuntime {
 
-  product: FinderProduct
+    focus: string
 
-  recommendation_score: number
+    ui_mode: string
 
-  confidence: number
+    primary_specs: (string | number | null)[]
 
-  reasoning: string[]
+    interaction_hint: string
+
 }
 
-/* =========================================
-🔥 Hero Props
-========================================= */
+/* ============================================================================
+Product
+============================================================================ */
 
-export type HeroSectionProps = {
+export interface FinderProduct {
 
-  purpose: FinderPurpose
+    product_id: number
 
-  semanticUsage: string
+    unique_id: string
 
-  semanticDescription: string
+    name: string
+
+    maker: string
+
+    image_url: string
+
+    price: number
+
+    score: number
+
+    semantic_score: number
+
+    product_type: string
+
+    primary_workflow: string | null
+
+    workflow_score: number
+
+    semantic_labels: string[]
+
+    workflow_tags: string[]
+
+    adaptive_runtime: FinderAdaptiveRuntime
+
+    workflows: FinderWorkflow[]
+
 }
 
-/* =========================================
-🔥 Intent Props
-========================================= */
+/* ============================================================================
+Data
+============================================================================ */
 
-export type IntentSectionProps = {
+export interface FinderData {
 
-  value: FinderPurpose
+    query: FinderQuery
 
-  onChange:
-    (
-      value: FinderPurpose
-    ) => void
+    summary: FinderSummary
+
+    products: FinderProduct[]
+
 }
 
-/* =========================================
-🔥 Budget Props
-========================================= */
+/* ============================================================================
+Runtime
+============================================================================ */
 
-export type BudgetSectionProps = {
+export interface FinderRuntime {
 
-  value: number
+    meaning: FinderMeaning
 
-  onChange:
-    (
-      value: number
-    ) => void
-}
+    presentation: FinderPresentation
 
-/* =========================================
-🔥 Results Props
-========================================= */
+    seo: FinderSEO
 
-export type ResultsSectionProps = {
+    data: FinderData
 
-  results: FinderProduct[]
+    semantic_schema_version: number
 
-  semanticUsage: string
-}
+    authority_version: string
 
-/* =========================================
-🔥 Recommendation Props
-========================================= */
+    semantic_authority: string
 
-export type RecommendationSectionProps = {
+    ready: boolean
 
-  purpose: FinderPurpose
-
-  semanticUsage: string
-
-  featuredProduct?: FinderProduct | null
-}
-
-/* =========================================
-🔥 CTA Props
-========================================= */
-
-export type CTASectionProps = {
-
-  purpose: FinderPurpose
-
-  semanticUsage: string
 }

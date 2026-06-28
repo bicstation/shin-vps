@@ -1,6 +1,6 @@
 /* ============================================================================
 FILE:
-/app/pc-finder/sections/recommendation/RecommendationSection.module.css
+/app/pc-finder/sections/search/SearchSection.module.css
 ============================================================================ */
 
 .section {
@@ -11,7 +11,7 @@ FILE:
 
     margin: 0 auto;
 
-    padding: 80px 24px;
+    padding: 48px 24px 96px;
 
 }
 
@@ -26,23 +26,24 @@ FILE:
     border-radius: 28px;
 
     background:
-
         linear-gradient(180deg,
-            rgba(20, 28, 48, .96),
-            rgba(10, 15, 28, .98));
+            rgba(24, 34, 58, .95),
+            rgba(12, 18, 35, .96));
 
-    border: 1px solid rgba(110, 170, 255, .18);
+    border: 1px solid rgba(110, 170, 255, .15);
 
     box-shadow:
 
-        0 0 80px rgba(0, 140, 255, .08),
+        0 0 60px rgba(0, 120, 255, .08),
 
         inset 0 1px 0 rgba(255, 255, 255, .05);
+
+    text-align: center;
 
 }
 
 /* ============================================================================
-Background Glow
+Glow
 ============================================================================ */
 
 .card::before {
@@ -51,13 +52,13 @@ Background Glow
 
     position: absolute;
 
-    inset: -35%;
+    inset: -40%;
 
     background:
 
         radial-gradient(circle,
 
-            rgba(70, 150, 255, .12),
+            rgba(70, 150, 255, .14),
 
             transparent 65%);
 
@@ -69,7 +70,7 @@ Background Glow
 Header
 ============================================================================ */
 
-.badge {
+.step {
 
     display: inline-flex;
 
@@ -87,7 +88,7 @@ Header
 
     background: rgba(60, 120, 255, .08);
 
-    color: #7dc8ff;
+    color: #74c5ff;
 
     font-size: .78rem;
 
@@ -115,32 +116,15 @@ Header
 
 .description {
 
-    max-width: 760px;
+    max-width: 720px;
 
-    margin: 22px 0 42px;
+    margin: 22px auto 42px;
 
     color: rgba(255, 255, 255, .72);
 
     font-size: 1.05rem;
 
     line-height: 1.9;
-
-}
-
-/* ============================================================================
-Reasons
-============================================================================ */
-
-.reasonList {
-
-    display: grid;
-
-    grid-template-columns:
-
-        repeat(auto-fit,
-            minmax(260px, 1fr));
-
-    gap: 18px;
 
 }
 
@@ -152,7 +136,7 @@ Responsive
 
     .section {
 
-        padding: 64px 20px;
+        padding: 48px 20px 72px;
 
     }
 
@@ -168,7 +152,7 @@ Responsive
 
     .section {
 
-        padding: 56px 18px;
+        padding: 40px 18px 56px;
 
     }
 
@@ -182,17 +166,9 @@ Responsive
 
     .description {
 
-        margin: 18px 0 30px;
+        margin: 18px auto 32px;
 
         font-size: .95rem;
-
-    }
-
-    .reasonList {
-
-        grid-template-columns: 1fr;
-
-        gap: 14px;
 
     }
 

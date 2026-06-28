@@ -1,6 +1,6 @@
 // ============================================================================
 // FILE:
-// /app/pc-finder/states/FinderLoading.tsx
+// /app/pc-finder/components/RecommendationReason.tsx
 // Copyright (c) 2026 Shin Corporation.
 // ============================================================================
 
@@ -14,50 +14,54 @@ import styles
     from '../styles/pcFinder.module.css'
 
 /* ============================================================================
-Finder Loading
+Props
 ============================================================================ */
 
-export default function FinderLoading() {
+type Props = {
+
+    text: string
+
+}
+
+/* ============================================================================
+Recommendation Reason
+============================================================================ */
+
+export default function RecommendationReason({
+
+    text,
+
+}: Props) {
 
     return (
 
-        <section
+        <div
             className={
-                styles.finderLoading
+                styles.reasonCard
             }
         >
 
             <div
                 className={
-                    styles.loadingOrb
-                }
-            />
-
-            <h2
-                className={
-                    styles.loadingTitle
+                    styles.reasonIcon
                 }
             >
 
-                Semantic Discovery
+                ✓
 
-            </h2>
+            </div>
 
-            <p
+            <span
                 className={
-                    styles.loadingDescription
+                    styles.reasonText
                 }
             >
 
-                あなたに最適なPCを探索しています。
+                {text}
 
-                <br />
+            </span>
 
-                Semantic Reality を解析中です。
-
-            </p>
-
-        </section>
+        </div>
 
     )
 

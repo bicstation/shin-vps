@@ -1,26 +1,11 @@
 # -*- coding: utf-8 -*-
 # api/services/semantic/v2/finder/finder_runtime.py
 
-from api.services.semantic.v2.authority.authority_runtime import (
-    build_authority_runtime,
-)
-
-from api.services.semantic.v2.traversal.traversal_runtime import (
-    build_traversal_runtime,
-)
-
-from api.services.semantic.v2.meaning.meaning_runtime import (
-    build_finder_meaning,
-)
-
-from api.services.semantic.v2.seo.seo_runtime import (
-    build_finder_seo,
-)
-
-from api.services.semantic.v2.presentation.presentation_runtime import (
-    build_finder_presentation,
-)
-
+from api.services.semantic.v2.authority.authority_runtime import ( build_authority_runtime, )
+from api.services.semantic.v2.traversal.traversal_runtime import ( build_traversal_runtime, )
+from api.services.semantic.v2.meaning.meaning_runtime import ( build_finder_meaning, )
+from api.services.semantic.v2.seo.seo_runtime import ( build_finder_seo, )
+from api.services.semantic.v2.presentation.presentation_runtime import ( build_finder_presentation, )
 
 # ==========================================================
 # SCORE
@@ -296,32 +281,23 @@ def build_finder_runtime(
                 "max_price":
                     max_price,
             },
-
+            
             "summary": {
 
                 "group_count":
-
-                    len(
-                        selected_groups
-                    ),
+                    len(selected_groups),
 
                 "attribute_count":
-
-                    len(
-                        selected_attributes
-                    ),
+                    len(selected_attributes),
 
                 "filter_count":
-
-                    len(
-                        filters
-                    ),
+                    len(filters),
 
                 "result_count":
+                    len(matches),
 
-                    len(
-                        matches
-                    ),
+                "has_result":
+                    bool(matches),
             },
 
             "products":
@@ -353,3 +329,6 @@ def build_finder_runtime(
         "ready":
             True,
     }
+
+
+

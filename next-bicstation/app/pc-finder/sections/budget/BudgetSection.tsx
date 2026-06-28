@@ -1,169 +1,133 @@
-// BudgetSection.tsx
+// ============================================================================
+// FILE:
+// /app/pc-finder/sections/budget/BudgetSection.tsx
+// ============================================================================
+
 'use client'
 
-/* =========================================
-🔥 Components
-========================================= */
+/* ============================================================================
+Components
+============================================================================ */
 
-import BudgetSelector
-  from '../../components/BudgetSelector'
+import BudgetButton
+    from '../../components/BudgetButton'
 
-/* =========================================
-🔥 Styles
-========================================= */
+/* ============================================================================
+Styles
+============================================================================ */
 
 import styles
-  from './BudgetSection.module.css'
+    from './BudgetSection.module.css'
 
-/* =========================================
-🔥 Props
-========================================= */
+/* ============================================================================
+Types
+============================================================================ */
+
+type Budget = {
+
+    label: string
+
+    value: number | null
+
+}
+
+/* ============================================================================
+Props
+============================================================================ */
 
 type Props = {
 
-  value: number
+    budgets: Budget[]
 
-  onChange:
-    (value: number) => void
+    selected: number | null
+
+    onSelect: (value: number | null) => void
+
 }
 
-/* =========================================
-🔥 Budget Section
-========================================= */
+/* ============================================================================
+Budget Section
+============================================================================ */
 
-export default function
-BudgetSection({
+export default function BudgetSection({
 
-  value,
+    budgets,
 
-  onChange,
+    selected,
+
+    onSelect,
 
 }: Props) {
 
-  // ======================================
-  // Debug
-  // ======================================
+    return (
 
-  console.log(
-    '🔥 BudgetSection',
-    {
-      value,
-    }
-  )
+        <section className={styles.section}>
 
-  // ======================================
-  // Render
-  // ======================================
+            <div className={styles.header}>
 
-  return (
+                <span className={styles.eyebrow}>
 
-    <section
-      className={
-        styles.section
-      }
-    >
+                    STEP 2
 
-      {/* ==================================
-      Header
-      ================================== */}
+                </span>
 
-      <div
-        className={
-          styles.header
-        }
-      >
+                <h2 className={styles.title}>
 
-        <div
-          className={
-            styles.label
-          }
-        >
+                    ご予算を教えてください
 
-          BUDGET
+                </h2>
 
-        </div>
+                <p className={styles.description}>
 
-        <h2
-          className={
-            styles.title
-          }
-        >
+                    ご予算に合わせて候補を絞り込みます。
+                    後からいつでも変更できます。
 
-          予算を選択
+                </p>
 
-        </h2>
+            </div>
 
-        <p
-          className={
-            styles.description
-          }
-        >
+            <div className={styles.grid}>
 
-          価格帯から
-          semantic recommendation
-          を最適化します。
+                {
 
-        </p>
+                    budgets.map(budget => (
 
-      </div>
+                        <BudgetButton
 
-      {/* ==================================
-      Selector
-      ================================== */}
+                            key={
 
-      <div
-        className={
-          styles.selector
-        }
-      >
+                                budget.label
 
-        <BudgetSelector
+                            }
 
-          value={
-            value
-          }
+                            budget={budget}
 
-          onChange={
-            onChange
-          }
+                            selected={
 
-        />
+                                selected === budget.value
 
-      </div>
+                            }
 
-      {/* ==================================
-      Active Budget
-      ================================== */}
+                            onClick={() =>
 
-      <div
-        className={
-          styles.activeBudget
-        }
-      >
+                                onSelect(
 
-        <div
-          className={
-            styles.activeLabel
-          }
-        >
+                                    budget.value
 
-          CURRENT BUDGET
+                                )
 
-        </div>
+                            }
 
-        <div
-          className={
-            styles.activeValue
-          }
-        >
+                        />
 
-          ¥{value.toLocaleString()}
+                    ))
 
-        </div>
+                }
 
-      </div>
+            </div>
 
-    </section>
+        </section>
 
-  )
+    )
+
 }

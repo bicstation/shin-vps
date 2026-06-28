@@ -1,253 +1,167 @@
-// /hooks/useFinderState.ts
+// ============================================================================
+// FILE:
+// /app/pc-finder/hooks/useFinderState.ts
+// Copyright (c) 2026 Shin Corporation.
+// ============================================================================
 
 'use client'
 
-/* =========================================
-🔥 React
-========================================= */
-
 import {
-  useCallback,
-  useMemo,
-  useState,
+
+    useState,
+
 } from 'react'
 
-/* =========================================
-🔥 Semantic
-========================================= */
-
-import {
-
-  resolveSemanticUsage,
-
-  resolveSemanticLabel,
-
-  resolveSemanticDescription,
-
-} from '../semantic/finderSemantic'
-
-/* =========================================
-🔥 Types
-========================================= */
+/* ============================================================================
+Types
+============================================================================ */
 
 import type {
 
-  FinderPurpose,
-
-  FinderProduct,
+    FinderRuntime,
 
 } from '../types/finder'
 
-/* =========================================
-🔥 Hook
-========================================= */
+/* ============================================================================
+Hook
+============================================================================ */
 
-export function
-useFinderState() {
+export function useFinderState() {
 
-  // ======================================
-  // Purpose
-  // ======================================
+    /* ------------------------------------------------------------------------
+    Intent
+    ------------------------------------------------------------------------ */
 
-  const [purpose, setPurpose] =
+    const [
 
-    useState<FinderPurpose>(
-      'gaming'
-    )
+        selectedIntent,
 
-  // ======================================
-  // Budget
-  // ======================================
+        setSelectedIntent,
 
-  const [budget, setBudget] =
+    ] =
 
-    useState(250000)
+        useState<string | null>(
 
-  // ======================================
-  // Loading
-  // ======================================
+            null
 
-  const [loading, setLoading] =
-
-    useState(false)
-
-  // ======================================
-  // Error
-  // ======================================
-
-  const [error, setError] =
-
-    useState<any>(null)
-
-  // ======================================
-  // Results
-  // ======================================
-
-  const [results, setResults] =
-
-    useState<
-      FinderProduct[]
-    >([])
-
-  // ======================================
-  // Semantic Usage
-  // ======================================
-
-  const semanticUsage =
-
-    useMemo(
-      () => (
-
-        resolveSemanticUsage(
-          purpose
         )
 
-      ),
-      [purpose]
-    )
+    /* ------------------------------------------------------------------------
+    Budget
+    ------------------------------------------------------------------------ */
 
-  // ======================================
-  // Semantic Label
-  // ======================================
+    const [
 
-  const semanticLabel =
+        maxPrice,
 
-    useMemo(
-      () => (
+        setMaxPrice,
 
-        resolveSemanticLabel(
-          purpose
+    ] =
+
+        useState<number | null>(
+
+            null
+
         )
 
-      ),
-      [purpose]
-    )
+    /* ------------------------------------------------------------------------
+    Runtime
+    ------------------------------------------------------------------------ */
 
-  // ======================================
-  // Semantic Description
-  // ======================================
+    const [
 
-  const semanticDescription =
+        runtime,
 
-    useMemo(
-      () => (
+        setRuntime,
 
-        resolveSemanticDescription(
-          purpose
+    ] =
+
+        useState<FinderRuntime | null>(
+
+            null
+
         )
 
-      ),
-      [purpose]
-    )
+    /* ------------------------------------------------------------------------
+    UI State
+    ------------------------------------------------------------------------ */
 
-  // ======================================
-  // Reset Results
-  // ======================================
+    const [
 
-  const resetResults =
+        loading,
 
-    useCallback(
-      () => {
+        setLoading,
 
-        setResults([])
+    ] =
 
-        setError(null)
-      },
-      []
-    )
+        useState(
 
-  // ======================================
-  // Reset All
-  // ======================================
+            false
 
-  const resetFinder =
-
-    useCallback(
-      () => {
-
-        setPurpose(
-          'gaming'
         )
 
-        setBudget(
-          250000
+    const [
+
+        error,
+
+        setError,
+
+    ] =
+
+        useState<string | null>(
+
+            null
+
         )
 
-        setResults([])
+    /* ------------------------------------------------------------------------
+    Reset
+    ------------------------------------------------------------------------ */
 
-        setError(null)
+    function reset() {
 
-        setLoading(false)
+        setRuntime(
 
-      },
-      []
-    )
+            null
 
-  // ======================================
-  // Debug
-  // ======================================
+        )
 
-  console.log(
-    '🔥 useFinderState',
-    {
+        setError(
 
-      purpose,
+            null
 
-      budget,
-
-      loading,
-
-      resultCount:
-        results.length,
-
-      semanticUsage,
+        )
 
     }
-  )
 
-  // ======================================
-  // Return
-  // ======================================
+    /* ------------------------------------------------------------------------
+    Return
+    ------------------------------------------------------------------------ */
 
-  return {
+    return {
 
-    /* ====================================
-    State
-    ==================================== */
+        selectedIntent,
 
-    purpose,
+        setSelectedIntent,
 
-    setPurpose,
+        maxPrice,
 
-    budget,
+        setMaxPrice,
 
-    setBudget,
+        runtime,
 
-    loading,
+        setRuntime,
 
-    setLoading,
+        loading,
 
-    error,
+        setLoading,
 
-    setError,
+        error,
 
-    results,
+        setError,
 
-    setResults,
+        reset,
 
-    semanticUsage,
+    }
 
-    semanticLabel,
-
-    semanticDescription,
-
-    /* ====================================
-    Actions
-    ==================================== */
-
-    resetResults,
-
-    resetFinder,
-
-  }
 }

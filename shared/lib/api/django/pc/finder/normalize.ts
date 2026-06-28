@@ -1,280 +1,133 @@
 // ============================================================================
-// FILE:
-// /home/maya/shin-dev/shin-vps/shared/lib/api/django/pc/finder/normalize.ts
+// Finder Runtime Normalize V2
 // ============================================================================
 
-/**
- * ============================================================================
- * SHIN CORE LINX
- * Finder Runtime Normalize
- * ============================================================================
- *
- * PURPOSE:
- *   - semantic narrowing runtime normalization
- *   - backend → frontend continuity stabilization
- *   - traversal-safe runtime shaping
- *
- * IMPORTANT:
- *   - frontend does NOT generate semantic meaning
- *   - backend remains semantic authority
- *   - adapter remains continuity authority
- *
- * RESPONSIBILITIES:
- *   - runtime continuity normalization
- *   - semantic payload stabilization
- *   - traversal continuity preservation
- *   - discover handoff continuity shaping
- *
- * PROHIBITED:
- *   - semantic inference
- *   - graph generation
- *   - workflow invention
- *   - semantic scoring fabrication
- *
- * ============================================================================
- */
-
-/* ============================================================================
-🔥 Contracts
-============================================================================ */
-
 import type {
-
-  FinderRuntimeResponse,
-  FinderProductRuntime,
-
+    FinderRuntimeContract
 } from './contracts'
 
 /* ============================================================================
-🔥 Runtime
+🔥 Normalize Entry
 ============================================================================ */
 
-import {
+export function normalizeFinder(
+    payload: any
+): FinderRuntimeContract {
 
-  buildFinderRuntime,
+    if (!payload) {
+        return createEmptyRuntime()
+    }
 
-} from './runtime'
+    return {
+        success: payload.success ?? true,
 
-/* ============================================================================
-🔥 Discover Continuity
-============================================================================ */
+        /* =========================
+        MEANING
+        ========================= */
+        meaning: payload.meaning ?? {},
 
-import {
+        /* =========================
+        PRESENTATION
+        ========================= */
+        presentation: payload.presentation ?? {
+            title: '',
+            subtitle: '',
+            description: ''
+        },
 
-  resolveDiscoverContinuity,
+        /* =========================
+        SEO
+        ========================= */
+        seo: payload.seo ?? {},
 
-} from './discover'
+        /* =========================
+        DATA
+        ========================= */
+        data: {
+            query: {
+                selected_groups: payload.data?.query?.selected_groups ?? [],
+                selected_attributes: payload.data?.query?.selected_attributes ?? [],
+                filters: payload.data?.query?.filters ?? [],
+                max_price: payload.data?.query?.max_price ?? null,
 
-/* ============================================================================
-🔥 Normalize Finder Runtime
-============================================================================ */
+                // 🔥 拡張耐性（ここが重要）
+                ...payload.data?.query
+            },
 
-/**
- * Normalize backend semantic narrowing runtime.
- *
- * IMPORTANT:
- * Adapter preserves backend semantic truth.
- *
- * Adapter stabilizes ONLY:
- * - continuity
- * - traversal safety
- * - frontend runtime coherence
- */
+            summary: {
+                group_count: payload.data?.summary?.group_count ?? 0,
+                attribute_count: payload.data?.summary?.attribute_count ?? 0,
+                filter_count: payload.data?.summary?.filter_count ?? 0,
+                result_count: payload.data?.summary?.result_count ?? 0,
+                has_result: payload.data?.summary?.has_result ?? false,
+            },
 
-export function normalizeFinderRuntime(
+            products: Array.isArray(payload.data?.products)
+                ? payload.data.products
+                : [],
+        },
 
-  runtime:
-    Partial<FinderRuntimeResponse>
+        /* =========================
+        AUTHORITY
+        ========================= */
+        semantic_schema_version:
+            payload.semantic_schema_version ?? 1,
 
-): FinderRuntimeResponse {
+        authority_version:
+            payload.authority_version ?? 'unknown',
 
-  /* ========================================================================
-  🔥 Safe Results
-  ======================================================================== */
-  const source =
-    runtime?.data ?? runtime
+        semantic_authority:
+            payload.semantic_authority ?? 'backend',
 
-  const rawResults =
+        ready:
+            payload.ready ?? false,
 
-    Array.isArray(
-      source?.products
-    )
-
-      ? source.products
-
-      : Array.isArray(
-          source?.results
-        )
-
-        ? source.results
-
-        : []
-  
-  console.log(
-    '🔥 RAW RESULTS',
-    rawResults.length,
-    rawResults?.[0]
-  )
-
-  /* ========================================================================
-  🔥 Normalize Products
-  ======================================================================== */
-  console.log(
-    '🔥 RAW RESULTS',
-    rawResults?.length,
-    rawResults?.[0]
-  )
-
-  const results =
-
-    rawResults.map(
-      normalizeFinderProduct
-    )
-  
-  console.log(
-    '🔥 NORMALIZED PRODUCT',
-    results?.[0]
-  )
-
-  /* ========================================================================
-  🔥 Runtime Build
-  ======================================================================== */
-
-  const normalized =
-
-    buildFinderRuntime({
-
-      ...runtime,
-
-      results,
-    })
-
-  /* ========================================================================
-  🔥 Discover Continuity
-  ======================================================================== */
-
-  const discoverContinuity =
-
-    resolveDiscoverContinuity(
-      normalized
-    )
-
-  /* ========================================================================
-  🔥 Return
-  ======================================================================== */
-
-  return {
-
-    ...normalized,
-
-    /**
-     * Continuity-safe discover traversal.
-     */
-    
-    next_shelves:
-
-      runtime.next_shelves
-
-      || discoverContinuity.map(
-        (continuity) =>
-          continuity.workflow
-      ),
-  }
+        /* =========================
+        RAW BACKUP
+        ========================= */
+        raw: payload
+    }
 }
 
 /* ============================================================================
-🔥 Normalize Finder Product
+🔥 Empty State
 ============================================================================ */
 
-/**
- * Normalize semantic narrowing product runtime.
- */
+function createEmptyRuntime(): FinderRuntimeContract {
 
-export function normalizeFinderProduct(
+    return {
+        success: false,
 
-  item:
-    Partial<FinderProductRuntime>
+        meaning: {},
+        presentation: {
+            title: '',
+            subtitle: '',
+            description: ''
+        },
+        seo: {},
 
-): FinderProductRuntime {
+        data: {
+            query: {
+                selected_groups: [],
+                selected_attributes: [],
+                filters: [],
+                max_price: null,
+            },
+            summary: {
+                group_count: 0,
+                attribute_count: 0,
+                filter_count: 0,
+                result_count: 0,
+                has_result: false,
+            },
+            products: [],
+        },
 
-  /* ========================================================================
-  🔥 Product
-  ======================================================================== */
+        semantic_schema_version: 0,
+        authority_version: 'empty',
+        semantic_authority: 'none',
+        ready: false,
 
-  const product =
-
-    typeof item?.product === 'object'
-      ? item.product
-      : item
-
-  /* ========================================================================
-  🔥 Semantic Runtime
-  ======================================================================== */
-
-  const semantic =
-
-    item.semantic
-
-    || {}
-
-  /* ========================================================================
-  🔥 Return
-  ======================================================================== */
-
-  return {
-
-    product: {
-
-      id:
-        product.id
-        || 0,
-
-      unique_id:
-        product.unique_id,
-
-      name:
-        product.name,
-
-      image_url:
-        product.image_url,
-
-      semantic_labels:
-
-        Array.isArray(
-          product.semantic_labels
-        )
-
-          ? product.semantic_labels
-
-          : [],
-
-      price:
-        product.price,
-    },
-
-    semantic: {
-
-      score:
-        semantic.score
-        || 0,
-
-      confidence:
-        semantic.confidence
-        || 0,
-
-      reasons:
-
-        Array.isArray(
-          semantic.reasons
-        )
-
-          ? semantic.reasons
-
-          : [],
-
-      breakdown:
-        semantic.breakdown
-        || {},
-    },
-  }
+        raw: null
+    }
 }

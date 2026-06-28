@@ -1,179 +1,191 @@
 // ============================================================================
-// FILE:
-// /home/maya/shin-dev/shin-vps/shared/lib/api/django/pc/finder/projection.ts
-// Copyright (c) 2024 Shin Corporation.
-// All rights reserved.
+// Finder Projection V2
 // ============================================================================
 
-/* ============================================================================
-🔥 Contracts
-============================================================================ */
-
 import type {
-
-  FinderProduct,
-  FinderProductRuntime,
-
+    FinderRuntimeContract,
+    FinderProductContract
 } from './contracts'
 
 /* ============================================================================
-🔥 Project Finder Product
+🔥 Projection Entry
 ============================================================================ */
 
-/**
- * Runtime
- *
- * {
- *   product: {...}
- * }
- *
- * Legacy
- *
- * {
- *   ...
- * }
- *
- * ↓
- *
- * UI Contract
- */
+export interface FinderProjectedRuntime {
 
-export function projectFinderProduct(
-
-  runtime?: FinderProductRuntime | any
-
-): FinderProduct {
-
-  console.log(
-    '🔥 PROJECTION INPUT',
-    runtime
-  )
-
-  console.log(
-    '🔥 PROJECTION PRODUCT',
-    runtime?.product
-  )
-
-  const product =
-
-    runtime?.product
-    ?? runtime
-    ?? {}
-
-  return {
-
-    /* ======================================================================
-    Identity
-    ====================================================================== */
-
-    id:
-      product?.id,
-
-    unique_id:
-      product?.unique_id || '',
-
-    /* ======================================================================
-    Basic
-    ====================================================================== */
-
-    name:
-      product?.name || '',
-
-    maker:
-      product?.maker || '',
-
-    brand:
-      product?.brand || '',
-
-    description:
-      product?.description || '',
-
-    /* ======================================================================
-    Media
-    ====================================================================== */
-
-    image_url:
-      product?.image_url || '',
-
-    /* ======================================================================
-    URL
-    ====================================================================== */
-
-    url:
-      product?.url || '',
-
-    affiliate_url:
-      product?.affiliate_url || '',
-
-    /* ======================================================================
-    Commerce
-    ====================================================================== */
-
-    price:
-      product?.price || 0,
-
-    /* ======================================================================
-    Runtime Backup
-    ====================================================================== */
-
-    raw:
-      runtime,
-  }
-}
-
-/* ============================================================================
-🔥 Project Finder Results
-============================================================================ */
-
-export function projectFinderResults(
-
-  runtimes?: FinderProductRuntime[]
-
-): FinderProduct[] {
-
-  if (
-
-    !Array.isArray(
-      runtimes
-    )
-
-  ) {
-
-    return []
-  }
-
-  const projected =
-
-    runtimes.map(
-      projectFinderProduct
-    )
-
-  console.log(
-
-    '🔥 FINDER PROJECTION',
-
-    {
-
-      runtime_count:
-        runtimes.length,
-
-      projected_count:
-        projected.length,
-
-      sample:
-        projected?.[0],
+    header: {
+        title: string
+        subtitle: string
+        description: string
     }
-  )
 
-  return projected
+    stats: {
+        result_count: number
+        group_count: number
+        has_result: boolean
+    }
+
+    filters: {
+        groups: string[]
+        max_price: number | null
+    }
+
+    products: ProjectedProduct[]
 }
 
-
-
-
-
 /* ============================================================================
-🔥 Default Export
+🔥 Projected Product (UI専用)
 ============================================================================ */
 
-export default projectFinderResults
+export interface ProjectedProduct {
+
+    id: number
+    name: string
+    maker: string
+    price: number
+    image: string
+
+    badges: string[]
+    tags: string[]
+
+    score: number
+
+    highlight?: {
+        primary?: string
+        secondary?: string
+    }
+
+    ui_state: {
+        emphasis: 'high' | 'medium' | 'low'
+        variant: 'ai' | 'gaming' | 'business' | 'creator' | 'general'
+    }
+}
+
+/* ============================================================================
+🔥 Main Projection
+============================================================================ */
+
+export function projectFinderRuntime(
+    runtime: FinderRuntimeContract
+): FinderProjectedRuntime {
+
+    const products = runtime.data?.products ?? []
+
+    return {
+
+        /* =========================
+        HEADER
+        ========================= */
+        header: {
+            title: runtime.presentation?.title ?? 'Finder',
+            subtitle: runtime.presentation?.subtitle ?? '',
+            description: runtime.presentation?.description ?? '',
+        },
+
+        /* =========================
+        STATS
+        ========================= */
+        stats: {
+            result_count: runtime.data?.summary?.result_count ?? 0,
+            group_count: runtime.data?.summary?.group_count ?? 0,
+            has_result: runtime.data?.summary?.has_result ?? false,
+        },
+
+        /* =========================
+        FILTER STATE
+        ========================= */
+        filters: {
+            groups: runtime.data?.query?.selected_groups ?? [],
+            max_price: runtime.data?.query?.max_price ?? null,
+        },
+
+        /* =========================
+        PRODUCTS
+        ========================= */
+        products: products.map(projectProduct)
+    }
+}
+
+/* ============================================================================
+🔥 Product Projection
+============================================================================ */
+
+function projectProduct(
+    p: FinderProductContract
+): ProjectedProduct {
+
+    /* --------------------------------
+    UI Variant判定（軽い分類のみOK）
+    -------------------------------- */
+    const variant =
+        p.semantic_attributes?.includes('usage-ai')
+            ? 'ai'
+            : p.semantic_attributes?.includes('usage-gaming')
+                ? 'gaming'
+                : p.semantic_attributes?.includes('usage-business')
+                    ? 'business'
+                    : p.semantic_attributes?.includes('usage-creator')
+                        ? 'creator'
+                        : 'general'
+
+
+    /* --------------------------------
+    Emphasis（表示強度）
+    -------------------------------- */
+    const semanticScore = p.semantic_score ?? 0
+
+    const emphasis =
+        semanticScore >= 90
+            ? 'high'
+            : semanticScore >= 70
+                ? 'medium'
+                : 'low'
+
+    /* --------------------------------
+    Badges（UI装飾のみ）
+    -------------------------------- */
+    const badges: string[] = []
+
+    if (p.semantic_attributes?.includes('gpu-rtx-5080')) {
+        badges.push('High-End GPU')
+    }
+
+    if (p.semantic_attributes?.includes('cpu-ai')) {
+        badges.push('AI Ready')
+    }
+
+    if (p.semantic_attributes?.includes('ssd-2tb-plus')) {
+        badges.push('Large Storage')
+    }
+
+    /* --------------------------------
+    Tags（軽量メタ）
+    -------------------------------- */
+    const tags = [
+        ...(p.workflow_tags ?? []),
+        ...(p.semantic_labels ?? []).slice(0, 2)
+    ]
+
+    return {
+        id: p.product_id,
+        name: p.name,
+        maker: p.maker,
+        price: p.price,
+        image: p.image_url,
+
+        badges,
+        tags,
+
+        score: p.semantic_score ?? 0,
+
+        highlight: {
+            primary: p.semantic_labels?.[0],
+            secondary: p.semantic_labels?.[1],
+        },
+
+        ui_state: {
+            emphasis,
+            variant,
+        }
+    }
+}

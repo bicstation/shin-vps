@@ -1,211 +1,125 @@
-// IntentSection.tsx
+// ============================================================================
+// FILE:
+// /app/pc-finder/sections/intent/IntentSection.tsx
+// ============================================================================
+
 'use client'
 
-/* =========================================
-🔥 Components
-========================================= */
+/* ============================================================================
+Components
+============================================================================ */
 
-import IntentSelector
-  from '../../components/IntentSelector'
+import IntentCard
+    from '../../components/IntentCard'
 
-/* =========================================
-🔥 Styles
-========================================= */
+/* ============================================================================
+Styles
+============================================================================ */
 
 import styles
-  from './IntentSection.module.css'
+    from './IntentSection.module.css'
 
-/* =========================================
-🔥 Props
-========================================= */
+/* ============================================================================
+Props
+============================================================================ */
+
+type Intent = {
+
+    id: string
+
+    title: string
+
+    description: string
+
+    icon: string
+
+}
 
 type Props = {
 
-  value: string
+    intents: Intent[]
 
-  onChange:
-    (value: string) => void
+    selected?: string
+
+    onSelect: (id: string) => void
+
 }
 
-/* =========================================
-🔥 Intent Label
-========================================= */
+/* ============================================================================
+Intent Section
+============================================================================ */
 
-function getIntentLabel(
-  value: string
-) {
+export default function IntentSection({
 
-  switch (
-    value
-  ) {
+    intents,
 
-    case 'gaming':
-      return 'FPS・重量級ゲーム'
+    selected,
 
-    case 'creator':
-      return '動画編集・配信'
-
-    case 'business':
-      return '業務・法人利用'
-
-    case 'ai':
-      return 'AI画像生成・LLM'
-
-    default:
-      return 'semantic recommendation'
-  }
-}
-
-/* =========================================
-🔥 Intent Section
-========================================= */
-
-export default function
-IntentSection({
-
-  value,
-
-  onChange,
+    onSelect,
 
 }: Props) {
 
-  // ======================================
-  // Current Label
-  // ======================================
+    return (
 
-  const currentLabel =
+        <section className={styles.section}>
 
-    getIntentLabel(
-      value
+            <div className={styles.header}>
+
+                <span className={styles.eyebrow}>
+
+                    STEP 1
+
+                </span>
+
+                <h2 className={styles.title}>
+
+                    今日は何をしたいですか？
+
+                </h2>
+
+                <p className={styles.description}>
+
+                    あなたの目的を選択すると、
+                    Semantic Reality が最適な候補を探し始めます。
+
+                </p>
+
+            </div>
+
+            <div className={styles.grid}>
+
+                {
+
+                    intents.map(intent => (
+
+                        <IntentCard
+
+                            key={intent.id}
+
+                            intent={intent}
+
+                            selected={
+
+                                selected === intent.id
+
+                            }
+
+                            onClick={() =>
+
+                                onSelect(intent.id)
+
+                            }
+
+                        />
+
+                    ))
+
+                }
+
+            </div>
+
+        </section>
+
     )
 
-  // ======================================
-  // Debug
-  // ======================================
-
-  console.log(
-    '🔥 IntentSection',
-    {
-      value,
-      currentLabel,
-    }
-  )
-
-  // ======================================
-  // Render
-  // ======================================
-
-  return (
-
-    <section
-      className={
-        styles.section
-      }
-    >
-
-      {/* ==================================
-      Header
-      ================================== */}
-
-      <div
-        className={
-          styles.header
-        }
-      >
-
-        <div
-          className={
-            styles.label
-          }
-        >
-
-          WORKLOAD INTENT
-
-        </div>
-
-        <h2
-          className={
-            styles.title
-          }
-        >
-
-          用途を選択
-
-        </h2>
-
-        <p
-          className={
-            styles.description
-          }
-        >
-
-          semantic intent /
-          workload /
-          recommendation
-          をもとに
-          最適なPC構成を分析します。
-
-        </p>
-
-      </div>
-
-      {/* ==================================
-      Selector
-      ================================== */}
-
-      <div
-        className={
-          styles.selector
-        }
-      >
-
-        <IntentSelector
-
-          value={
-            value
-          }
-
-          onChange={
-            onChange
-          }
-
-        />
-
-      </div>
-
-      {/* ==================================
-      Current Intent
-      ================================== */}
-
-      <div
-        className={
-          styles.activeIntent
-        }
-      >
-
-        <div
-          className={
-            styles.activeLabel
-          }
-        >
-
-          CURRENT INTENT
-
-        </div>
-
-        <div
-          className={
-            styles.activeValue
-          }
-        >
-
-          {currentLabel}
-
-        </div>
-
-      </div>
-
-    </section>
-
-  )
 }

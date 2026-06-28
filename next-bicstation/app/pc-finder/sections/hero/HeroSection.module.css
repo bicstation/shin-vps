@@ -1,215 +1,204 @@
-/* HeroSection.module.css */
-/* =========================================
-🔥 Section
-========================================= */
+/* ============================================================================
+FILE:
+HeroSection.module.css
+============================================================================ */
 
-.section {
+/* ============================================================================
+Hero
+============================================================================ */
 
-  display: flex;
+.hero {
 
-  flex-direction: column;
+    display: grid;
 
-  gap: 28px;
+    grid-template-columns: 1.2fr 0.8fr;
 
-  margin-bottom: 40px;
+    align-items: center;
+
+    gap: 64px;
+
+    padding: 96px 48px;
+
+    border-radius: 32px;
+
+    background:
+        radial-gradient(circle at top right,
+            rgba(59, 130, 246, .18),
+            transparent 45%),
+        linear-gradient(180deg,
+            rgba(20, 25, 40, .96),
+            rgba(10, 15, 28, .96));
+
+    border: 1px solid rgba(255, 255, 255, .08);
+
+    overflow: hidden;
+
+    position: relative;
+
 }
 
-/* =========================================
-🔥 Semantic Panel
-========================================= */
+/* ============================================================================
+Left
+============================================================================ */
 
-.semanticPanel {
+.content {
 
-  position: relative;
+    display: flex;
 
-  overflow: hidden;
+    flex-direction: column;
 
-  padding:
-    28px 32px;
+    gap: 28px;
 
-  border-radius: 28px;
+    z-index: 2;
 
-  background:
-    linear-gradient(
-      135deg,
-      rgba(255,255,255,0.06),
-      rgba(255,255,255,0.03)
-    );
-
-  border:
-    1px solid
-    rgba(255,255,255,0.08);
-
-  backdrop-filter:
-    blur(20px);
-
-  box-shadow:
-    0 16px 48px
-    rgba(0,0,0,0.18);
 }
 
-/* =========================================
-🔥 Glow
-========================================= */
+/* ============================================================================
+Badge
+============================================================================ */
 
-.semanticPanel::before {
+.badge {
 
-  content: '';
+    width: max-content;
 
-  position: absolute;
+    padding: 10px 18px;
 
-  inset: 0;
+    border-radius: 999px;
 
-  pointer-events: none;
+    background: rgba(80, 120, 255, .12);
 
-  background:
+    border: 1px solid rgba(120, 170, 255, .25);
 
-    radial-gradient(
-      circle at top right,
-      rgba(0,140,255,0.16),
-      transparent 36%
-    ),
+    color: #8cb8ff;
 
-    radial-gradient(
-      circle at bottom left,
-      rgba(140,0,255,0.10),
-      transparent 42%
-    );
+    font-size: .82rem;
+
+    font-weight: 700;
+
+    letter-spacing: .08em;
+
+    text-transform: uppercase;
+
 }
 
-/* =========================================
-🔥 Label
-========================================= */
+/* ============================================================================
+Title
+============================================================================ */
 
-.semanticLabel {
+.title {
 
-  position: relative;
+    margin: 0;
 
-  z-index: 1;
+    color: #ffffff;
 
-  width: fit-content;
+    font-size: clamp(2.6rem, 5vw, 4.3rem);
 
-  display: inline-flex;
+    font-weight: 800;
 
-  align-items: center;
+    line-height: 1.18;
 
-  padding:
-    7px 14px;
+    letter-spacing: -0.03em;
 
-  border-radius: 999px;
-
-  font-size: 11px;
-
-  font-weight: 700;
-
-  letter-spacing: 0.08em;
-
-  text-transform: uppercase;
-
-  background:
-    rgba(255,255,255,0.08);
-
-  border:
-    1px solid
-    rgba(255,255,255,0.08);
-
-  margin-bottom: 18px;
 }
 
-/* =========================================
-🔥 Value
-========================================= */
+/* ============================================================================
+Description
+============================================================================ */
 
-.semanticValue {
+.description {
 
-  position: relative;
+    max-width: 640px;
 
-  z-index: 1;
+    margin: 0;
 
-  font-size: 42px;
+    color: rgba(255, 255, 255, .72);
 
-  font-weight: 900;
+    font-size: 1.1rem;
 
-  line-height: 1.1;
+    line-height: 1.9;
 
-  letter-spacing: -0.03em;
-
-  margin-bottom: 16px;
 }
 
-/* =========================================
-🔥 Description
-========================================= */
+/* ============================================================================
+Background Glow
+============================================================================ */
 
-.semanticDescription {
+.hero::before {
 
-  position: relative;
+    content: "";
 
-  z-index: 1;
+    position: absolute;
 
-  max-width: 760px;
+    width: 520px;
 
-  font-size: 15px;
+    height: 520px;
 
-  line-height: 1.9;
+    right: -180px;
 
-  opacity: 0.82;
+    top: -180px;
+
+    border-radius: 50%;
+
+    background: rgba(37, 99, 235, .18);
+
+    filter: blur(120px);
+
+    pointer-events: none;
+
 }
 
-/* =========================================
-🔥 Tablet
-========================================= */
+/* ============================================================================
+Responsive
+============================================================================ */
 
-@media (
-  max-width: 1024px
-) {
+@media (max-width:960px) {
 
-  .semanticPanel {
+    .hero {
 
-    padding:
-      24px;
-  }
+        grid-template-columns: 1fr;
 
-  .semanticValue {
+        gap: 48px;
 
-    font-size: 34px;
-  }
+        padding: 64px 32px;
+
+        text-align: center;
+
+    }
+
+    .content {
+
+        align-items: center;
+
+    }
+
+    .description {
+
+        max-width: 100%;
+
+    }
+
 }
 
-/* =========================================
-🔥 Mobile
-========================================= */
+@media (max-width:640px) {
 
-@media (
-  max-width: 640px
-) {
+    .hero {
 
-  .section {
+        padding: 48px 24px;
 
-    gap: 22px;
+        border-radius: 24px;
 
-    margin-bottom: 28px;
-  }
+    }
 
-  .semanticPanel {
+    .title {
 
-    padding:
-      20px 18px;
+        font-size: 2.2rem;
 
-    border-radius: 22px;
-  }
+    }
 
-  .semanticValue {
+    .description {
 
-    font-size: 26px;
+        font-size: 1rem;
 
-    line-height: 1.2;
-  }
+    }
 
-  .semanticDescription {
-
-    font-size: 14px;
-
-    line-height: 1.8;
-  }
 }

@@ -1,229 +1,106 @@
+// ============================================================================
+// FILE:
+// /app/pc-finder/states/FinderEmpty.tsx
+// Copyright (c) 2026 Shin Corporation.
+// ============================================================================
+
 'use client'
 
-/* =========================================
-🔥 Next
-========================================= */
-
-import Link
-  from 'next/link'
-
-/* =========================================
-🔥 Styles
-========================================= */
+/* ============================================================================
+Styles
+============================================================================ */
 
 import styles
-  from './FinderEmpty.module.css'
+    from '../styles/pcFinder.module.css'
 
-/* =========================================
-🔥 Props
-========================================= */
+/* ============================================================================
+Props
+============================================================================ */
 
 type Props = {
 
-  title?: string
+    onReset?: () => void
 
-  description?: string
-
-  semanticUsage?: string
 }
 
-/* =========================================
-🔥 Finder Empty
-========================================= */
+/* ============================================================================
+Finder Empty
+============================================================================ */
 
-export default function
-FinderEmpty({
+export default function FinderEmpty({
 
-  title =
-    'おすすめPCが見つかりませんでした',
-
-  description =
-    `
-現在の条件では
-semantic recommendation が
-見つかりませんでした。
-
-予算や用途を変更して
-再検索してください。
-`,
-
-  semanticUsage =
-    'usage-gaming',
+    onReset,
 
 }: Props) {
 
-  // ======================================
-  // Debug
-  // ======================================
+    return (
 
-  console.log(
-    '🔥 FinderEmpty',
-    {
-      semanticUsage,
-    }
-  )
-
-  // ======================================
-  // Render
-  // ======================================
-
-  return (
-
-    <section
-      className={
-        styles.section
-      }
-    >
-
-      {/* ==================================
-      Glow
-      ================================== */}
-
-      <div
-        className={
-          styles.glow
-        }
-      />
-
-      {/* ==================================
-      Content
-      ================================== */}
-
-      <div
-        className={
-          styles.content
-        }
-      >
-
-        {/* ============================= */}
-        {/* Icon */}
-        {/* ============================= */}
-
-        <div
-          className={
-            styles.icon
-          }
-        >
-
-          🔍
-
-        </div>
-
-        {/* ============================= */}
-        {/* Label */}
-        {/* ============================= */}
-
-        <div
-          className={
-            styles.label
-          }
-        >
-
-          NO SEMANTIC RESULT
-
-        </div>
-
-        {/* ============================= */}
-        {/* Title */}
-        {/* ============================= */}
-
-        <h2
-          className={
-            styles.title
-          }
-        >
-
-          {title}
-
-        </h2>
-
-        {/* ============================= */}
-        {/* Description */}
-        {/* ============================= */}
-
-        <p
-          className={
-            styles.description
-          }
-        >
-
-          {description}
-
-        </p>
-
-        {/* ============================= */}
-        {/* Semantic */}
-        {/* ============================= */}
-
-        <div
-          className={
-            styles.semanticBox
-          }
-        >
-
-          <div
+        <section
             className={
-              styles.semanticLabel
+                styles.finderEmpty
             }
-          >
-
-            ACTIVE SEMANTIC
-
-          </div>
-
-          <div
-            className={
-              styles.semanticValue
-            }
-          >
-
-            {semanticUsage}
-
-          </div>
-
-        </div>
-
-        {/* ============================= */}
-        {/* Actions */}
-        {/* ============================= */}
-
-        <div
-          className={
-            styles.actions
-          }
         >
 
-          <Link
+            <div
+                className={
+                    styles.emptyIcon
+                }
+            >
 
-            href="/pc-finder"
+                🔍
 
-            className={
-              styles.primaryButton
+            </div>
+
+            <h2
+                className={
+                    styles.emptyTitle
+                }
+            >
+
+                条件に一致するPCは見つかりませんでした
+
+            </h2>
+
+            <p
+                className={
+                    styles.emptyDescription
+                }
+            >
+
+                条件を少し変更すると、
+                新しい候補が見つかるかもしれません。
+
+                <br />
+
+                用途や予算を変更して、
+                もう一度お試しください。
+
+            </p>
+
+            {
+
+                onReset && (
+
+                    <button
+
+                        onClick={onReset}
+
+                        className={
+                            styles.resetButton
+                        }
+
+                    >
+
+                        条件を変更する
+
+                    </button>
+
+                )
+
             }
-          >
 
-            👉 条件を変更する
+        </section>
 
-          </Link>
+    )
 
-          <Link
-
-            href="/ranking"
-
-            className={
-              styles.secondaryButton
-            }
-          >
-
-            ランキングを見る
-
-          </Link>
-
-        </div>
-
-      </div>
-
-    </section>
-
-  )
 }

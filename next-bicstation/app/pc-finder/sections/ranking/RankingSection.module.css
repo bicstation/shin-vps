@@ -1,6 +1,6 @@
 /* ============================================================================
 FILE:
-/app/pc-finder/sections/recommendation/RecommendationSection.module.css
+/app/pc-finder/sections/ranking/RankingSection.module.css
 ============================================================================ */
 
 .section {
@@ -11,7 +11,7 @@ FILE:
 
     margin: 0 auto;
 
-    padding: 80px 24px;
+    padding: 80px 24px 120px;
 
 }
 
@@ -21,28 +21,32 @@ FILE:
 
     overflow: hidden;
 
-    padding: 64px;
+    text-align: center;
 
-    border-radius: 28px;
+    padding: 72px 64px;
+
+    border-radius: 32px;
 
     background:
 
         linear-gradient(180deg,
-            rgba(20, 28, 48, .96),
-            rgba(10, 15, 28, .98));
 
-    border: 1px solid rgba(110, 170, 255, .18);
+            rgba(20, 30, 55, .96),
+
+            rgba(10, 16, 30, .98));
+
+    border: 1px solid rgba(100, 180, 255, .18);
 
     box-shadow:
 
-        0 0 80px rgba(0, 140, 255, .08),
+        0 0 80px rgba(0, 120, 255, .10),
 
         inset 0 1px 0 rgba(255, 255, 255, .05);
 
 }
 
 /* ============================================================================
-Background Glow
+Blue Glow
 ============================================================================ */
 
 .card::before {
@@ -57,9 +61,9 @@ Background Glow
 
         radial-gradient(circle,
 
-            rgba(70, 150, 255, .12),
+            rgba(60, 150, 255, .15),
 
-            transparent 65%);
+            transparent 68%);
 
     pointer-events: none;
 
@@ -83,7 +87,7 @@ Header
 
     border-radius: 999px;
 
-    border: 1px solid rgba(90, 180, 255, .25);
+    border: 1px solid rgba(90, 180, 255, .28);
 
     background: rgba(60, 120, 255, .08);
 
@@ -105,7 +109,7 @@ Header
 
     color: #ffffff;
 
-    font-size: clamp(2rem, 4vw, 3rem);
+    font-size: clamp(2rem, 4vw, 3.2rem);
 
     font-weight: 800;
 
@@ -117,30 +121,35 @@ Header
 
     max-width: 760px;
 
-    margin: 22px 0 42px;
+    margin: 24px auto 44px;
 
     color: rgba(255, 255, 255, .72);
 
-    font-size: 1.05rem;
+    font-size: 1.08rem;
 
     line-height: 1.9;
 
 }
 
 /* ============================================================================
-Reasons
+Link
 ============================================================================ */
 
-.reasonList {
+.link {
 
-    display: grid;
+    display: inline-flex;
 
-    grid-template-columns:
+    text-decoration: none;
 
-        repeat(auto-fit,
-            minmax(260px, 1fr));
+}
 
-    gap: 18px;
+.link:focus-visible {
+
+    outline: 2px solid #7dc8ff;
+
+    outline-offset: 6px;
+
+    border-radius: 999px;
 
 }
 
@@ -152,13 +161,13 @@ Responsive
 
     .section {
 
-        padding: 64px 20px;
+        padding: 64px 20px 96px;
 
     }
 
     .card {
 
-        padding: 48px 36px;
+        padding: 56px 40px;
 
     }
 
@@ -168,31 +177,23 @@ Responsive
 
     .section {
 
-        padding: 56px 18px;
+        padding: 56px 18px 72px;
 
     }
 
     .card {
 
-        padding: 36px 24px;
+        padding: 40px 24px;
 
-        border-radius: 22px;
+        border-radius: 24px;
 
     }
 
     .description {
 
-        margin: 18px 0 30px;
+        margin: 20px auto 32px;
 
         font-size: .95rem;
-
-    }
-
-    .reasonList {
-
-        grid-template-columns: 1fr;
-
-        gap: 14px;
 
     }
 

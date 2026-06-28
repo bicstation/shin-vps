@@ -1,188 +1,93 @@
-// HeroSection.tsx
+// ============================================================================
+// FILE:
+// /app/pc-finder/sections/hero/HeroSection.tsx
+// Copyright (c) 2024 Shin Corporation.
+// All rights reserved.
+// ============================================================================
+
 'use client'
 
-/* =========================================
+/* ============================================================================
 🔥 Components
-========================================= */
+============================================================================ */
 
-import FinderHero
-  from '../../components/FinderHero'
+import HeroAssistant
+    from '../../components/HeroAssistant'
 
-/* =========================================
+/* ============================================================================
 🔥 Styles
-========================================= */
+============================================================================ */
 
 import styles
-  from './HeroSection.module.css'
+    from './HeroSection.module.css'
 
-/* =========================================
-🔥 Props
-========================================= */
-
-type Props = {
-
-  purpose: string
-
-  semanticUsage: string
-
-  semanticDescription: string
-}
-
-/* =========================================
-🔥 Purpose Label
-========================================= */
-
-function getPurposeLabel(
-  purpose: string
-) {
-
-  switch (
-    purpose
-  ) {
-
-    case 'gaming':
-      return 'Gaming Semantic'
-
-    case 'creator':
-      return 'Creator Workflow'
-
-    case 'business':
-      return 'Business Productivity'
-
-    case 'ai':
-      return 'AI Workload'
-
-    default:
-      return 'Semantic Recommendation'
-  }
-}
-
-/* =========================================
+/* ============================================================================
 🔥 Hero Section
-========================================= */
+============================================================================ */
 
-export default function
-HeroSection({
+export default function HeroSection() {
 
-  purpose,
+    return (
 
-  semanticUsage,
+        <section
+            className={
+                styles.hero
+            }
+        >
 
-  semanticDescription,
+            {/* ==========================================================
+            Left
+            ========================================================== */}
 
-}: Props) {
+            <div
+                className={
+                    styles.content
+                }
+            >
 
-  // ======================================
-  // Label
-  // ======================================
+                <div
+                    className={
+                        styles.badge
+                    }
+                >
 
-  const purposeLabel =
+                    Semantic Discovery Experience
 
-    getPurposeLabel(
-      purpose
+                </div>
+
+                <h1
+                    className={
+                        styles.title
+                    }
+                >
+
+                    あなたにぴったりのPCを
+                    <br />
+                    一緒に見つけましょう。
+
+                </h1>
+
+                <p
+                    className={
+                        styles.description
+                    }
+                >
+
+                    やりたいことやご予算を選ぶだけで、
+                    Semantic Reality があなたに合ったPCをご提案します。
+
+                </p>
+
+            </div>
+
+            {/* ==========================================================
+            Right
+            ========================================================== */}
+
+            <HeroAssistant />
+
+        </section>
+
     )
 
-  // ======================================
-  // Debug
-  // ======================================
-
-  console.log(
-    '🔥 HeroSection',
-    {
-
-      purpose,
-
-      semanticUsage,
-
-      semanticDescription,
-
-    }
-  )
-
-  // ======================================
-  // Render
-  // ======================================
-
-  return (
-
-    <section
-      className={
-        styles.section
-      }
-    >
-
-      {/* ==================================
-      Hero
-      ================================== */}
-
-      <FinderHero
-
-        title='AI PC Finder'
-
-        description={`
-          semantic recommendation /
-          workload analysis /
-          budget optimization
-          によるPC診断。
-        `}
-
-      />
-
-      {/* ==================================
-      Semantic Panel
-      ================================== */}
-
-      <div
-        className={
-          styles.semanticPanel
-        }
-      >
-
-        {/* ============================= */}
-        {/* Label */}
-        {/* ============================= */}
-
-        <div
-          className={
-            styles.semanticLabel
-          }
-        >
-
-          {purposeLabel}
-
-        </div>
-
-        {/* ============================= */}
-        {/* Value */}
-        {/* ============================= */}
-
-        <div
-          className={
-            styles.semanticValue
-          }
-        >
-
-          {semanticUsage}
-
-        </div>
-
-        {/* ============================= */}
-        {/* Description */}
-        {/* ============================= */}
-
-        <p
-          className={
-            styles.semanticDescription
-          }
-        >
-
-          {semanticDescription}
-
-        </p>
-
-      </div>
-
-    </section>
-
-  )
 }

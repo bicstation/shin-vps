@@ -1,153 +1,72 @@
 // ============================================================================
-// FILE:
-// /home/maya/shin-dev/shin-vps/shared/lib/api/django/pc/finder/index.ts
+// Finder Public API Entry Point V2
 // ============================================================================
 
-/**
- * ============================================================================
- * SHIN CORE LINX
- * Finder Runtime Layer
- * ============================================================================
- *
- * PURPOSE:
- *   - semantic narrowing runtime exports
- *   - traversal continuity-safe aggregation
- *   - finder runtime public surface
- *
- * IMPORTANT:
- *   - frontend does NOT generate semantic meaning
- *   - backend remains semantic authority
- *   - adapter remains continuity authority
- *
- * RESPONSIBILITIES:
- *   - narrowing runtime aggregation
- *   - continuity-safe export exposure
- *   - traversal continuity stabilization
- *   - finder runtime observability exposure
- *
- * PROHIBITED:
- *   - semantic inference
- *   - traversal fabrication
- *   - graph mutation
- *   - semantic scoring invention
- *
- * ============================================================================
- */
+import {
+
+    fetchFinderRuntime
+
+} from './gateway'
+
+import {
+
+    normalizeFinder
+
+} from './normalize'
+
+import {
+
+    projectFinderRuntime
+
+} from './projection'
+
+import type {
+
+    FinderRuntimeContract,
+
+    FinderRequest
+
+} from './contracts'
 
 /* ============================================================================
-🔥 Contracts
+🔥 Public API
 ============================================================================ */
 
-export * from './contracts'
+export async function getFinder(
+
+    request: FinderRequest
+
+) {
+
+    /* --------------------------------
+    1. FETCH (Gateway)
+    -------------------------------- */
+    const raw = await fetchFinderRuntime(request)
+
+    /* --------------------------------
+    2. NORMALIZE
+    -------------------------------- */
+    const runtime: FinderRuntimeContract =
+        normalizeFinder(raw)
+
+    /* --------------------------------
+    3. PROJECT (UI)
+    -------------------------------- */
+    const view = projectFinderRuntime(runtime)
+
+    /* --------------------------------
+    4. RETURN
+    -------------------------------- */
+    return {
+
+        raw,        // Backend Reality
+        runtime,    // Safe Runtime V2
+        view        // UI Ready
+    }
+}
 
 /* ============================================================================
-🔥 Finder Runtime
+🔥 Default Export
 ============================================================================ */
 
-export * from './finder'
-
-/* ============================================================================
-🔥 Normalize
-============================================================================ */
-
-export * from './normalize'
-
-/* =========================================
-🔥 Projection
-========================================= */
-
-export * from './projection'
-
-/* ============================================================================
-🔥 Runtime
-============================================================================ */
-
-export * from './runtime'
-
-/* ============================================================================
-🔥 Traversal
-============================================================================ */
-
-export * from './traversal'
-
-/* ============================================================================
-🔥 Topology
-============================================================================ */
-
-export * from './topology'
-
-/* ============================================================================
-🔥 Intent
-============================================================================ */
-
-export * from './intent'
-
-/* ============================================================================
-🔥 Clusters
-============================================================================ */
-
-export * from './clusters'
-
-/* ============================================================================
-🔥 Semantic Paths
-============================================================================ */
-
-export * from './semanticPaths'
-
-/* ============================================================================
-🔥 Recommendations
-============================================================================ */
-
-export * from './recommendations'
-
-/* ============================================================================
-🔥 Observatory
-============================================================================ */
-
-export * from './observatory'
-
-/* ============================================================================
-🔥 Discover Continuity
-============================================================================ */
-
-export * from './discover'
-
-/* ============================================================================
-🔥 Runtime Observatory
-============================================================================ */
-
-console.log(
-  '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
-)
-
-console.log(
-  '🔥 FINDER RUNTIME INITIALIZED'
-)
-
-console.log({
-
-  narrowing_runtime:
-    true,
-
-  traversal_continuity:
-    true,
-
-  discover_handoff:
-    true,
-
-  observability:
-    true,
-
-  topology:
-    true,
-
-  continuity:
-    'healthy',
-
-  runtime:
-    'finder-runtime-layer',
-})
-
-console.log(
-  '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
-)
+export default getFinder

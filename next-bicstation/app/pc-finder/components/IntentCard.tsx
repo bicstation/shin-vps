@@ -1,6 +1,6 @@
 // ============================================================================
 // FILE:
-// /app/pc-finder/states/FinderError.tsx
+// /app/pc-finder/components/IntentCard.tsx
 // Copyright (c) 2026 Shin Corporation.
 // ============================================================================
 
@@ -14,96 +14,106 @@ import styles
     from '../styles/pcFinder.module.css'
 
 /* ============================================================================
+Types
+============================================================================ */
+
+type Intent = {
+
+    id: string
+
+    title: string
+
+    description: string
+
+    icon: string
+
+}
+
+/* ============================================================================
 Props
 ============================================================================ */
 
 type Props = {
 
-    message?: string
+    intent: Intent
 
-    onRetry?: () => void
+    selected?: boolean
+
+    onClick: () => void
 
 }
 
 /* ============================================================================
-Finder Error
+Intent Card
 ============================================================================ */
 
-export default function FinderError({
+export default function IntentCard({
 
-    message,
+    intent,
 
-    onRetry,
+    selected = false,
+
+    onClick,
 
 }: Props) {
 
     return (
 
-        <section
+        <button
+
+            type="button"
+
+            onClick={onClick}
+
             className={
-                styles.finderError
+
+                [
+
+                    styles.intentCard,
+
+                    selected
+
+                        ? styles.selected
+
+                        : '',
+
+                ].join(' ')
+
             }
+
         >
 
             <div
                 className={
-                    styles.errorIcon
+                    styles.intentIcon
                 }
             >
 
-                ⚠️
+                {intent.icon}
 
             </div>
 
-            <h2
+            <h3
                 className={
-                    styles.errorTitle
+                    styles.intentTitle
                 }
             >
 
-                PCを検索できませんでした
+                {intent.title}
 
-            </h2>
+            </h3>
 
             <p
                 className={
-                    styles.errorDescription
+                    styles.intentDescription
                 }
             >
 
-                {
-
-                    message ??
-
-                    '一時的に検索結果を取得できませんでした。時間をおいて再度お試しください。'
-
-                }
+                {intent.description}
 
             </p>
 
-            {
-
-                onRetry && (
-
-                    <button
-
-                        onClick={onRetry}
-
-                        className={
-                            styles.retryButton
-                        }
-
-                    >
-
-                        もう一度検索する
-
-                    </button>
-
-                )
-
-            }
-
-        </section>
+        </button>
 
     )
 

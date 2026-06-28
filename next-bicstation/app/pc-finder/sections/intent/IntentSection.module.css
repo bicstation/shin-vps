@@ -1,201 +1,139 @@
-/* IntentSection.module.css */
-/* =========================================
-🔥 Section
-========================================= */
+/* ============================================================================
+FILE:
+/app/pc-finder/sections/intent/IntentSection.module.css
+============================================================================ */
 
 .section {
 
-  width: 100%;
+    width: 100%;
 
-  padding: 24px;
+    max-width: 1280px;
 
-  border-radius: 28px;
+    margin: 0 auto;
 
-  background:
-    rgba(255, 255, 255, 0.04);
+    padding: 80px 24px;
 
-  border:
-    1px solid
-    rgba(255, 255, 255, 0.08);
-
-  backdrop-filter:
-    blur(18px);
-
-  box-shadow:
-    0 12px 40px
-    rgba(0, 0, 0, 0.18);
-
-  margin-bottom: 24px;
 }
-
-/* =========================================
-🔥 Header
-========================================= */
 
 .header {
 
-  margin-bottom: 24px;
+    text-align: center;
+
+    margin-bottom: 48px;
+
 }
 
-/* =========================================
-🔥 Label
-========================================= */
+.eyebrow {
 
-.label {
+    display: inline-block;
 
-  display: inline-flex;
+    margin-bottom: 14px;
 
-  align-items: center;
+    padding: 6px 14px;
 
-  padding:
-    6px 12px;
+    border-radius: 999px;
 
-  border-radius: 999px;
+    border: 1px solid rgba(100, 180, 255, .25);
 
-  font-size: 11px;
+    background: rgba(70, 120, 255, .08);
 
-  font-weight: 700;
+    color: #77bfff;
 
-  letter-spacing: 0.08em;
+    font-size: .78rem;
 
-  text-transform: uppercase;
+    font-weight: 700;
 
-  background:
-    rgba(255, 255, 255, 0.08);
+    letter-spacing: .18em;
 
-  border:
-    1px solid
-    rgba(255, 255, 255, 0.08);
+    text-transform: uppercase;
 
-  margin-bottom: 14px;
 }
-
-/* =========================================
-🔥 Title
-========================================= */
 
 .title {
 
-  font-size: 24px;
+    margin: 0;
 
-  font-weight: 800;
+    color: #ffffff;
 
-  line-height: 1.3;
+    font-size: clamp(2rem, 4vw, 3rem);
 
-  margin-bottom: 12px;
+    font-weight: 800;
+
+    line-height: 1.2;
+
 }
-
-/* =========================================
-🔥 Description
-========================================= */
 
 .description {
 
-  font-size: 14px;
+    max-width: 760px;
 
-  line-height: 1.8;
+    margin: 18px auto 0;
 
-  opacity: 0.78;
+    color: rgba(255, 255, 255, .72);
+
+    font-size: 1.05rem;
+
+    line-height: 1.8;
+
 }
 
-/* =========================================
-🔥 Selector
-========================================= */
+.grid {
 
-.selector {
+    display: grid;
 
-  margin-bottom: 28px;
+    grid-template-columns: repeat(auto-fit,
+            minmax(260px, 1fr));
+
+    gap: 28px;
+
+    align-items: stretch;
+
 }
 
-/* =========================================
-🔥 Active Intent
-========================================= */
+/* ============================================================================
+Tablet
+============================================================================ */
 
-.activeIntent {
+@media (max-width:960px) {
 
-  padding: 18px 20px;
+    .section {
 
-  border-radius: 20px;
+        padding: 64px 20px;
 
-  background:
-    rgba(255, 255, 255, 0.03);
+    }
 
-  border:
-    1px solid
-    rgba(255, 255, 255, 0.06);
 }
 
-/* =========================================
-🔥 Active Label
-========================================= */
+/* ============================================================================
+Mobile
+============================================================================ */
 
-.activeLabel {
+@media (max-width:640px) {
 
-  font-size: 11px;
+    .section {
 
-  font-weight: 700;
+        padding: 56px 18px;
 
-  letter-spacing: 0.08em;
+    }
 
-  opacity: 0.65;
+    .header {
 
-  margin-bottom: 8px;
-}
+        margin-bottom: 36px;
 
-/* =========================================
-🔥 Active Value
-========================================= */
+    }
 
-.activeValue {
+    .grid {
 
-  font-size: 24px;
+        grid-template-columns: 1fr;
 
-  font-weight: 800;
+        gap: 20px;
 
-  line-height: 1.3;
-}
+    }
 
-/* =========================================
-🔥 Tablet
-========================================= */
+    .description {
 
-@media (
-  max-width: 1024px
-) {
+        font-size: .95rem;
 
-  .section {
+    }
 
-    padding: 22px;
-  }
-}
-
-/* =========================================
-🔥 Mobile
-========================================= */
-
-@media (
-  max-width: 640px
-) {
-
-  .section {
-
-    padding: 18px;
-
-    border-radius: 22px;
-  }
-
-  .title {
-
-    font-size: 20px;
-  }
-
-  .description {
-
-    font-size: 13px;
-  }
-
-  .activeValue {
-
-    font-size: 20px;
-  }
 }
