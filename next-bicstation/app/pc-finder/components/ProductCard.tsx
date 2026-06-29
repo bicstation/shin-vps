@@ -181,7 +181,7 @@ export default function ProductCard({
 
                 <Link
 
-                    href={`/products/${product.product_id}`}
+                    href={`/product/${product.product_id}`}
 
                     className={
                         styles.detailButton

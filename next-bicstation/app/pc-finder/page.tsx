@@ -98,55 +98,7 @@ const budgets = [
 
 ]
 
-
-const recommendation = {
-
-    title: 'あなたにおすすめの構成',
-
-    description:
-        '選択した用途とご予算から最適なPC候補を見つけました。',
-
-    reasons: [
-
-        'AIワークロードに最適',
-
-        'ご予算内で性能を最大化',
-
-        '将来の拡張にも対応',
-
-    ],
-
-}
-
-const products = [
-
-    {
-
-        product_id: 1,
-
-        unique_id: 'demo-ai-pc',
-
-        name: 'SHIN AI Creator RTX',
-
-        maker: 'Shin',
-
-        image_url: '/images/sample-pc.webp',
-
-        price: 198000,
-
-        semantic_labels: [
-
-            'AI',
-
-            'RTX',
-
-            'Creator',
-
-        ],
-
-    },
-
-]
+const recommendation = runtime?.view?.header
 
 
 /* ============================================================================
