@@ -75,7 +75,7 @@ export default function ProductCard({
                 }
             >
 
-                <Image
+                <img
 
                     src={
                         product.image_url
@@ -85,7 +85,7 @@ export default function ProductCard({
                         product.name
                     }
 
-                    fill
+                    // fill
 
                     sizes="400px"
 

@@ -205,6 +205,18 @@ export default function PCFinderPage() {
             <HeroSection />
 
             <IntentSection
+                intents={intents}
+                selected={selectedIntent}
+                onSelect={(id) => {
+
+                    console.log("Intent Click", id)
+
+                    setSelectedIntent(id)
+
+                }}
+            />
+
+            {/* <IntentSection
 
                 intents={intents}
 
@@ -212,7 +224,8 @@ export default function PCFinderPage() {
 
                 onSelect={setSelectedIntent}
 
-            />
+            /> */}
+
             <BudgetSection
 
                 budgets={budgets}
@@ -222,6 +235,33 @@ export default function PCFinderPage() {
                 onSelect={setSelectedBudget}
 
             />
+
+            <div
+                style={{
+                    padding: '16px',
+                    margin: '24px 0',
+                    border: '1px solid #3b82f6',
+                    borderRadius: '12px',
+                    background: '#0f172a',
+                    color: '#fff',
+                }}
+            >
+
+                <div>
+
+                    Intent :
+                    {selectedIntent || '未選択'}
+
+                </div>
+
+                <div>
+
+                    Budget :
+                    {selectedBudget?.toLocaleString() ?? '未選択'}
+
+                </div>
+
+            </div>
 
             <SearchSection
 
