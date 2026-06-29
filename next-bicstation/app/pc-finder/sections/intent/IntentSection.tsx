@@ -90,7 +90,7 @@ export default function IntentSection({
 
                 {
 
-                    intents.map(intent => (
+                    (intents ?? []).map(intent => (
 
                         <IntentCard
 

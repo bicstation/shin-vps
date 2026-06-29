@@ -90,7 +90,7 @@ export default function BudgetSection({
 
                 {
 
-                    budgets.map(budget => (
+                    ( budgets ?? []).map(budget => (
 
                         <BudgetButton
 

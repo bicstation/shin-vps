@@ -139,7 +139,7 @@ export default function ProductCard({
 
                 {
 
-                    product.semantic_labels?.length
+                    (product ?? []).semantic_labels?.length
                         ?
 
                         <div
@@ -150,7 +150,7 @@ export default function ProductCard({
 
                             {
 
-                                product.semantic_labels.map(
+                                (product.semantic_labels ?? []).map(
 
                                     label => (
 

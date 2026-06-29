@@ -18,10 +18,9 @@ import type {
 /* =========================================
 🔥 Finder Runtime Bridge
 ========================================= */
-
 import {
 
-  fetchFinder,
+  getFinder,
 
 } from '../finder'
 
@@ -100,7 +99,7 @@ searchPC(
 
   const response =
 
-    await fetchFinder({
+    await getFinder({
 
       usage:
         usage

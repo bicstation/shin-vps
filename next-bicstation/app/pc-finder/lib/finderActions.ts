@@ -17,18 +17,14 @@ import {
 } from '@/shared/lib/api/django/pc/finder'
 
 /* ============================================================================
-Request
+Types
 ============================================================================ */
 
-export interface FinderRequest {
+import type {
 
-    groups: string[]
+    FinderRequest,
 
-    max_price?: number | null
-
-    attributes?: string[]
-
-}
+} from '@/shared/lib/api/django/pc/finder/contracts'
 
 /* ============================================================================
 Execute Finder
@@ -40,20 +36,6 @@ export async function executeFinder(
 
 ) {
 
-    return await getFinder({
-
-        groups:
-
-            request.groups,
-
-        max_price:
-
-            request.max_price ?? null,
-
-        attributes:
-
-            request.attributes ?? [],
-
-    })
+    return await getFinder(request)
 
 }

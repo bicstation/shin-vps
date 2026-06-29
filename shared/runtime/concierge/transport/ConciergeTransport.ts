@@ -7,9 +7,8 @@ import {
   resolveIntent,
 } from "../../../lib/api/django/pc/intent";
 
-import {
-  fetchFinder,
-} from "../../../lib/api/django/pc/finder";
+
+import { getFinder }  from "../../../lib/api/django/pc/finder";
 
 export class ConciergeTransport {
   public async execute(
@@ -43,7 +42,7 @@ export class ConciergeTransport {
        * ========================================================== */
 
       const finderRuntime =
-        await fetchFinder({
+        await getFinder({
           usage: [
             intentRuntime.intent,
           ],

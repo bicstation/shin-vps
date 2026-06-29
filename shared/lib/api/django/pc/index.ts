@@ -178,7 +178,7 @@ import {
 
 import {
 
-  fetchFinder,
+  getFinder,
 
 } from './finder'
 
@@ -195,30 +195,28 @@ import {
 export const fetchPCProducts =
   fetchProducts
 
-
 /**
  * ============================================================================
  * Finder Runtime Continuity
  * ============================================================================
  *
- * IMPORTANT:
+ * Runtime Flow
  *
- * Finder now resolves through:
+ * Backend
+ *   ↓
+ * Gateway
+ *   ↓
+ * Normalize
+ *   ↓
+ * Projection
+ *   ↓
+ * Frontend
  *
- * finder runtime
- * →
- * projection layer
- * →
- * finder ui contract
- *
- * Backend remains:
- *
- * semantic authority
+ * Finder Runtime V2
  */
 
-
 export const fetchFinderResult =
-  fetchFinder
+  getFinder
 
 /**
  * ============================================================================
@@ -288,11 +286,18 @@ console.log({
   continuity:
     'healthy',
 
+  finder_runtime:
+    'v2',
+
+  finder_pipeline:
+    'gateway → normalize → projection',
+
   traversal_substrate:
     'stabilized',
 
-  runtime:
-    'pc-semantic-api-gateway',
+  // runtime:
+  //   'pc-semantic-api-gateway',
+
 })
 
 console.log(

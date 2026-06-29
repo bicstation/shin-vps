@@ -1,6 +1,6 @@
 // app/test/_runtime/finder.ts
 
-import { fetchFinder } from '@/shared/lib/api/django/pc/finder'
+import { getFinder } from '@/shared/lib/api/django/pc/finder'
 
 export async function executeFinder(
   usage: string,
@@ -29,7 +29,7 @@ export async function executeFinder(
     Date.now()
 
   const runtime =
-    await fetchFinder(request)
+    await getFinder(request)
 
   const executionTime =
     Date.now() - startedAt

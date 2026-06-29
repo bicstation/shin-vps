@@ -97,7 +97,7 @@ export default function ResultsSection({
 
             {
 
-                products.length === 0
+                (products ?? []).length === 0
 
                     ? (
 
@@ -123,7 +123,7 @@ export default function ResultsSection({
 
                             {
 
-                                products.map(
+                                (products ?? [] ).map(
 
                                     product => (
 

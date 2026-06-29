@@ -73,7 +73,7 @@ export default function RecommendationSection({
 
                 {
 
-                    reasons.length > 0 && (
+                    (reasons ?? []).length > 0 && (
 
                         <div
                             className={
@@ -83,7 +83,7 @@ export default function RecommendationSection({
 
                             {
 
-                                reasons.map(
+                                (reasons ?? []).map(
 
                                     (reason, index) => (
 

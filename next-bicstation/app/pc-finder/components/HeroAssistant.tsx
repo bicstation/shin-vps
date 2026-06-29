@@ -38,7 +38,7 @@ Hero Assistant
 
 export default function HeroAssistant({
 
-    src = '/images/finder/assistant.webp',
+    src = '/images/pc-finder/hero/assistant.webp',
 
     alt = 'Finder Assistant',
 
