@@ -98,9 +98,6 @@ const budgets = [
 
 ]
 
-const recommendation = runtime?.view?.header
-
-
 /* ============================================================================
 Page
 ============================================================================ */
@@ -113,6 +110,8 @@ export default function PCFinderPage() {
         useState<number | null>(null)
 
     const [runtime, setRuntime] = useState<any>(null)
+
+    const recommendation = runtime?.view?.header
 
     const [loading, setLoading] = useState(false)
 
@@ -226,34 +225,17 @@ export default function PCFinderPage() {
 
             />
 
+            {runtime && (
 
-            <RecommendationSection
+                <RecommendationSection
 
-                title={
-                    runtime?.view?.header?.title
-                    ??
-                    recommendation.title
-                }
+                    title={ runtime.view?.header?.title ?? 'おすすめ' }
+                    description={ runtime.view?.header?.description ?? '' }
+                    reasons={ runtime.view?.header?.reasons ?? [] }
 
-                description={
-                    runtime?.view?.header?.description
-                    ??
-                    recommendation.description
-                }
+                />
 
-                reasons={
-
-                    runtime?.view?.products?.length
-                        ?
-                        [
-                            `${runtime.view.products.length}件見つかりました`
-                        ]
-                        :
-                        recommendation.reasons
-                }
-
-
-            />
+            )}
 
             <ResultsSection
 

@@ -10,8 +10,8 @@
 Next
 ============================================================================ */
 
-import Image
-    from 'next/image'
+// import Image
+//     from 'next/image'
 
 import Link
     from 'next/link'
@@ -33,6 +33,8 @@ type Props = {
 
         product_id: number
 
+        unique_id: string
+
         name: string
 
         maker: string
@@ -44,6 +46,7 @@ type Props = {
         semantic_labels?: string[]
 
     }
+
 
 }
 
@@ -138,7 +141,7 @@ export default function ProductCard({
                 </div>
 
                 {
-
+                    
                     (product ?? []).semantic_labels?.length
                         ?
 
@@ -181,7 +184,7 @@ export default function ProductCard({
 
                 <Link
 
-                    href={`/product/${product.product_id}`}
+                    href={`/product/${product.unique_id}`}
 
                     className={
                         styles.detailButton
