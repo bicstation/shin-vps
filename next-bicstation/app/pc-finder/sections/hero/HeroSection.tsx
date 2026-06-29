@@ -8,21 +8,38 @@
 'use client'
 
 /* ============================================================================
-🔥 Components
+Components
 ============================================================================ */
 
 import HeroAssistant
     from '../../components/HeroAssistant'
 
 /* ============================================================================
-🔥 Styles
+Styles
 ============================================================================ */
 
 import styles
     from './HeroSection.module.css'
 
 /* ============================================================================
-🔥 Hero Section
+Journey
+
+Discovery Beginning
+
+The Hero introduces the Semantic Discovery Experience.
+
+Its responsibility is to welcome the user,
+build confidence,
+and naturally encourage the first discovery decision.
+
+This component does NOT:
+
+- Generate Semantic Meaning
+- Execute Runtime
+- Interpret Recommendations
+
+It only renders the beginning of the Discovery Journey.
+
 ============================================================================ */
 
 export default function HeroSection() {
@@ -36,7 +53,7 @@ export default function HeroSection() {
         >
 
             {/* ==========================================================
-            Left
+                Discovery Message
             ========================================================== */}
 
             <div
@@ -73,15 +90,21 @@ export default function HeroSection() {
                     }
                 >
 
-                    やりたいことやご予算を選ぶだけで、
-                    Semantic Reality があなたに合ったPCをご提案します。
+                    やりたいことを選ぶところから、
+                    あなたに合ったPC探しが始まります。
+
+                    <br />
+                    <br />
+
+                    Semantic Reality が、
+                    あなたに最適な一台をご提案します。
 
                 </p>
 
             </div>
 
             {/* ==========================================================
-            Right
+                Discovery Guide
             ========================================================== */}
 
             <HeroAssistant />

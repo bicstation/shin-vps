@@ -28,7 +28,22 @@ type Props = {
 }
 
 /* ============================================================================
-Search Button
+Discovery Trigger
+
+Represents the action that begins the Semantic Discovery journey.
+
+Responsibilities
+
+- Present the primary Discovery CTA
+- Reflect loading state
+- Prevent duplicate execution
+
+This component does NOT
+
+- Execute Runtime
+- Manage Search Logic
+- Generate Semantic Meaning
+
 ============================================================================ */
 
 export default function SearchButton({
@@ -46,6 +61,10 @@ export default function SearchButton({
         <button
 
             type="button"
+
+            aria-label="おすすめのPCを探す"
+
+            aria-busy={loading}
 
             onClick={onClick}
 
@@ -69,7 +88,7 @@ export default function SearchButton({
 
                 loading
 
-                    ? '検索中...'
+                    ? 'おすすめを探しています…'
 
                     : 'おすすめのPCを探す'
 

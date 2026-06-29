@@ -178,6 +178,8 @@ Intent Card
 
     transition: .25s;
 
+    position: relative;
+
 }
 
 .intentCard:hover {
@@ -225,6 +227,8 @@ Budget Button
     cursor: pointer;
 
     transition: .2s;
+
+    position: relative;
 
 }
 
@@ -951,5 +955,32 @@ Finder Empty
     box-shadow:
 
         0 16px 36px rgba(80, 140, 255, .22);
+
+}
+
+
+.selectedBadge {
+
+    position: absolute;
+
+    top: 12px;
+
+    right: 12px;
+
+    padding: 4px 10px;
+
+    border-radius: 999px;
+
+    background: rgba(34, 197, 94, .18);
+
+    border: 1px solid rgba(34, 197, 94, .35);
+
+    color: #7ef29a;
+
+    font-size: .75rem;
+
+    font-weight: 700;
+
+    letter-spacing: .04em;
 
 }

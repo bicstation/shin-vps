@@ -44,7 +44,24 @@ type Props = {
 }
 
 /* ============================================================================
-Intent Card
+Discovery Decision
+
+Represents a single user intention.
+
+This component is the smallest unit of the Discovery Experience.
+
+Responsibilities
+
+- Display one Intent
+- Provide clear selection feedback
+- Encourage the user's first discovery decision
+
+This component does NOT
+
+- Manage State
+- Execute Runtime
+- Generate Semantic Meaning
+
 ============================================================================ */
 
 export default function IntentCard({
@@ -57,31 +74,45 @@ export default function IntentCard({
 
 }: Props) {
 
+    const className = [
+
+        styles.intentCard,
+
+        selected && styles.selected,
+
+    ]
+
+        .filter(Boolean)
+
+        .join(' ')
+
     return (
 
         <button
 
             type="button"
 
+            aria-label={intent.title}
+
+            aria-pressed={selected}
+
             onClick={onClick}
 
-            className={
-
-                [
-
-                    styles.intentCard,
-
-                    selected
-
-                        ? styles.selected
-
-                        : '',
-
-                ].join(' ')
-
-            }
+            className={className}
 
         >
+
+            {selected && (
+
+                <div
+                    className={styles.selectedBadge}
+                >
+
+                    ✓ 選択済み
+
+                </div>
+
+            )}
 
             <div
                 className={

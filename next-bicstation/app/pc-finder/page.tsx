@@ -10,6 +10,12 @@ import { useState } from 'react'
 import { executeFinder } from './lib/finderActions'
 
 /* ============================================================================
+Components
+============================================================================ */
+
+import DiscoverySummary from './components/DiscoverySummary'
+
+/* ============================================================================
 Sections
 ============================================================================ */
 
@@ -28,7 +34,7 @@ Styles
 import styles from './styles/pcFinder.module.css'
 
 /* ============================================================================
-Temporary Intent Data
+Temporary Data
 ============================================================================ */
 
 const intents = [
@@ -62,7 +68,6 @@ const intents = [
     },
 
 ]
-
 
 const budgets = [
 
@@ -99,10 +104,55 @@ const budgets = [
 ]
 
 /* ============================================================================
-Page
+Experience Orchestrator
+
+The page does not generate Semantic Meaning.
+
+Its responsibility is to orchestrate the user's Discovery Journey.
+
+Journey
+
+Hero
+
+↓
+
+Intent Selection
+
+↓
+
+Discovery Summary
+
+↓
+
+Begin Discovery
+
+↓
+
+(Optional Budget Refinement)
+
+↓
+
+Recommendation Reason
+
+↓
+
+Results
+
+↓
+
+Continue Discovery
+
+↓
+
+Ranking
+
 ============================================================================ */
 
 export default function PCFinderPage() {
+
+    /* ============================================================================
+    Journey State
+    ============================================================================ */
 
     const [selectedIntent, setSelectedIntent] = useState('')
 
@@ -111,9 +161,11 @@ export default function PCFinderPage() {
 
     const [runtime, setRuntime] = useState<any>(null)
 
-    const recommendation = runtime?.view?.header
-
     const [loading, setLoading] = useState(false)
+
+    /* ============================================================================
+    Journey Action
+    ============================================================================ */
 
     const handleSearch = async () => {
 
@@ -131,12 +183,6 @@ export default function PCFinderPage() {
 
             })
 
-            console.log("Finder Runtime")
-
-            console.log(result)
-
-            console.log(JSON.stringify(result,null,2))
-
             setRuntime(result)
 
         }
@@ -153,21 +199,14 @@ export default function PCFinderPage() {
 
         <main className={styles.finder}>
 
+            {/* ====================================================================
+                Journey
+                Beginning
+            ==================================================================== */}
+
             <HeroSection />
 
             <IntentSection
-                intents={intents}
-                selected={selectedIntent}
-                onSelect={(id) => {
-
-                    console.log("Intent Click", id)
-
-                    setSelectedIntent(id)
-
-                }}
-            />
-
-            {/* <IntentSection
 
                 intents={intents}
 
@@ -175,7 +214,35 @@ export default function PCFinderPage() {
 
                 onSelect={setSelectedIntent}
 
-            /> */}
+            />
+
+            {/* ====================================================================
+                Journey
+                Context
+            ==================================================================== */}
+
+            <DiscoverySummary
+
+                intent={selectedIntent}
+
+                budget={selectedBudget}
+
+            />
+
+            {/* ====================================================================
+                Journey
+                Discovery
+            ==================================================================== */}
+
+            <SearchSection
+
+                loading={loading}
+
+                disabled={!selectedIntent}
+
+                onSearch={handleSearch}
+
+            />
 
             <BudgetSection
 
@@ -187,67 +254,47 @@ export default function PCFinderPage() {
 
             />
 
-            <div
-                style={{
-                    padding: '16px',
-                    margin: '24px 0',
-                    border: '1px solid #3b82f6',
-                    borderRadius: '12px',
-                    background: '#0f172a',
-                    color: '#fff',
-                }}
-            >
-
-                <div>
-
-                    Intent :
-                    {selectedIntent || '未選択'}
-
-                </div>
-
-                <div>
-
-                    Budget :
-                    {selectedBudget?.toLocaleString() ?? '未選択'}
-
-                </div>
-
-            </div>
-
-            <SearchSection
-
-                loading={loading}
-                disabled={
-                    !selectedIntent
-                }
-
-                onSearch={handleSearch}
-
-            />
+            {/* ====================================================================
+                Journey
+                Confidence
+            ==================================================================== */}
 
             {runtime && (
 
                 <RecommendationSection
 
-                    title={ runtime.view?.header?.title ?? 'おすすめ' }
-                    description={ runtime.view?.header?.description ?? '' }
-                    reasons={ runtime.view?.header?.reasons ?? [] }
+                    title={runtime.view?.header?.title ?? 'おすすめ'}
+
+                    description={runtime.view?.header?.description ?? ''}
+
+                    reasons={runtime.view?.header?.reasons ?? []}
 
                 />
 
             )}
 
-            <ResultsSection
+            {runtime && (
 
-                products={
-                   runtime?.runtime?.data?.products
-                    ??
-                    []
-                }
+                <ResultsSection
 
-            />
+                    products={
+                        runtime.runtime?.data?.products ?? []
+                    }
 
-            <RankingSection />
+                />
+
+            )}
+
+            {/* ====================================================================
+                Journey
+                Continue Discovery
+            ==================================================================== */}
+
+            {runtime && (
+
+                <RankingSection />
+
+            )}
 
         </main>
 

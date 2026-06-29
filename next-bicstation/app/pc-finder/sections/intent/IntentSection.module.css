@@ -11,7 +11,7 @@ FILE:
 
     margin: 0 auto;
 
-    padding: 80px 24px;
+    padding: 48px 24px 88px;
 
 }
 
@@ -19,7 +19,7 @@ FILE:
 
     text-align: center;
 
-    margin-bottom: 48px;
+    margin-bottom: 56px;
 
 }
 
@@ -27,9 +27,9 @@ FILE:
 
     display: inline-block;
 
-    margin-bottom: 14px;
+    margin-bottom: 16px;
 
-    padding: 6px 14px;
+    padding: 8px 16px;
 
     border-radius: 999px;
 
@@ -43,7 +43,7 @@ FILE:
 
     font-weight: 700;
 
-    letter-spacing: .18em;
+    letter-spacing: .16em;
 
     text-transform: uppercase;
 
@@ -59,7 +59,7 @@ FILE:
 
     font-weight: 800;
 
-    line-height: 1.2;
+    line-height: 1.15;
 
 }
 
@@ -67,13 +67,13 @@ FILE:
 
     max-width: 760px;
 
-    margin: 18px auto 0;
+    margin: 20px auto 0;
 
-    color: rgba(255, 255, 255, .72);
+    color: rgba(255, 255, 255, .78);
 
     font-size: 1.05rem;
 
-    line-height: 1.8;
+    line-height: 1.9;
 
 }
 
@@ -84,9 +84,11 @@ FILE:
     grid-template-columns: repeat(auto-fit,
             minmax(260px, 1fr));
 
-    gap: 28px;
+    gap: 32px;
 
     align-items: stretch;
+
+    position: relative;
 
 }
 
@@ -98,7 +100,7 @@ Tablet
 
     .section {
 
-        padding: 64px 20px;
+        padding: 56px 20px 72px;
 
     }
 
@@ -112,13 +114,13 @@ Mobile
 
     .section {
 
-        padding: 56px 18px;
+        padding: 48px 18px 64px;
 
     }
 
     .header {
 
-        margin-bottom: 36px;
+        margin-bottom: 40px;
 
     }
 
@@ -126,7 +128,7 @@ Mobile
 
         grid-template-columns: 1fr;
 
-        gap: 20px;
+        gap: 24px;
 
     }
 

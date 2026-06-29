@@ -46,7 +46,25 @@ type Props = {
 }
 
 /* ============================================================================
-Budget Section
+Journey
+
+Discovery Refinement
+
+Allows the user to optionally refine
+their discovery experience by budget.
+
+Responsibilities
+
+- Present optional budget refinements
+- Provide clear selection feedback
+- Forward the selected budget
+
+This section does NOT
+
+- Execute Runtime
+- Generate Semantic Meaning
+- Manage Recommendation Logic
+
 ============================================================================ */
 
 export default function BudgetSection({
@@ -63,66 +81,58 @@ export default function BudgetSection({
 
         <section className={styles.section}>
 
+            {/* ==========================================================
+                Section Header
+            ========================================================== */}
+
             <div className={styles.header}>
 
                 <span className={styles.eyebrow}>
 
-                    STEP 2
+                    OPTIONAL
 
                 </span>
 
                 <h2 className={styles.title}>
 
-                    ご予算を教えてください
+                    必要に応じて、ご予算でも絞り込めます
 
                 </h2>
 
                 <p className={styles.description}>
 
-                    ご予算に合わせて候補を絞り込みます。
-                    後からいつでも変更できます。
+                    ご予算を指定すると、
+                    おすすめ候補をさらに絞り込めます。
+
+                    <br />
+
+                    指定しなくても、そのままおすすめをご覧いただけます。
 
                 </p>
 
             </div>
 
+            {/* ==========================================================
+                Budget Options
+            ========================================================== */}
+
             <div className={styles.grid}>
 
-                {
+                {(budgets ?? []).map((budget) => (
 
-                    ( budgets ?? []).map(budget => (
+                    <BudgetButton
 
-                        <BudgetButton
+                        key={budget.label}
 
-                            key={
+                        budget={budget}
 
-                                budget.label
+                        selected={selected === budget.value}
 
-                            }
+                        onClick={() => onSelect(budget.value)}
 
-                            budget={budget}
+                    />
 
-                            selected={
-
-                                selected === budget.value
-
-                            }
-
-                            onClick={() =>
-
-                                onSelect(
-
-                                    budget.value
-
-                                )
-
-                            }
-
-                        />
-
-                    ))
-
-                }
+                ))}
 
             </div>
 

@@ -40,7 +40,22 @@ type Props = {
 }
 
 /* ============================================================================
-Budget Button
+Discovery Refinement Unit
+
+Represents one optional budget refinement.
+
+Responsibilities
+
+- Present one budget option
+- Provide clear selection feedback
+- Support optional refinement
+
+This component does NOT
+
+- Execute Runtime
+- Manage Search State
+- Generate Semantic Meaning
+
 ============================================================================ */
 
 export default function BudgetButton({
@@ -53,31 +68,45 @@ export default function BudgetButton({
 
 }: Props) {
 
+    const className = [
+
+        styles.budgetButton,
+
+        selected && styles.selected,
+
+    ]
+
+        .filter(Boolean)
+
+        .join(' ')
+
     return (
 
         <button
 
             type="button"
 
+            aria-label={`予算 ${budget.label}`}
+
+            aria-pressed={selected}
+
             onClick={onClick}
 
-            className={
-
-                [
-
-                    styles.budgetButton,
-
-                    selected
-
-                        ? styles.selected
-
-                        : '',
-
-                ].join(' ')
-
-            }
+            className={className}
 
         >
+
+            {selected && (
+
+                <div
+                    className={styles.selectedBadge}
+                >
+
+                    ✓ 選択済み
+
+                </div>
+
+            )}
 
             <span
                 className={
@@ -99,9 +128,7 @@ export default function BudgetButton({
                         }
                     >
 
-                        ¥
-
-                        {budget.value.toLocaleString()}
+                        ¥{budget.value.toLocaleString()}
 
                     </span>
 

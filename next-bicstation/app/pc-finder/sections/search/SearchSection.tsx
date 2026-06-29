@@ -34,7 +34,24 @@ type Props = {
 }
 
 /* ============================================================================
-Search Section
+Journey
+
+Discovery Trigger
+
+This section marks the beginning of Semantic Discovery.
+
+Responsibilities
+
+- Encourage the user to begin Discovery
+- Present the primary Discovery CTA
+- Forward the Discovery action
+
+This section does NOT
+
+- Execute Runtime
+- Generate Semantic Meaning
+- Manage Recommendation Logic
+
 ============================================================================ */
 
 export default function SearchSection({
@@ -53,6 +70,10 @@ export default function SearchSection({
 
             <div className={styles.card}>
 
+                {/* ==========================================================
+                    Section Header
+                ========================================================== */}
+
                 <span className={styles.step}>
 
                     STEP 3
@@ -68,9 +89,15 @@ export default function SearchSection({
                 <p className={styles.description}>
 
                     選択した条件をもとに、
-                    最適なPCを見つけます。
+
+                    Semantic Reality が
+                    あなたに最適なPC探しを始めます。
 
                 </p>
+
+                {/* ==========================================================
+                    Discovery Trigger
+                ========================================================== */}
 
                 <SearchButton
 

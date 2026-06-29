@@ -20,7 +20,7 @@ import styles
     from './IntentSection.module.css'
 
 /* ============================================================================
-Props
+Types
 ============================================================================ */
 
 type Intent = {
@@ -35,6 +35,10 @@ type Intent = {
 
 }
 
+/* ============================================================================
+Props
+============================================================================ */
+
 type Props = {
 
     intents: Intent[]
@@ -46,7 +50,24 @@ type Props = {
 }
 
 /* ============================================================================
-Intent Section
+Journey
+
+Discovery Intent
+
+This section presents the available discovery intentions.
+
+Responsibilities
+
+- Introduce the first discovery decision
+- Present available Intent cards
+- Forward the selected Intent
+
+This section does NOT
+
+- Generate Semantic Meaning
+- Execute Runtime
+- Manage Recommendation Logic
+
 ============================================================================ */
 
 export default function IntentSection({
@@ -62,6 +83,10 @@ export default function IntentSection({
     return (
 
         <section className={styles.section}>
+
+            {/* ==========================================================
+                Section Header
+            ========================================================== */}
 
             <div className={styles.header}>
 
@@ -80,41 +105,39 @@ export default function IntentSection({
                 <p className={styles.description}>
 
                     あなたの目的を選択すると、
-                    Semantic Reality が最適な候補を探し始めます。
+
+                    Semantic Reality が
+                    あなたに合ったPC探しを始めます。
 
                 </p>
 
             </div>
 
+            {/* ==========================================================
+                Discovery Decisions
+            ========================================================== */}
+
             <div className={styles.grid}>
 
-                {
+                {(intents ?? []).map((intent) => (
 
-                    (intents ?? []).map(intent => (
+                    <IntentCard
 
-                        <IntentCard
+                        key={intent.id}
 
-                            key={intent.id}
+                        intent={intent}
 
-                            intent={intent}
+                        selected={
+                            selected === intent.id
+                        }
 
-                            selected={
+                        onClick={() =>
+                            onSelect(intent.id)
+                        }
 
-                                selected === intent.id
+                    />
 
-                            }
-
-                            onClick={() =>
-
-                                onSelect(intent.id)
-
-                            }
-
-                        />
-
-                    ))
-
-                }
+                ))}
 
             </div>
 
