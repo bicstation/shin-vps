@@ -20,14 +20,14 @@ import styles
     from './ResultsSection.module.css'
 
 /* ============================================================================
-Types
+Contracts
 ============================================================================ */
 
 import type {
 
-    FinderProduct,
+    FinderProductContract,
 
-} from '../../types/finder'
+} from '@/shared/lib/api/django/pc/finder/contracts'
 
 /* ============================================================================
 Props
@@ -35,12 +35,31 @@ Props
 
 type Props = {
 
-    products: FinderProduct[]
+    products: FinderProductContract[]
 
 }
 
 /* ============================================================================
-Results Section
+Journey
+
+Discovery Evidence
+
+Presents the Runtime products that support
+the recommendation experience.
+
+Responsibilities
+
+- Present Runtime products
+- Display Discovery Evidence
+- Support product evaluation
+
+This section does NOT
+
+- Execute Runtime
+- Generate Semantic Meaning
+- Generate Recommendation Logic
+- Rank Products
+
 ============================================================================ */
 
 export default function ResultsSection({
@@ -49,34 +68,34 @@ export default function ResultsSection({
 
 }: Props) {
 
+    const items = products ?? []
+
+    const hasProducts = items.length > 0
+
     return (
 
         <section
-            className={
-                styles.section
-            }
+            className={styles.section}
         >
 
+            {/* ==========================================================
+                Section Header
+            ========================================================== */}
+
             <div
-                className={
-                    styles.header
-                }
+                className={styles.header}
             >
 
                 <span
-                    className={
-                        styles.badge
-                    }
+                    className={styles.badge}
                 >
 
-                    RESULTS
+                    DISCOVERY EVIDENCE
 
                 </span>
 
                 <h2
-                    className={
-                        styles.title
-                    }
+                    className={styles.title}
                 >
 
                     おすすめの製品
@@ -84,76 +103,50 @@ export default function ResultsSection({
                 </h2>
 
                 <p
-                    className={
-                        styles.description
-                    }
+                    className={styles.description}
                 >
 
-                    Semantic Reality が選択条件に最も一致すると判断した製品です。
+                    Semantic Reality が選択条件に最も一致すると判断した製品をご紹介します。
 
                 </p>
 
             </div>
 
-            {
+            {/* ==========================================================
+                Product Results
+            ========================================================== */}
 
-                (products ?? []).length === 0
+            {hasProducts ? (
 
-                    ? (
+                <div
+                    className={styles.grid}
+                >
 
-                        <div
-                            className={
-                                styles.empty
-                            }
-                        >
+                    {items.map(product => (
 
-                            条件に一致する製品は見つかりませんでした。
+                        <ProductCard
 
-                        </div>
+                            key={product.unique_id}
 
-                    )
+                            product={product}
 
-                    : (
+                        />
 
-                        <div
-                            className={
-                                styles.grid
-                            }
-                        >
+                    ))}
 
-                            {
+                </div>
 
-                                (products ?? [] ).map(
+            ) : (
 
-                                    product => (
+                <div
+                    className={styles.empty}
+                >
 
-                                        <ProductCard
+                    条件に一致する製品は見つかりませんでした。
 
-                                            key={
+                </div>
 
-                                                product.unique_id
-
-                                            }
-
-                                            product={
-
-                                                product
-
-                                            }
-
-                                        />
-
-                                    )
-
-                                )
-
-                            }
-
-                        </div>
-
-                    )
-
-            }
+            )}
 
         </section>
 

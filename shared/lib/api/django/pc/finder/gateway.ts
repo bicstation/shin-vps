@@ -86,29 +86,33 @@ export async function fetchFinderRuntime(
     ------------------------------------------------------------------------ */
 
     console.log(
-
         '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
-
     )
 
     console.log(
-
         '🔥 FETCH FINDER RUNTIME'
-
     )
 
-    console.log({
+    console.log(
+        'ENDPOINT'
+    )
 
-        endpoint,
-
-        request,
-
-    })
+    console.log(endpoint)
 
     console.log(
+        'REQUEST'
+    )
 
+    console.log(
+        JSON.stringify(
+            request,
+            null,
+            2
+        )
+    )
+
+    console.log(
         '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
-
     )
 
     /* ------------------------------------------------------------------------

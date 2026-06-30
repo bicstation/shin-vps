@@ -25,16 +25,26 @@ Props
 
 type Props = {
 
-    title: string
+    title?: string
 
-    description: string
+    description?: string
 
-    reasons: string[]
+    reasons?: string[]
 
 }
 
 /* ============================================================================
-Recommendation Section
+Discovery Result
+
+Presents the Runtime recommendation before
+the user evaluates individual products.
+
+Responsibilities
+
+- Present Runtime summary
+- Build user confidence
+- Support product evaluation
+
 ============================================================================ */
 
 export default function RecommendationSection({
@@ -43,7 +53,7 @@ export default function RecommendationSection({
 
     description,
 
-    reasons,
+    reasons = [],
 
 }: Props) {
 
@@ -61,59 +71,41 @@ export default function RecommendationSection({
 
                 <h2 className={styles.title}>
 
-                    {title}
+                    {title ?? 'あなたへのおすすめ'}
 
                 </h2>
 
                 <p className={styles.description}>
 
-                    {description}
+                    {
+
+                        description ??
+
+                        '条件に合うおすすめをご紹介します。'
+
+                    }
 
                 </p>
 
-                {
+                {reasons.length > 0 && (
 
-                    (reasons ?? []).length > 0 && (
+                    <div className={styles.reasonList}>
 
-                        <div
-                            className={
-                                styles.reasonList
-                            }
-                        >
+                        {reasons.map((reason) => (
 
-                            {
+                            <RecommendationReason
 
-                                (reasons ?? []).map(
+                                key={reason}
 
-                                    (reason, index) => (
+                                text={reason}
 
-                                        <RecommendationReason
+                            />
 
-                                            key={
+                        ))}
 
-                                                `${index}-${reason}`
+                    </div>
 
-                                            }
-
-                                            text={
-
-                                                reason
-
-                                            }
-
-                                        />
-
-                                    )
-
-                                )
-
-                            }
-
-                        </div>
-
-                    )
-
-                }
+                )}
 
             </div>
 

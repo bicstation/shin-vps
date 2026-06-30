@@ -7,6 +7,27 @@
 'use client'
 
 /* ============================================================================
+Discovery Confidence Unit
+
+Represents one piece of Runtime Reality that helps
+the user understand the recommendation.
+
+Responsibilities
+
+- Present one Runtime Reality
+- Improve user confidence
+- Support the Recommendation Experience
+
+This component does NOT
+
+- Interpret Semantic Meaning
+- Generate Runtime
+- Generate Recommendation Logic
+- Select Products
+
+============================================================================ */
+
+/* ============================================================================
 Styles
 ============================================================================ */
 
@@ -24,7 +45,7 @@ type Props = {
 }
 
 /* ============================================================================
-Recommendation Reason
+Recommendation Reality
 ============================================================================ */
 
 export default function RecommendationReason({
@@ -36,15 +57,12 @@ export default function RecommendationReason({
     return (
 
         <div
-            className={
-                styles.reasonCard
-            }
+            className={styles.reasonCard}
         >
 
             <div
-                className={
-                    styles.reasonIcon
-                }
+                className={styles.reasonIcon}
+                aria-hidden="true"
             >
 
                 ✓
@@ -52,9 +70,7 @@ export default function RecommendationReason({
             </div>
 
             <span
-                className={
-                    styles.reasonText
-                }
+                className={styles.reasonText}
             >
 
                 {text}

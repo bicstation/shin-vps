@@ -1,171 +1,152 @@
-// ============================================================================
-// FILE:
-// /app/pc-finder/page.tsx
-// ============================================================================
-
+/* ============================================================================
+React
+============================================================================ */
 'use client'
 
-import { useState } from 'react'
 
-import { executeFinder } from './lib/finderActions'
+import {
+
+    useState,
+
+} from 'react'
 
 /* ============================================================================
-Components
+Runtime
 ============================================================================ */
 
-import DiscoverySummary from './components/DiscoverySummary'
+import {
+
+    executeFinder,
+
+} from './lib/finderActions'
+
+/* ============================================================================
+Contracts
+============================================================================ */
+
+import type {
+
+    FinderRuntimeContract,
+
+} from '@/shared/lib/api/django/pc/finder/contracts'
+
+/* ============================================================================
+Data
+============================================================================ */
+
+import {
+
+    intents,
+
+} from './data/intents'
+
+import {
+
+    budgets,
+
+} from './data/budgets'
 
 /* ============================================================================
 Sections
 ============================================================================ */
 
-import HeroSection from './sections/hero/HeroSection'
-import IntentSection from './sections/intent/IntentSection'
-import BudgetSection from './sections/budget/BudgetSection'
-import SearchSection from './sections/search/SearchSection'
-import RecommendationSection from './sections/recommendation/RecommendationSection'
-import ResultsSection from './sections/results/ResultsSection'
-import RankingSection from './sections/ranking/RankingSection'
+import HeroSection
+    from './sections/hero/HeroSection'
+
+import IntentSection
+    from './sections/intent/IntentSection'
+
+import BudgetSection
+    from './sections/budget/BudgetSection'
+
+import DiscoverySummarySection
+    from './sections/summary/DiscoverySummarySection'
+
+import SearchSection
+    from './sections/search/SearchSection'
+
+import RecommendationSection
+    from './sections/recommendation/RecommendationSection'
+
+import ResultsSection
+    from './sections/results/ResultsSection'
+
+import RankingSection
+    from './sections/ranking/RankingSection'
 
 /* ============================================================================
 Styles
 ============================================================================ */
 
-import styles from './styles/pcFinder.module.css'
-
-/* ============================================================================
-Temporary Data
-============================================================================ */
-
-const intents = [
-
-    {
-        id: 'usage-ai',
-        title: 'AI',
-        description: '画像生成・ChatGPT',
-        icon: '🧠',
-    },
-
-    {
-        id: 'usage-gaming',
-        title: 'ゲーム',
-        description: 'Steam・FPS',
-        icon: '🎮',
-    },
-
-    {
-        id: 'usage-creator',
-        title: 'クリエイター',
-        description: '動画編集・Photoshop',
-        icon: '🎨',
-    },
-
-    {
-        id: 'usage-business',
-        title: 'ビジネス',
-        description: 'Office・開発',
-        icon: '💼',
-    },
-
-]
-
-const budgets = [
-
-    {
-        label: '10万円以下',
-        value: 100000,
-    },
-
-    {
-        label: '15万円以下',
-        value: 150000,
-    },
-
-    {
-        label: '20万円以下',
-        value: 200000,
-    },
-
-    {
-        label: '30万円以下',
-        value: 300000,
-    },
-
-    {
-        label: '40万円以下',
-        value: 400000,
-    },
-
-    {
-        label: '予算指定なし',
-        value: null,
-    },
-
-]
+import styles
+    from './styles/pcFinder.module.css'
 
 /* ============================================================================
 Experience Orchestrator
 
-The page does not generate Semantic Meaning.
+Responsibilities
 
-Its responsibility is to orchestrate the user's Discovery Journey.
+- Manage Discovery Journey
+- Execute Finder Runtime
+- Render Experience
 
-Journey
+This page does NOT
 
-Hero
-
-↓
-
-Intent Selection
-
-↓
-
-Discovery Summary
-
-↓
-
-Begin Discovery
-
-↓
-
-(Optional Budget Refinement)
-
-↓
-
-Recommendation Reason
-
-↓
-
-Results
-
-↓
-
-Continue Discovery
-
-↓
-
-Ranking
+- Generate Semantic Meaning
+- Modify Runtime
+- Generate Recommendation Logic
 
 ============================================================================ */
 
 export default function PCFinderPage() {
 
-    /* ============================================================================
+    /* ========================================================================
     Journey State
-    ============================================================================ */
+    ======================================================================== */
 
-    const [selectedIntent, setSelectedIntent] = useState('')
+    const [
 
-    const [selectedBudget, setSelectedBudget] =
-        useState<number | null>(null)
+        selectedIntent,
 
-    const [runtime, setRuntime] = useState<any>(null)
+        setSelectedIntent,
 
-    const [loading, setLoading] = useState(false)
+    ] = useState('')
 
-    /* ============================================================================
-    Journey Action
-    ============================================================================ */
+    const [
+
+        selectedBudget,
+
+        setSelectedBudget,
+
+    ] = useState<number | null>(null)
+
+    const [
+
+        finder,
+
+        setFinder,
+
+    ] = useState<{
+
+        raw: any
+
+        runtime: FinderRuntimeContract
+
+        view: any
+
+    } | null>(null)
+
+    const [
+
+        loading,
+
+        setLoading,
+
+    ] = useState(false)
+
+    /* ========================================================================
+    Discovery Action
+    ======================================================================== */
 
     const handleSearch = async () => {
 
@@ -175,15 +156,33 @@ export default function PCFinderPage() {
 
             const result = await executeFinder({
 
-                groups: selectedIntent
-                    ? [selectedIntent]
-                    : [],
+                groups:
 
-                max_price: selectedBudget,
+                    selectedIntent
+                        ? [selectedIntent]
+                        : [],
+
+                max_price:
+
+                    selectedBudget,
 
             })
 
-            setRuntime(result)
+            setFinder(result)
+
+        }
+
+        catch (error) {
+
+            console.error(
+
+                'Finder Runtime Error',
+
+                error,
+
+            )
+
+            setFinder(null)
 
         }
 
@@ -195,16 +194,50 @@ export default function PCFinderPage() {
 
     }
 
+    /* ========================================================================
+    Experience Projection
+    ======================================================================== */
+
+    const recommendationReasons =
+
+        finder
+
+            ? Array.from(
+
+                new Set(
+
+                    finder.runtime.data.products.flatMap(
+
+                        product =>
+
+                            product.semantic_labels ?? []
+
+                    )
+
+                )
+
+            ).slice(0, 4)
+
+            : []
+    
+        /* ========================================================================
+    Journey
+    ======================================================================== */
+
     return (
 
-        <main className={styles.finder}>
+        <main className={styles.page}>
 
             {/* ====================================================================
-                Journey
-                Beginning
+                Hero
             ==================================================================== */}
 
             <HeroSection />
+
+            {/* ====================================================================
+                STEP 1
+                Intent Selection
+            ==================================================================== */}
 
             <IntentSection
 
@@ -217,32 +250,9 @@ export default function PCFinderPage() {
             />
 
             {/* ====================================================================
-                Journey
-                Context
+                STEP 2
+                Budget Selection
             ==================================================================== */}
-
-            <DiscoverySummary
-
-                intent={selectedIntent}
-
-                budget={selectedBudget}
-
-            />
-
-            {/* ====================================================================
-                Journey
-                Discovery
-            ==================================================================== */}
-
-            <SearchSection
-
-                loading={loading}
-
-                disabled={!selectedIntent}
-
-                onSearch={handleSearch}
-
-            />
 
             <BudgetSection
 
@@ -255,30 +265,51 @@ export default function PCFinderPage() {
             />
 
             {/* ====================================================================
-                Journey
-                Confidence
+                STEP 3
+                Discovery Summary
             ==================================================================== */}
 
-            {runtime && (
+            <DiscoverySummarySection
+
+                intent={selectedIntent}
+
+                budget={selectedBudget}
+
+            />
+
+            {/* ====================================================================
+                STEP 4
+                Begin Discovery
+            ==================================================================== */}
+
+            <SearchSection
+
+                loading={loading}
+
+                disabled={!selectedIntent}
+
+                onSearch={handleSearch}
+
+            />
+
+            {/* ====================================================================
+                Discovery Result
+            ==================================================================== */}
+
+            {finder && (
 
                 <RecommendationSection
 
-                    title={runtime.view?.header?.title ?? 'おすすめ'}
+                    title={
+                        finder.view.header.title
+                    }
 
-                    description={runtime.view?.header?.description ?? ''}
+                    description={
+                        finder.view.header.description
+                    }
 
-                    reasons={runtime.view?.header?.reasons ?? []}
-
-                />
-
-            )}
-
-            {runtime && (
-
-                <ResultsSection
-
-                    products={
-                        runtime.runtime?.data?.products ?? []
+                    reasons={
+                        recommendationReasons
                     }
 
                 />
@@ -286,11 +317,26 @@ export default function PCFinderPage() {
             )}
 
             {/* ====================================================================
-                Journey
+                Discovery Evidence
+            ==================================================================== */}
+
+            {finder && (
+
+                <ResultsSection
+
+                    products={
+                        finder.runtime.data.products
+                    }
+
+                />
+
+            )}
+
+            {/* ====================================================================
                 Continue Discovery
             ==================================================================== */}
 
-            {runtime && (
+            {finder && (
 
                 <RankingSection />
 

@@ -10,9 +10,6 @@
 Next
 ============================================================================ */
 
-// import Image
-//     from 'next/image'
-
 import Link
     from 'next/link'
 
@@ -24,34 +21,42 @@ import styles
     from '../styles/pcFinder.module.css'
 
 /* ============================================================================
-Types
+Contracts
+============================================================================ */
+
+import type {
+
+    FinderProductContract,
+
+} from '@/shared/lib/api/django/pc/finder/contracts'
+
+/* ============================================================================
+Props
 ============================================================================ */
 
 type Props = {
 
-    product: {
-
-        product_id: number
-
-        unique_id: string
-
-        name: string
-
-        maker: string
-
-        image_url: string
-
-        price: number
-
-        semantic_labels?: string[]
-
-    }
-
+    product: FinderProductContract
 
 }
 
 /* ============================================================================
-Product Card
+Discovery Evidence Unit
+
+Represents one Runtime product.
+
+Responsibilities
+
+- Present one Runtime product
+- Present Runtime Reality
+- Support product comparison
+
+This component does NOT
+
+- Execute Runtime
+- Generate Semantic Meaning
+- Rank Products
+
 ============================================================================ */
 
 export default function ProductCard({
@@ -63,57 +68,41 @@ export default function ProductCard({
     return (
 
         <article
-            className={
-                styles.productCard
-            }
+            className={styles.productCard}
         >
 
             {/* ==========================================================
-            Image
+                Product Image
             ========================================================== */}
 
             <div
-                className={
-                    styles.productImage
-                }
+                className={styles.productImage}
             >
 
                 <img
 
-                    src={
-                        product.image_url
-                    }
+                    src={product.image_url}
 
-                    alt={
-                        product.name
-                    }
-
-                    // fill
+                    alt={product.name}
 
                     sizes="400px"
 
-                    className={
-                        styles.image
-                    }
+                    className={styles.image}
 
                 />
 
             </div>
 
             {/* ==========================================================
-            Content
+                Product Information
             ========================================================== */}
 
             <div
-                className={
-                    styles.productContent
-                }
+                className={styles.productContent}
             >
 
                 <div
-                    className={
-                        styles.productMaker
-                    }
+                    className={styles.productMaker}
                 >
 
                     {product.maker.toUpperCase()}
@@ -121,9 +110,7 @@ export default function ProductCard({
                 </div>
 
                 <h3
-                    className={
-                        styles.productTitle
-                    }
+                    className={styles.productTitle}
                 >
 
                     {product.name}
@@ -131,64 +118,52 @@ export default function ProductCard({
                 </h3>
 
                 <div
-                    className={
-                        styles.productPrice
-                    }
+                    className={styles.productPrice}
                 >
 
                     ¥{product.price.toLocaleString()}
 
                 </div>
 
-                {
-                    
-                    (product ?? []).semantic_labels?.length
-                        ?
+                {/* ==========================================================
+                    Runtime Reality
+                ========================================================== */}
 
-                        <div
-                            className={
-                                styles.labelArea
-                            }
-                        >
+                {product.semantic_labels?.length ? (
 
-                            {
+                    <div
+                        className={styles.labelArea}
+                    >
 
-                                (product.semantic_labels ?? []).map(
+                        {product.semantic_labels.map(label => (
 
-                                    label => (
+                            <span
 
-                                        <span
-                                            key={label}
-                                            className={
-                                                styles.label
-                                            }
-                                        >
+                                key={label}
 
-                                            {label}
+                                className={styles.label}
 
-                                        </span>
+                            >
 
-                                    )
+                                {label}
 
-                                )
+                            </span>
 
-                            }
+                        ))}
 
-                        </div>
+                    </div>
 
-                        :
+                ) : null}
 
-                        null
-
-                }
+                {/* ==========================================================
+                    Product Detail
+                ========================================================== */}
 
                 <Link
 
                     href={`/product/${product.unique_id}`}
 
-                    className={
-                        styles.detailButton
-                    }
+                    className={styles.detailButton}
 
                 >
 
