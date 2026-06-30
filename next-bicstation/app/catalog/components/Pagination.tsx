@@ -1,14 +1,12 @@
 // ============================================================================
 // FILE:
 // /app/catalog/components/Pagination.tsx
-// Copyright (c) 2024 Shin Corporation.
-// All rights reserved.
 // ============================================================================
 
 'use client'
 
 /* ============================================================================
-🔥 Next
+Next
 ============================================================================ */
 
 import {
@@ -20,14 +18,14 @@ import {
 } from 'next/navigation'
 
 /* ============================================================================
-🔥 Styles
+Styles
 ============================================================================ */
 
 import styles
     from '../styles/catalog.module.css'
 
 /* ============================================================================
-🔥 Props
+Props
 ============================================================================ */
 
 type Props = {
@@ -41,7 +39,25 @@ type Props = {
 }
 
 /* ============================================================================
-🔥 Pagination
+Experience
+
+Pagination Navigation
+
+Supports product browsing by navigating
+between Runtime pages.
+
+Responsibilities
+
+- Navigate between pages
+- Preserve search parameters
+- Present current page information
+
+This component does NOT
+
+- Generate Runtime
+- Generate Semantic Meaning
+- Interpret Semantic Reality
+
 ============================================================================ */
 
 export default function Pagination({
@@ -54,19 +70,9 @@ export default function Pagination({
 
 }: Props) {
 
-    /* ==========================================================================
-    🔥 Router
-    ========================================================================== */
+    const router = useRouter()
 
-    const router =
-        useRouter()
-
-    const searchParams =
-        useSearchParams()
-
-    /* ==========================================================================
-    🔥 Navigate
-    ========================================================================== */
+    const searchParams = useSearchParams()
 
     function moveTo(
 
@@ -74,13 +80,11 @@ export default function Pagination({
 
     ) {
 
-        const params =
+        const params = new URLSearchParams(
 
-            new URLSearchParams(
+            searchParams.toString()
 
-                searchParams.toString()
-
-            )
+        )
 
         params.set(
 
@@ -98,41 +102,17 @@ export default function Pagination({
 
     }
 
-    /* ==========================================================================
-    🔥 Render
-    ========================================================================== */
-
     return (
 
-        <nav
-            className={
-                styles.pagination
-            }
-        >
-
-            {/* ==========================================================
-      Previous
-      ========================================================== */}
+        <nav className={styles.pagination}>
 
             <button
 
-                className={
-                    styles.paginationButton
-                }
+                className={styles.paginationButton}
 
-                disabled={
-                    page <= 1
-                }
+                disabled={page <= 1}
 
-                onClick={() =>
-
-                    moveTo(
-
-                        page - 1
-
-                    )
-
-                }
+                onClick={() => moveTo(page - 1)}
 
             >
 
@@ -140,25 +120,13 @@ export default function Pagination({
 
             </button>
 
-            {/* ==========================================================
-      Current
-      ========================================================== */}
-
-            <div
-                className={
-                    styles.paginationInfo
-                }
-            >
+            <div className={styles.paginationInfo}>
 
                 Page {page}
 
                 <span>
 
-                    {' '}
-
-                    ·
-
-                    {' '}
+                    {' '}·{' '}
 
                     {page_size}件表示
 
@@ -166,29 +134,13 @@ export default function Pagination({
 
             </div>
 
-            {/* ==========================================================
-      Next
-      ========================================================== */}
-
             <button
 
-                className={
-                    styles.paginationButton
-                }
+                className={styles.paginationButton}
 
-                disabled={
-                    !has_next
-                }
+                disabled={!has_next}
 
-                onClick={() =>
-
-                    moveTo(
-
-                        page + 1
-
-                    )
-
-                }
+                onClick={() => moveTo(page + 1)}
 
             >
 

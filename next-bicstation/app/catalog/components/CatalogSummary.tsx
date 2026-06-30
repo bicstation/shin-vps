@@ -1,21 +1,19 @@
 // ============================================================================
 // FILE:
 // /app/catalog/components/CatalogSummary.tsx
-// Copyright (c) 2024 Shin Corporation.
-// All rights reserved.
 // ============================================================================
 
 'use client'
 
 /* ============================================================================
-🔥 Styles
+Styles
 ============================================================================ */
 
 import styles
     from '../styles/catalog.module.css'
 
 /* ============================================================================
-🔥 Props
+Props
 ============================================================================ */
 
 type Props = {
@@ -29,7 +27,25 @@ type Props = {
 }
 
 /* ============================================================================
-🔥 Catalog Summary
+Experience
+
+Catalog Metrics
+
+Communicates the current Runtime metrics
+to support the browsing experience.
+
+Responsibilities
+
+- Present product count
+- Present current page
+- Present page size
+
+This component does NOT
+
+- Generate Runtime
+- Generate Semantic Meaning
+- Interpret Semantic Reality
+
 ============================================================================ */
 
 export default function CatalogSummary({
@@ -45,21 +61,15 @@ export default function CatalogSummary({
     return (
 
         <section
-            className={
-                styles.catalogSummary
-            }
+            className={styles.catalogSummary}
         >
 
             <div
-                className={
-                    styles.summaryItem
-                }
+                className={styles.summaryItem}
             >
 
                 <span
-                    className={
-                        styles.summaryLabel
-                    }
+                    className={styles.summaryLabel}
                 >
 
                     総商品数
@@ -67,9 +77,7 @@ export default function CatalogSummary({
                 </span>
 
                 <strong
-                    className={
-                        styles.summaryValue
-                    }
+                    className={styles.summaryValue}
                 >
 
                     {count.toLocaleString()}
@@ -79,15 +87,11 @@ export default function CatalogSummary({
             </div>
 
             <div
-                className={
-                    styles.summaryItem
-                }
+                className={styles.summaryItem}
             >
 
                 <span
-                    className={
-                        styles.summaryLabel
-                    }
+                    className={styles.summaryLabel}
                 >
 
                     現在のページ
@@ -95,9 +99,7 @@ export default function CatalogSummary({
                 </span>
 
                 <strong
-                    className={
-                        styles.summaryValue
-                    }
+                    className={styles.summaryValue}
                 >
 
                     {page}
@@ -107,15 +109,11 @@ export default function CatalogSummary({
             </div>
 
             <div
-                className={
-                    styles.summaryItem
-                }
+                className={styles.summaryItem}
             >
 
                 <span
-                    className={
-                        styles.summaryLabel
-                    }
+                    className={styles.summaryLabel}
                 >
 
                     表示件数
@@ -123,9 +121,7 @@ export default function CatalogSummary({
                 </span>
 
                 <strong
-                    className={
-                        styles.summaryValue
-                    }
+                    className={styles.summaryValue}
                 >
 
                     {page_size}

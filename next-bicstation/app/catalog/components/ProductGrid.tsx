@@ -1,24 +1,22 @@
 // ============================================================================
 // FILE:
 // /app/catalog/components/ProductGrid.tsx
-// Copyright (c) 2024 Shin Corporation.
-// All rights reserved.
 // ============================================================================
 
 'use client'
 
 /* ============================================================================
-🔥 Types
+Contracts
 ============================================================================ */
 
 import type {
 
-    CatalogProduct,
+    PCProductItem,
 
-} from '../types/catalog'
+} from '@/shared/lib/api/django/pc/products/contracts'
 
 /* ============================================================================
-🔥 Components
+Components
 ============================================================================ */
 
 import ProductCard
@@ -28,25 +26,39 @@ import EmptyProducts
     from './EmptyProducts'
 
 /* ============================================================================
-🔥 Styles
+Styles
 ============================================================================ */
 
 import styles
     from '../styles/catalog.module.css'
 
 /* ============================================================================
-🔥 Props
+Props
 ============================================================================ */
 
 type Props = {
 
-    products:
-    CatalogProduct[]
+    products: PCProductItem[]
 
 }
 
 /* ============================================================================
-🔥 Product Grid
+Experience
+
+Products Presentation
+
+Responsibilities
+
+- Present Runtime products
+- Render Product Cards
+- Present Empty State
+
+This component does NOT
+
+- Generate Runtime
+- Generate Semantic Meaning
+- Interpret Semantic Reality
+
 ============================================================================ */
 
 export default function ProductGrid({
@@ -55,112 +67,29 @@ export default function ProductGrid({
 
 }: Props) {
 
-    /* ==========================================================================
-    🔥 Runtime Verification
-    ========================================================================== */
+    if (!products || products.length === 0) {
 
-    console.log(
-        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
-    )
-
-    console.log(
-        '🔥 PRODUCT GRID'
-    )
-
-    console.log({
-
-        products:
-            products?.length,
-
-        first_product:
-
-            products?.[0]?.unique_id,
-
-        last_product:
-
-            products?.[
-                products.length - 1
-            ]?.unique_id,
-
-    })
-
-    console.log(
-        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
-    )
-
-    /* ==========================================================================
-    🔥 Empty
-    ========================================================================== */
-
-    if (
-
-        !products ||
-
-        products.length === 0
-
-    ) {
-
-        return (
-
-            <EmptyProducts />
-
-        )
+        return <EmptyProducts />
 
     }
 
-    /* ==========================================================================
-    🔥 Render
-    ========================================================================== */
-
-    console.log(
-
-        '🔥 PRODUCT GRID MAP',
-
-        products.length
-
-    )
-
     return (
 
-        <section
-            className={
-                styles.productSection
-            }
-        >
+        <section className={styles.productSection}>
 
-            <div
-                className={
-                    styles.productGrid
-                }
-            >
+            <div className={styles.productGrid}>
 
-                {
+                {products.map((product) => (
 
-                    products.map(
+                    <ProductCard
 
-                        (
+                        key={product.unique_id}
 
-                            product
+                        product={product}
 
-                        ) => (
+                    />
 
-                            <ProductCard
-
-                                key={
-                                    product.unique_id
-                                }
-
-                                product={
-                                    product
-                                }
-
-                            />
-
-                        )
-
-                    )
-
-                }
+                ))}
 
             </div>
 

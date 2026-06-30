@@ -1,42 +1,57 @@
 // ============================================================================
 // FILE:
 // /app/catalog/components/CatalogHero.tsx
-// Copyright (c) 2024 Shin Corporation.
-// All rights reserved.
 // ============================================================================
 
 'use client'
 
 /* ============================================================================
-🔥 Types
+Contracts
 ============================================================================ */
 
 import type {
 
-  CatalogRuntime,
+  ProductsRuntime,
 
-} from '../types/catalog'
+} from '@/shared/lib/api/django/pc/products/contracts'
 
 /* ============================================================================
-🔥 Styles
+Styles
 ============================================================================ */
 
 import styles
   from '../styles/catalog.module.css'
 
 /* ============================================================================
-🔥 Props
+Props
 ============================================================================ */
 
 type Props = {
 
-  runtime:
-    CatalogRuntime
+  runtime: ProductsRuntime
 
 }
 
 /* ============================================================================
-🔥 Catalog Hero
+Experience
+
+Catalog Introduction
+
+Communicates the current Runtime Reality
+before the user begins browsing products.
+
+Responsibilities
+
+- Present Catalog identity
+- Present Runtime summary
+- Build discovery confidence
+
+This component does NOT
+
+- Generate Runtime
+- Generate Semantic Meaning
+- Interpret Semantic Reality
+
 ============================================================================ */
 
 export default function CatalogHero({
@@ -47,58 +62,27 @@ export default function CatalogHero({
 
   return (
 
-    <section
-      className={
-        styles.catalogHero
-      }
-    >
+    <section className={styles.catalogHero}>
 
-      {/* ==========================================================
-      LEFT
-      ========================================================== */}
+      <div className={styles.catalogHeroContent}>
 
-      <div
-        className={
-          styles.catalogHeroContent
-        }
-      >
-
-        {/* ======================================================
-        LABEL
-        ====================================================== */}
-
-        <div
-          className={
-            styles.catalogHeroLabel
-          }
-        >
+        <div className={styles.catalogHeroLabel}>
 
           PRODUCT CATALOG
 
         </div>
 
-        {/* ======================================================
-        TITLE
-        ====================================================== */}
-
-        <h1
-          className={
-            styles.catalogHeroTitle
-          }
-        >
+        <h1 className={styles.catalogHeroTitle}>
 
           {
 
             runtime.presentation?.title
-
             ||
 
             runtime.seo?.title
-
             ||
 
             runtime.meaning?.identity
-
             ||
 
             'PC商品一覧'
@@ -107,54 +91,27 @@ export default function CatalogHero({
 
         </h1>
 
-        {/* ======================================================
-        SUBTITLE
-        ====================================================== */}
+        {runtime.presentation?.subtitle && (
 
-        {
+          <h2 className={styles.catalogHeroSubtitle}>
 
-          runtime.presentation?.subtitle && (
+            {runtime.presentation.subtitle}
 
-            <h2
-              className={
-                styles.catalogHeroSubtitle
-              }
-            >
+          </h2>
 
-              {
+        )}
 
-                runtime.presentation.subtitle
-
-              }
-
-            </h2>
-
-          )
-
-        }
-
-        {/* ======================================================
-        DESCRIPTION
-        ====================================================== */}
-
-        <p
-          className={
-            styles.catalogHeroDescription
-          }
-        >
+        <p className={styles.catalogHeroDescription}>
 
           {
 
             runtime.presentation?.description
-
             ||
 
             runtime.seo?.description
-
             ||
 
             runtime.meaning?.mission
-
             ||
 
             '用途・メーカー・価格を問わず、登録されているすべてのPCを一覧で比較できます。'
@@ -163,107 +120,51 @@ export default function CatalogHero({
 
         </p>
 
-        {/* ======================================================
-        SUMMARY
-        ====================================================== */}
+        <div className={styles.catalogHeroStats}>
 
-        <div
-          className={
-            styles.catalogHeroStats
-          }
-        >
+          <div className={styles.catalogHeroStat}>
 
-          <div
-            className={
-              styles.catalogHeroStat
-            }
-          >
-
-            <span
-              className={
-                styles.catalogHeroStatLabel
-              }
-            >
+            <span className={styles.catalogHeroStatLabel}>
 
               総商品数
 
             </span>
 
-            <strong
-              className={
-                styles.catalogHeroStatValue
-              }
-            >
+            <strong className={styles.catalogHeroStatValue}>
 
-              {
-
-                runtime.count.toLocaleString()
-
-              }
+              {runtime.count.toLocaleString()}
 
             </strong>
 
           </div>
 
-          <div
-            className={
-              styles.catalogHeroStat
-            }
-          >
+          <div className={styles.catalogHeroStat}>
 
-            <span
-              className={
-                styles.catalogHeroStatLabel
-              }
-            >
+            <span className={styles.catalogHeroStatLabel}>
 
               現在のページ
 
             </span>
 
-            <strong
-              className={
-                styles.catalogHeroStatValue
-              }
-            >
+            <strong className={styles.catalogHeroStatValue}>
 
-              {
-
-                runtime.page
-
-              }
+              {runtime.page}
 
             </strong>
 
           </div>
 
-          <div
-            className={
-              styles.catalogHeroStat
-            }
-          >
+          <div className={styles.catalogHeroStat}>
 
-            <span
-              className={
-                styles.catalogHeroStatLabel
-              }
-            >
+            <span className={styles.catalogHeroStatLabel}>
 
               表示件数
 
             </span>
 
-            <strong
-              className={
-                styles.catalogHeroStatValue
-              }
-            >
+            <strong className={styles.catalogHeroStatValue}>
 
-              {
-
-                runtime.page_size
-
-              }
+              {runtime.page_size}
 
             </strong>
 
@@ -273,22 +174,7 @@ export default function CatalogHero({
 
       </div>
 
-      {/* ==========================================================
-      RIGHT
-      ========================================================== */}
-
-      <div
-        className={
-          styles.catalogHeroVisual
-        }
-      >
-
-        {/*
-          Catalog Hero Image
-          CSS Background / Runtime Image
-        */}
-
-      </div>
+      <div className={styles.catalogHeroVisual} />
 
     </section>
 

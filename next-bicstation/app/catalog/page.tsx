@@ -96,37 +96,6 @@ export default function CatalogPage() {
 
     )
 
-    /* ==========================================================================
-    🔥 Debug
-    ========================================================================== */
-
-    console.log(
-        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
-    )
-
-    console.log(
-        '🔥 CATALOG PAGE'
-    )
-
-    console.log({
-
-        urlPage:
-
-            page,
-
-        loading,
-
-        hasRuntime:
-
-            !!runtime,
-
-        error,
-
-    })
-
-    console.log(
-        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
-    )
 
     /* ==========================================================================
     🔥 Loading
@@ -190,29 +159,6 @@ export default function CatalogPage() {
 
         runtime.products.length > 0
 
-    console.log({
-
-        runtimePage:
-
-            runtime.page,
-
-        count:
-
-            runtime.count,
-
-        pageSize:
-
-            runtime.page_size,
-
-        products:
-
-            runtime.products.length,
-
-        hasNext:
-
-            runtime.has_next,
-
-    })
 
     /* ==========================================================================
     🔥 Render

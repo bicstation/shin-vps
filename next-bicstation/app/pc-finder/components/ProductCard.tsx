@@ -14,6 +14,20 @@ import Link
     from 'next/link'
 
 /* ============================================================================
+Experience Components
+============================================================================ */
+
+import ProductImage
+    from '@/app/experience/components/product/ProductImage'
+import ProductTitle
+    from '@/app/experience/components/product/ProductTitle'
+// import ProductMaker
+//   from '@/app/experience/components/product/ProductMaker'
+import ProductPrice
+    from '@/app/experience/components/product/ProductPrice'
+
+
+/* ============================================================================
 Styles
 ============================================================================ */
 
@@ -79,13 +93,15 @@ export default function ProductCard({
                 className={styles.productImage}
             >
 
-                <img
+                <ProductImage
 
                     src={product.image_url}
 
                     alt={product.name}
 
-                    sizes="400px"
+                    width={400}
+
+                    height={400}
 
                     className={styles.image}
 
@@ -109,21 +125,15 @@ export default function ProductCard({
 
                 </div>
 
-                <h3
+                <ProductTitle
+                    title={product.name}
                     className={styles.productTitle}
-                >
+                />
 
-                    {product.name}
-
-                </h3>
-
-                <div
+                <ProductPrice
+                    price={product.price}
                     className={styles.productPrice}
-                >
-
-                    ¥{product.price.toLocaleString()}
-
-                </div>
+                />
 
                 {/* ==========================================================
                     Runtime Reality

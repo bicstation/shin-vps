@@ -12,6 +12,18 @@
 import Link
   from 'next/link'
 
+import ProductImage
+  from '@/app/experience/components/product/ProductImage'
+
+import ProductTitle
+  from '@/app/experience/components/product/ProductTitle'
+
+import ProductMaker
+  from '@/app/experience/components/product/ProductMaker'
+
+import ProductPrice
+  from '@/app/experience/components/product/ProductPrice'
+
 /* ============================================================================
 🔥 Runtime
 ============================================================================ */
@@ -36,7 +48,7 @@ import styles
 type Props = {
 
   product:
-    DiscoverDetailProduct
+  DiscoverDetailProduct
 
 }
 
@@ -68,29 +80,12 @@ export default function ProductCard({
       IMAGE
       ========================================================== */}
 
-      {
+      <ProductImage
+        src={product.image_url}
+        alt={product.name}
+        className={styles.productImage}
+      />
 
-        product.image_url && (
-
-          <img
-
-            src={
-              product.image_url
-            }
-
-            alt={
-              product.name
-            }
-
-            className={
-              styles.productImage
-            }
-
-          />
-
-        )
-
-      }
 
       {/* ==========================================================
       CONTENT
@@ -102,65 +97,20 @@ export default function ProductCard({
         }
       >
 
-        <h3
-          className={
-            styles.productName
-          }
-        >
+        <ProductTitle
+          title={product.name}
+          className={styles.productName}
+        />
 
-          {
+        <ProductMaker
+          maker={product.maker}
+          className={styles.productMaker}
+        />
 
-            product.name
-
-          }
-
-        </h3>
-
-        {
-
-          product.maker && (
-
-            <p
-              className={
-                styles.productMaker
-              }
-            >
-
-              {
-
-                product.maker
-
-              }
-
-            </p>
-
-          )
-
-        }
-
-        {
-
-          product.price !== undefined && (
-
-            <p
-              className={
-                styles.productPrice
-              }
-            >
-
-              ¥
-
-              {
-
-                product.price.toLocaleString()
-
-              }
-
-            </p>
-
-          )
-
-        }
+        <ProductPrice
+          price={product.price}
+          className={styles.productPrice}
+        />
 
       </div>
 

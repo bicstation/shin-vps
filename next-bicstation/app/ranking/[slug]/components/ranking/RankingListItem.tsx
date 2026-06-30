@@ -11,6 +11,14 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
+import ProductImage
+    from '@/app/experience/components/product/ProductImage'
+import ProductTitle
+    from '@/app/experience/components/product/ProductTitle'
+// import ProductMaker
+//   from '@/app/experience/components/product/ProductMaker'
+import ProductPrice
+    from '@/app/experience/components/product/ProductPrice'
 
 /* ============================================================================
 🔥 Contracts
@@ -154,41 +162,19 @@ export default function RankingListItem({
                 className={styles.imageArea}
             >
 
-                {
+                <ProductImage
 
-                    image_url ? (
+                    src={image_url}
 
-                        <Image
+                    alt={name ?? ''}
 
-                            src={image_url}
+                    width={260}
 
-                            alt={name ?? ''}
+                    height={260}
 
-                            width={260}
+                    className={styles.image}
 
-                            height={260}
-
-                            className={styles.image}
-
-                            unoptimized
-
-                        />
-
-                    ) : (
-
-                        <div
-                            className={
-                                styles.imagePlaceholder
-                            }
-                        >
-
-                            NO IMAGE
-
-                        </div>
-
-                    )
-
-                }
+                />
 
             </div>
 
@@ -199,14 +185,10 @@ export default function RankingListItem({
             <div
                 className={styles.content}
             >
-
-                <h3
+                <ProductTitle
+                    title={name}
                     className={styles.title}
-                >
-
-                    {name}
-
-                </h3>
+                />
 
                 {
 
@@ -267,9 +249,7 @@ export default function RankingListItem({
                                     .map(
 
                                         (
-
                                             label,
-
                                             index,
 
                                         ) => (
@@ -312,34 +292,19 @@ export default function RankingListItem({
                 className={styles.side}
             >
 
-                {
-
-                    typeof price === 'number' && (
-
-                        <div
-                            className={styles.price}
-                        >
-
-                            ¥{price.toLocaleString()}
-
-                        </div>
-
-                    )
-
-                }
+                <ProductPrice
+                    price={price}
+                    className={styles.price}
+                />
 
                 {
 
                     unique_id && (
 
                         <Link
-
                             href={href}
-
                             className={styles.button}
-
                         >
-
                             製品の詳細を見る
 
                         </Link>

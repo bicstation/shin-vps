@@ -1,14 +1,12 @@
 // ============================================================================
 // FILE:
 // /app/catalog/hooks/useCatalog.ts
-// Copyright (c) 2024 Shin Corporation.
-// All rights reserved.
 // ============================================================================
 
 'use client'
 
 /* ============================================================================
-🔥 React
+React
 ============================================================================ */
 
 import {
@@ -19,7 +17,7 @@ import {
 } from 'react'
 
 /* ============================================================================
-🔥 Runtime
+Runtime
 ============================================================================ */
 
 import {
@@ -29,17 +27,30 @@ import {
 } from '@/shared/lib/api/django/pc/products'
 
 /* ============================================================================
-🔥 Types
+Contracts
 ============================================================================ */
 
 import type {
 
-    CatalogRuntime,
+    ProductsRuntime,
 
-} from '../types/catalog'
+} from '@/shared/lib/api/django/pc/products/contracts'
 
 /* ============================================================================
-🔥 Hook
+Hook
+
+Responsibilities
+
+- Fetch Products Runtime
+- Manage Experience State
+- Expose Runtime to Experience
+
+This hook does NOT
+
+- Generate Semantic Meaning
+- Generate Runtime
+- Redefine Runtime Contracts
+
 ============================================================================ */
 
 export default function useCatalog(
@@ -50,9 +61,9 @@ export default function useCatalog(
 
 ) {
 
-    /* ==========================================================================
-    🔥 State
-    ========================================================================== */
+    /* ========================================================================
+    Runtime State
+    ======================================================================== */
 
     const [
 
@@ -60,7 +71,7 @@ export default function useCatalog(
 
         setRuntime,
 
-    ] = useState<CatalogRuntime | null>(
+    ] = useState<ProductsRuntime | null>(
 
         null
 
@@ -86,9 +97,9 @@ export default function useCatalog(
 
     )
 
-    /* ==========================================================================
-    🔥 Load Runtime
-    ========================================================================== */
+    /* ========================================================================
+    Load Runtime
+    ======================================================================== */
 
     useEffect(() => {
 
@@ -100,7 +111,7 @@ export default function useCatalog(
 
             try {
 
-                const data = await fetchProducts({
+                const runtime = await fetchProducts({
 
                     page,
 
@@ -108,19 +119,7 @@ export default function useCatalog(
 
                 })
 
-                console.log(
-
-                    '🔥 FETCH RESULT',
-
-                    data
-
-                )
-
-                setRuntime(
-
-                    data
-
-                )
+                setRuntime(runtime)
 
             }
 
@@ -130,15 +129,11 @@ export default function useCatalog(
 
                     'CATALOG RUNTIME ERROR',
 
-                    err
+                    err,
 
                 )
 
-                setError(
-
-                    err as Error
-
-                )
+                setError(err as Error)
 
             }
 
@@ -160,9 +155,9 @@ export default function useCatalog(
 
     ])
 
-    /* ==========================================================================
-    🔥 Return
-    ========================================================================== */
+    /* ========================================================================
+    Return
+    ======================================================================== */
 
     return {
 

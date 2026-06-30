@@ -1,49 +1,73 @@
 // ============================================================================
 // FILE:
 // /app/catalog/components/ProductCard.tsx
-// Copyright (c) 2024 Shin Corporation.
-// All rights reserved.
 // ============================================================================
 
 'use client'
 
 /* ============================================================================
-🔥 Next
+Next
 ============================================================================ */
 
 import Link
     from 'next/link'
 
 /* ============================================================================
-🔥 Types
+Experience Components
+============================================================================ */
+
+import ProductImage
+    from '@/app/experience/components/product/ProductImage'
+import ProductTitle
+    from '@/app/experience/components/product/ProductTitle'
+import ProductMaker
+    from '@/app/experience/components/product/ProductMaker'
+import ProductPrice
+    from '@/app/experience/components/product/ProductPrice'
+/* ============================================================================
+Contracts
 ============================================================================ */
 
 import type {
 
-    CatalogProduct,
+    PCProductItem,
 
-} from '../types/catalog'
+} from '@/shared/lib/api/django/pc/products/contracts'
 
 /* ============================================================================
-🔥 Styles
+Styles
 ============================================================================ */
 
 import styles
     from '../styles/catalog.module.css'
 
 /* ============================================================================
-🔥 Props
+Props
 ============================================================================ */
 
 type Props = {
 
-    product:
-    CatalogProduct
+    product: PCProductItem
 
 }
 
 /* ============================================================================
-🔥 Product Card
+Experience
+
+Product Presentation
+
+Responsibilities
+
+- Present one product
+- Display Backend Runtime
+- Navigate to Product Detail
+
+This component does NOT
+
+- Generate Runtime
+- Generate Semantic Meaning
+- Interpret Semantic Reality
+
 ============================================================================ */
 
 export default function ProductCard({
@@ -56,96 +80,47 @@ export default function ProductCard({
 
         <Link
 
-            href={
-                `/product/${product.unique_id}`
-            }
+            href={`/product/${product.unique_id}`}
 
-            className={
-                styles.productCard
-            }
+            className={styles.productCard}
 
         >
 
-            {/* ==========================================================
-      IMAGE
-      ========================================================== */}
+            <ProductImage
 
-            <img
+                src={product.image_url}
 
-                src={
-                    product.image_url
-                    || '/images/no-image.png'
-                }
+                alt={product.name}
 
-                alt={
-                    product.name
-                }
-
-                className={
-                    styles.productImage
-                }
-
-                loading="lazy"
+                className={styles.productImage}
 
             />
 
-            {/* ==========================================================
-      CONTENT
-      ========================================================== */}
+            <div className={styles.productContent}>
 
-            <div
-                className={
-                    styles.productContent
-                }
-            >
+                <ProductTitle
 
-                <h3
-                    className={
-                        styles.productName
-                    }
-                >
+                    title={product.name}
 
-                    {product.name}
+                    className={styles.productName}
 
-                </h3>
+                />
 
-                {
+                <ProductMaker
 
-                    product.maker && (
+                    maker={product.maker}
 
-                        <p
-                            className={
-                                styles.productMaker
-                            }
-                        >
+                    className={styles.productMaker}
 
-                            {product.maker}
+                />
 
-                        </p>
+                <ProductPrice
 
-                    )
+                    price={product.price}
 
-                }
+                    className={styles.productPrice}
 
-                {
-
-                    product.price !== undefined && (
-
-                        <p
-                            className={
-                                styles.productPrice
-                            }
-                        >
-
-                            ¥
-
-                            {product.price.toLocaleString()}
-
-                        </p>
-
-                    )
-
-                }
+                />
 
             </div>
 
