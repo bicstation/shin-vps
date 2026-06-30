@@ -1,51 +1,58 @@
 // ============================================================================
 // FILE:
-// /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/[slug]/types/contracts.ts
-// Copyright (c) 2024 Shin Corporation.
+// /app/ranking/[slug]/types/contracts.ts
+// Copyright (c) 2026 Shin Corporation.
 // All rights reserved.
 // ============================================================================
 
 /**
  * ============================================================================
  * SHIN CORE LINX
- * Ranking Experience V2 Contracts
+ * Ranking Experience Contract Gateway
  * ============================================================================
  *
- * Experience Layer Contract Gateway
+ * Constitution
  *
- * Backend
- *      ↓
- * Adapter
- *      ↓
- * Experience
+ * Backend Reality
+ *      │
+ *      ▼
+ * Adapter Canonical Contract
+ *      │
+ *      ▼
+ * Ranking Experience
  *
- * This file MUST NOT define runtime contracts.
- * It only re-exports Adapter contracts.
+ * ----------------------------------------------------------------------------
+ * Responsibilities
+ * ----------------------------------------------------------------------------
+ *
+ * • This file defines NO contracts.
+ * • This file defines NO runtime.
+ * • This file defines NO semantic meaning.
+ *
+ * It simply exposes the canonical Adapter contracts
+ * to the Ranking Experience.
+ *
+ * Backend remains the Semantic Authority.
+ * Frontend remains the Experience Authority.
+ *
+ * ============================================================================
  */
 
 /* ============================================================================
-🔥 Adapter Contracts
+🔥 Canonical Adapter Contracts
 ============================================================================ */
 
 export type {
 
-    SemanticAttribute,
-
-    SemanticRuntime,
-
-    AdaptiveRuntime,
-
     RankingMeaning,
 
-    PresentationRuntime,
+    RankingPresentation,
 
-    RankingRuntime,
+    RankingSEO,
 
     RankingProduct,
 
-    RankingCollection,
-
-    RankingSEO,
+    RankingData,
 
     SemanticRankingRuntime,
 

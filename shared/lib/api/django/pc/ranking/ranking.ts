@@ -1,58 +1,12 @@
 // ============================================================================
-// FILE:
-// /home/maya/shin-dev/shin-vps/shared/lib/api/django/pc/ranking/ranking.ts
-// Copyright (c) 2024 Shin Corporation. All rights reserved.
+// Ranking Runtime Gateway V2
 // ============================================================================
-
-/**
- * ============================================================================
- * SHIN CORE LINX
- * Ranking Runtime Gateway
- * ============================================================================
- *
- * PURPOSE
- *
- * GET /api/pc/ranking/{slug}/
- *
- * ↓
- *
- * Ranking Runtime
- *
- * IMPORTANT
- *
- * Backend remains:
- *
- * Semantic Authority
- *
- * Adapter remains:
- *
- * Projection Authority
- *
- * Adapter SHALL:
- *
- * Transport
- * Normalize
- * Project
- * Observe
- *
- * ONLY
- *
- * ============================================================================
- */
-
-/* ============================================================================
-🔥 Contracts
-============================================================================ */
 
 import type {
 
   SemanticRankingRuntime,
 
 } from './contracts'
-
-/* ============================================================================
-🔥 Utils
-============================================================================ */
 
 import {
 
@@ -65,10 +19,6 @@ import {
   safeFetch,
 
 } from '../utils/safeFetch'
-
-/* ============================================================================
-🔥 Normalize
-============================================================================ */
 
 import {
 
@@ -90,29 +40,13 @@ const RANKING_ENDPOINT =
 
 export async function fetchRanking(
 
-  slug = 'all',
+  slug: string
 
 ): Promise<SemanticRankingRuntime> {
 
-  /* ==========================================================================
-  Empty Guard
-  ========================================================================== */
-
-  if (!slug) {
-
-    console.warn(
-
-      '⚠️ RANKING EMPTY SLUG'
-
-    )
-
-    return normalizeRanking()
-
-  }
-
-  /* ==========================================================================
+  /* ------------------------------------------------------------------------
   Endpoint
-  ========================================================================== */
+  ------------------------------------------------------------------------ */
 
   const endpoint =
 
@@ -123,15 +57,11 @@ export async function fetchRanking(
     )
 
   console.log(
-
     '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
-
   )
 
   console.log(
-
     '🔥 FETCH RANKING RUNTIME'
-
   )
 
   console.log({
@@ -143,14 +73,12 @@ export async function fetchRanking(
   })
 
   console.log(
-
     '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
-
   )
 
-  /* ==========================================================================
+  /* ------------------------------------------------------------------------
   Fetch
-  ========================================================================== */
+  ------------------------------------------------------------------------ */
 
   const payload =
 
@@ -160,33 +88,32 @@ export async function fetchRanking(
 
     )
 
-  /* ==========================================================================
-  Failure
-  ========================================================================== */
+  console.log(
+
+    '🔥 RANKING RAW PAYLOAD',
+
+    payload
+
+  )
+
+  /* ------------------------------------------------------------------------
+  Empty
+  ------------------------------------------------------------------------ */
 
   if (!payload) {
 
-    console.error(
+    console.warn(
 
-      '🔥 RANKING FETCH FAILURE',
-
-      {
-
-        slug,
-
-        endpoint,
-
-      }
+      '⚠️ RANKING RUNTIME EMPTY'
 
     )
 
     return normalizeRanking()
-
   }
 
-  /* ==========================================================================
+  /* ------------------------------------------------------------------------
   Normalize
-  ========================================================================== */
+  ------------------------------------------------------------------------ */
 
   const runtime =
 
@@ -196,9 +123,9 @@ export async function fetchRanking(
 
     )
 
-  /* ==========================================================================
-  Runtime Observability
-  ========================================================================== */
+  /* ------------------------------------------------------------------------
+  Observatory
+  ------------------------------------------------------------------------ */
 
   console.log(
 
@@ -206,47 +133,21 @@ export async function fetchRanking(
 
     {
 
-      meaning:
+      title:
 
-        runtime.meaning,
+        runtime.presentation?.title,
 
-      presentation:
+      group:
 
-        runtime.presentation,
+        runtime.data.group_slug,
 
-      seo:
+      count:
 
-        runtime.seo,
-
-      runtime:
-
-        runtime.runtime,
-
-      ranking:
-
-        {
-
-          group_slug:
-
-            runtime.ranking?.group_slug,
-
-          group_name:
-
-            runtime.ranking?.group_name,
-
-          product_count:
-
-            runtime.ranking?.product_count,
-
-          results:
-
-            runtime.ranking?.results?.length,
-
-        },
+        runtime.data.product_count,
 
       products:
 
-        runtime.products?.length,
+        runtime.data.products.length,
 
       semantic_schema_version:
 
@@ -264,16 +165,19 @@ export async function fetchRanking(
 
         runtime.ready,
 
+      sample:
+
+        runtime.data.products[0],
+
     }
 
   )
 
-  /* ==========================================================================
-  Success
-  ========================================================================== */
+  /* ------------------------------------------------------------------------
+  Return
+  ------------------------------------------------------------------------ */
 
   return runtime
-
 }
 
 /* ============================================================================

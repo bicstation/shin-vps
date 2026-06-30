@@ -15,8 +15,8 @@ import ProductImage
     from '@/app/experience/components/product/ProductImage'
 import ProductTitle
     from '@/app/experience/components/product/ProductTitle'
-// import ProductMaker
-//   from '@/app/experience/components/product/ProductMaker'
+import ProductMaker
+    from '@/app/experience/components/product/ProductMaker'
 import ProductPrice
     from '@/app/experience/components/product/ProductPrice'
 
@@ -89,6 +89,8 @@ export default function RankingListItem({
         semantic_labels = [],
 
     } = product
+
+    console.log(product)
 
     const href =
 
@@ -205,6 +207,10 @@ export default function RankingListItem({
                     )
 
                 }
+
+                <div>
+                    {maker ?? brand}
+                </div>
 
                 {
 

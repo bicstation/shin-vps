@@ -1,38 +1,36 @@
+// ============================================================================
+// Ranking Contracts V2
+// Backend Reality Contract
+// ============================================================================
+
 /* ============================================================================
-🔥 Ranking Meaning
+🔥 Meaning
 ============================================================================ */
 
 export interface RankingMeaning {
 
   identity?: string
-
   mission?: string
-
   user_intent?: string
-
   meaning_statement?: string
-
   existence_reason?: string
 }
 
 /* ============================================================================
-🔥 Presentation Runtime
+🔥 Presentation
 ============================================================================ */
 
-export interface PresentationRuntime {
+export interface RankingPresentation {
 
   slug?: string
 
   name?: string
 
   title?: string
-
   subtitle?: string
-
   description?: string
 
   seo_title?: string
-
   seo_description?: string
 
   canonical_path?: string
@@ -40,122 +38,113 @@ export interface PresentationRuntime {
   schema_type?: string
 
   icon_key?: string
-
   theme_key?: string
-
   color_key?: string
 
   og_title?: string
-
   og_description?: string
-
   og_image?: string
 
   priority?: string
-
   visibility?: string
 
   is_adult?: string
 }
 
 /* ============================================================================
-🔥 Ranking Runtime
+🔥 SEO
 ============================================================================ */
 
-export interface RankingRuntime {
+export interface RankingSEO {
 
-  count?: number
+  title?: string
 
-  page?: number
+  description?: string
 
-  page_size?: number
+  keywords?: string[]
 
-  has_next?: boolean
+  canonical?: string
+
+  schema_jsonld?: any
 }
 
 /* ============================================================================
-🔥 Semantic Ranking Runtime
+🔥 Product
+============================================================================ */
+
+export interface RankingProduct {
+
+  product_id: number
+
+  unique_id: string
+
+  name: string
+
+  maker: string
+
+  price: number
+
+  image_url: string
+
+  semantic_attributes: string[]
+
+  matched_groups: string[]
+
+  reality_scores?: Record<string, number>
+
+  product_type?: string
+
+  primary_workflow?: string | null
+
+  workflow_score?: number
+
+  semantic_score?: number
+
+  workflow_tags?: string[]
+
+  workflows?: any[]
+
+  semantic_labels?: string[]
+
+  adaptive_runtime?: any
+
+  semantic_version?: string
+
+  semantic_authority?: string
+
+  runtime_valid?: boolean
+}
+
+/* ============================================================================
+🔥 Ranking Data
+============================================================================ */
+
+export interface RankingData {
+
+  group_slug: string
+
+  group_name: string
+
+  product_count: number
+
+  products: RankingProduct[]
+}
+
+/* ============================================================================
+🔥 Runtime
 ============================================================================ */
 
 export interface SemanticRankingRuntime {
 
-  /* ========================================================================
-  Runtime Status
-  ======================================================================== */
-
   success?: boolean
-
-  /* ========================================================================
-  Meaning Layer
-  ======================================================================== */
 
   meaning?: RankingMeaning
 
-  presentation?: PresentationRuntime
+  presentation?: RankingPresentation
 
   seo?: RankingSEO
 
-  /* ========================================================================
-  Ranking Runtime
-  ======================================================================== */
-
-  ranking?: RankingCollection
-
-  runtime?: RankingRuntime
-
-  /**
-   * Canonical Frontend Projection
-   */
-
-  products?: RankingProduct[]
-
-  /* ========================================================================
-  Semantic Runtime
-  ======================================================================== */
-
-  semantic_runtime?: SemanticRuntime
-
-  adaptive_runtime?: AdaptiveRuntime
-
-  semantic_labels?: string[]
-
-  workflow_tags?: string[]
-
-  grouped_attributes?:
-    Record<
-      string,
-      SemanticAttribute[]
-    >
-
-  semantic_graph?: any[]
-
-  render_hints?:
-    Record<string, any>
-
-  /* ========================================================================
-  SEO Extensions
-  ======================================================================== */
-
-  faq?: any[]
-
-  breadcrumbs?: any[]
-
-  schemas?: {
-
-    itemSchema?: any
-
-    breadcrumbSchema?: any
-
-    faqSchema?: any
-
-    collectionSchema?: any
-  }
-
-  ui?: any
-
-  /* ========================================================================
-  Runtime Authority
-  ======================================================================== */
+  data: RankingData
 
   semantic_schema_version?: number
 
@@ -164,10 +153,6 @@ export interface SemanticRankingRuntime {
   semantic_authority?: string
 
   ready?: boolean
-
-  /* ========================================================================
-  Raw Backup
-  ======================================================================== */
 
   raw?: any
 }

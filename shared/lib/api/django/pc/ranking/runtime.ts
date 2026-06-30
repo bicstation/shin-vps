@@ -1,48 +1,6 @@
 // ============================================================================
-// FILE:
-// /home/maya/shin-dev/shin-vps/shared/lib/api/django/pc/ranking/runtime.ts
-// Copyright (c) 2024 Shin Corporation. All rights reserved.
+// Ranking Runtime V2
 // ============================================================================
-
-/**
- * ============================================================================
- * SHIN CORE LINX
- * Ranking Runtime Gateway
- * ============================================================================
- *
- * PURPOSE
- *
- * GET /api/pc/ranking/{slug}/
- *
- * ↓
- *
- * Semantic Ranking Runtime
- *
- * IMPORTANT
- *
- * Backend remains:
- *
- * Semantic Authority
- *
- * Adapter remains:
- *
- * Projection Authority
- *
- * Adapter SHALL:
- *
- * Transport
- * Normalize
- * Project
- * Observe
- *
- * ONLY
- *
- * ============================================================================
- */
-
-/* ============================================================================
-🔥 Contracts
-============================================================================ */
 
 import type {
 
@@ -50,236 +8,78 @@ import type {
 
 } from './contracts'
 
-/* ============================================================================
-🔥 Utils
-============================================================================ */
+import {
+
+  fetchRanking,
+
+} from './ranking'
 
 import {
 
-  buildEndpoint,
+  projectRankingRuntime,
 
-} from '../utils/buildEndpoint'
-
-import {
-
-  safeFetch,
-
-} from '../utils/safeFetch'
+} from './projection'
 
 /* ============================================================================
-🔥 Normalize
+🔥 Runtime Result
 ============================================================================ */
 
-import {
+export interface RankingRuntimeResult {
 
-  normalizeRanking,
+  runtime: SemanticRankingRuntime
 
-} from './normalize'
+  projection: ReturnType<typeof projectRankingRuntime>
+}
 
 /* ============================================================================
-🔥 Endpoint
+🔥 Get Ranking Runtime
 ============================================================================ */
 
-const RANKING_RUNTIME_ENDPOINT =
+export async function getRankingRuntime(
 
-  '/pc/ranking'
+  slug: string
 
-/* ============================================================================
-🔥 Fetch Ranking Runtime
-============================================================================ */
+): Promise<RankingRuntimeResult> {
 
-export async function fetchRankingRuntime(
-
-  slug = 'usage-gaming',
-
-): Promise<SemanticRankingRuntime> {
-
-  /* ==========================================================================
-  Empty Guard
-  ========================================================================== */
-
-  if (!slug) {
-
-    console.warn(
-
-      '⚠️ RANKING RUNTIME EMPTY SLUG'
-
-    )
-
-    return normalizeRanking()
-
-  }
-
-  /* ==========================================================================
-  Endpoint
-  ========================================================================== */
-
-  const endpoint =
-
-    buildEndpoint(
-
-      `${RANKING_RUNTIME_ENDPOINT}/${slug}/`
-
-    )
-
-  console.log(
-
-    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
-
-  )
-
-  console.log(
-
-    '🔥 FETCH RANKING RUNTIME'
-
-  )
-
-  console.log({
-
-    slug,
-
-    endpoint,
-
-  })
-
-  console.log(
-
-    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
-
-  )
-
-  /* ==========================================================================
-  Fetch
-  ========================================================================== */
-
-  const payload =
-
-    await safeFetch<SemanticRankingRuntime>(
-
-      endpoint
-
-    )
-
-  /* ==========================================================================
-  Failure
-  ========================================================================== */
-
-  if (!payload) {
-
-    console.error(
-
-      '🔥 RANKING RUNTIME FAILURE',
-
-      {
-
-        slug,
-
-        endpoint,
-
-      }
-
-    )
-
-    return normalizeRanking()
-
-  }
-
-  /* ==========================================================================
-  Normalize
-  ========================================================================== */
+  /* ------------------------------------------------------------------------
+  Runtime
+  ------------------------------------------------------------------------ */
 
   const runtime =
 
-    normalizeRanking(
+    await fetchRanking(
 
-      payload
+      slug
 
     )
 
-  /* ==========================================================================
-  Runtime Observability
-  ========================================================================== */
+  /* ------------------------------------------------------------------------
+  Projection
+  ------------------------------------------------------------------------ */
 
-  console.log(
+  const projection =
 
-    '🔥 RANKING RUNTIME',
+    projectRankingRuntime(
 
-    {
+      runtime
 
-      slug,
+    )
 
-      endpoint,
+  /* ------------------------------------------------------------------------
+  Return
+  ------------------------------------------------------------------------ */
 
-      meaning:
+  return {
 
-        runtime.meaning,
+    runtime,
 
-      presentation:
+    projection,
 
-        runtime.presentation,
-
-      seo:
-
-        runtime.seo,
-
-      runtime:
-
-        runtime.runtime,
-
-      ranking: {
-
-        group_slug:
-
-          runtime.ranking?.group_slug,
-
-        group_name:
-
-          runtime.ranking?.group_name,
-
-        product_count:
-
-          runtime.ranking?.product_count,
-
-        results:
-
-          runtime.ranking?.results?.length,
-
-      },
-
-      products:
-
-        runtime.products?.length,
-
-      semantic_schema_version:
-
-        runtime.semantic_schema_version,
-
-      authority_version:
-
-        runtime.authority_version,
-
-      semantic_authority:
-
-        runtime.semantic_authority,
-
-      ready:
-
-        runtime.ready,
-
-    }
-
-  )
-
-  /* ==========================================================================
-  Success
-  ========================================================================== */
-
-  return runtime
-
+  }
 }
 
 /* ============================================================================
 🔥 Default Export
 ============================================================================ */
 
-export default fetchRankingRuntime
+export default getRankingRuntime
