@@ -1,35 +1,86 @@
 // ============================================================================
-// FILE:
-// /home/maya/shin-dev/shin-vps/shared/lib/api/django/pc/discover-detail/contracts.ts
-// Copyright (c) 2024 Shin Corporation.
-// All rights reserved.
+// Discover Detail Runtime Contracts V2
 // ============================================================================
 
-/**
- * ============================================================================
- * SHIN CORE LINX
- * Discover Detail Runtime Contracts
- * ============================================================================
- *
- * IMPORTANT
- *
- * Backend remains:
- *
- * semantic authority
- *
- * This contract represents:
- *
- * Discover Detail Runtime Reality
- *
- * NOT:
- *
- * UI Projection
- *
- * ============================================================================
- */
+/* ============================================================================
+🔥 Meaning Layer
+============================================================================ */
+
+export interface DiscoverDetailMeaning {
+
+  identity?: string
+
+  mission?: string
+
+  user_intent?: string
+
+  meaning_statement?: string
+
+  existence_reason?: string
+}
 
 /* ============================================================================
-🔥 Discover Detail Attribute
+🔥 Presentation Layer
+============================================================================ */
+
+export interface DiscoverDetailPresentation {
+
+  slug?: string
+
+  name?: string
+
+  title?: string
+
+  subtitle?: string
+
+  description?: string
+
+  seo_title?: string
+
+  seo_description?: string
+
+  canonical_path?: string
+
+  schema_type?: string
+
+  icon_key?: string
+
+  theme_key?: string
+
+  color_key?: string
+
+  og_title?: string
+
+  og_description?: string
+
+  og_image?: string
+
+  priority?: string
+
+  visibility?: string
+
+  is_adult?: string
+}
+
+/* ============================================================================
+🔥 SEO Layer
+============================================================================ */
+
+export interface DiscoverDetailSEO {
+
+  title?: string
+
+  description?: string
+
+  keywords?: string[]
+
+  canonical?: string
+
+  schema_jsonld?: any
+}
+
+/* ============================================================================
+🔥 Attribute
 ============================================================================ */
 
 export interface DiscoverDetailAttribute {
@@ -57,14 +108,13 @@ export interface DiscoverDetailAttribute {
   color?: string
 
   is_ranking_enabled?: string
-
 }
 
 /* ============================================================================
-🔥 Discover Detail Product
+🔥 Sample Product
 ============================================================================ */
 
-export interface DiscoverDetailProduct {
+export interface DiscoverDetailSampleProduct {
 
   unique_id: string
 
@@ -75,16 +125,13 @@ export interface DiscoverDetailProduct {
   price?: number
 
   image_url?: string
-
 }
 
 /* ============================================================================
-🔥 Discover Detail Runtime Response
+🔥 Data Layer
 ============================================================================ */
 
-export interface DiscoverDetailRuntimeResponse {
-
-  found: boolean
+export interface DiscoverDetailData {
 
   group_slug: string
 
@@ -100,8 +147,6 @@ export interface DiscoverDetailRuntimeResponse {
 
   sort_order?: string
 
-  description?: string
-
   attribute?: DiscoverDetailAttribute
 
   product_count?: number
@@ -110,10 +155,7 @@ export interface DiscoverDetailRuntimeResponse {
 
   related_groups: string[]
 
-  sample_products: DiscoverDetailProduct[]
-
-  ready?: boolean
-
+  sample_products: DiscoverDetailSampleProduct[]
 }
 
 /* ============================================================================
@@ -122,36 +164,52 @@ export interface DiscoverDetailRuntimeResponse {
 
 export interface DiscoverDetailRuntime {
 
+  /* =========================
+     Runtime Status
+  ========================= */
+
   found: boolean
 
-  group_slug: string
+  success?: boolean
 
-  group_name?: string
+  /* =========================
+     Meaning
+  ========================= */
 
-  type?: string
+  meaning?: DiscoverDetailMeaning
 
-  parent_group?: string
+  presentation?: DiscoverDetailPresentation
 
-  icon?: string
+  seo?: DiscoverDetailSEO
 
-  color?: string
+  /* =========================
+     Data
+  ========================= */
 
-  sort_order?: string
+  data: DiscoverDetailData
 
-  description?: string
+  /* =========================
+     Runtime Authority
+  ========================= */
 
-  attribute?: DiscoverDetailAttribute
+  semantic_schema_version?: number
 
-  product_count?: number
+  authority_version?: string
 
-  aliases: string[]
-
-  related_groups: string[]
-
-  sample_products: DiscoverDetailProduct[]
+  semantic_authority?: string
 
   ready?: boolean
 
-  raw?: any
+  /* =========================
+     Raw Backup
+  ========================= */
 
+  raw?: any
 }
+
+/* ============================================================================
+🔥 Legacy Compatibility
+============================================================================ */
+
+export type DiscoverDetailRuntimeResponse =
+  DiscoverDetailRuntime

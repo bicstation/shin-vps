@@ -1,71 +1,103 @@
 // ============================================================================
-// Discover Detail Adapter V2
+// SHIN CORE LINX
+// Discover Experience V2
+// Experience Dictionary Contract
 // ============================================================================
 
-/**
- * ============================================================================
- * SHIN CORE LINX
- * Discover Detail Runtime Adapter
- * ============================================================================
- *
- * Responsibilities
- *
- * - Runtime Contract
- * - Runtime Fetch
- * - Runtime Normalize
- * - UI Projection
- *
- * Backend remains:
- *
- * Semantic Authority
- *
- * Adapter remains:
- *
- * Projection Authority
- *
- * ============================================================================
- */
-
 /* ============================================================================
-🔥 Contracts
+Hero
 ============================================================================ */
 
-export * from './contracts'
+export interface ExperienceHero {
+
+    label: string
+
+    title: string
+
+    catchCopy: string
+
+    description: string
+
+}
 
 /* ============================================================================
-🔥 Runtime
+About
 ============================================================================ */
 
-export * from './detail'
+export interface ExperienceAbout {
+
+    title: string
+
+    body: string
+
+}
 
 /* ============================================================================
-🔥 Normalize
+Elements
 ============================================================================ */
 
-export * from './normalize'
+export interface ExperienceElements {
+
+    title: string
+
+    description: string
+
+    keywords: string[]
+
+}
 
 /* ============================================================================
-🔥 Projection
+Representative Products
 ============================================================================ */
 
-export * from './projection'
+export interface ExperienceProducts {
+
+    title: string
+
+    description: string
+
+}
 
 /* ============================================================================
-🔥 Legacy Compatibility
+Related Worlds
 ============================================================================ */
 
-export {
+export interface ExperienceRelated {
 
-  getDiscoverDetail as fetchDiscoverDetailRuntime,
+    title: string
 
-} from './detail'
+    description: string
+
+}
 
 /* ============================================================================
-🔥 Default Export
+Continue Discovery
 ============================================================================ */
 
-export {
+export interface ExperienceContinue {
 
-  default,
+    title: string
 
-} from './detail'
+    description: string
+
+}
+
+/* ============================================================================
+Experience Dictionary
+============================================================================ */
+
+export interface ExperienceDictionary {
+
+    hero: ExperienceHero
+
+    about: ExperienceAbout
+
+    elements: ExperienceElements
+
+    products: ExperienceProducts
+
+    related: ExperienceRelated
+
+    continue: ExperienceContinue
+
+}

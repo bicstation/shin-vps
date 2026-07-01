@@ -1,286 +1,137 @@
 // ============================================================================
-// FILE:
-// /app/discover/[semantic-slug]/page.tsx
+// SHIN CORE LINX
+// Discover Experience V2
 // ============================================================================
 
-'use client'
-
-/* ============================================================================
-🔥 React
-============================================================================ */
+import { notFound } from 'next/navigation'
 
 import {
 
-  useEffect,
-  useState,
+    fetchDiscoverDetailRuntime,
 
-} from 'react'
-
-/* ============================================================================
-🔥 Runtime
-============================================================================ */
+} from '@/shared/lib/api/django/pc/discover-detail'
 
 import {
 
-  fetchDiscoverDetail,
+    getExperienceDictionary,
 
-} from '@/shared/lib/api/django/pc/discover-detail'
+} from './lib/dictionary'
 
-import type {
-
-  DiscoverDetailRuntime,
-
-} from '@/shared/lib/api/django/pc/discover-detail'
-
-/* ============================================================================
-🔥 Components
-============================================================================ */
-
-import SemanticHero
-  from './components/SemanticHero'
-
-import SemanticAliases
-  from './components/SemanticAliases'
-
-import ProductGrid
-  from './components/ProductGrid'
-
-import EmptyProducts
-  from './components/EmptyProducts'
-
-import NotFoundState
-  from './components/NotFoundState'
-
-import Breadcrumb
-  from './components/Breadcrumb'
-
-import FeaturedProduct
-  from './components/FeaturedProduct'
+import Hero from './components/Hero'
+import About from './components/About'
+import Elements from './components/Elements'
+import RepresentativeProducts from './components/RepresentativeProducts'
+import RelatedWorlds from './components/RelatedWorlds'
+import ContinueDiscovery from './components/ContinueDiscovery'
 
 /* ============================================================================
-🔥 Styles
+Props
 ============================================================================ */
 
-import styles
-  from './styles/discover-detail.module.css'
+interface DiscoverPageProps {
 
-/* ============================================================================
-🔥 Props
-============================================================================ */
+    params: Promise<{
 
-type Props = {
+        'semantic-slug': string
 
-  params: {
-
-    'semantic-slug': string
-
-  }
+    }>
 
 }
 
 /* ============================================================================
-🔥 Discover Detail Page
+Discover Page
 ============================================================================ */
 
-export default function DiscoverDetailPage({
+export default async function DiscoverPage(
 
-  params,
+    {
 
-}: Props) {
+        params,
 
-  /* ==========================================================================
-  🔥 Runtime
-  ========================================================================== */
+    }: DiscoverPageProps
 
-  const [
+) {
 
-    runtime,
+    const {
 
-    setRuntime,
+        'semantic-slug': slug,
 
-  ] = useState<
+    } = await params
 
-    DiscoverDetailRuntime | null
+    /* --------------------------------------------------------------------------
+    Runtime
+    -------------------------------------------------------------------------- */
 
-  >(null)
+    const runtime =
 
-  const [
+        await fetchDiscoverDetailRuntime(
 
-    loading,
-
-    setLoading,
-
-  ] = useState(true)
-
-  /* ==========================================================================
-  🔥 Load Runtime
-  ========================================================================== */
-
-  useEffect(() => {
-
-    async function loadRuntime() {
-
-      try {
-
-        const data =
-
-          await fetchDiscoverDetail(
-
-            params['semantic-slug']
-
-          )
-
-        console.log(
-
-          'DISCOVER DETAIL RUNTIME',
-
-          data
+            slug
 
         )
 
-        setRuntime(data)
+    if (
 
-      }
+        !runtime.found
 
-      catch (error) {
+    ) {
 
-        console.error(
-
-          'DISCOVER DETAIL ERROR',
-
-          error
-
-        )
-
-      }
-
-      finally {
-
-        setLoading(false)
-
-      }
+        notFound()
 
     }
 
-    loadRuntime()
+    /* --------------------------------------------------------------------------
+    Experience Dictionary
+    -------------------------------------------------------------------------- */
 
-  }, [
+    const dictionary =
 
-    params,
+        await getExperienceDictionary(
 
-  ])
+            slug
 
-  /* ==========================================================================
-  🔥 Loading
-  ========================================================================== */
+        )
 
-  if (loading) {
+    /* --------------------------------------------------------------------------
+    Render
+    -------------------------------------------------------------------------- */
 
     return (
 
-      <main
-        className={
-          styles.discoverDetail
-        }
-      >
+        <>
 
-        Loading...
+            <Hero
+                runtime={runtime}
+                dictionary={dictionary.hero}
+            />
 
-      </main>
+            <About
+                runtime={runtime}
+                dictionary={dictionary.about}
+            />
 
-    )
+            <Elements
+                runtime={runtime}
+                dictionary={dictionary.elements}
+            />
 
-  }
+            <RepresentativeProducts
+                runtime={runtime}
+                dictionary={dictionary.products}
+            />
 
-  /* ==========================================================================
-  🔥 Not Found
-  ========================================================================== */
+            <RelatedWorlds
+                runtime={runtime}
+                dictionary={dictionary.related}
+            />
 
-  if (
+            <ContinueDiscovery
+                runtime={runtime}
+                dictionary={dictionary.continue}
+            />
 
-    !runtime ||
-
-    !runtime.found
-
-  ) {
-
-    return (
-
-      <main
-        className={
-          styles.discoverDetail
-        }
-      >
-
-        <NotFoundState />
-
-      </main>
+        </>
 
     )
-
-  }
-
-  /* ==========================================================================
-  🔥 Empty Products
-  ========================================================================== */
-
-  const hasProducts =
-
-    runtime.sample_products.length > 0
-
-  /* ==========================================================================
-  🔥 Render
-  ========================================================================== */
-
-  return (
-
-    <main
-      className={
-        styles.discoverDetail
-      }
-    >
-
-      <Breadcrumb
-        runtime={runtime}
-      />
-
-      <SemanticHero
-        runtime={runtime}
-      />
-
-      <FeaturedProduct
-        product={
-          runtime.sample_products[0]
-        }
-      />
-
-      {
-        hasProducts && (
-          
-          <ProductGrid
-            products={
-              runtime.sample_products.slice(1)
-            }
-          />
-
-        )
-      }
-
-      {
-        runtime.aliases.length > 0 && (
-
-          <SemanticAliases
-            aliases={runtime.aliases}
-          />
-
-        )
-      }
-
-
-
-
-    </main>
-
-  )
 
 }

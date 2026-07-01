@@ -1,35 +1,6 @@
 // ============================================================================
-// FILE:
-// /home/maya/shin-dev/shin-vps/shared/lib/api/django/pc/discover-detail/normalize.ts
-// Copyright (c) 2024 Shin Corporation.
-// All rights reserved.
+// Discover Detail Runtime Normalizer
 // ============================================================================
-
-/**
- * ============================================================================
- * SHIN CORE LINX
- * Discover Detail Runtime Normalize
- * ============================================================================
- *
- * IMPORTANT
- *
- * Backend remains:
- *
- * semantic authority
- *
- * Adapter remains:
- *
- * transport authority
- *
- * This layer MUST NOT:
- *
- * ❌ generate meaning
- * ❌ create aliases
- * ❌ create products
- * ❌ infer related groups
- *
- * ============================================================================
- */
 
 import type {
 
@@ -43,194 +14,109 @@ import type {
 
 export function normalizeDiscoverDetailRuntime(
 
-  payload?: any
+  runtime?: Partial<DiscoverDetailRuntime>
 
 ): DiscoverDetailRuntime {
 
-  const source =
-
-    payload?.data
-
-    ??
-
-    payload
-
-    ??
-
-    {}
-
-  console.log(
-    '🔥 DISCOVER DETAIL NORMALIZE',
-    {
-
-      found:
-        payload?.found,
-
-      group_slug:
-        source?.group_slug,
-
-      group_name:
-        source?.group_name,
-
-      attribute:
-        source?.attribute,
-
-      product_count:
-        source?.product_count,
-
-      aliases:
-        source?.aliases?.length,
-
-      sample_products:
-        source?.sample_products?.length,
-    }
-  )
-
   return {
 
+    /* =========================
+       Runtime Status
+    ========================= */
+
     found:
+      runtime?.found ?? false,
 
-      payload?.found
+    success:
+      runtime?.success ?? runtime?.found ?? false,
 
-      ??
+    /* =========================
+       Meaning
+    ========================= */
 
-      source?.found
+    meaning:
+      runtime?.meaning ?? {},
 
-      ??
+    presentation:
+      runtime?.presentation ?? {},
 
-      false,
+    seo:
+      runtime?.seo ?? {},
 
-    group_slug:
+    /* =========================
+       Data
+    ========================= */
 
-      source?.group_slug
+    data: {
 
-      ??
+      group_slug:
+        runtime?.data?.group_slug ?? '',
 
-      '',
+      group_name:
+        runtime?.data?.group_name ?? '',
 
-    group_name:
+      type:
+        runtime?.data?.type ?? '',
 
-      source?.group_name
+      parent_group:
+        runtime?.data?.parent_group ?? '',
 
-      ??
+      icon:
+        runtime?.data?.icon ?? '',
 
-      '',
+      color:
+        runtime?.data?.color ?? '',
 
-    type:
+      sort_order:
+        runtime?.data?.sort_order ?? '',
 
-      source?.type
+      attribute:
+        runtime?.data?.attribute,
 
-      ??
+      product_count:
+        runtime?.data?.product_count ?? 0,
 
-      '',
+      aliases:
+        runtime?.data?.aliases ?? [],
 
-    parent_group:
+      related_groups:
+        runtime?.data?.related_groups ?? [],
 
-      source?.parent_group
+      sample_products:
+        runtime?.data?.sample_products ?? [],
+    },
 
-      ??
+    /* =========================
+       Runtime Authority
+    ========================= */
 
-      '',
+    semantic_schema_version:
+      runtime?.semantic_schema_version,
 
-    icon:
+    authority_version:
+      runtime?.authority_version,
 
-      source?.icon
-
-      ??
-
-      '',
-
-    color:
-
-      source?.color
-
-      ??
-
-      '',
-
-    sort_order:
-
-      source?.sort_order
-
-      ??
-
-      '',
-
-    description:
-
-      source?.description
-
-      ??
-
-      '',
-
-    // ------------------------------------------------------
-    // Attribute Projection
-    // ------------------------------------------------------
-
-    attribute:
-
-      source?.attribute
-
-      ??
-
-      undefined,
-
-    product_count:
-
-      source?.product_count
-
-      ??
-
-      0,
-
-    aliases:
-
-      Array.isArray(
-        source?.aliases
-      )
-
-        ? source.aliases
-
-        : [],
-
-    related_groups:
-
-      Array.isArray(
-        source?.related_groups
-      )
-
-        ? source?.related_groups
-
-        : [],
-
-    sample_products:
-
-      Array.isArray(
-        source?.sample_products
-      )
-
-        ? source.sample_products
-
-        : [],
+    semantic_authority:
+      runtime?.semantic_authority,
 
     ready:
+      runtime?.ready ?? false,
 
-      payload?.ready
-
-      ??
-
-      source?.ready
-
-      ??
-
-      false,
+    /* =========================
+       Raw Backup
+    ========================= */
 
     raw:
-
-      payload,
+      runtime,
   }
 }
+
+/* ============================================================================
+🔥 Alias
+============================================================================ */
+
+export const normalizeDiscoverDetail =
+  normalizeDiscoverDetailRuntime
 
 /* ============================================================================
 🔥 Default Export
