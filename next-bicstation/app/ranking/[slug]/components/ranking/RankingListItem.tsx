@@ -78,7 +78,7 @@ export default function RankingListItem({
 
         maker,
 
-        brand,
+        // brand,
 
         image_url,
 
@@ -192,25 +192,11 @@ export default function RankingListItem({
                     className={styles.title}
                 />
 
-                {
+                <ProductMaker
+                    maker={maker}
+                    className={styles.brand}
+                />
 
-                    (maker || brand) && (
-
-                        <div
-                            className={styles.brand}
-                        >
-
-                            {maker ?? brand}
-
-                        </div>
-
-                    )
-
-                }
-
-                <div>
-                    {maker ?? brand}
-                </div>
 
                 {
 

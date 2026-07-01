@@ -6,31 +6,29 @@
 'use client'
 
 /* ============================================================================
-🔥 Types
+🔥 Contracts
 ============================================================================ */
 
-// import type {
-
-//   NavigationItem,
-
-// } from '../../types/discover'
+import type {
+    NavigationIntent,
+} from '@/shared/lib/api/django/pc/navigation/adapter'
 
 /* ============================================================================
 🔥 Styles
 ============================================================================ */
 
 import styles
-  from '../../styles/discover.module.css'
+    from '../../styles/discover.module.css'
 
 /* ============================================================================
 🔥 Components
 ============================================================================ */
 
 import UniverseCard
-  from './UniverseCard'
+    from './UniverseCard'
 
 import EmptyState
-  from '../common/EmptyState'
+    from '../common/EmptyState'
 
 /* ============================================================================
 🔥 Props
@@ -38,8 +36,7 @@ import EmptyState
 
 type Props = {
 
-  items:
-    NavigationItem[]
+    items: NavigationIntent[]
 
 }
 
@@ -49,54 +46,48 @@ type Props = {
 
 export default function UniverseGrid({
 
-  items,
+    items,
 
 }: Props) {
 
-  if (
-    !items?.length
-  ) {
+    if (!items?.length) {
+
+        return <EmptyState />
+
+    }
 
     return (
 
-      <EmptyState />
+        <div
+            className={styles.universeGrid}
+        >
+
+            {
+
+                items.map(
+
+                    (item) => (
+
+                        <UniverseCard
+
+                            key={
+                                item.group_slug
+                            }
+
+                            item={
+                                item
+                            }
+
+                        />
+
+                    )
+
+                )
+
+            }
+
+        </div>
 
     )
-
-  }
-
-  return (
-
-    <div
-      className={
-        styles.universeGrid
-      }
-    >
-
-      {items.map(
-
-        (
-          item
-        ) => (
-
-          <UniverseCard
-
-            key={
-              item.slug
-            }
-
-            item={
-              item
-            }
-
-          />
-
-        )
-
-      )}
-
-    </div>
-
-  )
 
 }

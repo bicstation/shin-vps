@@ -173,13 +173,27 @@ def build_topology_runtime():
         topology.append({
 
             # ----------------------------------
-            # Presentation Authority
+            # Existing Presentation Metadata
             # ----------------------------------
 
             **metadata_index.get(
                 group_slug,
                 {},
             ),
+
+            # ----------------------------------
+            # Semantic Group Presentation Layer
+            # ----------------------------------
+
+            "presentation_name":
+                group.get(
+                    "presentation_name"
+                ),
+
+            "presentation_description":
+                group.get(
+                    "presentation_description"
+                ),
 
             # ----------------------------------
             # Semantic Authority

@@ -1,6 +1,6 @@
 // ============================================================================
 // FILE:
-// /home/maya/shin-dev/shin-vps/shared/lib/api/django/pc/navigation/adapter.ts
+// /shared/lib/api/django/pc/navigation/adapter.ts
 // Copyright (c) 2024 Shin Corporation.
 // All rights reserved.
 // ============================================================================
@@ -8,7 +8,7 @@
 /**
  * ============================================================================
  * SHIN CORE LINX
- * Navigation Projection Layer
+ * Navigation Projection Layer V2
  * ============================================================================
  *
  * PURPOSE
@@ -17,7 +17,7 @@
  *
  * ↓
  *
- * Stable UI Contract
+ * Frontend Projection
  *
  * IMPORTANT
  *
@@ -29,167 +29,204 @@
  *
  * Projection Authority
  *
- * Adapter SHALL:
+ * Projection SHALL
  *
- * Project
+ * ✓ Project Runtime
+ * ✓ Project Intent
+ * ✓ Preserve Meaning
  *
- * ONLY
+ * Projection SHALL NOT
+ *
+ * ✗ Generate Meaning
+ * ✗ Generate Runtime
+ * ✗ Generate Authority
+ * ✗ Generate UI Logic
  *
  * ============================================================================
  */
 
-/* ============================================================================
-🔥 Contracts
-============================================================================ */
-
 import type {
 
-  NavigationRuntimeItem,
+    NavigationRuntimeContract,
+    NavigationRuntimeItem,
+    NavigationAttribute,
 
 } from './contracts'
 
 /* ============================================================================
-🔥 Navigation Intent
+🔥 Projected Runtime
+============================================================================ */
+
+export interface NavigationProjectedRuntime {
+
+    header: {
+
+        title: string
+
+        subtitle: string
+
+        description: string
+    }
+
+    summary: {
+
+        total: number
+    }
+
+    intents: NavigationIntent[]
+}
+
+/* ============================================================================
+🔥 Projected Intent
 ============================================================================ */
 
 export interface NavigationIntent {
 
-  slug: string
+    slug: string
 
-  label: string
+    name: string
 
-  title?: string
+    title: string
 
-  subtitle?: string
+    subtitle: string
 
-  description?: string
+    description: string
 
-  type?: string
+    type: string
 
-  icon?: string
+    parentGroup?: string
 
-  color?: string
+    icon?: string
 
-  parentGroup?: string
+    color?: string
 
-  sortOrder?: number | string
+    sortOrder?: number | string
 
-  productCount?: number
+    productCount: number
 
-  attributes?: any[]
+    attributes: NavigationAttribute[]
 }
 
 /* ============================================================================
-🔥 Project Navigation Item
+🔥 Runtime Projection
+============================================================================ */
+
+export function projectNavigationRuntime(
+
+    runtime: NavigationRuntimeContract
+
+): NavigationProjectedRuntime {
+
+    const intents =
+
+        runtime.intents ?? []
+
+    return {
+
+        /* ================================================================
+        Header
+        ================================================================ */
+
+        header: {
+
+            title:
+
+                runtime.presentation?.title ?? '',
+
+            subtitle:
+
+                runtime.presentation?.subtitle ?? '',
+
+            description:
+
+                runtime.presentation?.description ?? '',
+        },
+
+        /* ================================================================
+        Summary
+        ================================================================ */
+
+        summary: {
+
+            total:
+
+                intents.length,
+        },
+
+        /* ================================================================
+        Intents
+        ================================================================ */
+
+        intents:
+
+            intents.map(
+
+                projectNavigationIntent
+            ),
+    }
+
+}
+
+/* ============================================================================
+🔥 Intent Projection
 ============================================================================ */
 
 export function projectNavigationIntent(
 
-  runtime?: NavigationRuntimeItem
+    runtime: NavigationRuntimeItem
 
 ): NavigationIntent {
 
-  return {
+    return {
 
-    slug:
+        slug:
 
-      runtime?.slug ?? '',
+            runtime.slug,
 
-    label:
+        name:
 
-      runtime?.name ?? '',
+            runtime.name,
 
-    title:
+        title:
 
-      runtime?.title ?? '',
+            runtime.title ?? '',
 
-    subtitle:
+        subtitle:
 
-      runtime?.subtitle ?? '',
+            runtime.subtitle ?? '',
 
-    description:
+        description:
 
-      runtime?.description ?? '',
+            runtime.description ?? '',
 
-    type:
+        type:
 
-      runtime?.type,
+            runtime.type,
 
-    icon:
+        parentGroup:
 
-      runtime?.icon ?? '',
+            runtime.parent_group,
 
-    color:
+        icon:
 
-      runtime?.color ?? '',
+            runtime.icon,
 
-    parentGroup:
+        color:
 
-      runtime?.parent_group,
+            runtime.color,
 
-    sortOrder:
+        sortOrder:
 
-      runtime?.sort_order,
+            runtime.sort_order,
 
-    productCount:
+        productCount:
 
-      runtime?.product_count ?? 0,
+            runtime.product_count ?? 0,
 
-    attributes:
+        attributes:
 
-      runtime?.attributes ?? [],
-
-  }
-
-}
-
-/* ============================================================================
-🔥 Project Navigation Collection
-============================================================================ */
-
-export function projectNavigationIntents(
-
-  runtimes?: NavigationRuntimeItem[]
-
-): NavigationIntent[] {
-
-  if (!Array.isArray(runtimes)) {
-
-    return []
-
-  }
-
-  const projected =
-
-    runtimes.map(
-
-      projectNavigationIntent
-
-    )
-
-  console.log(
-
-    '🔥 NAVIGATION PROJECTION',
-
-    {
-
-      runtime_count:
-
-        runtimes.length,
-
-      projected_count:
-
-        projected.length,
-
-      sample:
-
-        projected?.[0],
-
+            runtime.attributes ?? [],
     }
-
-  )
-
-  return projected
 
 }
 
@@ -197,4 +234,4 @@ export function projectNavigationIntents(
 🔥 Default Export
 ============================================================================ */
 
-export default projectNavigationIntents
+export default projectNavigationRuntime

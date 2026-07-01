@@ -1,31 +1,53 @@
+// ============================================================================
+// FILE:
+// shared/lib/api/django/pc/navigation/contracts.ts
+// ============================================================================
+
 /* ============================================================================
-🔥 Navigation Meaning
+🔥 Meaning
 ============================================================================ */
 
 export interface NavigationMeaning {
 
-  identity?: string
+    identity?: string
 
-  mission?: string
+    mission?: string
 
-  user_intent?: string
+    user_intent?: string
 
-  meaning_statement?: string
+    meaning_statement?: string
 
-  existence_reason?: string
+    existence_reason?: string
 }
 
 /* ============================================================================
-🔥 Presentation Runtime
+🔥 Presentation
 ============================================================================ */
 
 export interface NavigationPresentation {
 
-  title?: string
+    title?: string
 
-  subtitle?: string
+    subtitle?: string
 
-  description?: string
+    description?: string
+}
+
+/* ============================================================================
+🔥 SEO
+============================================================================ */
+
+export interface NavigationSEO {
+
+    title?: string
+
+    description?: string
+
+    keywords?: string[]
+
+    canonical?: string
+
+    schema_jsonld?: any
 }
 
 /* ============================================================================
@@ -34,110 +56,121 @@ export interface NavigationPresentation {
 
 export interface NavigationAttribute {
 
-  slug: string
+    slug: string
 
-  name: string
+    name: string
 
-  title?: string
+    title?: string
 
-  subtitle?: string
+    subtitle?: string
 
-  description?: string
+    description?: string
 
-  type?: string
+    type?: string
 
-  icon?: string
+    icon?: string
 
-  color?: string
+    color?: string
 
-  semantic_role?: string
+    semantic_role?: string
 
-  semantic_weight?: number | string
+    semantic_weight?: number | string
 
-  is_ranking_enabled?: boolean | string
+    is_ranking_enabled?: boolean | string
 }
 
 /* ============================================================================
-🔥 Navigation Runtime Item
+🔥 Navigation Intent
 ============================================================================ */
 
 export interface NavigationRuntimeItem {
 
-  slug: string
+    slug: string
 
-  name: string
+    name: string
 
-  title?: string
+    title?: string
 
-  subtitle?: string
+    subtitle?: string
 
-  description?: string
+    description?: string
 
-  type: string
+    type: string
 
-  parent_group?: string
+    parent_group?: string
 
-  icon?: string
+    icon?: string
 
-  color?: string
+    color?: string
 
-  sort_order?: number | string
+    sort_order?: number | string
 
-  product_count?: number
+    product_count?: number
 
-  attributes?: NavigationAttribute[]
+    attributes?: NavigationAttribute[]
 }
 
 /* ============================================================================
-🔥 Navigation Runtime
+🔥 Navigation Runtime Contract
 ============================================================================ */
 
-export interface NavigationRuntime {
+export interface NavigationRuntimeContract {
 
-  /* ========================================================================
-  Runtime Status
-  ======================================================================== */
+    // =========================
+    // STATUS
+    // =========================
 
-  success?: boolean
+    success?: boolean
 
-  /* ========================================================================
-  Meaning
-  ======================================================================== */
+    // =========================
+    // MEANING
+    // =========================
 
-  meaning?: NavigationMeaning
+    meaning?: NavigationMeaning
 
-  presentation?: NavigationPresentation
+    // =========================
+    // PRESENTATION
+    // =========================
 
-  seo?: any
+    presentation?: NavigationPresentation
 
-  /* ========================================================================
-  Navigation
-  ======================================================================== */
+    // =========================
+    // SEO
+    // =========================
 
-  intents: NavigationRuntimeItem[]
+    seo?: NavigationSEO
 
-  /* ========================================================================
-  Runtime Authority
-  ======================================================================== */
+    // =========================
+    // DATA
+    // =========================
 
-  semantic_schema_version?: number
+    intents: NavigationRuntimeItem[]
 
-  authority_version?: string
+    // =========================
+    // AUTHORITY
+    // =========================
 
-  semantic_authority?: string
+    semantic_schema_version?: number
 
-  ready?: boolean
+    authority_version?: string
 
-  /* ========================================================================
-  Raw Backup
-  ======================================================================== */
+    semantic_authority?: string
 
-  raw?: any
+    ready?: boolean
+
+    // =========================
+    // RAW BACKUP
+    // =========================
+
+    raw?: any
 }
 
 /* ============================================================================
 🔥 Legacy Compatibility
 ============================================================================ */
 
+export type NavigationRuntime =
+    NavigationRuntimeContract
+
 export type NavigationRuntimeResponse =
-  NavigationRuntime
+    NavigationRuntimeContract

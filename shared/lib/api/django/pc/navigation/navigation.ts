@@ -1,6 +1,6 @@
 // ============================================================================
 // FILE:
-// /home/maya/shin-dev/shin-vps/shared/lib/api/django/pc/navigation/navigation.ts
+// /shared/lib/api/django/pc/navigation/navigation.ts
 // Copyright (c) 2024 Shin Corporation.
 // All rights reserved.
 // ============================================================================
@@ -8,16 +8,24 @@
 /**
  * ============================================================================
  * SHIN CORE LINX
- * Navigation Runtime Gateway
+ * Navigation Gateway V2
  * ============================================================================
  *
  * PURPOSE
  *
- * GET /api/pc/navigation/
+ * Backend Runtime
  *
  * ↓
  *
- * Navigation Runtime
+ * Transport
+ *
+ * ↓
+ *
+ * Normalize
+ *
+ * ↓
+ *
+ * Runtime
  *
  * IMPORTANT
  *
@@ -27,16 +35,21 @@
  *
  * Adapter remains:
  *
- * Projection Authority
+ * Transport Authority
  *
- * Adapter SHALL:
+ * Gateway SHALL
  *
- * Transport
- * Normalize
- * Project
- * Observe
+ * ✓ Build Endpoint
+ * ✓ Fetch Runtime
+ * ✓ Normalize Runtime
+ * ✓ Observe Runtime
  *
- * ONLY
+ * Gateway SHALL NOT
+ *
+ * ✗ Generate Meaning
+ * ✗ Generate Presentation
+ * ✗ Generate Runtime
+ * ✗ Generate Projection
  *
  * ============================================================================
  */
@@ -46,25 +59,23 @@
 ============================================================================ */
 
 import type {
-
-  NavigationRuntime,
-
+    NavigationRuntimeContract,
 } from './contracts'
 
 /* ============================================================================
-🔥 Utils
+🔥 Endpoint Builder
 ============================================================================ */
 
 import {
-
-  buildEndpoint,
-
+    buildEndpoint,
 } from '../utils/buildEndpoint'
 
+/* ============================================================================
+🔥 Safe Fetch
+============================================================================ */
+
 import {
-
-  safeFetch,
-
+    safeFetch,
 } from '../utils/safeFetch'
 
 /* ============================================================================
@@ -72,9 +83,7 @@ import {
 ============================================================================ */
 
 import {
-
-  normalizeNavigation,
-
+    normalizeNavigation,
 } from './normalize'
 
 /* ============================================================================
@@ -82,157 +91,126 @@ import {
 ============================================================================ */
 
 const NAVIGATION_ENDPOINT =
-
-  '/pc/navigation/'
+    '/pc/navigation/'
 
 /* ============================================================================
 🔥 Fetch Navigation Runtime
 ============================================================================ */
 
 export async function fetchNavigationRuntime(
+): Promise<NavigationRuntimeContract> {
 
-): Promise<NavigationRuntime> {
+    /* =======================================================================
+    Endpoint
+    ======================================================================= */
 
-  /* ==========================================================================
-  Endpoint
-  ========================================================================== */
+    const endpoint =
+        buildEndpoint(
+            NAVIGATION_ENDPOINT
+        )
 
-  const endpoint =
-
-    buildEndpoint(
-
-      NAVIGATION_ENDPOINT
-
+    console.log(
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
     )
 
-  console.log(
-
-    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
-
-  )
-
-  console.log(
-
-    '🔥 FETCH NAVIGATION RUNTIME'
-
-  )
-
-  console.log({
-
-    endpoint,
-
-  })
-
-  console.log(
-
-    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
-
-  )
-
-  /* ==========================================================================
-  Fetch
-  ========================================================================== */
-
-  const payload =
-
-    await safeFetch<NavigationRuntime>(
-
-      endpoint
-
+    console.log(
+        '🔥 FETCH NAVIGATION RUNTIME'
     )
 
-  console.log(
+    console.log({
+        endpoint,
+    })
 
-    '🔥 NAVIGATION RAW PAYLOAD',
-
-    payload
-
-  )
-
-  /* ==========================================================================
-  Failure
-  ========================================================================== */
-
-  if (!payload) {
-
-    console.warn(
-
-      '⚠️ NAVIGATION RUNTIME EMPTY'
-
+    console.log(
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
     )
 
-    return normalizeNavigation()
+    /* =======================================================================
+    Fetch
+    ======================================================================= */
 
-  }
+    const payload =
+        await safeFetch<NavigationRuntimeContract>(
+            endpoint
+        )
 
-  /* ==========================================================================
-  Normalize
-  ========================================================================== */
+    /* =======================================================================
+    RAW Observability
+    ======================================================================= */
 
-  const runtime =
-
-    normalizeNavigation(
-
-      payload
-
+    console.log(
+        '🔥 NAVIGATION RAW PAYLOAD',
+        payload
     )
 
-  /* ==========================================================================
-  Runtime Observability
-  ========================================================================== */
+    /* =======================================================================
+    Empty Runtime
+    ======================================================================= */
 
-  console.log(
+    if (!payload) {
 
-    '🔥 NAVIGATION RUNTIME',
+        console.warn(
+            '⚠️ NAVIGATION RUNTIME EMPTY'
+        )
 
-    {
-
-      meaning:
-
-        runtime.meaning,
-
-      presentation:
-
-        runtime.presentation,
-
-      seo:
-
-        runtime.seo,
-
-      intents:
-
-        runtime.intents?.length,
-
-      semantic_schema_version:
-
-        runtime.semantic_schema_version,
-
-      authority_version:
-
-        runtime.authority_version,
-
-      semantic_authority:
-
-        runtime.semantic_authority,
-
-      ready:
-
-        runtime.ready,
-
-      sample:
-
-        runtime.intents?.[0],
-
+        return normalizeNavigation()
     }
 
-  )
+    /* =======================================================================
+    Normalize
+    ======================================================================= */
 
-  /* ==========================================================================
-  Success
-  ========================================================================== */
+    const runtime =
+        normalizeNavigation(
+            payload
+        )
 
-  return runtime
+    /* =======================================================================
+    Runtime Observability
+    ======================================================================= */
 
+    console.log(
+        '🔥 NAVIGATION NORMALIZED',
+        {
+
+            meaning:
+                runtime.meaning,
+
+            presentation:
+                runtime.presentation,
+
+            seo:
+                runtime.seo,
+
+            intents:
+                runtime.intents?.length ?? 0,
+
+            semantic_schema_version:
+                runtime.semantic_schema_version,
+
+            authority_version:
+                runtime.authority_version,
+
+            semantic_authority:
+                runtime.semantic_authority,
+
+            ready:
+                runtime.ready,
+
+            sample:
+                runtime.intents?.[0],
+        }
+    )
+
+    console.log(
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+    )
+
+    /* =======================================================================
+    Success
+    ======================================================================= */
+
+    return runtime
 }
 
 /* ============================================================================

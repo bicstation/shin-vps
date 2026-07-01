@@ -1,6 +1,6 @@
 // ============================================================================
 // FILE:
-// /home/maya/shin-dev/shin-vps/shared/lib/api/django/pc/navigation/normalize.ts
+// /shared/lib/api/django/pc/navigation/normalize.ts
 // Copyright (c) 2024 Shin Corporation.
 // All rights reserved.
 // ============================================================================
@@ -8,256 +8,126 @@
 /**
  * ============================================================================
  * SHIN CORE LINX
- * Navigation Runtime Normalization Layer
+ * Navigation Normalize V2
  * ============================================================================
  *
  * PURPOSE
  *
  * Backend Runtime
+ *
  * ↓
- * Stable Runtime Contract
  *
- * Adapter SHALL:
+ * Runtime Contract
  *
- * Transport
- * Normalize
- * Project
+ * IMPORTANT
  *
- * ONLY
+ * Normalize SHALL
+ *
+ * ✓ Preserve Backend Reality
+ * ✓ Guarantee Runtime Contract
+ * ✓ Fill Missing Collections
+ * ✓ Preserve Raw Runtime
+ *
+ * Normalize SHALL NOT
+ *
+ * ✗ Generate Meaning
+ * ✗ Generate Presentation
+ * ✗ Generate Authority
+ * ✗ Generate UI
  *
  * ============================================================================
  */
 
-/* ============================================================================
-🔥 Contracts
-============================================================================ */
-
 import type {
 
-  NavigationRuntime,
-  NavigationRuntimeItem,
+    NavigationRuntimeContract,
 
 } from './contracts'
 
 /* ============================================================================
-🔥 Normalize Navigation
+🔥 Normalize Navigation Runtime
 ============================================================================ */
 
 export function normalizeNavigation(
 
-  payload?: any
+    runtime?: Partial<NavigationRuntimeContract>
 
-): NavigationRuntime {
-
-  /* ==========================================================================
-  Empty Guard
-  ========================================================================== */
-
-  if (!payload) {
+): NavigationRuntimeContract {
 
     return {
 
-      meaning: {},
+        /* ====================================================================
+        Status
+        ==================================================================== */
 
-      presentation: {},
+        success:
 
-      seo: {},
+            runtime?.success ?? true,
 
-      intents: [],
+        /* ====================================================================
+        Meaning
+        ==================================================================== */
 
-      semantic_schema_version: 1,
+        meaning:
 
-      authority_version: '',
+            runtime?.meaning,
 
-      semantic_authority: '',
+        /* ====================================================================
+        Presentation
+        ==================================================================== */
 
-      ready: false,
+        presentation:
 
-      raw: null,
+            runtime?.presentation,
 
+        /* ====================================================================
+        SEO
+        ==================================================================== */
+
+        seo:
+
+            runtime?.seo,
+
+        /* ====================================================================
+        Navigation
+        ==================================================================== */
+
+        intents:
+
+            Array.isArray(runtime?.intents)
+
+                ? runtime.intents
+
+                : [],
+
+        /* ====================================================================
+        Authority
+        ==================================================================== */
+
+        semantic_schema_version:
+
+            runtime?.semantic_schema_version,
+
+        authority_version:
+
+            runtime?.authority_version,
+
+        semantic_authority:
+
+            runtime?.semantic_authority,
+
+        ready:
+
+            runtime?.ready ?? false,
+
+        /* ====================================================================
+        Raw Backup
+        ==================================================================== */
+
+        raw:
+
+            runtime,
     }
-
-  }
-
-  /* ==========================================================================
-  Runtime Source
-  ========================================================================== */
-
-  const source =
-
-    payload?.data
-
-    ??
-
-    payload
-
-    ??
-
-    {}
-
-  /* ==========================================================================
-  Navigation Intents
-  ========================================================================== */
-
-  const intents: NavigationRuntimeItem[] =
-
-    Array.isArray(
-
-      source?.intents
-
-    )
-
-      ? source.intents
-
-    : Array.isArray(
-
-        source?.navigation
-
-      )
-
-      ? source.navigation
-
-    : Array.isArray(
-
-        source?.items
-
-      )
-
-      ? source.items
-
-    : []
-
-  /* ==========================================================================
-  Observability
-  ========================================================================== */
-
-  console.log(
-
-    '🔥 NAVIGATION NORMALIZE',
-
-    {
-
-      source:
-
-        Array.isArray(source?.intents)
-
-          ? 'intents'
-
-        : Array.isArray(source?.navigation)
-
-          ? 'navigation'
-
-        : Array.isArray(source?.items)
-
-          ? 'items'
-
-        : 'unknown',
-
-      intents:
-
-        intents.length,
-
-      meaning:
-
-        payload?.meaning,
-
-      presentation:
-
-        payload?.presentation,
-
-      semantic_schema_version:
-
-        payload?.semantic_schema_version,
-
-      authority_version:
-
-        payload?.authority_version,
-
-      semantic_authority:
-
-        payload?.semantic_authority,
-
-      ready:
-
-        payload?.ready,
-
-      sample:
-
-        intents?.[0],
-
-    }
-
-  )
-
-  /* ==========================================================================
-  Runtime Projection
-  ========================================================================== */
-
-  return {
-
-    meaning:
-
-      payload?.meaning
-
-      ||
-
-      {},
-
-    presentation:
-
-      payload?.presentation
-
-      ||
-
-      {},
-
-    seo:
-
-      payload?.seo
-
-      ||
-
-      {},
-
-    intents,
-
-    semantic_schema_version:
-
-      payload?.semantic_schema_version
-
-      ??
-
-      1,
-
-    authority_version:
-
-      payload?.authority_version
-
-      ??
-
-      '',
-
-    semantic_authority:
-
-      payload?.semantic_authority
-
-      ??
-
-      '',
-
-    ready:
-
-      payload?.ready
-
-      ??
-
-      false,
-
-    raw:
-
-      payload,
-
-  }
 
 }
 

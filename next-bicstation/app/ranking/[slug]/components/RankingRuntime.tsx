@@ -21,11 +21,9 @@ import type {
 
 import {
     RankingHero,
-    RankingBreadcrumbs,
     FlagshipCard,
     ComparisonGrid,
     RankingList,
-    RankingFAQ,
     RankingContinuation,
 } from './'
 
@@ -49,22 +47,18 @@ export default function RankingRuntime({
 
 }: Props) {
 
+    console.log(runtime)
+
     /* =========================================================================
     🔥 Runtime
     ========================================================================= */
-   
-    const {
 
-        products = [],
-        breadcrumbs = [],
-        faq = [],
-
-    } = runtime
+    const products =
+        runtime.data.products
 
     /* =========================================================================
     🔥 Ranking Structure
     ========================================================================= */
-
 
     const flagship =
         products[0]
@@ -74,7 +68,6 @@ export default function RankingRuntime({
 
     const rankingProducts =
         products.slice(4)
-
 
     /* =========================================================================
     🔥 Render
@@ -89,85 +82,78 @@ export default function RankingRuntime({
             ========================================================== */}
 
             <RankingHero
+
                 runtime={runtime}
+
                 totalProducts={products.length}
-            />
 
-            {/* ==========================================================
-            Breadcrumbs
-            ========================================================== */}
-
-            <RankingBreadcrumbs
-                breadcrumbs={breadcrumbs}
             />
 
             {/* ==========================================================
             Flagship
-            ========================================================== */}           
+            ========================================================== */}
 
-            {flagship && (
+            {
 
-                <FlagshipCard
-                    product={flagship}
-                    rank={1}
-                />
+                flagship && (
 
-            )}
+                    <FlagshipCard
 
-           
+                        product={flagship}
+
+                        rank={1}
+
+                    />
+
+                )
+
+            }
 
             {/* ==========================================================
             Comparison
             ========================================================== */}
 
-            
+            {
 
-            {comparisonProducts.length > 0 && (
+                comparisonProducts.length > 0 && (
 
-                <ComparisonGrid
-                    products={comparisonProducts}
-                />
+                    <ComparisonGrid
 
-            )}
+                        products={comparisonProducts}
 
-           
+                        runtime={runtime}
+
+                    />
+
+                )
+
+            }
 
             {/* ==========================================================
             Ranking
             ========================================================== */}
 
-            
+            {
 
-            {rankingProducts.length > 0 && (
+                rankingProducts.length > 0 && (
 
-                <RankingList
-                    products={rankingProducts}
-                    startRank={5}
-                />
+                    <RankingList
 
-            )}
+                        products={rankingProducts}
 
+                        startRank={5}
 
+                    />
+
+                )
+
+            }
 
             {/* ==========================================================
             Continuation
             ========================================================== */}
 
             <RankingContinuation />
-
-
-           {/* ==========================================================
-            FAQ
-            ========================================================== */}
-
-            {faq.length > 0 && (
-
-                <RankingFAQ
-                    runtime={runtime}
-                />
-
-            )}
-
 
         </main>
 

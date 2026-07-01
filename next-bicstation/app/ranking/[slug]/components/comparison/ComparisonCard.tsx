@@ -12,6 +12,17 @@
 import Image from 'next/image'
 import Link from 'next/link'
 
+import RecommendationReason
+    from '@/app/experience/components/product/RecommendationReason'
+import ProductTitle
+    from '@/app/experience/components/product/ProductTitle'
+import ProductMaker
+    from '@/app/experience/components/product/ProductMaker'
+import ProductImage
+    from '@/app/experience/components/product/ProductImage'
+import ProductPrice
+    from '@/app/experience/components/product/ProductPrice'
+
 /* ============================================================================
 🔥 Contracts
 ============================================================================ */
@@ -58,7 +69,7 @@ export default function ComparisonCard({
 
         maker,
 
-        brand,
+        // brand,
 
         image_url,
 
@@ -95,24 +106,16 @@ export default function ComparisonCard({
                 <div
                     className={styles.badge}
                 >
-
-
                     <Image
-
                         src={badge}
-
                         alt={`Ranking Core ${rank}`}
-
                         width={44}
-
                         height={44}
-
                         className={styles.badgeIcon}
-
                     />
 
                     <span>
-                        TOP ${rank}
+                        TOP {rank}
                     </span>
 
 
@@ -185,95 +188,45 @@ export default function ComparisonCard({
             <div
                 className={styles.content}
             >
-
-                <h3
+                <ProductTitle
+                    title={name}
                     className={styles.title}
-                >
+                />
 
-                    {name}
+                <ProductMaker
+                    maker={maker}
+                    className={styles.brand}
+                />
 
-                </h3>
+                <RecommendationReason
+                    reason={recommendation_reason}
+                    className={styles.description}
+                />
 
-                {
-
-                    (maker || brand) && (
-
-                        <div
-                            className={styles.brand}
-                        >
-
-                            {maker ?? brand}
-
-                        </div>
-
-                    )
-
-                }
-
-                {
-
-                    recommendation_reason && (
-
-                        <p
-                            className={
-                                styles.description
-                            }
-                        >
-
-                            {recommendation_reason}
-
-                        </p>
-
-                    )
-
-                }
 
                 {
 
                     semantic_labels.length > 0 && (
-
                         <div
-                            className={
-                                styles.chips
-                            }
+                            className={styles.chips}
                         >
-
                             {
 
                                 semantic_labels
                                     .slice(0, 4)
                                     .map(
-
                                         (
-
                                             label,
-
                                             index,
-
-                                            slug,
-
                                         ) => (
-
-                                            <Link
-
+                                            <span
                                                 key={index}
-
-                                                href={`/discover/${encodeURIComponent(slug)}`}
-
-                                                className={
-                                                    styles.chip
-                                                }
-
+                                                className={styles.chip}
                                             >
-
                                                 {label}
-
-                                            </Link>
-
+                                            </span>
                                         )
-
                                     )
-
                             }
 
                         </div>
@@ -289,24 +242,10 @@ export default function ComparisonCard({
                 <div
                     className={styles.footer}
                 >
-
-                    {
-
-                        typeof price === 'number' && (
-
-                            <div
-                                className={
-                                    styles.price
-                                }
-                            >
-
-                                ¥{price.toLocaleString()}
-
-                            </div>
-
-                        )
-
-                    }
+                    <ProductPrice
+                        price={price}
+                        className={styles.price}
+                    />
 
                     {
 
