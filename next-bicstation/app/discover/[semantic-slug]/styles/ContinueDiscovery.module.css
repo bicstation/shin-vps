@@ -4,22 +4,6 @@
    Continue Discovery
    ========================================================================== */
 
-.discovery {
-
-    padding: 96px 32px 120px;
-
-    background: #07111f;
-
-}
-
-.container {
-
-    max-width: 1200px;
-
-    margin: 0 auto;
-
-}
-
 .card {
 
     padding: 72px 56px;
@@ -28,16 +12,21 @@
 
     border-radius: 28px;
 
-    border: 1px solid rgba(69,179,255,.18);
+    border: 1px solid rgba(255, 255, 255, .10);
 
     background:
-        linear-gradient(
-            180deg,
-            rgba(69,179,255,.08),
-            rgba(255,255,255,.03)
-        );
 
-    backdrop-filter: blur(16px);
+        linear-gradient(180deg,
+
+            rgba(255, 255, 255, .08),
+
+            rgba(255, 255, 255, .04));
+
+    backdrop-filter: blur(18px);
+
+    box-shadow:
+
+        0 24px 56px rgba(0, 0, 0, .20);
 
 }
 
@@ -75,9 +64,19 @@
 
     justify-content: center;
 
-    color: var(--accent-color, #45b3ff);
+    width: 44px;
 
-    line-height: 1;
+    height: 44px;
+
+    border-radius: 999px;
+
+    border: 1px solid rgba(255, 255, 255, .10);
+
+    background: rgba(255, 255, 255, .08);
+
+    backdrop-filter: blur(12px);
+
+    color: var(--accent-color, #45b3ff);
 
     flex-shrink: 0;
 
@@ -91,19 +90,29 @@
 
     line-height: 1.9;
 
-    color: rgba(255,255,255,.82);
+    color: rgba(255, 255, 255, .82);
 
 }
 
 .button {
 
-    display: inline-block;
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 10px;
 
     padding: 16px 40px;
 
+    margin-top: 8px;
+
     border-radius: 999px;
 
-    background: #45b3ff;
+    border: 1px solid transparent;
+
+    background: var(--accent-color, #45b3ff);
 
     color: #ffffff;
 
@@ -113,7 +122,13 @@
 
     text-decoration: none;
 
-    transition: .25s ease;
+    transition:
+
+        transform .25s,
+
+        box-shadow .25s,
+
+        background .25s;
 
 }
 
@@ -121,8 +136,24 @@
 
     transform: translateY(-3px);
 
-    background: #67c2ff;
+    box-shadow:
 
-    box-shadow: 0 12px 32px rgba(69,179,255,.30);
+        0 12px 32px rgba(69, 179, 255, .30);
+
+}
+
+.button::after {
+
+    content: "→";
+
+    transition:
+
+        transform .25s;
+
+}
+
+.button:hover::after {
+
+    transform: translateX(4px);
 
 }

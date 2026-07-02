@@ -56,15 +56,13 @@
 
     line-height: 1;
 
-    flex-shrink: 0;
-
 }
 
 .description {
 
     margin-top: 16px;
 
-    color: rgba(255,255,255,.78);
+    color: rgba(255, 255, 255, .78);
 
     line-height: 1.8;
 
@@ -74,7 +72,7 @@
 
     display: grid;
 
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
 
     gap: 24px;
 
@@ -88,33 +86,125 @@
 
 .card {
 
-    display: flex;
+    position: relative;
 
-    align-items: center;
+    display: block;
 
-    gap: 16px;
+    min-height: 230px;
 
-    padding: 24px;
+    overflow: hidden;
 
-    border-radius: 18px;
+    border-radius: 22px;
 
-    border: 1px solid rgba(255,255,255,.08);
-
-    background: rgba(255,255,255,.03);
+    border: 1px solid rgba(255, 255, 255, .08);
 
     text-decoration: none;
 
-    color: inherit;
+    background-size: cover;
 
-    transition: .25s ease;
+    background-position: center;
+
+    background-repeat: no-repeat;
+
+    transition:
+
+        transform .25s,
+
+        border-color .25s,
+
+        box-shadow .25s;
 
 }
 
 .card:hover {
 
-    transform: translateY(-4px);
+    transform: translateY(-6px);
 
-    border-color: rgba(69,179,255,.45);
+    border-color: var(--accent-color, #45b3ff);
+
+    box-shadow:
+
+        0 24px 56px rgba(0, 0, 0, .45);
+
+}
+
+.activeCard {
+
+    border-color:
+
+        var(--accent-color, #45b3ff);
+
+    box-shadow:
+
+        0 0 0 2px rgba(69, 179, 255, .25);
+
+}
+
+.overlay {
+
+    position: absolute;
+
+    inset: 0;
+
+    background:
+
+        linear-gradient(180deg,
+
+            rgba(6, 14, 28, .20),
+
+            rgba(6, 14, 28, .88));
+
+}
+
+.currentBadge {
+
+    position: absolute;
+
+    top: 18px;
+
+    right: 18px;
+
+    z-index: 2;
+
+    padding: 8px 14px;
+
+    border-radius: 999px;
+
+    background:
+
+        rgba(69, 179, 255, .16);
+
+    border:
+
+        1px solid rgba(69, 179, 255, .35);
+
+    backdrop-filter: blur(12px);
+
+    color: #ffffff;
+
+    font-size: .78rem;
+
+    font-weight: 700;
+
+    letter-spacing: .05em;
+
+}
+
+.content {
+
+    position: relative;
+
+    z-index: 1;
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: flex-end;
+
+    height: 100%;
+
+    padding: 28px;
 
 }
 
@@ -126,32 +216,114 @@
 
     justify-content: center;
 
-    color: var(--accent-color, #45b3ff);
+    width: 52px;
 
-    line-height: 1;
+    height: 52px;
 
-    flex-shrink: 0;
+    margin-bottom: 18px;
+
+    border-radius: 999px;
+
+    background:
+
+        rgba(255, 255, 255, .10);
+
+    border:
+
+        1px solid rgba(255, 255, 255, .08);
+
+    backdrop-filter: blur(14px);
+
+    color:
+
+        var(--accent-color, #45b3ff);
+
+}
+
+.text {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 8px;
 
 }
 
 .worldName {
 
+    font-size: 1.85rem;
+
+    font-weight: 700;
+
     color: #ffffff;
 
-    font-weight: 600;
+}
+
+.worldDescription {
+
+    color: rgba(255, 255, 255, .86);
+
+    line-height: 1.7;
+
+    font-size: .98rem;
+
+}
+
+.arrow {
+
+    margin-top: 22px;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 6px;
+
+    color:
+
+        var(--accent-color, #45b3ff);
+
+    font-weight: 700;
+
+    opacity: 0;
+
+    transform: translateX(-10px);
+
+    transition:
+
+        opacity .25s,
+
+        transform .25s;
+
+}
+
+.card:hover .arrow {
+
+    opacity: 1;
+
+    transform: translateX(0);
 
 }
 
 .empty {
 
-    padding: 48px;
+    padding: 64px;
 
     text-align: center;
 
-    border-radius: 18px;
+    border-radius: 20px;
 
-    background: rgba(255,255,255,.03);
+    border:
 
-    color: rgba(255,255,255,.7);
+        1px solid rgba(255, 255, 255, .08);
+
+    background:
+
+        rgba(255, 255, 255, .03);
+
+    color:
+
+        rgba(255, 255, 255, .72);
 
 }

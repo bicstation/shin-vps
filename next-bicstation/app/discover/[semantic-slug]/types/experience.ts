@@ -24,6 +24,30 @@ export interface ExperienceAsset {
    */
   accentColor?: string
 
+  /**
+   * Background image used by this Experience.
+   *
+   * Individual sections may reuse the Hero image
+   * or provide their own background.
+   */
+  backgroundImage?: string
+
+  /**
+   * Background position.
+   *
+   * Used by ExperienceSection to create
+   * visual continuity throughout the
+   * Semantic World.
+   *
+   * Examples:
+   *
+   * center top
+   * center
+   * center bottom
+   * bottom
+   */
+  backgroundPosition?: string
+
 }
 
 /* ============================================================================
@@ -40,6 +64,9 @@ export interface ExperienceHero extends ExperienceAsset {
 
   description: string
 
+  /**
+   * Hero background is required.
+   */
   backgroundImage: string
 
 }
@@ -48,7 +75,8 @@ export interface ExperienceHero extends ExperienceAsset {
 About
 ============================================================================ */
 
-export interface ExperienceAbout extends ExperienceAsset {
+export interface ExperienceAbout
+  extends ExperienceAsset {
 
   title: string
 
@@ -60,7 +88,8 @@ export interface ExperienceAbout extends ExperienceAsset {
 Elements
 ============================================================================ */
 
-export interface ExperienceElements extends ExperienceAsset {
+export interface ExperienceElements
+  extends ExperienceAsset {
 
   title: string
 
@@ -74,7 +103,8 @@ export interface ExperienceElements extends ExperienceAsset {
 Representative Products
 ============================================================================ */
 
-export interface ExperienceProducts extends ExperienceAsset {
+export interface ExperienceProducts
+  extends ExperienceAsset {
 
   title: string
 
@@ -86,7 +116,8 @@ export interface ExperienceProducts extends ExperienceAsset {
 Related Worlds
 ============================================================================ */
 
-export interface ExperienceRelated extends ExperienceAsset {
+export interface ExperienceRelated
+  extends ExperienceAsset {
 
   title: string
 
@@ -98,7 +129,8 @@ export interface ExperienceRelated extends ExperienceAsset {
 Continue Discovery
 ============================================================================ */
 
-export interface ExperienceContinue extends ExperienceAsset {
+export interface ExperienceContinue
+  extends ExperienceAsset {
 
   title: string
 

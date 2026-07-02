@@ -8,6 +8,12 @@ import Link from 'next/link'
 
 import type {
 
+  CSSProperties,
+
+} from 'react'
+
+import type {
+
   DiscoverDetailRuntime,
 
 } from '@/shared/lib/api/django/pc/discover-detail'
@@ -17,6 +23,12 @@ import {
   ICON_MAP,
 
 } from '@/shared/lib/ui/semantic/icon-map'
+
+import {
+
+  getExperienceDictionary,
+
+} from '../dictionary'
 
 import type {
 
@@ -54,15 +66,67 @@ export default function RelatedWorlds(
 
 ) {
 
-  const relatedGroups = runtime.data.related_groups ?? []
+  const siblingGroups =
 
-  const Icon =
+    runtime.data.sibling_groups ?? []
+
+  const SectionIcon =
 
     dictionary.icon
 
       ? ICON_MAP[dictionary.icon]
 
       : null
+
+  /* ==========================================================================
+  View Model
+  ========================================================================== */
+
+  const worlds =
+
+    siblingGroups.map(
+
+      (
+
+        group
+
+      ) => {
+
+        const experience =
+
+          getExperienceDictionary(
+
+            group.group_slug
+
+          )
+
+        return {
+
+          ...group,
+
+          experience,
+
+          backgroundImage:
+
+            experience?.hero.backgroundImage,
+
+          accentColor:
+
+            experience?.hero.accentColor,
+
+          Icon:
+
+            group.icon
+
+              ? ICON_MAP[group.icon]
+
+              : null,
+
+        }
+
+      }
+
+    )
 
   return (
 
@@ -76,11 +140,11 @@ export default function RelatedWorlds(
 
             {
 
-              Icon && (
+              SectionIcon && (
 
                 <span className={styles.icon}>
 
-                  <Icon
+                  <SectionIcon
 
                     size={20}
 
@@ -108,11 +172,11 @@ export default function RelatedWorlds(
 
         {
 
-          relatedGroups.length === 0 ? (
+          worlds.length === 0 ? (
 
             <div className={styles.empty}>
 
-              現在、関連するセマンティックワールドはありません。
+              現在、同じカテゴリのセマンティックワールドはありません。
 
             </div>
 
@@ -122,59 +186,181 @@ export default function RelatedWorlds(
 
               {
 
-                relatedGroups.map(
+                worlds.map(
 
                   (
 
-                    groupSlug
+                    world
 
-                  ) => (
+                  ) => {
 
-                    <li
+                    const style: CSSProperties = {
 
-                      key={groupSlug}
+                      ...(world.backgroundImage && {
 
-                    >
+                        backgroundImage:
 
-                      <Link
+                          `url(${world.backgroundImage})`,
 
-                        href={`/discover/${groupSlug}`}
+                      }),
 
-                        className={styles.card}
+                      ...(world.accentColor && {
+
+                        ['--accent-color' as const]:
+
+                          world.accentColor,
+
+                      }),
+
+                    }
+
+                    return (
+
+                      <li
+
+                        key={world.group_slug}
 
                       >
 
-                        <span className={styles.worldIcon}>
+                        <Link
+
+                          href={`/discover/${world.group_slug}`}
+
+                          className={
+
+                            world.is_current
+
+                              ? `${styles.card} ${styles.activeCard}`
+
+                              : styles.card
+
+                          }
+
+                          style={style}
+
+                        >
+
+                          <div
+
+                            className={styles.overlay}
+
+                          />
 
                           {
 
-                            Icon && (
+                            world.is_current && (
 
-                              <Icon
+                              <span
 
-                                size={18}
+                                className={styles.currentBadge}
 
-                                strokeWidth={2}
+                              >
 
-                              />
+                                現在閲覧中
+
+                              </span>
 
                             )
 
                           }
 
-                        </span>
+                          <div
 
-                        <span className={styles.worldName}>
+                            className={styles.content}
 
-                          {groupSlug}
+                          >
 
-                        </span>
+                            <span
 
-                      </Link>
+                              className={styles.worldIcon}
 
-                    </li>
+                            >
 
-                  )
+                              {
+
+                                world.Icon && (
+
+                                  <world.Icon
+
+                                    size={20}
+
+                                    strokeWidth={2}
+
+                                  />
+
+                                )
+
+                              }
+
+                            </span>
+
+                            <div
+
+                              className={styles.text}
+
+                            >
+
+                              <span
+
+                                className={styles.worldName}
+
+                              >
+
+                                {
+
+                                  world.presentation_name
+
+                                  ??
+
+                                  world.group_name
+
+                                }
+
+                              </span>
+
+                              {
+
+                                world.presentation_description && (
+
+                                  <span
+
+                                    className={styles.worldDescription}
+
+                                  >
+
+                                    {
+
+                                      world.presentation_description
+
+                                    }
+
+                                  </span>
+
+                                )
+
+                              }
+
+                            </div>
+
+                            <span
+
+                              className={styles.arrow}
+
+                            >
+
+                              探索する →
+
+                            </span>
+
+                          </div>
+
+                        </Link>
+
+                      </li>
+
+                    )
+
+                  }
 
                 )
 

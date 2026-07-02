@@ -158,14 +158,41 @@ export interface DiscoverDetailProduct {
 }
 
 /* ============================================================================
-🔥 Runtime Data
+🔥 Sibling Group
 ============================================================================ */
 
+export interface DiscoverDetailSiblingGroup {
+
+    group_slug: string
+
+    group_name: string
+
+    presentation_name?: string
+
+    presentation_description?: string
+
+    icon?: string
+
+    color?: string
+
+    sort_order?: string
+
+    is_current?: boolean
+}
+
+
+/* ============================================================================
+🔥 Runtime Data
+============================================================================ */
 export interface DiscoverDetailData {
 
     group_slug: string
 
     group_name?: string
+
+    presentation_name?: string
+
+    presentation_description?: string
 
     type?: string
 
@@ -183,10 +210,13 @@ export interface DiscoverDetailData {
 
     aliases: string[]
 
+    sibling_groups: DiscoverDetailSiblingGroup[]
+
     related_groups: string[]
 
     sample_products: DiscoverDetailProduct[]
 }
+
 
 /* ============================================================================
 🔥 Runtime

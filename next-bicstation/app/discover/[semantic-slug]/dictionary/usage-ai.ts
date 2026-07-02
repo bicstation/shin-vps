@@ -2,7 +2,7 @@
 // SHIN CORE LINX
 // Discover Experience V2
 // Experience Dictionary
-// Semantic World : usage-gaming
+// Semantic World : usage-ai
 // ============================================================================
 
 import type {
@@ -11,7 +11,7 @@ import type {
 
 } from '../types/experience'
 
-const usageGaming: ExperienceDictionary = {
+const usageAi: ExperienceDictionary = {
 
   /* ==========================================================================
   Hero
@@ -21,20 +21,23 @@ const usageGaming: ExperienceDictionary = {
 
     label: 'SEMANTIC WORLD',
 
-    title: 'ゲーミングPC',
+    title: 'AI PC',
 
     catchCopy:
-      'ゲームの世界を、最高のパフォーマンスで楽しもう。',
+      '生成AIと未来のワークスタイルを、もっと身近に。',
 
     description:
-      'ゲームを快適に楽しみたい方のためのセマンティックワールドです。高性能なゲーミングPCや関連製品を比較しながら、自分に最適な一台を見つけられます。',
+      '生成AI、機械学習、画像生成、文章作成など、AIを快適に活用したい方のためのセマンティックワールドです。用途や性能を比較しながら、自分に最適なAI PCを見つけられます。',
 
     backgroundImage:
-      '/images/discover/usage-gaming.png',
+      '/images/discover/usage-ai.png',
 
-    icon: 'gamepad',
+    backgroundPosition:
+      'center top',
 
-    accentColor: '#45B3FF',
+    icon: 'sparkles',
+
+    accentColor: '#7C5CFF',
 
   },
 
@@ -49,13 +52,13 @@ const usageGaming: ExperienceDictionary = {
     icon: 'book-open',
 
     backgroundImage:
-      '/images/discover/usage-gaming.png',
+      '/images/discover/usage-ai.png',
 
     backgroundPosition:
       'center 30%',
 
     body:
-      'ゲーミングPCは、高い描画性能と快適な操作性を実現するために設計されたコンピューターです。GPUやCPUだけでなく、メモリー、ストレージ、モニターなど、ゲーム体験を支えるさまざまな製品を総合的に探索できます。',
+      'AI PCは、生成AIや機械学習などのAIワークロードを快適に実行するために設計されたコンピューターです。NPU・GPU・CPU・メモリーだけでなく、AIソフトウェアとの相性まで含めて総合的に比較できます。',
 
   },
 
@@ -70,25 +73,25 @@ const usageGaming: ExperienceDictionary = {
     icon: 'layers',
 
     backgroundImage:
-      '/images/discover/usage-gaming.png',
+      '/images/discover/usage-ai.png',
 
     backgroundPosition:
       'center',
 
     description:
-      'ゲーミングPCの体験を支える代表的な技術や特徴をご紹介します。',
+      'AI活用を支える代表的な技術や特徴をご紹介します。',
 
     keywords: [
 
-      'RTX Graphics',
+      'Copilot+ PC',
 
-      'DLSS',
+      'NPU',
 
-      'Ray Tracing',
+      'RTX AI',
 
-      'High FPS',
+      'LLM',
 
-      'eSports',
+      'Generative AI',
 
     ],
 
@@ -105,13 +108,13 @@ const usageGaming: ExperienceDictionary = {
     icon: 'cpu',
 
     backgroundImage:
-      '/images/discover/usage-gaming.png',
+      '/images/discover/usage-ai.png',
 
     backgroundPosition:
       'center 70%',
 
     description:
-      'この世界を代表するゲーミングPCです。性能や特徴を比較しながら、自分に合ったモデルを見つけましょう。',
+      'この世界を代表するAI PCです。性能や特徴を比較しながら、自分に最適なモデルを見つけましょう。',
 
   },
 
@@ -126,13 +129,13 @@ const usageGaming: ExperienceDictionary = {
     icon: 'network',
 
     backgroundImage:
-      '/images/discover/usage-gaming.png',
+      '/images/discover/usage-ai.png',
 
     backgroundPosition:
       'center bottom',
 
     description:
-      'ゲーム用途と同じカテゴリーに属する、さまざまなセマンティックワールドを探索できます。',
+      'AI用途と同じカテゴリーに属する、さまざまなセマンティックワールドを探索できます。',
 
   },
 
@@ -147,13 +150,13 @@ const usageGaming: ExperienceDictionary = {
     icon: 'compass',
 
     backgroundImage:
-      '/images/discover/usage-gaming.png',
+      '/images/discover/usage-ai.png',
 
     backgroundPosition:
       'bottom',
 
     description:
-      'あなたに合った用途は他にもあります。新しいセマンティックワールドを探索して、自分に最適なPCとの出会いを広げましょう。',
+      'あなたに合った用途は他にもあります。新しいセマンティックワールドを探索し、自分に最適なPCとの出会いを広げましょう。',
 
     buttonLabel:
       '他のセマンティックワールドを探索する',
@@ -162,4 +165,4 @@ const usageGaming: ExperienceDictionary = {
 
 }
 
-export default usageGaming
+export default usageAi

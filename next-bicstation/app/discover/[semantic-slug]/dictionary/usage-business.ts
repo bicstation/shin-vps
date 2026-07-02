@@ -2,7 +2,7 @@
 // SHIN CORE LINX
 // Discover Experience V2
 // Experience Dictionary
-// Semantic World : usage-gaming
+// Semantic World : usage-business
 // ============================================================================
 
 import type {
@@ -11,7 +11,7 @@ import type {
 
 } from '../types/experience'
 
-const usageGaming: ExperienceDictionary = {
+const usageBusiness: ExperienceDictionary = {
 
   /* ==========================================================================
   Hero
@@ -21,20 +21,23 @@ const usageGaming: ExperienceDictionary = {
 
     label: 'SEMANTIC WORLD',
 
-    title: 'ゲーミングPC',
+    title: 'ビジネスPC',
 
     catchCopy:
-      'ゲームの世界を、最高のパフォーマンスで楽しもう。',
+      '毎日の仕事を、もっと快適でスマートに。',
 
     description:
-      'ゲームを快適に楽しみたい方のためのセマンティックワールドです。高性能なゲーミングPCや関連製品を比較しながら、自分に最適な一台を見つけられます。',
+      'オフィスワーク、テレワーク、資料作成、Web会議など、ビジネスシーンで快適に利用できるPCを探すためのセマンティックワールドです。用途や働き方に合わせた最適な一台を比較・探索できます。',
 
     backgroundImage:
-      '/images/discover/usage-gaming.png',
+      '/images/discover/usage-business.png',
 
-    icon: 'gamepad',
+    backgroundPosition:
+      'center top',
 
-    accentColor: '#45B3FF',
+    icon: 'briefcase',
+
+    accentColor: '#3B82F6',
 
   },
 
@@ -49,13 +52,13 @@ const usageGaming: ExperienceDictionary = {
     icon: 'book-open',
 
     backgroundImage:
-      '/images/discover/usage-gaming.png',
+      '/images/discover/usage-business.png',
 
     backgroundPosition:
       'center 30%',
 
     body:
-      'ゲーミングPCは、高い描画性能と快適な操作性を実現するために設計されたコンピューターです。GPUやCPUだけでなく、メモリー、ストレージ、モニターなど、ゲーム体験を支えるさまざまな製品を総合的に探索できます。',
+      'ビジネスPCは、オフィスワークやテレワークを快適に行うために設計されたコンピューターです。軽快な動作や高い信頼性、セキュリティ、携帯性などを総合的に比較し、自分の働き方に合った環境を見つけられます。',
 
   },
 
@@ -70,25 +73,25 @@ const usageGaming: ExperienceDictionary = {
     icon: 'layers',
 
     backgroundImage:
-      '/images/discover/usage-gaming.png',
+      '/images/discover/usage-business.png',
 
     backgroundPosition:
       'center',
 
     description:
-      'ゲーミングPCの体験を支える代表的な技術や特徴をご紹介します。',
+      'ビジネスシーンを支える代表的な技術や特徴をご紹介します。',
 
     keywords: [
 
-      'RTX Graphics',
+      'Microsoft 365',
 
-      'DLSS',
+      'Windows 11 Pro',
 
-      'Ray Tracing',
+      'Web Conference',
 
-      'High FPS',
+      'Security',
 
-      'eSports',
+      'Long Battery',
 
     ],
 
@@ -105,13 +108,13 @@ const usageGaming: ExperienceDictionary = {
     icon: 'cpu',
 
     backgroundImage:
-      '/images/discover/usage-gaming.png',
+      '/images/discover/usage-business.png',
 
     backgroundPosition:
       'center 70%',
 
     description:
-      'この世界を代表するゲーミングPCです。性能や特徴を比較しながら、自分に合ったモデルを見つけましょう。',
+      'この世界を代表するビジネスPCです。性能や携帯性、使いやすさを比較しながら、自分の働き方に最適なモデルを見つけましょう。',
 
   },
 
@@ -126,13 +129,13 @@ const usageGaming: ExperienceDictionary = {
     icon: 'network',
 
     backgroundImage:
-      '/images/discover/usage-gaming.png',
+      '/images/discover/usage-business.png',
 
     backgroundPosition:
       'center bottom',
 
     description:
-      'ゲーム用途と同じカテゴリーに属する、さまざまなセマンティックワールドを探索できます。',
+      'ビジネス用途と同じカテゴリーに属する、さまざまなセマンティックワールドを探索できます。',
 
   },
 
@@ -147,13 +150,13 @@ const usageGaming: ExperienceDictionary = {
     icon: 'compass',
 
     backgroundImage:
-      '/images/discover/usage-gaming.png',
+      '/images/discover/usage-business.png',
 
     backgroundPosition:
       'bottom',
 
     description:
-      'あなたに合った用途は他にもあります。新しいセマンティックワールドを探索して、自分に最適なPCとの出会いを広げましょう。',
+      'あなたに合った用途は他にもあります。新しいセマンティックワールドを探索し、自分に最適なPCとの出会いを広げましょう。',
 
     buttonLabel:
       '他のセマンティックワールドを探索する',
@@ -162,4 +165,4 @@ const usageGaming: ExperienceDictionary = {
 
 }
 
-export default usageGaming
+export default usageBusiness

@@ -2,7 +2,7 @@
 // SHIN CORE LINX
 // Discover Experience V2
 // Experience Dictionary
-// Semantic World : usage-gaming
+// Semantic World : usage-mobile
 // ============================================================================
 
 import type {
@@ -11,7 +11,7 @@ import type {
 
 } from '../types/experience'
 
-const usageGaming: ExperienceDictionary = {
+const usageMobile: ExperienceDictionary = {
 
   /* ==========================================================================
   Hero
@@ -21,20 +21,23 @@ const usageGaming: ExperienceDictionary = {
 
     label: 'SEMANTIC WORLD',
 
-    title: 'ゲーミングPC',
+    title: 'モバイルPC',
 
     catchCopy:
-      'ゲームの世界を、最高のパフォーマンスで楽しもう。',
+      'どこへでも、あなたの仕事とアイデアを。',
 
     description:
-      'ゲームを快適に楽しみたい方のためのセマンティックワールドです。高性能なゲーミングPCや関連製品を比較しながら、自分に最適な一台を見つけられます。',
+      '軽量で持ち運びやすく、外出先やカフェ、出張先でも快適に使えるPCを探すためのセマンティックワールドです。携帯性・バッテリー性能・使いやすさを比較しながら、自分に合った一台を見つけられます。',
 
     backgroundImage:
-      '/images/discover/usage-gaming.png',
+      '/images/discover/usage-mobile.png',
 
-    icon: 'gamepad',
+    backgroundPosition:
+      'center top',
 
-    accentColor: '#45B3FF',
+    icon: 'smartphone',
+
+    accentColor: '#06B6D4',
 
   },
 
@@ -49,13 +52,13 @@ const usageGaming: ExperienceDictionary = {
     icon: 'book-open',
 
     backgroundImage:
-      '/images/discover/usage-gaming.png',
+      '/images/discover/usage-mobile.png',
 
     backgroundPosition:
       'center 30%',
 
     body:
-      'ゲーミングPCは、高い描画性能と快適な操作性を実現するために設計されたコンピューターです。GPUやCPUだけでなく、メモリー、ストレージ、モニターなど、ゲーム体験を支えるさまざまな製品を総合的に探索できます。',
+      'モバイルPCは、持ち運びやすさと長時間駆動を重視して設計されたコンピューターです。軽量ボディや省電力性能、通信機能などを総合的に比較し、日常のあらゆる場所で快適に利用できる環境を見つけられます。',
 
   },
 
@@ -70,25 +73,25 @@ const usageGaming: ExperienceDictionary = {
     icon: 'layers',
 
     backgroundImage:
-      '/images/discover/usage-gaming.png',
+      '/images/discover/usage-mobile.png',
 
     backgroundPosition:
       'center',
 
     description:
-      'ゲーミングPCの体験を支える代表的な技術や特徴をご紹介します。',
+      'モバイル体験を支える代表的な技術や特徴をご紹介します。',
 
     keywords: [
 
-      'RTX Graphics',
+      'Lightweight',
 
-      'DLSS',
+      'Long Battery',
 
-      'Ray Tracing',
+      'USB Type-C',
 
-      'High FPS',
+      'Wi-Fi 7',
 
-      'eSports',
+      'LTE / 5G',
 
     ],
 
@@ -105,13 +108,13 @@ const usageGaming: ExperienceDictionary = {
     icon: 'cpu',
 
     backgroundImage:
-      '/images/discover/usage-gaming.png',
+      '/images/discover/usage-mobile.png',
 
     backgroundPosition:
       'center 70%',
 
     description:
-      'この世界を代表するゲーミングPCです。性能や特徴を比較しながら、自分に合ったモデルを見つけましょう。',
+      'この世界を代表するモバイルPCです。携帯性やバッテリー性能、使いやすさを比較しながら、自分に最適なモデルを見つけましょう。',
 
   },
 
@@ -126,13 +129,13 @@ const usageGaming: ExperienceDictionary = {
     icon: 'network',
 
     backgroundImage:
-      '/images/discover/usage-gaming.png',
+      '/images/discover/usage-mobile.png',
 
     backgroundPosition:
       'center bottom',
 
     description:
-      'ゲーム用途と同じカテゴリーに属する、さまざまなセマンティックワールドを探索できます。',
+      'モバイル用途と同じカテゴリーに属する、さまざまなセマンティックワールドを探索できます。',
 
   },
 
@@ -147,13 +150,13 @@ const usageGaming: ExperienceDictionary = {
     icon: 'compass',
 
     backgroundImage:
-      '/images/discover/usage-gaming.png',
+      '/images/discover/usage-mobile.png',
 
     backgroundPosition:
       'bottom',
 
     description:
-      'あなたに合った用途は他にもあります。新しいセマンティックワールドを探索して、自分に最適なPCとの出会いを広げましょう。',
+      'あなたに合った用途は他にもあります。新しいセマンティックワールドを探索し、自分に最適なPCとの出会いを広げましょう。',
 
     buttonLabel:
       '他のセマンティックワールドを探索する',
@@ -162,4 +165,4 @@ const usageGaming: ExperienceDictionary = {
 
 }
 
-export default usageGaming
+export default usageMobile

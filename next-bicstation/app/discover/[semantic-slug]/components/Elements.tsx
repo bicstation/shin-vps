@@ -16,6 +16,9 @@ import {
 
 } from '@/shared/lib/ui/semantic/icon-map'
 
+import ExperienceSection from
+  '@/app/experience/components/product/ExperienceSection'
+
 import type {
 
   ExperienceElements,
@@ -66,121 +69,127 @@ export default function Elements(
 
   return (
 
-    <section className={styles.elements}>
+    <ExperienceSection
 
-      <div className={styles.container}>
+      backgroundImage={dictionary.backgroundImage}
+      accentColor={dictionary.accentColor}
+      backgroundPosition={dictionary.backgroundPosition}
 
-        <header className={styles.header}>
+    >
 
-          <h2 className={styles.title}>
+      <header className={styles.header}>
+
+        <h2 className={styles.title}>
+
+          {
+
+            Icon && (
+
+              <span className={styles.icon}>
+
+                <Icon
+
+                  size={20}
+
+                  strokeWidth={2}
+
+                />
+
+              </span>
+
+            )
+
+          }
+
+          {dictionary.title}
+
+        </h2>
+
+        <p className={styles.description}>
+
+          {dictionary.description}
+
+        </p>
+
+      </header>
+
+      {
+
+        attribute && (
+
+          <article className={styles.card}>
+
+            <h3 className={styles.attributeTitle}>
+
+              {attribute.title ?? attribute.name}
+
+            </h3>
 
             {
 
-              Icon && (
+              attribute.description && (
 
-                <span className={styles.icon}>
+                <p
 
-                  <Icon
+                  className={styles.attributeDescription}
 
-                    size={20}
+                >
 
-                    strokeWidth={2}
+                  {attribute.description}
 
-                  />
-
-                </span>
+                </p>
 
               )
 
             }
 
-            {dictionary.title}
+          </article>
 
-          </h2>
+        )
 
-          <p className={styles.description}>
+      }
 
-            {dictionary.description}
+      {
 
-          </p>
+        keywords.length > 0 && (
 
-        </header>
+          <ul className={styles.keywordGrid}>
 
-        {
+            {
 
-          attribute && (
+              keywords.map(
 
-            <article className={styles.card}>
+                (
 
-              <h3 className={styles.attributeTitle}>
+                  keyword
 
-                {attribute.title ?? attribute.name}
+                ) => (
 
-              </h3>
+                  <li
 
-              {
+                    key={keyword}
 
-                attribute.description && (
+                    className={styles.keywordChip}
 
-                  <p className={styles.attributeDescription}>
+                  >
 
-                    {attribute.description}
+                    {keyword}
 
-                  </p>
-
-                )
-
-              }
-
-            </article>
-
-          )
-
-        }
-
-        {
-
-          keywords.length > 0 && (
-
-            <ul className={styles.keywordGrid}>
-
-              {
-
-                keywords.map(
-
-                  (
-
-                    keyword
-
-                  ) => (
-
-                    <li
-
-                      key={keyword}
-
-                      className={styles.keywordChip}
-
-                    >
-
-                      {keyword}
-
-                    </li>
-
-                  )
+                  </li>
 
                 )
 
-              }
+              )
 
-            </ul>
+            }
 
-          )
+          </ul>
 
-        }
+        )
 
-      </div>
+      }
 
-    </section>
+    </ExperienceSection>
 
   )
 

@@ -180,10 +180,10 @@ export interface ProductSemanticRuntime {
   workflow_tags: string[]
 
   grouped_attributes:
-    Record<string, string[]>
+  Record<string, string[]>
 
   related_intents:
-    RelatedIntent[]
+  RelatedIntent[]
 }
 
 /* ============================================================================
@@ -219,25 +219,25 @@ export interface ProductDetailRuntime {
   product: ProductReality
 
   compiled_runtime?:
-    CompiledRuntime
+  CompiledRuntime
 
   product_semantic_runtime:
-    ProductSemanticRuntime
+  ProductSemanticRuntime
 
   semantic_schema_version?:
-    string
+  string
 
   authority_version?:
-    string
+  string
 
   semantic_authority?:
-    string
+  string
 
   ready?:
-    boolean
+  boolean
 
   raw?:
-    any
+  any
 }
 
 

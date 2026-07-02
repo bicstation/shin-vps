@@ -36,6 +36,7 @@ import type {
 
     DiscoverDetailRuntime,
     DiscoverDetailProduct,
+    DiscoverDetailSiblingGroup,
 
 } from './contracts'
 
@@ -62,6 +63,10 @@ export interface ProjectedDiscoverDetailRuntime {
 
         name: string
 
+        presentationName: string
+
+        presentationDescription: string
+
         type: string
 
         icon: string
@@ -72,6 +77,8 @@ export interface ProjectedDiscoverDetailRuntime {
 
         found: boolean
     }
+
+
 
     attribute: {
 
@@ -92,9 +99,13 @@ export interface ProjectedDiscoverDetailRuntime {
 
     aliases: string[]
 
+    siblings: ProjectedSiblingGroup[]
+
     relatedGroups: string[]
 
     products: ProjectedProduct[]
+
+
 }
 
 /* ============================================================================
@@ -171,6 +182,14 @@ export function projectDiscoverDetailRuntime(
 
                 runtime.data.product_count ?? 0,
 
+            presentationName:
+
+                runtime.data.presentation_name ?? '',
+
+            presentationDescription:
+
+                runtime.data.presentation_description ?? '',
+
             found:
 
                 runtime.found,
@@ -222,7 +241,33 @@ export function projectDiscoverDetailRuntime(
                 projectProduct
 
             ),
+
+        siblings:
+
+            (runtime.data.sibling_groups ?? []).map(projectSiblingGroup),
+
     }
+}
+
+/* ============================================================================
+🔥 Projected Sibling
+============================================================================ */
+
+export interface ProjectedSiblingGroup {
+
+    slug: string
+
+    name: string
+
+    presentationName: string
+
+    presentationDescription: string
+
+    icon: string
+
+    color: string
+
+    isCurrent: boolean
 }
 
 /* ============================================================================
@@ -258,6 +303,50 @@ function projectProduct(
             product.image_url ?? '',
     }
 }
+
+/* ============================================================================
+🔥 Sibling Projection
+============================================================================ */
+
+function projectSiblingGroup(
+
+    sibling: DiscoverDetailSiblingGroup
+
+): ProjectedSiblingGroup {
+
+    return {
+
+        slug:
+
+            sibling.group_slug,
+
+        name:
+
+            sibling.group_name,
+
+        presentationName:
+
+            sibling.presentation_name ?? '',
+
+        presentationDescription:
+
+            sibling.presentation_description ?? '',
+
+        icon:
+
+            sibling.icon ?? '',
+
+        color:
+
+            sibling.color ?? '',
+
+        isCurrent:
+
+            sibling.is_current ?? false,
+
+    }
+}
+
 
 /* ============================================================================
 🔥 Alias

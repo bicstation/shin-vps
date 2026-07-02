@@ -10,6 +10,8 @@ import {
 
 } from '@/shared/lib/ui/semantic/icon-map'
 
+import ExperienceSection from '@/app/experience/components/product/ExperienceSection'
+
 import type {
 
   ExperienceAbout,
@@ -26,6 +28,10 @@ interface AboutProps {
 
   dictionary: ExperienceAbout
 
+  backgroundImage?: string
+
+  accentColor?: string
+
 }
 
 /* ============================================================================
@@ -37,6 +43,10 @@ export default function About(
   {
 
     dictionary,
+
+    backgroundImage,
+
+    accentColor,
 
   }: AboutProps
 
@@ -52,53 +62,55 @@ export default function About(
 
   return (
 
-    <section className={styles.about}>
+    <ExperienceSection
 
-      <div className={styles.container}>
+      backgroundImage={dictionary.backgroundImage}
+      accentColor={dictionary.accentColor}
+      backgroundPosition={dictionary.backgroundPosition}
 
-        <header className={styles.header}>
+    >
 
-          <h2 className={styles.title}>
+      <header className={styles.header}>
 
-            {
+        <h2 className={styles.title}>
 
-              Icon && (
+          {
 
-                <span className={styles.icon}>
+            Icon && (
 
-                  <Icon
+              <span className={styles.icon}>
 
-                    size={20}
+                <Icon
 
-                    strokeWidth={2}
+                  size={20}
 
-                  />
+                  strokeWidth={2}
 
-                </span>
+                />
 
-              )
+              </span>
 
-            }
+            )
 
-            {dictionary.title}
+          }
 
-          </h2>
+          {dictionary.title}
 
-        </header>
+        </h2>
 
-        <div className={styles.card}>
+      </header>
 
-          <p className={styles.body}>
+      <div className={styles.card}>
 
-            {dictionary.body}
+        <p className={styles.body}>
 
-          </p>
+          {dictionary.body}
 
-        </div>
+        </p>
 
       </div>
 
-    </section>
+    </ExperienceSection>
 
   )
 

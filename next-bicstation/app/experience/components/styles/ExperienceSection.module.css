@@ -1,0 +1,111 @@
+/* ==========================================================================
+   SHIN CORE LINX
+   Experience Primitive
+   Experience Section
+   ========================================================================== */
+
+.section {
+
+    position: relative;
+
+    overflow: hidden;
+
+    isolation: isolate;
+
+    padding: 96px 32px;
+
+    background-color: #07111f;
+
+    background-size: cover;
+
+    background-position: var(--background-position, center);
+
+    background-repeat: no-repeat;
+
+    background-attachment: scroll;
+
+}
+
+/* ==========================================================================
+   Background Overlay
+   ========================================================================== */
+
+.overlay {
+
+    position: absolute;
+
+    inset: 0;
+
+    background:
+
+        linear-gradient(180deg,
+
+            rgba(6, 14, 28, .35),
+
+            rgba(6, 14, 28, .92));
+
+    z-index: 0;
+
+}
+
+/* ==========================================================================
+   Accent Layer
+   ========================================================================== */
+
+.section::after {
+
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    pointer-events: none;
+
+    opacity: .55;
+
+    z-index: 0;
+
+    background:
+
+        radial-gradient(circle at top right,
+
+            color-mix(in srgb,
+
+                var(--accent-color, #45b3ff) 18%,
+
+                transparent),
+
+            transparent 60%);
+
+}
+
+/* ==========================================================================
+   Content
+   ========================================================================== */
+
+.container {
+
+    position: relative;
+
+    z-index: 1;
+
+    max-width: 1200px;
+
+    margin: 0 auto;
+
+}
+
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
+
+@media (max-width:768px) {
+
+    .section {
+
+        padding: 72px 24px;
+
+    }
+
+}

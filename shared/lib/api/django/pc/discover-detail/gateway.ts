@@ -72,6 +72,15 @@ export async function fetchDiscoverDetailRuntime(
 
 ): Promise<DiscoverDetailRuntime | null> {
 
+    if (!slug) {
+
+        console.warn(
+            '⚠️ DISCOVER DETAIL EMPTY SLUG'
+        )
+
+        return null
+    }
+
     const endpoint =
 
         buildEndpoint(
@@ -136,11 +145,51 @@ export async function fetchDiscoverDetailRuntime(
 
     console.log(
 
-        '🔥 DISCOVER DETAIL RAW PAYLOAD',
+        '🔥 DISCOVER DETAIL RAW SUMMARY',
 
-        payload
+        {
+
+            found:
+
+                payload?.found,
+
+            group_slug:
+
+                payload?.data?.group_slug,
+
+            group_name:
+
+                payload?.data?.group_name,
+
+            presentation_name:
+
+                payload?.data?.presentation_name,
+
+            sibling_groups:
+
+                payload?.data?.sibling_groups?.length ?? 0,
+
+            sample_products:
+
+                payload?.data?.sample_products?.length ?? 0,
+
+            semantic_authority:
+
+                payload?.semantic_authority,
+
+            authority_version:
+
+                payload?.authority_version,
+
+            ready:
+
+                payload?.ready,
+
+        }
 
     )
+
+
 
     return payload
 }

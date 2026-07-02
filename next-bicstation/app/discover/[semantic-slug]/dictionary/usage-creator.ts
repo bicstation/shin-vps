@@ -2,7 +2,7 @@
 // SHIN CORE LINX
 // Discover Experience V2
 // Experience Dictionary
-// Semantic World : usage-gaming
+// Semantic World : usage-creator
 // ============================================================================
 
 import type {
@@ -11,7 +11,7 @@ import type {
 
 } from '../types/experience'
 
-const usageGaming: ExperienceDictionary = {
+const usageCreator: ExperienceDictionary = {
 
   /* ==========================================================================
   Hero
@@ -21,20 +21,23 @@ const usageGaming: ExperienceDictionary = {
 
     label: 'SEMANTIC WORLD',
 
-    title: 'ゲーミングPC',
+    title: 'クリエイターPC',
 
     catchCopy:
-      'ゲームの世界を、最高のパフォーマンスで楽しもう。',
+      '創造力を、思いのままのパフォーマンスへ。',
 
     description:
-      'ゲームを快適に楽しみたい方のためのセマンティックワールドです。高性能なゲーミングPCや関連製品を比較しながら、自分に最適な一台を見つけられます。',
+      '動画編集、画像制作、3DCG、イラスト制作など、クリエイティブな作業を快適に行いたい方のためのセマンティックワールドです。用途に合わせた最適なクリエイターPCを比較・探索できます。',
 
     backgroundImage:
-      '/images/discover/usage-gaming.png',
+      '/images/discover/usage-creator.png',
 
-    icon: 'gamepad',
+    backgroundPosition:
+      'center top',
 
-    accentColor: '#45B3FF',
+    icon: 'pen-tool',
+
+    accentColor: '#A855F7',
 
   },
 
@@ -49,13 +52,13 @@ const usageGaming: ExperienceDictionary = {
     icon: 'book-open',
 
     backgroundImage:
-      '/images/discover/usage-gaming.png',
+      '/images/discover/usage-creator.png',
 
     backgroundPosition:
       'center 30%',
 
     body:
-      'ゲーミングPCは、高い描画性能と快適な操作性を実現するために設計されたコンピューターです。GPUやCPUだけでなく、メモリー、ストレージ、モニターなど、ゲーム体験を支えるさまざまな製品を総合的に探索できます。',
+      'クリエイターPCは、動画編集や画像編集、3DCG制作、デザインなど、高い処理性能を必要とするクリエイティブワーク向けに設計されたコンピューターです。CPU・GPU・メモリー・ストレージなどを総合的に比較し、自分の制作スタイルに最適な環境を見つけられます。',
 
   },
 
@@ -70,25 +73,25 @@ const usageGaming: ExperienceDictionary = {
     icon: 'layers',
 
     backgroundImage:
-      '/images/discover/usage-gaming.png',
+      '/images/discover/usage-creator.png',
 
     backgroundPosition:
       'center',
 
     description:
-      'ゲーミングPCの体験を支える代表的な技術や特徴をご紹介します。',
+      'クリエイティブワークを支える代表的な技術や特徴をご紹介します。',
 
     keywords: [
 
-      'RTX Graphics',
+      'Adobe Creative Cloud',
 
-      'DLSS',
+      'DaVinci Resolve',
 
-      'Ray Tracing',
+      'Blender',
 
-      'High FPS',
+      'RTX Studio',
 
-      'eSports',
+      'Color Accuracy',
 
     ],
 
@@ -105,13 +108,13 @@ const usageGaming: ExperienceDictionary = {
     icon: 'cpu',
 
     backgroundImage:
-      '/images/discover/usage-gaming.png',
+      '/images/discover/usage-creator.png',
 
     backgroundPosition:
       'center 70%',
 
     description:
-      'この世界を代表するゲーミングPCです。性能や特徴を比較しながら、自分に合ったモデルを見つけましょう。',
+      'この世界を代表するクリエイターPCです。制作スタイルや性能を比較しながら、自分に最適なモデルを見つけましょう。',
 
   },
 
@@ -126,13 +129,13 @@ const usageGaming: ExperienceDictionary = {
     icon: 'network',
 
     backgroundImage:
-      '/images/discover/usage-gaming.png',
+      '/images/discover/usage-creator.png',
 
     backgroundPosition:
       'center bottom',
 
     description:
-      'ゲーム用途と同じカテゴリーに属する、さまざまなセマンティックワールドを探索できます。',
+      'クリエイター用途と同じカテゴリーに属する、さまざまなセマンティックワールドを探索できます。',
 
   },
 
@@ -147,13 +150,13 @@ const usageGaming: ExperienceDictionary = {
     icon: 'compass',
 
     backgroundImage:
-      '/images/discover/usage-gaming.png',
+      '/images/discover/usage-creator.png',
 
     backgroundPosition:
       'bottom',
 
     description:
-      'あなたに合った用途は他にもあります。新しいセマンティックワールドを探索して、自分に最適なPCとの出会いを広げましょう。',
+      'あなたに合った用途は他にもあります。新しいセマンティックワールドを探索し、自分に最適なPCとの出会いを広げましょう。',
 
     buttonLabel:
       '他のセマンティックワールドを探索する',
@@ -162,4 +165,4 @@ const usageGaming: ExperienceDictionary = {
 
 }
 
-export default usageGaming
+export default usageCreator

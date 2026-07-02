@@ -4,22 +4,6 @@
    Elements
    ========================================================================== */
 
-.elements {
-
-    padding: 96px 32px;
-
-    background: #07111f;
-
-}
-
-.container {
-
-    max-width: 1200px;
-
-    margin: 0 auto;
-
-}
-
 .header {
 
     margin-bottom: 32px;
@@ -52,9 +36,19 @@
 
     justify-content: center;
 
-    color: var(--accent-color, #45b3ff);
+    width: 42px;
 
-    line-height: 1;
+    height: 42px;
+
+    border-radius: 999px;
+
+    border: 1px solid rgba(255, 255, 255, .10);
+
+    background: rgba(255, 255, 255, .08);
+
+    backdrop-filter: blur(12px);
+
+    color: var(--accent-color, #45b3ff);
 
     flex-shrink: 0;
 
@@ -66,11 +60,13 @@
 
     line-height: 1.8;
 
-    color: rgba(255,255,255,.75);
+    color: rgba(255, 255, 255, .75);
 
 }
 
 .card {
+
+    position: relative;
 
     padding: 36px;
 
@@ -78,11 +74,15 @@
 
     border-radius: 20px;
 
-    border: 1px solid rgba(255,255,255,.08);
+    border: 1px solid rgba(255, 255, 255, .08);
 
-    background: rgba(255,255,255,.03);
+    background: rgba(15, 25, 42, .55);
 
-    backdrop-filter: blur(12px);
+    backdrop-filter: blur(18px);
+
+    box-shadow:
+
+        0 16px 40px rgba(0, 0, 0, .18);
 
 }
 
@@ -91,6 +91,8 @@
     margin: 0 0 16px;
 
     font-size: 1.4rem;
+
+    font-weight: 700;
 
     color: #ffffff;
 
@@ -102,7 +104,7 @@
 
     line-height: 1.9;
 
-    color: rgba(255,255,255,.82);
+    color: rgba(255, 255, 255, .82);
 
 }
 
@@ -134,17 +136,31 @@
 
     border-radius: 999px;
 
-    border: 1px solid rgba(69,179,255,.35);
+    border: 1px solid color-mix(in srgb,
 
-    background: rgba(69,179,255,.08);
+            var(--accent-color, #45b3ff) 40%,
 
-    color: #8fd5ff;
+            transparent);
+
+    background: color-mix(in srgb,
+
+            var(--accent-color, #45b3ff) 12%,
+
+            transparent);
+
+    color: #ffffff;
 
     font-size: .95rem;
 
-    font-weight: 500;
+    font-weight: 600;
 
-    transition: .25s ease;
+    transition:
+
+        transform .25s,
+
+        border-color .25s,
+
+        background .25s;
 
 }
 
@@ -152,8 +168,12 @@
 
     transform: translateY(-2px);
 
-    border-color: #45b3ff;
+    border-color: var(--accent-color, #45b3ff);
 
-    background: rgba(69,179,255,.16);
+    background: color-mix(in srgb,
+
+            var(--accent-color, #45b3ff) 22%,
+
+            transparent);
 
 }

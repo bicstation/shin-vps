@@ -12,6 +12,8 @@ import {
 
 } from '@/shared/lib/ui/semantic/icon-map'
 
+import ExperienceSection from '@/app/experience/components/product/ExperienceSection'
+
 import type {
 
   ExperienceContinue,
@@ -54,65 +56,66 @@ export default function ContinueDiscovery(
 
   return (
 
-    <section className={styles.discovery}>
+    <ExperienceSection
 
-      <div className={styles.container}>
+      backgroundImage={dictionary.backgroundImage}
+      accentColor={dictionary.accentColor}
+      backgroundPosition={dictionary.backgroundPosition}
+    >
 
-        <div className={styles.card}>
+      <div className={styles.card}>
 
-          <header className={styles.header}>
+        <header className={styles.header}>
 
-            <h2 className={styles.title}>
+          <h2 className={styles.title}>
 
-              {
+            {
 
-                Icon && (
+              Icon && (
 
-                  <span className={styles.icon}>
+                <span className={styles.icon}>
 
-                    <Icon
+                  <Icon
 
-                      size={20}
+                    size={20}
 
-                      strokeWidth={2}
+                    strokeWidth={2}
 
-                    />
+                  />
 
-                  </span>
+                </span>
 
-                )
+              )
 
-              }
+            }
 
-              {dictionary.title}
+            {dictionary.title}
 
-            </h2>
+          </h2>
 
-            <p className={styles.description}>
+          <p className={styles.description}>
 
-              {dictionary.description}
+            {dictionary.description}
 
-            </p>
+          </p>
 
-          </header>
+        </header>
 
-          <Link
+        <Link
 
-            href="/discover"
+          href="/discover"
 
-            className={styles.button}
+          className={styles.button}
 
-          >
+        >
 
-            {dictionary.buttonLabel}
+          {dictionary.buttonLabel}
 
-          </Link>
-
-        </div>
+        </Link>
 
       </div>
 
-    </section>
+    </ExperienceSection>
 
   )
 

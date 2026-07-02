@@ -1,104 +1,83 @@
-#!/usr/bin/env bash
-
+#!/bin/bash
 # ============================================================================
 # SHIN CORE LINX
 # Discover Experience V2
-# Rebuild Directory
+# Experience Dictionary Skeleton Generator
 # ============================================================================
 
-set -eu
+set -e
 
-BASE="/home/maya/shin-dev/shin-vps/next-bicstation/app/discover/[semantic-slug]"
+FILES=(
+  "usage-ai"
+  "usage-business"
+  "usage-budget"
+  "usage-creator"
+  "usage-gaming"
+  "usage-mobile"
 
-echo ""
-echo "=========================================="
-echo " Discover Experience V2 Rebuild"
-echo "=========================================="
-echo ""
+  # Monitor
+  "monitor-business"
+  "monitor-color"
+  "monitor-gaming"
+  "monitor-portable"
+  "monitor-ultrawide"
 
-cd "$BASE"
+  # CPU
+  "cpu-ai"
+  "cpu-business"
+  "cpu-budget"
+  "cpu-gaming"
 
-###############################################################################
-# Legacy
-###############################################################################
+  # GPU
+  "gpu-ai"
+  "gpu-budget"
+  "gpu-creator"
+  "gpu-gaming"
 
-mkdir -p legacy
+  # Memory
+  "memory-ddr4"
+  "memory-ddr5"
 
-###############################################################################
-# Move old directories
-###############################################################################
+  # Storage
+  "storage-hdd"
+  "storage-nvme"
+  "storage-ssd"
 
-if [ -d "lib" ]; then
-    mv lib legacy/
-fi
+  # Notebook
+  "notebook-2in1"
+  "notebook-business"
+  "notebook-gaming"
+  "notebook-lightweight"
 
-if [ -f "services/experience.ts" ]; then
-    mv services/experience.ts legacy/
-fi
+  # Desktop
+  "desktop-allinone"
+  "desktop-gaming"
+  "desktop-mini"
+  "desktop-tower"
 
-if [ -f "dictionary/dictionary.ts" ]; then
-    mv dictionary/dictionary.ts legacy/
-fi
+  # Keyboard
+  "keyboard-gaming"
+  "keyboard-wireless"
 
-###############################################################################
-# Create directories
-###############################################################################
+  # Mouse
+  "mouse-gaming"
+  "mouse-wireless"
 
-mkdir -p components
-mkdir -p dictionary
-mkdir -p services
-mkdir -p types
+  # Others
+  "speaker-desktop"
+  "webcam-streaming"
+)
 
-###############################################################################
-# Dictionary
-###############################################################################
+for file in "${FILES[@]}"; do
 
-touch dictionary/index.ts
+  if [ ! -f "${file}.ts" ]; then
+    touch "${file}.ts"
+    echo "Created ${file}.ts"
+  else
+    echo "Skip ${file}.ts"
+  fi
 
-###############################################################################
-# Example Dictionary
-###############################################################################
+done
 
-touch dictionary/usage-gaming.ts
-
-###############################################################################
-# Services
-###############################################################################
-
-touch services/dictionary.ts
-
-###############################################################################
-# Types
-###############################################################################
-
-touch types/experience.ts
-touch types/dictionary.ts
-
-###############################################################################
-# Root
-###############################################################################
-
-touch page.tsx
-touch loading.tsx
-touch not-found.tsx
-touch README.md
-
-###############################################################################
-# Components
-###############################################################################
-
-touch components/Hero.tsx
-touch components/About.tsx
-touch components/Elements.tsx
-touch components/RepresentativeProducts.tsx
-touch components/RelatedWorlds.tsx
-touch components/ContinueDiscovery.tsx
-
-###############################################################################
-
-echo ""
-echo "=========================================="
-echo " Discover Experience V2 Ready"
-echo "=========================================="
-
-tree .
+echo
+echo "Done."
