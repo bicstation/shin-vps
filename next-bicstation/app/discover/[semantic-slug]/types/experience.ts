@@ -5,18 +5,42 @@
 // ============================================================================
 
 /* ============================================================================
+Shared Experience Asset
+============================================================================ */
+
+export interface ExperienceAsset {
+
+  /**
+   * Shared Semantic Icon Key
+   *
+   * Must exist in:
+   *
+   * shared/lib/ui/semantic/icon-map.ts
+   */
+  icon?: string
+
+  /**
+   * Experience Theme Color
+   */
+  accentColor?: string
+
+}
+
+/* ============================================================================
 Hero
 ============================================================================ */
 
-export interface ExperienceHero {
+export interface ExperienceHero extends ExperienceAsset {
 
-    label: string
+  label: string
 
-    title: string
+  title: string
 
-    catchCopy: string
+  catchCopy: string
 
-    description: string
+  description: string
+
+  backgroundImage: string
 
 }
 
@@ -24,11 +48,11 @@ export interface ExperienceHero {
 About
 ============================================================================ */
 
-export interface ExperienceAbout {
+export interface ExperienceAbout extends ExperienceAsset {
 
-    title: string
+  title: string
 
-    body: string
+  body: string
 
 }
 
@@ -36,13 +60,13 @@ export interface ExperienceAbout {
 Elements
 ============================================================================ */
 
-export interface ExperienceElements {
+export interface ExperienceElements extends ExperienceAsset {
 
-    title: string
+  title: string
 
-    description: string
+  description: string
 
-    keywords: string[]
+  keywords: string[]
 
 }
 
@@ -50,11 +74,11 @@ export interface ExperienceElements {
 Representative Products
 ============================================================================ */
 
-export interface ExperienceProducts {
+export interface ExperienceProducts extends ExperienceAsset {
 
-    title: string
+  title: string
 
-    description: string
+  description: string
 
 }
 
@@ -62,11 +86,11 @@ export interface ExperienceProducts {
 Related Worlds
 ============================================================================ */
 
-export interface ExperienceRelated {
+export interface ExperienceRelated extends ExperienceAsset {
 
-    title: string
+  title: string
 
-    description: string
+  description: string
 
 }
 
@@ -74,11 +98,13 @@ export interface ExperienceRelated {
 Continue Discovery
 ============================================================================ */
 
-export interface ExperienceContinue {
+export interface ExperienceContinue extends ExperienceAsset {
 
-    title: string
+  title: string
 
-    description: string
+  description: string
+
+  buttonLabel: string
 
 }
 
@@ -88,16 +114,16 @@ Experience Dictionary
 
 export interface ExperienceDictionary {
 
-    hero: ExperienceHero
+  hero: ExperienceHero
 
-    about: ExperienceAbout
+  about: ExperienceAbout
 
-    elements: ExperienceElements
+  elements: ExperienceElements
 
-    products: ExperienceProducts
+  products: ExperienceProducts
 
-    related: ExperienceRelated
+  related: ExperienceRelated
 
-    continue: ExperienceContinue
+  continue: ExperienceContinue
 
 }

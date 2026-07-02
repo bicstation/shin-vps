@@ -1,6 +1,40 @@
 // ============================================================================
-// Discover Detail Gateway V2
+// FILE:
+// /shared/lib/api/django/pc/discover-detail/gateway.ts
+// Copyright (c) 2026 Shin Corporation.
 // ============================================================================
+
+/**
+ * ============================================================================
+ * SHIN CORE LINX
+ * Discover Detail Runtime Gateway V2
+ * ============================================================================
+ *
+ * PURPOSE
+ *
+ * GET /pc/discover/{slug}/
+ *
+ * Frontend
+ *      ↓
+ * Gateway
+ *      ↓
+ * Backend Runtime
+ *
+ * Gateway Responsibility
+ *
+ * ✓ Transport
+ * ✓ Endpoint Resolution
+ * ✓ Observe
+ *
+ * Gateway SHALL NOT
+ *
+ * ✗ Generate Meaning
+ * ✗ Generate Runtime
+ * ✗ Normalize Runtime
+ * ✗ Project Runtime
+ *
+ * ============================================================================
+ */
 
 import type {
 
@@ -8,65 +42,119 @@ import type {
 
 } from './contracts'
 
+import {
+
+    buildEndpoint,
+
+} from '../utils/buildEndpoint'
+
+import {
+
+    safeFetch,
+
+} from '../utils/safeFetch'
+
 /* ============================================================================
-🔥 Runtime Endpoint
+🔥 Endpoint
 ============================================================================ */
 
-const API_ENDPOINT =
-    '/api/pc/discover'
+const DISCOVER_DETAIL_ENDPOINT =
+
+    '/pc/discover'
 
 /* ============================================================================
-🔥 Fetch Discover Detail
+🔥 Fetch Runtime
 ============================================================================ */
 
-export async function fetchDiscoverDetail(
+export async function fetchDiscoverDetailRuntime(
 
     slug: string
 
-): Promise<DiscoverDetailRuntime> {
+): Promise<DiscoverDetailRuntime | null> {
 
-    const response = await fetch(
+    const endpoint =
 
-        `${API_ENDPOINT}/${slug}/`,
+        buildEndpoint(
 
-        {
-
-            method: 'GET',
-
-            headers: {
-
-                Accept: 'application/json',
-
-            },
-
-            cache: 'no-store',
-
-        }
-
-    )
-
-    if (!response.ok) {
-
-        throw new Error(
-
-            `Discover Detail API Error (${response.status})`
+            `${DISCOVER_DETAIL_ENDPOINT}/${encodeURIComponent(slug)}/`
 
         )
 
-    }
+    /* ------------------------------------------------------------------------
+    Observability
+    ------------------------------------------------------------------------ */
 
-    return await response.json()
+    console.log(
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+    )
+
+    console.log(
+        '🔥 FETCH DISCOVER DETAIL RUNTIME'
+    )
+
+    console.log(
+        'ENDPOINT'
+    )
+
+    console.log(
+        endpoint
+    )
+
+    console.log(
+        'SLUG'
+    )
+
+    console.log(
+        slug
+    )
+
+    console.log(
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+    )
+
+    /* ------------------------------------------------------------------------
+    Transport
+    ------------------------------------------------------------------------ */
+
+    const payload =
+
+        await safeFetch<DiscoverDetailRuntime>(
+
+            endpoint,
+
+            {
+
+                method: 'GET',
+
+            }
+
+        )
+
+    /* ------------------------------------------------------------------------
+    RAW Runtime
+    ------------------------------------------------------------------------ */
+
+    console.log(
+
+        '🔥 DISCOVER DETAIL RAW PAYLOAD',
+
+        payload
+
+    )
+
+    return payload
 }
 
 /* ============================================================================
-🔥 Alias
+🔥 Legacy Compatibility
 ============================================================================ */
 
 export const getDiscoverDetail =
-    fetchDiscoverDetail
+
+    fetchDiscoverDetailRuntime
 
 /* ============================================================================
 🔥 Default Export
 ============================================================================ */
 
-export default fetchDiscoverDetail
+export default fetchDiscoverDetailRuntime

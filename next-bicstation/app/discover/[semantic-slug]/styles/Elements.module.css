@@ -1,0 +1,159 @@
+/* ==========================================================================
+   SHIN CORE LINX
+   Discover Experience V2
+   Elements
+   ========================================================================== */
+
+.elements {
+
+    padding: 96px 32px;
+
+    background: #07111f;
+
+}
+
+.container {
+
+    max-width: 1200px;
+
+    margin: 0 auto;
+
+}
+
+.header {
+
+    margin-bottom: 32px;
+
+}
+
+.title {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    margin: 0;
+
+    font-size: 2rem;
+
+    font-weight: 700;
+
+    color: #ffffff;
+
+}
+
+.icon {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    color: var(--accent-color, #45b3ff);
+
+    line-height: 1;
+
+    flex-shrink: 0;
+
+}
+
+.description {
+
+    margin-top: 16px;
+
+    line-height: 1.8;
+
+    color: rgba(255,255,255,.75);
+
+}
+
+.card {
+
+    padding: 36px;
+
+    margin-bottom: 40px;
+
+    border-radius: 20px;
+
+    border: 1px solid rgba(255,255,255,.08);
+
+    background: rgba(255,255,255,.03);
+
+    backdrop-filter: blur(12px);
+
+}
+
+.attributeTitle {
+
+    margin: 0 0 16px;
+
+    font-size: 1.4rem;
+
+    color: #ffffff;
+
+}
+
+.attributeDescription {
+
+    margin: 0;
+
+    line-height: 1.9;
+
+    color: rgba(255,255,255,.82);
+
+}
+
+.keywordGrid {
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 16px;
+
+    padding: 0;
+
+    margin: 0;
+
+    list-style: none;
+
+}
+
+.keywordChip {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    padding: 12px 22px;
+
+    border-radius: 999px;
+
+    border: 1px solid rgba(69,179,255,.35);
+
+    background: rgba(69,179,255,.08);
+
+    color: #8fd5ff;
+
+    font-size: .95rem;
+
+    font-weight: 500;
+
+    transition: .25s ease;
+
+}
+
+.keywordChip:hover {
+
+    transform: translateY(-2px);
+
+    border-color: #45b3ff;
+
+    background: rgba(69,179,255,.16);
+
+}

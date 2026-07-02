@@ -6,7 +6,7 @@
 
 import type {
 
-    ExperienceDictionary,
+  ExperienceDictionary,
 
 } from './experience'
 
@@ -15,7 +15,7 @@ Dictionary Entry
 ============================================================================ */
 
 export type ExperienceDictionaryEntry =
-    ExperienceDictionary
+  ExperienceDictionary
 
 /* ============================================================================
 Dictionary Map
@@ -23,8 +23,8 @@ Dictionary Map
 
 export type ExperienceDictionaryMap = Record<
 
-    string,
+  string,
 
-    ExperienceDictionaryEntry
+  ExperienceDictionaryEntry
 
 >

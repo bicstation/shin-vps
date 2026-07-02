@@ -1,0 +1,128 @@
+/* ==========================================================================
+   SHIN CORE LINX
+   Discover Experience V2
+   Continue Discovery
+   ========================================================================== */
+
+.discovery {
+
+    padding: 96px 32px 120px;
+
+    background: #07111f;
+
+}
+
+.container {
+
+    max-width: 1200px;
+
+    margin: 0 auto;
+
+}
+
+.card {
+
+    padding: 72px 56px;
+
+    text-align: center;
+
+    border-radius: 28px;
+
+    border: 1px solid rgba(69,179,255,.18);
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(69,179,255,.08),
+            rgba(255,255,255,.03)
+        );
+
+    backdrop-filter: blur(16px);
+
+}
+
+.header {
+
+    margin-bottom: 40px;
+
+}
+
+.title {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 12px;
+
+    margin: 0;
+
+    font-size: 2rem;
+
+    font-weight: 700;
+
+    color: #ffffff;
+
+}
+
+.icon {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    color: var(--accent-color, #45b3ff);
+
+    line-height: 1;
+
+    flex-shrink: 0;
+
+}
+
+.description {
+
+    max-width: 720px;
+
+    margin: 20px auto 0;
+
+    line-height: 1.9;
+
+    color: rgba(255,255,255,.82);
+
+}
+
+.button {
+
+    display: inline-block;
+
+    padding: 16px 40px;
+
+    border-radius: 999px;
+
+    background: #45b3ff;
+
+    color: #ffffff;
+
+    font-size: 1rem;
+
+    font-weight: 700;
+
+    text-decoration: none;
+
+    transition: .25s ease;
+
+}
+
+.button:hover {
+
+    transform: translateY(-3px);
+
+    background: #67c2ff;
+
+    box-shadow: 0 12px 32px rgba(69,179,255,.30);
+
+}

@@ -1,17 +1,20 @@
 // ============================================================================
-// Discover Detail Adapter V2
+// FILE:
+// /shared/lib/api/django/pc/discover-detail/index.ts
+// Copyright (c) 2024 Shin Corporation.
+// All rights reserved.
 // ============================================================================
 
 /**
  * ============================================================================
  * SHIN CORE LINX
- * Discover Detail Runtime Adapter
+ * Discover Detail Adapter
  * ============================================================================
  *
  * Responsibilities
  *
  * - Runtime Contract
- * - Runtime Fetch
+ * - Runtime Gateway
  * - Runtime Normalize
  * - UI Projection
  *
@@ -33,10 +36,10 @@
 export * from './contracts'
 
 /* ============================================================================
-🔥 Runtime
+🔥 Gateway
 ============================================================================ */
 
-export * from './detail'
+export * from './gateway'
 
 /* ============================================================================
 🔥 Normalize
@@ -56,9 +59,11 @@ export * from './projection'
 
 export {
 
-  getDiscoverDetail as fetchDiscoverDetailRuntime,
+    fetchDiscoverDetailRuntime as fetchDiscoverDetail,
 
-} from './detail'
+    getDiscoverDetail,
+
+} from './gateway'
 
 /* ============================================================================
 🔥 Default Export
@@ -66,6 +71,6 @@ export {
 
 export {
 
-  default,
+    default,
 
-} from './detail'
+} from './gateway'

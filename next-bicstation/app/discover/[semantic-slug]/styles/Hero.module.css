@@ -1,0 +1,131 @@
+/* ==========================================================================
+   SHIN CORE LINX
+   Discover Experience V2
+   Hero
+   ========================================================================== */
+
+.hero {
+
+    position: relative;
+
+    padding: 96px 32px;
+
+    color: #ffffff;
+
+    background-color: #08111f;
+
+    background-size: cover;
+
+    background-position: center;
+
+    background-repeat: no-repeat;
+
+    overflow: hidden;
+
+}
+
+.header {
+
+    max-width: 760px;
+
+    position: relative;
+
+    z-index: 2;
+
+}
+
+.label {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    margin-bottom: 12px;
+
+    font-size: 0.8rem;
+
+    letter-spacing: 0.25em;
+
+    text-transform: uppercase;
+
+    color: #7cc7ff;
+
+}
+
+.labelIcon {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    line-height: 1;
+
+    flex-shrink: 0;
+
+}
+
+.title {
+
+    margin: 0;
+
+    font-size: 3rem;
+
+    font-weight: 700;
+
+}
+
+.catchCopy {
+
+    margin-top: 16px;
+
+    font-size: 1.5rem;
+
+    font-weight: 500;
+
+    line-height: 1.5;
+
+}
+
+.description {
+
+    margin-top: 24px;
+
+    line-height: 1.9;
+
+    color: rgba(255,255,255,.85);
+
+}
+
+.stats {
+
+    margin-top: 48px;
+
+    position: relative;
+
+    z-index: 2;
+
+}
+
+.definitionList {
+
+    display: grid;
+
+    grid-template-columns: auto 1fr;
+
+    gap: 12px 24px;
+
+}
+
+.footer {
+
+    margin-top: 40px;
+
+    position: relative;
+
+    z-index: 2;
+
+}

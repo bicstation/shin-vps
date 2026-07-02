@@ -4,36 +4,34 @@
 // Loading
 // ============================================================================
 
+/* ============================================================================
+Loading
+============================================================================ */
+
 export default function Loading() {
 
-    return (
+  return (
 
-        <main className="animate-pulse">
+    <main>
 
-            <section className="h-96 rounded-3xl bg-neutral-200 dark:bg-neutral-800" />
+      <section>
 
-            <section className="mt-8 space-y-4">
+        <h1>
 
-                <div className="h-8 w-64 rounded bg-neutral-200 dark:bg-neutral-800" />
+          Loading...
 
-                <div className="h-4 w-full rounded bg-neutral-200 dark:bg-neutral-800" />
+        </h1>
 
-                <div className="h-4 w-5/6 rounded bg-neutral-200 dark:bg-neutral-800" />
+        <p>
 
-            </section>
+          セマンティックワールドを読み込んでいます。
 
-            <section className="mt-10 grid gap-6 md:grid-cols-3">
+        </p>
 
-                <div className="h-64 rounded-2xl bg-neutral-200 dark:bg-neutral-800" />
+      </section>
 
-                <div className="h-64 rounded-2xl bg-neutral-200 dark:bg-neutral-800" />
+    </main>
 
-                <div className="h-64 rounded-2xl bg-neutral-200 dark:bg-neutral-800" />
-
-            </section>
-
-        </main>
-
-    )
+  )
 
 }

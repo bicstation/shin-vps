@@ -1,21 +1,22 @@
 // ============================================================================
 // SHIN CORE LINX
 // Discover Experience V2
+// Discover Page Orchestrator
 // ============================================================================
 
 import { notFound } from 'next/navigation'
 
 import {
 
-    fetchDiscoverDetailRuntime,
+  fetchDiscoverDetailRuntime,
 
 } from '@/shared/lib/api/django/pc/discover-detail'
 
 import {
 
-    getExperienceDictionary,
+  getExperienceDictionary,
 
-} from './lib/dictionary'
+} from './services/dictionary'
 
 import Hero from './components/Hero'
 import About from './components/About'
@@ -30,11 +31,11 @@ Props
 
 interface DiscoverPageProps {
 
-    params: Promise<{
+  params: Promise<{
 
-        'semantic-slug': string
+    'semantic-slug': string
 
-    }>
+  }>
 
 }
 
@@ -44,94 +45,109 @@ Discover Page
 
 export default async function DiscoverPage(
 
-    {
+  {
 
-        params,
+    params,
 
-    }: DiscoverPageProps
+  }: DiscoverPageProps
 
 ) {
 
-    const {
+  /* --------------------------------------------------------------------------
+  Route Parameter
+  -------------------------------------------------------------------------- */
 
-        'semantic-slug': slug,
+  const {
 
-    } = await params
+    'semantic-slug': groupSlug,
 
-    /* --------------------------------------------------------------------------
-    Runtime
-    -------------------------------------------------------------------------- */
+  } = await params
 
-    const runtime =
+  /* --------------------------------------------------------------------------
+  Runtime
+  -------------------------------------------------------------------------- */
 
-        await fetchDiscoverDetailRuntime(
+  const runtime = await fetchDiscoverDetailRuntime(
 
-            slug
+    groupSlug
 
-        )
+  )
 
-    if (
+  if (
 
-        !runtime.found
+    !runtime ||
+    !runtime.found
 
-    ) {
+  ) {
 
-        notFound()
+    notFound()
 
-    }
+  }
 
-    /* --------------------------------------------------------------------------
-    Experience Dictionary
-    -------------------------------------------------------------------------- */
+  /* --------------------------------------------------------------------------
+  Experience Dictionary
+  -------------------------------------------------------------------------- */
 
-    const dictionary =
+  const dictionary = await getExperienceDictionary(
 
-        await getExperienceDictionary(
+    runtime.data.group_slug
 
-            slug
+  )
 
-        )
+  /* --------------------------------------------------------------------------
+  Render
+  -------------------------------------------------------------------------- */
 
-    /* --------------------------------------------------------------------------
-    Render
-    -------------------------------------------------------------------------- */
+  return (
 
-    return (
+    <main>
 
-        <>
+      <Hero
 
-            <Hero
-                runtime={runtime}
-                dictionary={dictionary.hero}
-            />
+        runtime={runtime}
 
-            <About
-                runtime={runtime}
-                dictionary={dictionary.about}
-            />
+        dictionary={dictionary.hero}
 
-            <Elements
-                runtime={runtime}
-                dictionary={dictionary.elements}
-            />
+      />
 
-            <RepresentativeProducts
-                runtime={runtime}
-                dictionary={dictionary.products}
-            />
+      <About
 
-            <RelatedWorlds
-                runtime={runtime}
-                dictionary={dictionary.related}
-            />
+        dictionary={dictionary.about}
 
-            <ContinueDiscovery
-                runtime={runtime}
-                dictionary={dictionary.continue}
-            />
+      />
 
-        </>
+      <Elements
 
-    )
+        runtime={runtime}
+
+        dictionary={dictionary.elements}
+
+      />
+
+      <RepresentativeProducts
+
+        runtime={runtime}
+
+        dictionary={dictionary.products}
+
+      />
+
+      <RelatedWorlds
+
+        runtime={runtime}
+
+        dictionary={dictionary.related}
+
+      />
+
+      <ContinueDiscovery
+
+        dictionary={dictionary.continue}
+
+      />
+
+    </main>
+
+  )
 
 }

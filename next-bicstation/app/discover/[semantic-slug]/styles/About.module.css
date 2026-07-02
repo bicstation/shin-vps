@@ -1,0 +1,87 @@
+/* ==========================================================================
+   SHIN CORE LINX
+   Discover Experience V2
+   About
+   ========================================================================== */
+
+.about {
+
+    padding: 96px 32px;
+
+    background: #07111f;
+
+}
+
+.container {
+
+    max-width: 1200px;
+
+    margin: 0 auto;
+
+}
+
+.header {
+
+    margin-bottom: 32px;
+
+}
+
+.title {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    margin: 0;
+
+    font-size: 2rem;
+
+    font-weight: 700;
+
+    color: #ffffff;
+
+}
+
+.icon {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    color: var(--accent-color, #7cc7ff);
+
+    line-height: 1;
+
+    flex-shrink: 0;
+
+}
+
+.card {
+
+    padding: 40px;
+
+    border: 1px solid rgba(255,255,255,.08);
+
+    border-radius: 20px;
+
+    background: rgba(255,255,255,.03);
+
+    backdrop-filter: blur(12px);
+
+}
+
+.body {
+
+    margin: 0;
+
+    line-height: 2;
+
+    font-size: 1.05rem;
+
+    color: rgba(255,255,255,.86);
+
+}

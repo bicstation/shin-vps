@@ -1,19 +1,49 @@
 // ============================================================================
-// Discover Detail Projection V2
+// FILE:
+// /shared/lib/api/django/pc/discover-detail/projection.ts
+// Copyright (c) 2024 Shin Corporation.
+// All rights reserved.
 // ============================================================================
+
+/**
+ * ============================================================================
+ * SHIN CORE LINX
+ * Discover Detail Projection
+ * ============================================================================
+ *
+ * Responsibilities
+ *
+ * - UI Projection
+ *
+ * NOT
+ *
+ * - Runtime Fetch
+ * - Runtime Normalize
+ * - Semantic Authority
+ *
+ * Backend remains:
+ *
+ * Semantic Authority
+ *
+ * Adapter remains:
+ *
+ * Projection Authority
+ *
+ * ============================================================================
+ */
 
 import type {
 
     DiscoverDetailRuntime,
-    DiscoverDetailSampleProduct,
+    DiscoverDetailProduct,
 
 } from './contracts'
 
 /* ============================================================================
-🔥 Projection Runtime
+🔥 Projected Runtime
 ============================================================================ */
 
-export interface DiscoverDetailProjectedRuntime {
+export interface ProjectedDiscoverDetailRuntime {
 
     header: {
 
@@ -38,7 +68,7 @@ export interface DiscoverDetailProjectedRuntime {
 
         color: string
 
-        product_count: number
+        productCount: number
 
         found: boolean
     }
@@ -53,18 +83,18 @@ export interface DiscoverDetailProjectedRuntime {
 
         description: string
 
-        semantic_role: string
+        semanticRole: string
 
-        semantic_weight: string
+        semanticWeight: string
 
-        ranking_enabled: boolean
+        rankingEnabled: boolean
     }
 
     aliases: string[]
 
-    related_groups: string[]
+    relatedGroups: string[]
 
-    sample_products: ProjectedProduct[]
+    products: ProjectedProduct[]
 }
 
 /* ============================================================================
@@ -73,7 +103,7 @@ export interface DiscoverDetailProjectedRuntime {
 
 export interface ProjectedProduct {
 
-    unique_id: string
+    uniqueId: string
 
     name: string
 
@@ -85,90 +115,107 @@ export interface ProjectedProduct {
 }
 
 /* ============================================================================
-🔥 Main Projection
+🔥 Projection
 ============================================================================ */
 
 export function projectDiscoverDetailRuntime(
 
     runtime: DiscoverDetailRuntime
 
-): DiscoverDetailProjectedRuntime {
+): ProjectedDiscoverDetailRuntime {
 
     return {
 
         header: {
 
             slug:
+
                 runtime.presentation?.slug ?? '',
 
             title:
+
                 runtime.presentation?.title ?? '',
 
             subtitle:
+
                 runtime.presentation?.subtitle ?? '',
 
             description:
+
                 runtime.presentation?.description ?? '',
         },
 
         group: {
 
             slug:
+
                 runtime.data.group_slug,
 
             name:
+
                 runtime.data.group_name ?? '',
 
             type:
+
                 runtime.data.type ?? '',
 
             icon:
+
                 runtime.data.icon ?? '',
 
             color:
+
                 runtime.data.color ?? '',
 
-            product_count:
+            productCount:
+
                 runtime.data.product_count ?? 0,
 
             found:
+
                 runtime.found,
         },
 
         attribute: {
 
             slug:
+
                 runtime.data.attribute?.slug ?? '',
 
             name:
+
                 runtime.data.attribute?.name ?? '',
 
             title:
+
                 runtime.data.attribute?.title ?? '',
 
             description:
+
                 runtime.data.attribute?.description ?? '',
 
-            semantic_role:
+            semanticRole:
+
                 runtime.data.attribute?.semantic_role ?? '',
 
-            semantic_weight:
+            semanticWeight:
+
                 runtime.data.attribute?.semantic_weight ?? '',
 
-            ranking_enabled:
+            rankingEnabled:
 
-                runtime.data.attribute?.is_ranking_enabled === 'TRUE'
+                runtime.data.attribute?.is_ranking_enabled === 'TRUE',
         },
 
         aliases:
 
             runtime.data.aliases ?? [],
 
-        related_groups:
+        relatedGroups:
 
             runtime.data.related_groups ?? [],
 
-        sample_products:
+        products:
 
             (runtime.data.sample_products ?? []).map(
 
@@ -184,25 +231,30 @@ export function projectDiscoverDetailRuntime(
 
 function projectProduct(
 
-    product: DiscoverDetailSampleProduct
+    product: DiscoverDetailProduct
 
 ): ProjectedProduct {
 
     return {
 
-        unique_id:
+        uniqueId:
+
             product.unique_id,
 
         name:
+
             product.name,
 
         maker:
+
             product.maker ?? '',
 
         price:
+
             product.price ?? 0,
 
         image:
+
             product.image_url ?? '',
     }
 }

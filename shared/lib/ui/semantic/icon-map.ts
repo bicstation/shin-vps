@@ -1,37 +1,41 @@
 import {
 
-  Gamepad2,
-  Sparkles,
-  PenTool,
   BadgeDollarSign,
-  Briefcase,
-  Smartphone,
-  Laptop,
-  Monitor,
-  Cpu,
-  Server,
+  BookOpen,
   Box,
+  Briefcase,
+  Compass,
+  Cpu,
+  Gamepad2,
+  Laptop,
+  Layers3,
+  Monitor,
+  Network,
+  PenTool,
+  Server,
+  Smartphone,
+  Sparkles,
 
 } from 'lucide-react'
 
 import type {
+
   LucideIcon,
+
 } from 'lucide-react'
 
 export const ICON_MAP:
 Record<string, LucideIcon> = {
+
+  /* ========================================================================
+   Semantic Worlds
+  ======================================================================== */
 
   gamepad:
     Gamepad2,
 
   sparkles:
     Sparkles,
-
-  'pen-tool':
-    PenTool,
-
-  'badge-dollar-sign':
-    BadgeDollarSign,
 
   briefcase:
     Briefcase,
@@ -45,13 +49,35 @@ Record<string, LucideIcon> = {
   pc:
     Monitor,
 
-  cpu:
-    Cpu,
-
   server:
     Server,
 
+  /* ========================================================================
+   Experience Dictionary
+  ======================================================================== */
+
+  'book-open':
+    BookOpen,
+
+  layers:
+    Layers3,
+
+  network:
+    Network,
+
+  compass:
+    Compass,
+
+  cpu:
+    Cpu,
+
   box:
     Box,
+
+  'pen-tool':
+    PenTool,
+
+  'badge-dollar-sign':
+    BadgeDollarSign,
 
 }

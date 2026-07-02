@@ -1,114 +1,175 @@
 // ============================================================================
-// Discover Detail Runtime Normalizer
+// FILE:
+// /shared/lib/api/django/pc/discover-detail/normalize.ts
+// Copyright (c) 2024 Shin Corporation.
+// All rights reserved.
 // ============================================================================
+
+/**
+ * ============================================================================
+ * SHIN CORE LINX
+ * Discover Detail Runtime Normalize
+ * ============================================================================
+ *
+ * Responsibilities
+ *
+ * - Runtime Safety
+ * - Null Protection
+ * - Array Normalization
+ *
+ * NOT
+ *
+ * - Projection
+ * - UI Logic
+ * - Semantic Generation
+ *
+ * Backend remains:
+ *
+ * Semantic Authority
+ *
+ * ============================================================================
+ */
 
 import type {
 
-  DiscoverDetailRuntime,
+    DiscoverDetailRuntime,
+
+    DiscoverDetailAttribute,
+
+    DiscoverDetailProduct,
 
 } from './contracts'
 
 /* ============================================================================
-🔥 Normalize Discover Detail Runtime
+🔥 Normalize Runtime
 ============================================================================ */
 
 export function normalizeDiscoverDetailRuntime(
 
-  runtime?: Partial<DiscoverDetailRuntime>
+    runtime: DiscoverDetailRuntime
 
 ): DiscoverDetailRuntime {
 
-  return {
+    return {
 
-    /* =========================
-       Runtime Status
-    ========================= */
+        ...runtime,
 
-    found:
-      runtime?.found ?? false,
+        meaning: {
 
-    success:
-      runtime?.success ?? runtime?.found ?? false,
+            ...runtime.meaning,
 
-    /* =========================
-       Meaning
-    ========================= */
+        },
 
-    meaning:
-      runtime?.meaning ?? {},
+        presentation: {
 
-    presentation:
-      runtime?.presentation ?? {},
+            ...runtime.presentation,
 
-    seo:
-      runtime?.seo ?? {},
+        },
 
-    /* =========================
-       Data
-    ========================= */
+        seo: {
 
-    data: {
+            ...runtime.seo,
 
-      group_slug:
-        runtime?.data?.group_slug ?? '',
+        },
 
-      group_name:
-        runtime?.data?.group_name ?? '',
+        data: {
 
-      type:
-        runtime?.data?.type ?? '',
+            ...runtime.data,
 
-      parent_group:
-        runtime?.data?.parent_group ?? '',
+            aliases:
 
-      icon:
-        runtime?.data?.icon ?? '',
+                runtime.data?.aliases ?? [],
 
-      color:
-        runtime?.data?.color ?? '',
+            related_groups:
 
-      sort_order:
-        runtime?.data?.sort_order ?? '',
+                runtime.data?.related_groups ?? [],
 
-      attribute:
-        runtime?.data?.attribute,
+            attribute:
 
-      product_count:
-        runtime?.data?.product_count ?? 0,
+                normalizeAttribute(
 
-      aliases:
-        runtime?.data?.aliases ?? [],
+                    runtime.data?.attribute
 
-      related_groups:
-        runtime?.data?.related_groups ?? [],
+                ),
 
-      sample_products:
-        runtime?.data?.sample_products ?? [],
-    },
+            sample_products:
 
-    /* =========================
-       Runtime Authority
-    ========================= */
+                (runtime.data?.sample_products ?? [])
 
-    semantic_schema_version:
-      runtime?.semantic_schema_version,
+                    .map(
 
-    authority_version:
-      runtime?.authority_version,
+                        normalizeProduct
 
-    semantic_authority:
-      runtime?.semantic_authority,
+                    ),
 
-    ready:
-      runtime?.ready ?? false,
+        },
 
-    /* =========================
-       Raw Backup
-    ========================= */
+        raw:
 
-    raw:
-      runtime,
-  }
+            runtime.raw ?? runtime,
+
+    }
+
+}
+
+/* ============================================================================
+🔥 Normalize Attribute
+============================================================================ */
+
+function normalizeAttribute(
+
+    attribute?: DiscoverDetailAttribute
+
+): DiscoverDetailAttribute | undefined {
+
+    if (!attribute) {
+
+        return undefined
+
+    }
+
+    return {
+
+        ...attribute,
+
+    }
+
+}
+
+/* ============================================================================
+🔥 Normalize Product
+============================================================================ */
+
+function normalizeProduct(
+
+    product: DiscoverDetailProduct
+
+): DiscoverDetailProduct {
+
+    return {
+
+        unique_id:
+
+            product.unique_id,
+
+        name:
+
+            product.name,
+
+        maker:
+
+            product.maker ?? '',
+
+        price:
+
+            product.price ?? 0,
+
+        image_url:
+
+            product.image_url ?? '',
+
+    }
+
 }
 
 /* ============================================================================
@@ -116,7 +177,7 @@ export function normalizeDiscoverDetailRuntime(
 ============================================================================ */
 
 export const normalizeDiscoverDetail =
-  normalizeDiscoverDetailRuntime
+    normalizeDiscoverDetailRuntime
 
 /* ============================================================================
 🔥 Default Export
