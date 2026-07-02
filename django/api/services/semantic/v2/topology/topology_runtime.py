@@ -182,6 +182,18 @@ def build_topology_runtime():
             ),
 
             # ----------------------------------
+            # Canonical Semantic Identity
+            # ----------------------------------
+
+            "group_slug":
+                group_slug,
+
+            "group_name":
+                group.get(
+                    "group_name"
+                ),
+
+            # ----------------------------------
             # Semantic Group Presentation Layer
             # ----------------------------------
 
@@ -231,7 +243,7 @@ def build_topology_runtime():
             "attributes":
                 children,
         })
-
+ 
     topology = sorted(
 
         topology,
@@ -247,6 +259,65 @@ def build_topology_runtime():
 
             ),
     )
+    
+    
+    # ------------------------------------------------------
+    # Parent Group Index
+    # ------------------------------------------------------
+
+    parent_index = defaultdict(list)
+
+    for group in topology:
+
+        parent_index[
+            group.get("parent_group")
+        ].append(group)
+
+
+    # ------------------------------------------------------
+    # Sibling Groups
+    # ------------------------------------------------------
+
+    for group in topology:
+
+        siblings = []
+
+        for sibling in parent_index.get(
+            group.get("parent_group"),
+            []
+        ):
+
+            siblings.append({
+
+                "group_slug":
+                    sibling.get("group_slug"),
+
+                "group_name":
+                    sibling.get("group_name"),
+
+                "presentation_name":
+                    sibling.get("presentation_name"),
+
+                "presentation_description":
+                    sibling.get("presentation_description"),
+
+                "icon":
+                    sibling.get("icon"),
+
+                "color":
+                    sibling.get("color"),
+
+                "sort_order":
+                    sibling.get("sort_order"),
+
+                "is_current":
+                    sibling.get("group_slug")
+                    ==
+                    group.get("group_slug"),
+            })
+
+        group["sibling_groups"] = siblings
+    
 
     return {
 
