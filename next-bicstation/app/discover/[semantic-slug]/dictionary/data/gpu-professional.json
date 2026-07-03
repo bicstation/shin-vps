@@ -1,0 +1,55 @@
+{
+  "group_slug": "gpu-professional",
+
+  "theme": {
+    "icon": "cpu",
+    "accentColor": "#8B5CF6",
+    "backgroundImage": "/images/discover/gpu-professional.png"
+  },
+
+  "hero": {
+    "label": "SEMANTIC WORLD",
+    "title": "プロフェッショナルGPU",
+    "catchCopy": "プロフェッショナルの仕事を、確かな性能で支える。",
+    "description": "CAD、3DCG、映像制作、AI開発、シミュレーションなど、高い安定性と信頼性を求める方のためのセマンティックワールドです。業務内容やワークフローに合わせて、自分に最適なプロフェッショナルGPUとの出会いをサポートします。",
+    "backgroundPosition": "center top"
+  },
+
+  "about": {
+    "title": "この世界について",
+    "body": "プロフェッショナルGPUは、設計、映像制作、科学技術計算、AI開発など、高度な業務を支えるために設計されたグラフィックスプロセッサーです。高い演算性能だけでなく、長時間の安定稼働や認証ドライバーなど、業務利用に求められるさまざまな要素を総合的に探索できます。",
+    "backgroundPosition": "center 30%"
+  },
+
+  "elements": {
+    "title": "この世界を構成する主な要素",
+    "description": "プロフェッショナルGPU選びで注目したい代表的な技術や特徴をご紹介します。",
+    "backgroundPosition": "center",
+    "keywords": [
+      "Professional GPU",
+      "ECC Memory",
+      "ISV Certification",
+      "AI Computing",
+      "Large VRAM"
+    ]
+  },
+
+  "products": {
+    "title": "この世界を代表する製品",
+    "description": "この世界を代表するプロフェッショナルGPU搭載製品です。性能や安定性、認証環境を比較しながら、自分の業務に最適な一台を見つけましょう。",
+    "backgroundPosition": "center 70%"
+  },
+
+  "related": {
+    "title": "同じGPUカテゴリーの世界",
+    "description": "プロフェッショナルGPUと同じGPUカテゴリーに属する、さまざまなセマンティックワールドを探索できます。",
+    "backgroundPosition": "center bottom"
+  },
+
+  "continue": {
+    "title": "次の世界を探索する",
+    "description": "用途やワークフローに合わせて、他のGPUカテゴリーも探索してみましょう。あなたに最適なグラフィックス環境との出会いを広げましょう。",
+    "buttonLabel": "他のセマンティックワールドを探索する",
+    "backgroundPosition": "bottom"
+  }
+}

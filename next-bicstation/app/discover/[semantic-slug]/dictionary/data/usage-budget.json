@@ -1,0 +1,55 @@
+{
+  "group_slug": "usage-budget",
+
+  "theme": {
+    "icon": "wallet",
+    "accentColor": "#34C759",
+    "backgroundImage": "/images/discover/usage-budget.png"
+  },
+
+  "hero": {
+    "label": "SEMANTIC WORLD",
+    "title": "予算重視PC",
+    "catchCopy": "予算に合わせて、納得できる一台を見つけよう。",
+    "description": "限られた予算の中で、自分に最適なPCを選びたい方のためのセマンティックワールドです。価格と性能のバランスを比較しながら、満足度の高い一台との出会いをサポートします。",
+    "backgroundPosition": "center top"
+  },
+
+  "about": {
+    "title": "この世界について",
+    "body": "予算重視PCは、コストパフォーマンスを大切にしながら、自分の用途に必要な性能を選ぶためのコンピューターです。価格だけでなく、CPUやメモリー、ストレージ、将来性など、長く満足して使えるためのさまざまな要素を総合的に探索できます。",
+    "backgroundPosition": "center 30%"
+  },
+
+  "elements": {
+    "title": "この世界を構成する主な要素",
+    "description": "コストパフォーマンスを高める代表的なポイントをご紹介します。",
+    "backgroundPosition": "center",
+    "keywords": [
+      "Value Performance",
+      "Entry Model",
+      "Cost Performance",
+      "Balanced Specification",
+      "Best Buy"
+    ]
+  },
+
+  "products": {
+    "title": "この世界を代表する製品",
+    "description": "この世界を代表する予算重視PCです。価格と性能のバランスを比較しながら、自分に最適な一台を見つけましょう。",
+    "backgroundPosition": "center 70%"
+  },
+
+  "related": {
+    "title": "同じ用途カテゴリーの世界",
+    "description": "予算重視と同じカテゴリーに属する、さまざまなセマンティックワールドを探索できます。",
+    "backgroundPosition": "center bottom"
+  },
+
+  "continue": {
+    "title": "次の世界を探索する",
+    "description": "あなたの用途やライフスタイルに合った世界は他にもあります。新しいセマンティックワールドを探索し、自分に最適なPCとの出会いを広げましょう。",
+    "buttonLabel": "他のセマンティックワールドを探索する",
+    "backgroundPosition": "bottom"
+  }
+}

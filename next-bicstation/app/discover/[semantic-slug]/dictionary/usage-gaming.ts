@@ -5,161 +5,24 @@
 // Semantic World : usage-gaming
 // ============================================================================
 
-import type {
+import gamingData from './data/usage-gaming.json'
 
-  ExperienceDictionary,
+import {
 
-} from '../types/experience'
+  createExperienceDictionary,
 
-const usageGaming: ExperienceDictionary = {
+} from './templates/experience-discover.template'
 
-  /* ==========================================================================
-  Hero
-  ========================================================================== */
+/* ============================================================================
+Experience Dictionary
+============================================================================ */
 
-  hero: {
+const usageGaming =
 
-    label: 'SEMANTIC WORLD',
+  createExperienceDictionary(
 
-    title: 'ゲーミングPC',
+    gamingData
 
-    catchCopy:
-      'ゲームの世界を、最高のパフォーマンスで楽しもう。',
-
-    description:
-      'ゲームを快適に楽しみたい方のためのセマンティックワールドです。高性能なゲーミングPCや関連製品を比較しながら、自分に最適な一台を見つけられます。',
-
-    backgroundImage:
-      '/images/discover/usage-gaming.png',
-
-    icon: 'gamepad',
-
-    accentColor: '#45B3FF',
-
-  },
-
-  /* ==========================================================================
-  About
-  ========================================================================== */
-
-  about: {
-
-    title: 'この世界について',
-
-    icon: 'book-open',
-
-    backgroundImage:
-      '/images/discover/usage-gaming.png',
-
-    backgroundPosition:
-      'center 30%',
-
-    body:
-      'ゲーミングPCは、高い描画性能と快適な操作性を実現するために設計されたコンピューターです。GPUやCPUだけでなく、メモリー、ストレージ、モニターなど、ゲーム体験を支えるさまざまな製品を総合的に探索できます。',
-
-  },
-
-  /* ==========================================================================
-  Elements
-  ========================================================================== */
-
-  elements: {
-
-    title: 'この世界を構成する主な要素',
-
-    icon: 'layers',
-
-    backgroundImage:
-      '/images/discover/usage-gaming.png',
-
-    backgroundPosition:
-      'center',
-
-    description:
-      'ゲーミングPCの体験を支える代表的な技術や特徴をご紹介します。',
-
-    keywords: [
-
-      'RTX Graphics',
-
-      'DLSS',
-
-      'Ray Tracing',
-
-      'High FPS',
-
-      'eSports',
-
-    ],
-
-  },
-
-  /* ==========================================================================
-  Representative Products
-  ========================================================================== */
-
-  products: {
-
-    title: 'この世界を代表する製品',
-
-    icon: 'cpu',
-
-    backgroundImage:
-      '/images/discover/usage-gaming.png',
-
-    backgroundPosition:
-      'center 70%',
-
-    description:
-      'この世界を代表するゲーミングPCです。性能や特徴を比較しながら、自分に合ったモデルを見つけましょう。',
-
-  },
-
-  /* ==========================================================================
-  Related Worlds
-  ========================================================================== */
-
-  related: {
-
-    title: '同じ用途カテゴリーの世界',
-
-    icon: 'network',
-
-    backgroundImage:
-      '/images/discover/usage-gaming.png',
-
-    backgroundPosition:
-      'center bottom',
-
-    description:
-      'ゲーム用途と同じカテゴリーに属する、さまざまなセマンティックワールドを探索できます。',
-
-  },
-
-  /* ==========================================================================
-  Continue Discovery
-  ========================================================================== */
-
-  continue: {
-
-    title: '次の世界を探索する',
-
-    icon: 'compass',
-
-    backgroundImage:
-      '/images/discover/usage-gaming.png',
-
-    backgroundPosition:
-      'bottom',
-
-    description:
-      'あなたに合った用途は他にもあります。新しいセマンティックワールドを探索して、自分に最適なPCとの出会いを広げましょう。',
-
-    buttonLabel:
-      '他のセマンティックワールドを探索する',
-
-  },
-
-}
+  )
 
 export default usageGaming

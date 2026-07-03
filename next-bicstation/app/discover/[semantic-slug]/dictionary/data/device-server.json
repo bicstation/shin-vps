@@ -1,0 +1,55 @@
+{
+  "group_slug": "device-server",
+
+  "theme": {
+    "icon": "database",
+    "accentColor": "#5B6EFF",
+    "backgroundImage": "/images/discover/device-server.png"
+  },
+
+  "hero": {
+    "label": "SEMANTIC WORLD",
+    "title": "サーバー",
+    "catchCopy": "ビジネスとシステムを支える、信頼の基盤。",
+    "description": "企業システムやWebサービス、ファイル共有、仮想化環境など、安定した運用を実現するサーバーを探したい方のためのセマンティックワールドです。用途や規模に合わせて、自分に最適なサーバーとの出会いをサポートします。",
+    "backgroundPosition": "center top"
+  },
+
+  "about": {
+    "title": "この世界について",
+    "body": "サーバーは、データやサービスを安定して提供するために設計されたコンピューターです。CPUやメモリー、ストレージ構成だけでなく、冗長性や拡張性、24時間稼働を支える信頼性など、企業や組織のIT基盤を構成するさまざまな要素を総合的に探索できます。",
+    "backgroundPosition": "center 30%"
+  },
+
+  "elements": {
+    "title": "この世界を構成する主な要素",
+    "description": "サーバー選びで注目したい代表的な技術や特徴をご紹介します。",
+    "backgroundPosition": "center",
+    "keywords": [
+      "Rack Server",
+      "Tower Server",
+      "ECC Memory",
+      "RAID",
+      "Virtualization"
+    ]
+  },
+
+  "products": {
+    "title": "この世界を代表する製品",
+    "description": "この世界を代表するサーバーです。性能や拡張性、信頼性を比較しながら、自分の運用環境に最適な一台を見つけましょう。",
+    "backgroundPosition": "center 70%"
+  },
+
+  "related": {
+    "title": "同じデバイスカテゴリーの世界",
+    "description": "サーバーと同じデバイスカテゴリーに属する、さまざまなセマンティックワールドを探索できます。",
+    "backgroundPosition": "center bottom"
+  },
+
+  "continue": {
+    "title": "次の世界を探索する",
+    "description": "システム構成や運用目的に合ったデバイスは他にもあります。新しいセマンティックワールドを探索し、自分に最適なIT基盤との出会いを広げましょう。",
+    "buttonLabel": "他のセマンティックワールドを探索する",
+    "backgroundPosition": "bottom"
+  }
+}

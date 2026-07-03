@@ -1,0 +1,55 @@
+{
+  "group_slug": "gpu-integrated",
+
+  "theme": {
+    "icon": "cpu",
+    "accentColor": "#10B981",
+    "backgroundImage": "/images/discover/gpu-integrated.png"
+  },
+
+  "hero": {
+    "label": "SEMANTIC WORLD",
+    "title": "内蔵GPU",
+    "catchCopy": "毎日のPCライフを、もっとシンプルに。",
+    "description": "Webブラウジングや動画視聴、Officeソフト、オンライン学習など、日常的な用途を快適に楽しみたい方のためのセマンティックワールドです。性能や省電力性、コストパフォーマンスを比較しながら、自分に最適な内蔵GPUとの出会いをサポートします。",
+    "backgroundPosition": "center top"
+  },
+
+  "about": {
+    "title": "この世界について",
+    "body": "内蔵GPUは、CPUに組み込まれたグラフィックス機能です。一般的なパソコン利用では十分な性能を備え、省電力性や静音性にも優れています。インターネットや動画視聴、ビジネス用途など、幅広い日常利用に適した製品を総合的に探索できます。",
+    "backgroundPosition": "center 30%"
+  },
+
+  "elements": {
+    "title": "この世界を構成する主な要素",
+    "description": "内蔵GPU選びで注目したい代表的な特徴をご紹介します。",
+    "backgroundPosition": "center",
+    "keywords": [
+      "Integrated Graphics",
+      "Power Efficiency",
+      "Silent Operation",
+      "Office Work",
+      "Daily Computing"
+    ]
+  },
+
+  "products": {
+    "title": "この世界を代表する製品",
+    "description": "この世界を代表する内蔵GPU搭載PCです。性能や省電力性、用途を比較しながら、自分に最適な一台を見つけましょう。",
+    "backgroundPosition": "center 70%"
+  },
+
+  "related": {
+    "title": "同じGPUカテゴリーの世界",
+    "description": "内蔵GPUと同じGPUカテゴリーに属する、さまざまなセマンティックワールドを探索できます。",
+    "backgroundPosition": "center bottom"
+  },
+
+  "continue": {
+    "title": "次の世界を探索する",
+    "description": "用途や求める性能に合わせて、他のGPUカテゴリーも探索してみましょう。あなたに最適なグラフィックス環境との出会いを広げましょう。",
+    "buttonLabel": "他のセマンティックワールドを探索する",
+    "backgroundPosition": "bottom"
+  }
+}

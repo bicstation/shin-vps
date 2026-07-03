@@ -1,0 +1,55 @@
+{
+  "group_slug": "memory-standard",
+
+  "theme": {
+    "icon": "memory-stick",
+    "accentColor": "#3B82F6",
+    "backgroundImage": "/images/discover/memory-standard.png"
+  },
+
+  "hero": {
+    "label": "SEMANTIC WORLD",
+    "title": "標準メモリー",
+    "catchCopy": "毎日を快適にする、ちょうどいいメモリー容量。",
+    "description": "インターネットやOfficeソフト、動画視聴など、日常的な用途を快適に楽しみたい方のためのセマンティックワールドです。用途や予算に合わせて、自分に最適なメモリー容量を持つPCとの出会いをサポートします。",
+    "backgroundPosition": "center top"
+  },
+
+  "about": {
+    "title": "この世界について",
+    "body": "標準メモリーは、日常利用から一般的なビジネス用途まで快適に利用できるメモリー容量を備えたPCです。WebブラウジングやOfficeソフト、オンライン会議など、普段使いに必要なパフォーマンスを支える製品を総合的に探索できます。",
+    "backgroundPosition": "center 30%"
+  },
+
+  "elements": {
+    "title": "この世界を構成する主な要素",
+    "description": "標準メモリーPC選びで注目したい代表的な特徴をご紹介します。",
+    "backgroundPosition": "center",
+    "keywords": [
+      "16GB Memory",
+      "DDR5",
+      "Daily Computing",
+      "Office",
+      "Balanced Performance"
+    ]
+  },
+
+  "products": {
+    "title": "この世界を代表する製品",
+    "description": "この世界を代表する標準メモリー搭載PCです。性能や用途、価格を比較しながら、自分に最適な一台を見つけましょう。",
+    "backgroundPosition": "center 70%"
+  },
+
+  "related": {
+    "title": "同じメモリーカテゴリーの世界",
+    "description": "標準メモリーと同じメモリーカテゴリーに属する、さまざまなセマンティックワールドを探索できます。",
+    "backgroundPosition": "center bottom"
+  },
+
+  "continue": {
+    "title": "次の世界を探索する",
+    "description": "用途や作業内容に合わせて、他のメモリーカテゴリーも探索してみましょう。あなたに最適なパフォーマンスとの出会いが待っています。",
+    "buttonLabel": "他のセマンティックワールドを探索する",
+    "backgroundPosition": "bottom"
+  }
+}

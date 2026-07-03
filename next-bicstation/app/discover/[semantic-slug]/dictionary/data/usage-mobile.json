@@ -1,0 +1,55 @@
+{
+  "group_slug": "usage-mobile",
+
+  "theme": {
+    "icon": "laptop",
+    "accentColor": "#00B8D9",
+    "backgroundImage": "/images/discover/usage-mobile.png"
+  },
+
+  "hero": {
+    "label": "SEMANTIC WORLD",
+    "title": "モバイルPC",
+    "catchCopy": "いつでも、どこでも、自分らしく働き、学び、楽しもう。",
+    "description": "外出先や移動中、自宅やカフェなど、場所を選ばず快適に使いたい方のためのセマンティックワールドです。軽量性やバッテリー性能、携帯性を比較しながら、自分に最適なモバイルPCとの出会いをサポートします。",
+    "backgroundPosition": "center top"
+  },
+
+  "about": {
+    "title": "この世界について",
+    "body": "モバイルPCは、持ち運びやすさと快適な作業環境を両立するために設計されたコンピューターです。軽量ボディや長時間駆動バッテリーだけでなく、通信性能や堅牢性など、外出先での利用を支えるさまざまな要素を総合的に探索できます。",
+    "backgroundPosition": "center 30%"
+  },
+
+  "elements": {
+    "title": "この世界を構成する主な要素",
+    "description": "モバイル環境を快適にする代表的な機能や特徴をご紹介します。",
+    "backgroundPosition": "center",
+    "keywords": [
+      "Lightweight",
+      "Long Battery Life",
+      "USB Type-C",
+      "Wi-Fi 7",
+      "Portable Design"
+    ]
+  },
+
+  "products": {
+    "title": "この世界を代表する製品",
+    "description": "この世界を代表するモバイルPCです。軽さや性能、携帯性を比較しながら、自分に最適な一台を見つけましょう。",
+    "backgroundPosition": "center 70%"
+  },
+
+  "related": {
+    "title": "同じ用途カテゴリーの世界",
+    "description": "モバイル用途と同じカテゴリーに属する、さまざまなセマンティックワールドを探索できます。",
+    "backgroundPosition": "center bottom"
+  },
+
+  "continue": {
+    "title": "次の世界を探索する",
+    "description": "あなたのライフスタイルに合った用途は他にもあります。新しいセマンティックワールドを探索し、自分に最適なPCとの出会いを広げましょう。",
+    "buttonLabel": "他のセマンティックワールドを探索する",
+    "backgroundPosition": "bottom"
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "group_slug": "usage-creator",
+
+  "theme": {
+    "icon": "palette",
+    "accentColor": "#FF6B8A",
+    "backgroundImage": "/images/discover/usage-creator.png"
+  },
+
+  "hero": {
+    "label": "SEMANTIC WORLD",
+    "title": "クリエイターPC",
+    "catchCopy": "創造力を、思いのままにカタチにしよう。",
+    "description": "動画編集、写真編集、イラスト制作、3DCG、音楽制作など、クリエイティブな作業を快適に行いたい方のためのセマンティックワールドです。用途や制作スタイルに合わせて、自分に最適なクリエイターPCとの出会いをサポートします。",
+    "backgroundPosition": "center top"
+  },
+
+  "about": {
+    "title": "この世界について",
+    "body": "クリエイターPCは、高い処理性能と安定した制作環境を実現するために設計されたコンピューターです。CPUやGPUだけでなく、メモリー、ストレージ、ディスプレイ性能など、制作ワークフロー全体を支えるさまざまな要素を総合的に探索できます。",
+    "backgroundPosition": "center 30%"
+  },
+
+  "elements": {
+    "title": "この世界を構成する主な要素",
+    "description": "クリエイティブ制作を支える代表的な技術や特徴をご紹介します。",
+    "backgroundPosition": "center",
+    "keywords": [
+      "Video Editing",
+      "Photo Editing",
+      "Adobe Creative Cloud",
+      "3DCG",
+      "Color Accuracy"
+    ]
+  },
+
+  "products": {
+    "title": "この世界を代表する製品",
+    "description": "この世界を代表するクリエイターPCです。制作内容や性能を比較しながら、自分に最適な一台を見つけましょう。",
+    "backgroundPosition": "center 70%"
+  },
+
+  "related": {
+    "title": "同じ用途カテゴリーの世界",
+    "description": "クリエイティブ用途と同じカテゴリーに属する、さまざまなセマンティックワールドを探索できます。",
+    "backgroundPosition": "center bottom"
+  },
+
+  "continue": {
+    "title": "次の世界を探索する",
+    "description": "創作スタイルに合った用途は他にもあります。新しいセマンティックワールドを探索し、自分に最適な制作環境との出会いを広げましょう。",
+    "buttonLabel": "他のセマンティックワールドを探索する",
+    "backgroundPosition": "bottom"
+  }
+}

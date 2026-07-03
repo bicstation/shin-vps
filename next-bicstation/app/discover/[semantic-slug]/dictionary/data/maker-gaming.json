@@ -1,0 +1,55 @@
+{
+  "group_slug": "maker-gaming",
+
+  "theme": {
+    "icon": "gamepad",
+    "accentColor": "#6D28D9",
+    "backgroundImage": "/images/discover/maker-gaming.png"
+  },
+
+  "hero": {
+    "label": "SEMANTIC WORLD",
+    "title": "ゲーミングブランド",
+    "catchCopy": "勝利を支える一台は、ブランド選びから始まる。",
+    "description": "ゲームを最高の環境で楽しみたい方のためのセマンティックワールドです。各ブランドが持つゲーミングへのこだわりや設計思想、性能を比較しながら、自分に最適なゲーミングブランドとの出会いをサポートします。",
+    "backgroundPosition": "center top"
+  },
+
+  "about": {
+    "title": "この世界について",
+    "body": "ゲーミングブランドは、高性能なゲーム環境を提供することを目的として設計されたPCブランドです。冷却性能やデザイン、高性能パーツの採用など、それぞれのブランドが持つ特徴や個性を総合的に探索できます。",
+    "backgroundPosition": "center 30%"
+  },
+
+  "elements": {
+    "title": "この世界を構成する主な要素",
+    "description": "ゲーミングブランドを比較する際に注目したい代表的なポイントをご紹介します。",
+    "backgroundPosition": "center",
+    "keywords": [
+      "Gaming Brand",
+      "Cooling System",
+      "Performance",
+      "RGB Design",
+      "Gaming Ecosystem"
+    ]
+  },
+
+  "products": {
+    "title": "この世界を代表する製品",
+    "description": "代表的なゲーミングブランドの製品を比較しながら、性能やデザイン、拡張性など、それぞれの特徴を踏まえて自分に最適な一台を見つけましょう。",
+    "backgroundPosition": "center 70%"
+  },
+
+  "related": {
+    "title": "同じメーカーカテゴリーの世界",
+    "description": "ゲーミングブランドと同じメーカーカテゴリーに属する、さまざまなセマンティックワールドを探索できます。",
+    "backgroundPosition": "center bottom"
+  },
+
+  "continue": {
+    "title": "次の世界を探索する",
+    "description": "メーカーだけでなく、用途や性能、デバイスなど、さまざまな視点から新しいセマンティックワールドを探索してみましょう。",
+    "buttonLabel": "他のセマンティックワールドを探索する",
+    "backgroundPosition": "bottom"
+  }
+}

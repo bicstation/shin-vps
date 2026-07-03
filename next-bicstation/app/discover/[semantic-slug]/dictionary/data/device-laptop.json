@@ -1,0 +1,55 @@
+{
+  "group_slug": "device-laptop",
+
+  "theme": {
+    "icon": "laptop",
+    "accentColor": "#4A90E2",
+    "backgroundImage": "/images/discover/device-laptop.png"
+  },
+
+  "hero": {
+    "label": "SEMANTIC WORLD",
+    "title": "ノートPC",
+    "catchCopy": "あなたの毎日に寄り添う、一台を見つけよう。",
+    "description": "持ち運びやすさと使いやすさを兼ね備えたノートPCを探したい方のためのセマンティックワールドです。性能やサイズ、デザイン、用途との相性を比較しながら、自分に最適な一台との出会いをサポートします。",
+    "backgroundPosition": "center top"
+  },
+
+  "about": {
+    "title": "この世界について",
+    "body": "ノートPCは、仕事や学習、趣味まで幅広いシーンで活躍するコンピューターです。軽量モデルから高性能モデルまで、多様な特徴を持つ製品を比較しながら、自分のライフスタイルに合った一台を総合的に探索できます。",
+    "backgroundPosition": "center 30%"
+  },
+
+  "elements": {
+    "title": "この世界を構成する主な要素",
+    "description": "ノートPC選びで注目したい代表的な特徴をご紹介します。",
+    "backgroundPosition": "center",
+    "keywords": [
+      "Lightweight",
+      "Battery Life",
+      "Display Size",
+      "Portable Design",
+      "Performance"
+    ]
+  },
+
+  "products": {
+    "title": "この世界を代表する製品",
+    "description": "この世界を代表するノートPCです。性能やサイズ、デザインを比較しながら、自分に最適な一台を見つけましょう。",
+    "backgroundPosition": "center 70%"
+  },
+
+  "related": {
+    "title": "同じデバイスカテゴリーの世界",
+    "description": "ノートPCと同じデバイスカテゴリーに属する、さまざまなセマンティックワールドを探索できます。",
+    "backgroundPosition": "center bottom"
+  },
+
+  "continue": {
+    "title": "次の世界を探索する",
+    "description": "あなたに合ったデバイスは他にもあります。新しいセマンティックワールドを探索し、自分に最適な一台との出会いを広げましょう。",
+    "buttonLabel": "他のセマンティックワールドを探索する",
+    "backgroundPosition": "bottom"
+  }
+}

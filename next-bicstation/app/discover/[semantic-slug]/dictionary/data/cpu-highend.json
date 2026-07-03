@@ -1,0 +1,55 @@
+{
+  "group_slug": "cpu-highend",
+
+  "theme": {
+    "icon": "cpu",
+    "accentColor": "#7C5CFF",
+    "backgroundImage": "/images/discover/cpu-highend.png"
+  },
+
+  "hero": {
+    "label": "SEMANTIC WORLD",
+    "title": "ハイエンドCPU",
+    "catchCopy": "圧倒的な処理性能で、可能性をさらに広げよう。",
+    "description": "ゲーム、動画編集、3DCG制作、AI開発など、高い処理性能を求める方のためのセマンティックワールドです。性能や機能を比較しながら、自分に最適なハイエンドCPUとの出会いをサポートします。",
+    "backgroundPosition": "center top"
+  },
+
+  "about": {
+    "title": "この世界について",
+    "body": "ハイエンドCPUは、高負荷なアプリケーションやマルチタスク環境でも快適な処理性能を発揮するプロセッサーです。多くのコアやスレッド、高いクロック性能を活かし、クリエイティブ制作やAI処理、最新ゲームなど幅広い用途を総合的に探索できます。",
+    "backgroundPosition": "center 30%"
+  },
+
+  "elements": {
+    "title": "この世界を構成する主な要素",
+    "description": "ハイエンドCPU選びで注目したい代表的な技術や特徴をご紹介します。",
+    "backgroundPosition": "center",
+    "keywords": [
+      "Multi-Core",
+      "High Clock",
+      "AI Processing",
+      "Gaming",
+      "Content Creation"
+    ]
+  },
+
+  "products": {
+    "title": "この世界を代表する製品",
+    "description": "この世界を代表するハイエンドCPU搭載PCです。性能や用途、拡張性を比較しながら、自分に最適な一台を見つけましょう。",
+    "backgroundPosition": "center 70%"
+  },
+
+  "related": {
+    "title": "同じCPUカテゴリーの世界",
+    "description": "ハイエンドCPUと同じCPUカテゴリーに属する、さまざまなセマンティックワールドを探索できます。",
+    "backgroundPosition": "center bottom"
+  },
+
+  "continue": {
+    "title": "次の世界を探索する",
+    "description": "用途や求める性能に合わせて、他のCPUカテゴリーも探索してみましょう。あなたに最適なコンピューティング環境との出会いを広げましょう。",
+    "buttonLabel": "他のセマンティックワールドを探索する",
+    "backgroundPosition": "bottom"
+  }
+}

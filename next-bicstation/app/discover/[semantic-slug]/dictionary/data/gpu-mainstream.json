@@ -1,0 +1,55 @@
+{
+  "group_slug": "gpu-mainstream",
+
+  "theme": {
+    "icon": "cpu",
+    "accentColor": "#3B82F6",
+    "backgroundImage": "/images/discover/gpu-mainstream.png"
+  },
+
+  "hero": {
+    "label": "SEMANTIC WORLD",
+    "title": "メインストリームGPU",
+    "catchCopy": "性能と価格、そのちょうどいいバランスへ。",
+    "description": "ゲームや動画編集、写真編集、クリエイティブ作業まで幅広く快適に楽しみたい方のためのセマンティックワールドです。性能と価格のバランスを比較しながら、自分に最適なメインストリームGPUとの出会いをサポートします。",
+    "backgroundPosition": "center top"
+  },
+
+  "about": {
+    "title": "この世界について",
+    "body": "メインストリームGPUは、日常利用から本格的なゲームやクリエイティブ用途まで幅広く対応できるグラフィックスプロセッサーです。高いコストパフォーマンスを持ち、多くのユーザーに選ばれている性能帯の製品を総合的に探索できます。",
+    "backgroundPosition": "center 30%"
+  },
+
+  "elements": {
+    "title": "この世界を構成する主な要素",
+    "description": "メインストリームGPU選びで注目したい代表的な技術や特徴をご紹介します。",
+    "backgroundPosition": "center",
+    "keywords": [
+      "Balanced Performance",
+      "Gaming",
+      "Content Creation",
+      "Ray Tracing",
+      "Cost Performance"
+    ]
+  },
+
+  "products": {
+    "title": "この世界を代表する製品",
+    "description": "この世界を代表するメインストリームGPU搭載製品です。性能や価格、用途を比較しながら、自分に最適な一台を見つけましょう。",
+    "backgroundPosition": "center 70%"
+  },
+
+  "related": {
+    "title": "同じGPUカテゴリーの世界",
+    "description": "メインストリームGPUと同じGPUカテゴリーに属する、さまざまなセマンティックワールドを探索できます。",
+    "backgroundPosition": "center bottom"
+  },
+
+  "continue": {
+    "title": "次の世界を探索する",
+    "description": "用途や求める性能に合わせて、他のGPUカテゴリーも探索してみましょう。あなたに最適なグラフィックス環境との出会いを広げましょう。",
+    "buttonLabel": "他のセマンティックワールドを探索する",
+    "backgroundPosition": "bottom"
+  }
+}

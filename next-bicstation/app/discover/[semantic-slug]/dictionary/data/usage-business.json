@@ -1,0 +1,55 @@
+{
+  "group_slug": "usage-business",
+
+  "theme": {
+    "icon": "briefcase",
+    "accentColor": "#2F80ED",
+    "backgroundImage": "/images/discover/usage-business.png"
+  },
+
+  "hero": {
+    "label": "SEMANTIC WORLD",
+    "title": "ビジネスPC",
+    "catchCopy": "毎日の仕事を、もっと快適に、もっとスマートに。",
+    "description": "オフィスワーク、リモートワーク、会議、資料作成など、日々のビジネスシーンを快適にしたい方のためのセマンティックワールドです。業務内容や働き方に合わせて、自分に最適なビジネスPCとの出会いをサポートします。",
+    "backgroundPosition": "center top"
+  },
+
+  "about": {
+    "title": "この世界について",
+    "body": "ビジネスPCは、日常業務を効率よく快適に進めるために設計されたコンピューターです。CPUやメモリーだけでなく、携帯性、バッテリー駆動時間、セキュリティ機能、拡張性など、仕事を支えるさまざまな要素を総合的に探索できます。",
+    "backgroundPosition": "center 30%"
+  },
+
+  "elements": {
+    "title": "この世界を構成する主な要素",
+    "description": "ビジネスシーンを支える代表的な機能や特徴をご紹介します。",
+    "backgroundPosition": "center",
+    "keywords": [
+      "Microsoft Office",
+      "Long Battery Life",
+      "Wi-Fi 7",
+      "Security",
+      "Business Productivity"
+    ]
+  },
+
+  "products": {
+    "title": "この世界を代表する製品",
+    "description": "この世界を代表するビジネスPCです。性能や携帯性、業務スタイルを比較しながら、自分に最適な一台を見つけましょう。",
+    "backgroundPosition": "center 70%"
+  },
+
+  "related": {
+    "title": "同じ用途カテゴリーの世界",
+    "description": "ビジネス用途と同じカテゴリーに属する、さまざまなセマンティックワールドを探索できます。",
+    "backgroundPosition": "center bottom"
+  },
+
+  "continue": {
+    "title": "次の世界を探索する",
+    "description": "あなたの働き方に合った用途は他にもあります。新しいセマンティックワールドを探索し、自分に最適なPCとの出会いを広げましょう。",
+    "buttonLabel": "他のセマンティックワールドを探索する",
+    "backgroundPosition": "bottom"
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "group_slug": "memory-entry",
+
+  "theme": {
+    "icon": "memory-stick",
+    "accentColor": "#22C55E",
+    "backgroundImage": "/images/discover/memory-entry.png"
+  },
+
+  "hero": {
+    "label": "SEMANTIC WORLD",
+    "title": "エントリーメモリー",
+    "catchCopy": "毎日のPC利用を、気軽に快適に。",
+    "description": "Webブラウジングやメール、Officeソフト、動画視聴など、日常的な用途を快適に楽しみたい方のためのセマンティックワールドです。用途や予算に合わせて、自分に最適なエントリーメモリー搭載PCとの出会いをサポートします。",
+    "backgroundPosition": "center top"
+  },
+
+  "about": {
+    "title": "この世界について",
+    "body": "エントリーメモリーは、日常利用に必要な基本性能を備えたメモリー構成です。インターネットの閲覧や文書作成、オンライン学習など、普段使いを快適に支えるさまざまな製品を総合的に探索できます。",
+    "backgroundPosition": "center 30%"
+  },
+
+  "elements": {
+    "title": "この世界を構成する主な要素",
+    "description": "エントリーメモリーPC選びで注目したい代表的な特徴をご紹介します。",
+    "backgroundPosition": "center",
+    "keywords": [
+      "8GB Memory",
+      "DDR4",
+      "Daily Computing",
+      "Office",
+      "Entry Class"
+    ]
+  },
+
+  "products": {
+    "title": "この世界を代表する製品",
+    "description": "この世界を代表するエントリーメモリー搭載PCです。価格や性能、用途を比較しながら、自分に最適な一台を見つけましょう。",
+    "backgroundPosition": "center 70%"
+  },
+
+  "related": {
+    "title": "同じメモリーカテゴリーの世界",
+    "description": "エントリーメモリーと同じメモリーカテゴリーに属する、さまざまなセマンティックワールドを探索できます。",
+    "backgroundPosition": "center bottom"
+  },
+
+  "continue": {
+    "title": "次の世界を探索する",
+    "description": "用途や作業内容に合わせて、他のメモリーカテゴリーも探索してみましょう。あなたに最適なパフォーマンスとの出会いを広げましょう。",
+    "buttonLabel": "他のセマンティックワールドを探索する",
+    "backgroundPosition": "bottom"
+  }
+}

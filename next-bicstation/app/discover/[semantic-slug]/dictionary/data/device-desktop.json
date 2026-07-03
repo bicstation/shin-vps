@@ -1,0 +1,55 @@
+{
+  "group_slug": "device-desktop",
+
+  "theme": {
+    "icon": "monitor",
+    "accentColor": "#3B82F6",
+    "backgroundImage": "/images/discover/device-desktop.png"
+  },
+
+  "hero": {
+    "label": "SEMANTIC WORLD",
+    "title": "デスクトップPC",
+    "catchCopy": "性能も拡張性も、思いのままに。",
+    "description": "高い性能や拡張性を重視しながら、自分に最適なデスクトップPCを探したい方のためのセマンティックワールドです。用途や設置環境に合わせて、最適な一台との出会いをサポートします。",
+    "backgroundPosition": "center top"
+  },
+
+  "about": {
+    "title": "この世界について",
+    "body": "デスクトップPCは、高い処理性能や優れた拡張性を実現するために設計されたコンピューターです。CPUやGPU、メモリー、ストレージだけでなく、冷却性能や拡張性など、長く快適に使うためのさまざまな要素を総合的に探索できます。",
+    "backgroundPosition": "center 30%"
+  },
+
+  "elements": {
+    "title": "この世界を構成する主な要素",
+    "description": "デスクトップPC選びで注目したい代表的な特徴をご紹介します。",
+    "backgroundPosition": "center",
+    "keywords": [
+      "High Performance",
+      "Expandability",
+      "Cooling",
+      "Custom Build",
+      "Upgradeable"
+    ]
+  },
+
+  "products": {
+    "title": "この世界を代表する製品",
+    "description": "この世界を代表するデスクトップPCです。性能や拡張性、デザインを比較しながら、自分に最適な一台を見つけましょう。",
+    "backgroundPosition": "center 70%"
+  },
+
+  "related": {
+    "title": "同じデバイスカテゴリーの世界",
+    "description": "デスクトップPCと同じデバイスカテゴリーに属する、さまざまなセマンティックワールドを探索できます。",
+    "backgroundPosition": "center bottom"
+  },
+
+  "continue": {
+    "title": "次の世界を探索する",
+    "description": "あなたに合ったデバイスは他にもあります。新しいセマンティックワールドを探索し、自分に最適な一台との出会いを広げましょう。",
+    "buttonLabel": "他のセマンティックワールドを探索する",
+    "backgroundPosition": "bottom"
+  }
+}

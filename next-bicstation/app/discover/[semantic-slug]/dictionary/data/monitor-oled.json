@@ -1,0 +1,55 @@
+{
+  "group_slug": "monitor-oled",
+
+  "theme": {
+    "icon": "monitor",
+    "accentColor": "#A855F7",
+    "backgroundImage": "/images/discover/monitor-oled.png"
+  },
+
+  "hero": {
+    "label": "SEMANTIC WORLD",
+    "title": "OLEDモニター",
+    "catchCopy": "映像の美しさを、次のレベルへ。",
+    "description": "鮮やかな色彩と深い黒、高コントラストな映像を楽しみたい方のためのセマンティックワールドです。画質や応答速度、HDR性能を比較しながら、自分に最適なOLEDモニターとの出会いをサポートします。",
+    "backgroundPosition": "center top"
+  },
+
+  "about": {
+    "title": "この世界について",
+    "body": "OLEDモニターは、自発光パネルによって高いコントラストと優れた色再現性を実現するディスプレイです。映像鑑賞やゲーム、写真編集、動画制作など、映像品質を重視するさまざまな用途に適した製品を総合的に探索できます。",
+    "backgroundPosition": "center 30%"
+  },
+
+  "elements": {
+    "title": "この世界を構成する主な要素",
+    "description": "OLEDモニター選びで注目したい代表的な技術や特徴をご紹介します。",
+    "backgroundPosition": "center",
+    "keywords": [
+      "OLED",
+      "HDR",
+      "Infinite Contrast",
+      "Wide Color Gamut",
+      "Fast Response Time"
+    ]
+  },
+
+  "products": {
+    "title": "この世界を代表する製品",
+    "description": "この世界を代表するOLEDモニターです。画質や色再現性、応答速度を比較しながら、自分に最適な一台を見つけましょう。",
+    "backgroundPosition": "center 70%"
+  },
+
+  "related": {
+    "title": "同じモニターカテゴリーの世界",
+    "description": "OLEDモニターと同じモニターカテゴリーに属する、さまざまなセマンティックワールドを探索できます。",
+    "backgroundPosition": "center bottom"
+  },
+
+  "continue": {
+    "title": "次の世界を探索する",
+    "description": "用途や映像表現に合わせて、他のモニターカテゴリーも探索してみましょう。あなたに最適なディスプレイ環境との出会いを広げましょう。",
+    "buttonLabel": "他のセマンティックワールドを探索する",
+    "backgroundPosition": "bottom"
+  }
+}

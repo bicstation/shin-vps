@@ -1,0 +1,55 @@
+{
+  "group_slug": "monitor-gaming",
+
+  "theme": {
+    "icon": "monitor",
+    "accentColor": "#4F7CFF",
+    "backgroundImage": "/images/discover/monitor-gaming.png"
+  },
+
+  "hero": {
+    "label": "SEMANTIC WORLD",
+    "title": "ゲーミングモニター",
+    "catchCopy": "勝利を引き寄せる、なめらかな映像体験へ。",
+    "description": "ゲームをより快適に楽しみたい方のためのセマンティックワールドです。高リフレッシュレートや高解像度、応答速度などを比較しながら、自分に最適なゲーミングモニターとの出会いをサポートします。",
+    "backgroundPosition": "center top"
+  },
+
+  "about": {
+    "title": "この世界について",
+    "body": "ゲーミングモニターは、高速表示や滑らかな映像表現を実現するために設計されたディスプレイです。リフレッシュレートや応答速度だけでなく、HDRやAdaptive Syncなど、ゲーム体験を向上させるさまざまな要素を総合的に探索できます。",
+    "backgroundPosition": "center 30%"
+  },
+
+  "elements": {
+    "title": "この世界を構成する主な要素",
+    "description": "ゲーミングモニター選びで注目したい代表的な技術や特徴をご紹介します。",
+    "backgroundPosition": "center",
+    "keywords": [
+      "High Refresh Rate",
+      "1ms Response Time",
+      "Adaptive Sync",
+      "HDR",
+      "Gaming Display"
+    ]
+  },
+
+  "products": {
+    "title": "この世界を代表する製品",
+    "description": "この世界を代表するゲーミングモニターです。画質や応答速度、リフレッシュレートを比較しながら、自分に最適な一台を見つけましょう。",
+    "backgroundPosition": "center 70%"
+  },
+
+  "related": {
+    "title": "同じモニターカテゴリーの世界",
+    "description": "ゲーミングモニターと同じモニターカテゴリーに属する、さまざまなセマンティックワールドを探索できます。",
+    "backgroundPosition": "center bottom"
+  },
+
+  "continue": {
+    "title": "次の世界を探索する",
+    "description": "用途や映像体験に合わせて、他のモニターカテゴリーも探索してみましょう。あなたに最適なディスプレイ環境との出会いを広げましょう。",
+    "buttonLabel": "他のセマンティックワールドを探索する",
+    "backgroundPosition": "bottom"
+  }
+}

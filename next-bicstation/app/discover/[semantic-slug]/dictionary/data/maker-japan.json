@@ -1,0 +1,55 @@
+{
+  "group_slug": "maker-japan",
+
+  "theme": {
+    "icon": "flag",
+    "accentColor": "#DC2626",
+    "backgroundImage": "/images/discover/maker-japan.png"
+  },
+
+  "hero": {
+    "label": "SEMANTIC WORLD",
+    "title": "日本メーカー",
+    "catchCopy": "品質へのこだわりが、毎日の安心につながる。",
+    "description": "国内メーカーならではの品質や使いやすさ、サポート体制を重視したい方のためのセマンティックワールドです。それぞれのブランドが持つ特徴や強みを比較しながら、自分に最適な一台との出会いをサポートします。",
+    "backgroundPosition": "center top"
+  },
+
+  "about": {
+    "title": "この世界について",
+    "body": "日本メーカーは、品質管理や信頼性、きめ細かなサポートを重視したPCブランドを比較・探索するための世界です。長年培われたものづくりの技術や、日本市場に合わせた設計など、それぞれのブランドが持つ魅力を知ることができます。",
+    "backgroundPosition": "center 30%"
+  },
+
+  "elements": {
+    "title": "この世界を構成する主な要素",
+    "description": "日本メーカーを比較する際に注目したい代表的なポイントをご紹介します。",
+    "backgroundPosition": "center",
+    "keywords": [
+      "Made for Japan",
+      "Quality",
+      "Reliability",
+      "Support",
+      "Long-term Use"
+    ]
+  },
+
+  "products": {
+    "title": "この世界を代表する製品",
+    "description": "国内メーカーの製品を比較しながら、品質や性能、サポート体制など、それぞれの特徴を踏まえて自分に最適な一台を見つけましょう。",
+    "backgroundPosition": "center 70%"
+  },
+
+  "related": {
+    "title": "同じメーカーカテゴリーの世界",
+    "description": "日本メーカーと同じメーカーカテゴリーに属する、さまざまなセマンティックワールドを探索できます。",
+    "backgroundPosition": "center bottom"
+  },
+
+  "continue": {
+    "title": "次の世界を探索する",
+    "description": "メーカーだけでなく、用途や性能、デバイスなど、さまざまな視点から新しいセマンティックワールドを探索してみましょう。",
+    "buttonLabel": "他のセマンティックワールドを探索する",
+    "backgroundPosition": "bottom"
+  }
+}

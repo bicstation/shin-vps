@@ -1,0 +1,55 @@
+{
+  "group_slug": "maker-global",
+
+  "theme": {
+    "icon": "globe",
+    "accentColor": "#2563EB",
+    "backgroundImage": "/images/discover/maker-global.png"
+  },
+
+  "hero": {
+    "label": "SEMANTIC WORLD",
+    "title": "グローバルメーカー",
+    "catchCopy": "世界中のブランドから、あなたに最適な一台を見つけよう。",
+    "description": "世界を代表するPCメーカーやブランドを比較しながら、自分に最適な製品を探したい方のためのセマンティックワールドです。それぞれのブランドが持つ特徴や強みを知り、自分に合った一台との出会いをサポートします。",
+    "backgroundPosition": "center top"
+  },
+
+  "about": {
+    "title": "この世界について",
+    "body": "グローバルメーカーは、世界中で高い評価を受けているPCブランドやメーカーを比較・探索するための世界です。デザインや品質、サポート体制、得意分野など、それぞれのブランドが持つ個性を知りながら、自分に合ったメーカーを見つけることができます。",
+    "backgroundPosition": "center 30%"
+  },
+
+  "elements": {
+    "title": "この世界を構成する主な要素",
+    "description": "グローバルメーカーを比較する際に注目したい代表的なポイントをご紹介します。",
+    "backgroundPosition": "center",
+    "keywords": [
+      "Brand",
+      "Design",
+      "Reliability",
+      "Support",
+      "Innovation"
+    ]
+  },
+
+  "products": {
+    "title": "この世界を代表する製品",
+    "description": "世界を代表するメーカーの製品を比較しながら、性能やデザイン、価格、ブランドの特徴を踏まえて、自分に最適な一台を見つけましょう。",
+    "backgroundPosition": "center 70%"
+  },
+
+  "related": {
+    "title": "同じメーカーカテゴリーの世界",
+    "description": "グローバルメーカーと同じメーカーカテゴリーに属する、さまざまなセマンティックワールドを探索できます。",
+    "backgroundPosition": "center bottom"
+  },
+
+  "continue": {
+    "title": "次の世界を探索する",
+    "description": "メーカーだけでなく、用途や性能、デバイスなど、さまざまな視点から新しいセマンティックワールドを探索してみましょう。",
+    "buttonLabel": "他のセマンティックワールドを探索する",
+    "backgroundPosition": "bottom"
+  }
+}

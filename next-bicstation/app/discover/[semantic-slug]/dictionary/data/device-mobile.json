@@ -1,0 +1,55 @@
+{
+  "group_slug": "device-mobile",
+
+  "theme": {
+    "icon": "briefcase",
+    "accentColor": "#00B8D9",
+    "backgroundImage": "/images/discover/device-mobile.png"
+  },
+
+  "hero": {
+    "label": "SEMANTIC WORLD",
+    "title": "モバイルノート",
+    "catchCopy": "軽やかに持ち歩き、どこでも快適に。",
+    "description": "軽量で持ち運びやすいノートPCを探したい方のためのセマンティックワールドです。重量やサイズ、バッテリー性能、携帯性を比較しながら、自分に最適なモバイルノートとの出会いをサポートします。",
+    "backgroundPosition": "center top"
+  },
+
+  "about": {
+    "title": "この世界について",
+    "body": "モバイルノートは、携帯性を重視して設計されたノートPCです。軽量ボディや長時間バッテリー、高い堅牢性など、毎日の持ち運びを快適にするさまざまな特徴を備えた製品を総合的に探索できます。",
+    "backgroundPosition": "center 30%"
+  },
+
+  "elements": {
+    "title": "この世界を構成する主な要素",
+    "description": "モバイルノート選びで注目したい代表的な特徴をご紹介します。",
+    "backgroundPosition": "center",
+    "keywords": [
+      "Ultra Lightweight",
+      "Long Battery Life",
+      "Thin Design",
+      "USB Type-C",
+      "Portable"
+    ]
+  },
+
+  "products": {
+    "title": "この世界を代表する製品",
+    "description": "この世界を代表するモバイルノートです。軽さや携帯性、性能を比較しながら、自分に最適な一台を見つけましょう。",
+    "backgroundPosition": "center 70%"
+  },
+
+  "related": {
+    "title": "同じデバイスカテゴリーの世界",
+    "description": "モバイルノートと同じデバイスカテゴリーに属する、さまざまなセマンティックワールドを探索できます。",
+    "backgroundPosition": "center bottom"
+  },
+
+  "continue": {
+    "title": "次の世界を探索する",
+    "description": "あなたに合ったデバイスは他にもあります。新しいセマンティックワールドを探索し、自分に最適な一台との出会いを広げましょう。",
+    "buttonLabel": "他のセマンティックワールドを探索する",
+    "backgroundPosition": "bottom"
+  }
+}

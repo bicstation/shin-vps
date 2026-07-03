@@ -1,0 +1,55 @@
+{
+  "group_slug": "monitor-business",
+
+  "theme": {
+    "icon": "monitor",
+    "accentColor": "#2563EB",
+    "backgroundImage": "/images/discover/monitor-business.png"
+  },
+
+  "hero": {
+    "label": "SEMANTIC WORLD",
+    "title": "ビジネスモニター",
+    "catchCopy": "毎日の仕事を、もっと見やすく、もっと快適に。",
+    "description": "オフィスワークやリモートワーク、資料作成、オンライン会議など、日々の業務を快適にしたい方のためのセマンティックワールドです。画面サイズや解像度、目へのやさしさなどを比較しながら、自分に最適なビジネスモニターとの出会いをサポートします。",
+    "backgroundPosition": "center top"
+  },
+
+  "about": {
+    "title": "この世界について",
+    "body": "ビジネスモニターは、長時間の作業でも快適に利用できるよう設計されたディスプレイです。高解像度や広い作業領域だけでなく、ブルーライト軽減やフリッカーフリーなど、毎日の業務を支えるさまざまな機能を総合的に探索できます。",
+    "backgroundPosition": "center 30%"
+  },
+
+  "elements": {
+    "title": "この世界を構成する主な要素",
+    "description": "ビジネスモニター選びで注目したい代表的な特徴をご紹介します。",
+    "backgroundPosition": "center",
+    "keywords": [
+      "IPS Panel",
+      "QHD",
+      "USB Type-C",
+      "Eye Care",
+      "Productivity"
+    ]
+  },
+
+  "products": {
+    "title": "この世界を代表する製品",
+    "description": "この世界を代表するビジネスモニターです。画面サイズや解像度、接続性を比較しながら、自分に最適な一台を見つけましょう。",
+    "backgroundPosition": "center 70%"
+  },
+
+  "related": {
+    "title": "同じモニターカテゴリーの世界",
+    "description": "ビジネスモニターと同じモニターカテゴリーに属する、さまざまなセマンティックワールドを探索できます。",
+    "backgroundPosition": "center bottom"
+  },
+
+  "continue": {
+    "title": "次の世界を探索する",
+    "description": "働き方や用途に合わせて、他のモニターカテゴリーも探索してみましょう。あなたに最適なディスプレイ環境との出会いを広げましょう。",
+    "buttonLabel": "他のセマンティックワールドを探索する",
+    "backgroundPosition": "bottom"
+  }
+}

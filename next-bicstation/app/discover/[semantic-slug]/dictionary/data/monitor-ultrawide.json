@@ -1,0 +1,55 @@
+{
+  "group_slug": "cpu-ai",
+
+  "theme": {
+    "icon": "cpu",
+    "accentColor": "#8B5CF6",
+    "backgroundImage": "/images/discover/cpu-ai.png"
+  },
+
+  "hero": {
+    "label": "SEMANTIC WORLD",
+    "title": "AI対応CPU",
+    "catchCopy": "AI時代の新しい体験を、CPUからはじめよう。",
+    "description": "生成AIやAIアシスタント、AIアプリケーションを快適に活用したい方のためのセマンティックワールドです。AI性能や処理能力、省電力性能を比較しながら、自分に最適なAI対応CPUとの出会いをサポートします。",
+    "backgroundPosition": "center top"
+  },
+
+  "about": {
+    "title": "この世界について",
+    "body": "AI対応CPUは、従来のCPU性能に加え、AI処理を効率よく実行するための機能を備えたプロセッサーです。NPUとの連携や省電力性能、高い処理能力など、これからのAI時代に求められるさまざまな要素を総合的に探索できます。",
+    "backgroundPosition": "center 30%"
+  },
+
+  "elements": {
+    "title": "この世界を構成する主な要素",
+    "description": "AI対応CPU選びで注目したい代表的な技術や特徴をご紹介します。",
+    "backgroundPosition": "center",
+    "keywords": [
+      "NPU",
+      "AI Acceleration",
+      "Hybrid Architecture",
+      "Power Efficiency",
+      "Copilot+ PC"
+    ]
+  },
+
+  "products": {
+    "title": "この世界を代表する製品",
+    "description": "この世界を代表するAI対応CPU搭載PCです。AI性能や処理能力、用途を比較しながら、自分に最適な一台を見つけましょう。",
+    "backgroundPosition": "center 70%"
+  },
+
+  "related": {
+    "title": "同じCPUカテゴリーの世界",
+    "description": "AI対応CPUと同じCPUカテゴリーに属する、さまざまなセマンティックワールドを探索できます。",
+    "backgroundPosition": "center bottom"
+  },
+
+  "continue": {
+    "title": "次の世界を探索する",
+    "description": "用途や求める性能に合わせて、他のCPUカテゴリーも探索してみましょう。あなたに最適なコンピューティング体験との出会いを広げましょう。",
+    "buttonLabel": "他のセマンティックワールドを探索する",
+    "backgroundPosition": "bottom"
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "group_slug": "storage-standard",
+
+  "theme": {
+    "icon": "hard-drive",
+    "accentColor": "#3B82F6",
+    "backgroundImage": "/images/discover/storage-standard.png"
+  },
+
+  "hero": {
+    "label": "SEMANTIC WORLD",
+    "title": "標準ストレージ",
+    "catchCopy": "毎日の快適さを支える、ちょうどいい保存容量。",
+    "description": "インターネットやOfficeソフト、写真管理、動画視聴など、日常的な用途を快適に楽しみたい方のためのセマンティックワールドです。容量や速度、価格のバランスを比較しながら、自分に最適なストレージ環境との出会いをサポートします。",
+    "backgroundPosition": "center top"
+  },
+
+  "about": {
+    "title": "この世界について",
+    "body": "標準ストレージは、日常利用から一般的なビジネス用途まで快適に利用できる保存容量を備えたストレージ環境です。OSやアプリケーションの起動速度、ファイル保存、写真や動画の管理など、毎日のPC利用を支えるさまざまな製品を総合的に探索できます。",
+    "backgroundPosition": "center 30%"
+  },
+
+  "elements": {
+    "title": "この世界を構成する主な要素",
+    "description": "標準ストレージ選びで注目したい代表的な特徴をご紹介します。",
+    "backgroundPosition": "center",
+    "keywords": [
+      "SSD",
+      "512GB",
+      "NVMe",
+      "Fast Boot",
+      "Balanced Storage"
+    ]
+  },
+
+  "products": {
+    "title": "この世界を代表する製品",
+    "description": "この世界を代表する標準ストレージ搭載PCです。容量や速度、用途を比較しながら、自分に最適な一台を見つけましょう。",
+    "backgroundPosition": "center 70%"
+  },
+
+  "related": {
+    "title": "同じストレージカテゴリーの世界",
+    "description": "標準ストレージと同じストレージカテゴリーに属する、さまざまなセマンティックワールドを探索できます。",
+    "backgroundPosition": "center bottom"
+  },
+
+  "continue": {
+    "title": "次の世界を探索する",
+    "description": "用途や保存容量に合わせて、他のストレージカテゴリーも探索してみましょう。あなたに最適なストレージ環境との出会いを広げましょう。",
+    "buttonLabel": "他のセマンティックワールドを探索する",
+    "backgroundPosition": "bottom"
+  }
+}

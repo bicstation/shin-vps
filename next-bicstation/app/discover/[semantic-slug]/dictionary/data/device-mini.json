@@ -1,0 +1,55 @@
+{
+  "group_slug": "device-mini",
+
+  "theme": {
+    "icon": "box",
+    "accentColor": "#14B8A6",
+    "backgroundImage": "/images/discover/device-mini.png"
+  },
+
+  "hero": {
+    "label": "SEMANTIC WORLD",
+    "title": "ミニPC",
+    "catchCopy": "コンパクトだから、可能性はもっと広がる。",
+    "description": "省スペースで快適な作業環境を実現したい方のためのセマンティックワールドです。設置場所や用途、性能を比較しながら、自分に最適なミニPCとの出会いをサポートします。",
+    "backgroundPosition": "center top"
+  },
+
+  "about": {
+    "title": "この世界について",
+    "body": "ミニPCは、コンパクトな筐体に必要な性能を備えたコンピューターです。デスクスペースを有効活用できるだけでなく、ビジネスや家庭、デジタルサイネージなど、さまざまなシーンで活躍する製品を総合的に探索できます。",
+    "backgroundPosition": "center 30%"
+  },
+
+  "elements": {
+    "title": "この世界を構成する主な要素",
+    "description": "ミニPC選びで注目したい代表的な特徴をご紹介します。",
+    "backgroundPosition": "center",
+    "keywords": [
+      "Compact Design",
+      "Small Form Factor",
+      "Low Power",
+      "Quiet Operation",
+      "Space Saving"
+    ]
+  },
+
+  "products": {
+    "title": "この世界を代表する製品",
+    "description": "この世界を代表するミニPCです。サイズや性能、用途を比較しながら、自分に最適な一台を見つけましょう。",
+    "backgroundPosition": "center 70%"
+  },
+
+  "related": {
+    "title": "同じデバイスカテゴリーの世界",
+    "description": "ミニPCと同じデバイスカテゴリーに属する、さまざまなセマンティックワールドを探索できます。",
+    "backgroundPosition": "center bottom"
+  },
+
+  "continue": {
+    "title": "次の世界を探索する",
+    "description": "あなたに合ったデバイスは他にもあります。新しいセマンティックワールドを探索し、自分に最適な一台との出会いを広げましょう。",
+    "buttonLabel": "他のセマンティックワールドを探索する",
+    "backgroundPosition": "bottom"
+  }
+}

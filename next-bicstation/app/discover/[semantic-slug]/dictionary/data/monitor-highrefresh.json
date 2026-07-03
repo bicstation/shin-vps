@@ -1,0 +1,55 @@
+{
+  "group_slug": "monitor-highrefresh",
+
+  "theme": {
+    "icon": "monitor",
+    "accentColor": "#00AEEF",
+    "backgroundImage": "/images/discover/monitor-highrefresh.png"
+  },
+
+  "hero": {
+    "label": "SEMANTIC WORLD",
+    "title": "高リフレッシュレートモニター",
+    "catchCopy": "なめらかな映像が、新しい没入感を生み出す。",
+    "description": "ゲームやスポーツ映像、動画編集など、滑らかな映像表示を求める方のためのセマンティックワールドです。リフレッシュレートや応答速度、画質を比較しながら、自分に最適な高リフレッシュレートモニターとの出会いをサポートします。",
+    "backgroundPosition": "center top"
+  },
+
+  "about": {
+    "title": "この世界について",
+    "body": "高リフレッシュレートモニターは、1秒間に表示できる映像の枚数を増やすことで、滑らかで快適な映像体験を実現するディスプレイです。高速な応答性能と鮮明な映像表現により、ゲームや映像コンテンツをより快適に楽しめるさまざまな製品を総合的に探索できます。",
+    "backgroundPosition": "center 30%"
+  },
+
+  "elements": {
+    "title": "この世界を構成する主な要素",
+    "description": "高リフレッシュレートモニター選びで注目したい代表的な技術や特徴をご紹介します。",
+    "backgroundPosition": "center",
+    "keywords": [
+      "144Hz",
+      "240Hz",
+      "360Hz",
+      "Adaptive Sync",
+      "Low Response Time"
+    ]
+  },
+
+  "products": {
+    "title": "この世界を代表する製品",
+    "description": "この世界を代表する高リフレッシュレートモニターです。リフレッシュレートや応答速度、画質を比較しながら、自分に最適な一台を見つけましょう。",
+    "backgroundPosition": "center 70%"
+  },
+
+  "related": {
+    "title": "同じモニターカテゴリーの世界",
+    "description": "高リフレッシュレートモニターと同じモニターカテゴリーに属する、さまざまなセマンティックワールドを探索できます。",
+    "backgroundPosition": "center bottom"
+  },
+
+  "continue": {
+    "title": "次の世界を探索する",
+    "description": "用途や映像体験に合わせて、他のモニターカテゴリーも探索してみましょう。あなたに最適なディスプレイ環境との出会いを広げましょう。",
+    "buttonLabel": "他のセマンティックワールドを探索する",
+    "backgroundPosition": "bottom"
+  }
+}

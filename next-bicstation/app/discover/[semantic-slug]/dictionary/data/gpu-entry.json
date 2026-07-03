@@ -1,0 +1,55 @@
+{
+  "group_slug": "gpu-entry",
+
+  "theme": {
+    "icon": "cpu",
+    "accentColor": "#4CAF50",
+    "backgroundImage": "/images/discover/gpu-entry.png"
+  },
+
+  "hero": {
+    "label": "SEMANTIC WORLD",
+    "title": "エントリーGPU",
+    "catchCopy": "はじめてのGPU体験を、もっと身近に。",
+    "description": "日常利用やライトなゲーム、動画視聴、写真編集などを快適に楽しみたい方のためのセマンティックワールドです。価格と性能のバランスを比較しながら、自分に最適なエントリーGPUとの出会いをサポートします。",
+    "backgroundPosition": "center top"
+  },
+
+  "about": {
+    "title": "この世界について",
+    "body": "エントリーGPUは、日常的なPC利用から軽めのクリエイティブ作業まで幅広く対応できるグラフィックスプロセッサーです。コストパフォーマンスに優れ、GPU搭載PCを初めて選ぶ方にも適したさまざまな製品を総合的に探索できます。",
+    "backgroundPosition": "center 30%"
+  },
+
+  "elements": {
+    "title": "この世界を構成する主な要素",
+    "description": "エントリーGPU選びで注目したい代表的な特徴をご紹介します。",
+    "backgroundPosition": "center",
+    "keywords": [
+      "Entry Class",
+      "Integrated Graphics",
+      "Light Gaming",
+      "Low Power",
+      "Cost Performance"
+    ]
+  },
+
+  "products": {
+    "title": "この世界を代表する製品",
+    "description": "この世界を代表するエントリーGPU搭載製品です。性能や価格、用途を比較しながら、自分に最適な一台を見つけましょう。",
+    "backgroundPosition": "center 70%"
+  },
+
+  "related": {
+    "title": "同じGPUカテゴリーの世界",
+    "description": "エントリーGPUと同じGPUカテゴリーに属する、さまざまなセマンティックワールドを探索できます。",
+    "backgroundPosition": "center bottom"
+  },
+
+  "continue": {
+    "title": "次の世界を探索する",
+    "description": "用途や求める性能に合わせて、他のGPUカテゴリーも探索してみましょう。あなたに最適なグラフィックス環境との出会いが待っています。",
+    "buttonLabel": "他のセマンティックワールドを探索する",
+    "backgroundPosition": "bottom"
+  }
+}

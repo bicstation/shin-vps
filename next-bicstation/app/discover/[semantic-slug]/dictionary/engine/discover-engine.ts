@@ -1,7 +1,7 @@
 // ============================================================================
 // SHIN CORE LINX
 // Discover Experience V2
-// Experience Dictionary Service
+// Discover Engine
 // ============================================================================
 
 import type {
@@ -12,15 +12,15 @@ import type {
 
 import {
 
-  createDiscoverDictionary,
+  createExperienceDictionary,
 
-} from '../dictionary/engine/discover-engine'
+} from '../templates/experience-discover.template'
 
 /* ============================================================================
-Dictionary
+Create Discover Dictionary
 ============================================================================ */
 
-export async function getExperienceDictionary(
+export async function createDiscoverDictionary(
 
   groupSlug: string
 
@@ -28,9 +28,15 @@ export async function getExperienceDictionary(
 
   try {
 
-    return await createDiscoverDictionary(
+    const module = await import(
 
-      groupSlug
+      `../data/${groupSlug}.json`
+
+    )
+
+    return createExperienceDictionary(
+
+      module.default
 
     )
 
@@ -44,9 +50,9 @@ export async function getExperienceDictionary(
 
     console.error(
 
-      '[Experience Dictionary]',
+      '[Discover Engine]',
 
-      `Dictionary not found: ${groupSlug}`,
+      `Translation Data not found: ${groupSlug}`,
 
       error
 
@@ -54,7 +60,7 @@ export async function getExperienceDictionary(
 
     throw new Error(
 
-      `Experience Dictionary not found: ${groupSlug}`
+      `Translation Data not found: ${groupSlug}`
 
     )
 

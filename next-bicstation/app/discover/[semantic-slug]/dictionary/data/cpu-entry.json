@@ -1,0 +1,55 @@
+{
+  "group_slug": "cpu-entry",
+
+  "theme": {
+    "icon": "cpu",
+    "accentColor": "#22C55E",
+    "backgroundImage": "/images/discover/cpu-entry.png"
+  },
+
+  "hero": {
+    "label": "SEMANTIC WORLD",
+    "title": "エントリーCPU",
+    "catchCopy": "毎日のパソコン時間を、もっと快適に。",
+    "description": "インターネットやメール、Officeソフト、動画視聴など、日常的な用途を快適に楽しみたい方のためのセマンティックワールドです。性能や省電力性、コストパフォーマンスを比較しながら、自分に最適なエントリーCPUとの出会いをサポートします。",
+    "backgroundPosition": "center top"
+  },
+
+  "about": {
+    "title": "この世界について",
+    "body": "エントリーCPUは、日常利用に必要な基本性能を備えたプロセッサーです。Webブラウジングや文書作成、オンライン学習、動画視聴など、毎日のPC利用を快適に支える製品を総合的に探索できます。",
+    "backgroundPosition": "center 30%"
+  },
+
+  "elements": {
+    "title": "この世界を構成する主な要素",
+    "description": "エントリーCPU選びで注目したい代表的な特徴をご紹介します。",
+    "backgroundPosition": "center",
+    "keywords": [
+      "Entry Processor",
+      "Power Efficiency",
+      "Daily Computing",
+      "Office",
+      "Cost Performance"
+    ]
+  },
+
+  "products": {
+    "title": "この世界を代表する製品",
+    "description": "この世界を代表するエントリーCPU搭載PCです。性能や価格、用途を比較しながら、自分に最適な一台を見つけましょう。",
+    "backgroundPosition": "center 70%"
+  },
+
+  "related": {
+    "title": "同じCPUカテゴリーの世界",
+    "description": "エントリーCPUと同じCPUカテゴリーに属する、さまざまなセマンティックワールドを探索できます。",
+    "backgroundPosition": "center bottom"
+  },
+
+  "continue": {
+    "title": "次の世界を探索する",
+    "description": "用途や求める性能に合わせて、他のCPUカテゴリーも探索してみましょう。あなたに最適なコンピューティング体験との出会いを広げましょう。",
+    "buttonLabel": "他のセマンティックワールドを探索する",
+    "backgroundPosition": "bottom"
+  }
+}

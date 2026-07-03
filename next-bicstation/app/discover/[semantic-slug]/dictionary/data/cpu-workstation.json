@@ -1,0 +1,55 @@
+{
+  "group_slug": "cpu-workstation",
+
+  "theme": {
+    "icon": "cpu",
+    "accentColor": "#6D5BFF",
+    "backgroundImage": "/images/discover/cpu-workstation.png"
+  },
+
+  "hero": {
+    "label": "SEMANTIC WORLD",
+    "title": "ワークステーションCPU",
+    "catchCopy": "プロフェッショナルの仕事を、圧倒的な演算性能で支える。",
+    "description": "3DCG制作や映像編集、CAD、CAE、AI開発、科学技術計算など、高い演算性能と安定した処理能力を求める方のためのセマンティックワールドです。用途やワークフローに合わせて、自分に最適なワークステーションCPUとの出会いをサポートします。",
+    "backgroundPosition": "center top"
+  },
+
+  "about": {
+    "title": "この世界について",
+    "body": "ワークステーションCPUは、専門的な業務や高度なクリエイティブワークのために設計された高性能プロセッサーです。多数のCPUコアや大容量キャッシュ、高い安定性を備え、長時間の高負荷処理や複雑な計算処理を快適に支えるさまざまな製品を総合的に探索できます。",
+    "backgroundPosition": "center 30%"
+  },
+
+  "elements": {
+    "title": "この世界を構成する主な要素",
+    "description": "ワークステーションCPU選びで注目したい代表的な技術や特徴をご紹介します。",
+    "backgroundPosition": "center",
+    "keywords": [
+      "Multi-Core",
+      "Large Cache",
+      "ECC Memory Support",
+      "High Performance Computing",
+      "Professional Workloads"
+    ]
+  },
+
+  "products": {
+    "title": "この世界を代表する製品",
+    "description": "この世界を代表するワークステーションCPU搭載PCです。演算性能や安定性、拡張性を比較しながら、自分の業務に最適な一台を見つけましょう。",
+    "backgroundPosition": "center 70%"
+  },
+
+  "related": {
+    "title": "同じCPUカテゴリーの世界",
+    "description": "ワークステーションCPUと同じCPUカテゴリーに属する、さまざまなセマンティックワールドを探索できます。",
+    "backgroundPosition": "center bottom"
+  },
+
+  "continue": {
+    "title": "次の世界を探索する",
+    "description": "用途やワークフローに合わせて、他のCPUカテゴリーも探索してみましょう。あなたに最適なコンピューティング環境との出会いを広げましょう。",
+    "buttonLabel": "他のセマンティックワールドを探索する",
+    "backgroundPosition": "bottom"
+  }
+}

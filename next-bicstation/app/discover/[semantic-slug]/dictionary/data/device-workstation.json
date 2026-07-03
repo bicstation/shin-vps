@@ -1,0 +1,55 @@
+{
+  "group_slug": "device-workstation",
+
+  "theme": {
+    "icon": "server",
+    "accentColor": "#7C5CFF",
+    "backgroundImage": "/images/discover/device-workstation.png"
+  },
+
+  "hero": {
+    "label": "SEMANTIC WORLD",
+    "title": "ワークステーション",
+    "catchCopy": "プロフェッショナルの創造力を、圧倒的な性能で支える。",
+    "description": "CAD、3DCG、映像制作、シミュレーション、AI開発など、高い処理性能と安定性を求める方のためのセマンティックワールドです。用途やワークフローに合わせて、自分に最適なワークステーションとの出会いをサポートします。",
+    "backgroundPosition": "center top"
+  },
+
+  "about": {
+    "title": "この世界について",
+    "body": "ワークステーションは、専門的な業務や高度なクリエイティブワークのために設計された高性能コンピューターです。CPUやGPU、ECCメモリー、大容量ストレージ、高い拡張性など、安定した業務環境を支えるさまざまな要素を総合的に探索できます。",
+    "backgroundPosition": "center 30%"
+  },
+
+  "elements": {
+    "title": "この世界を構成する主な要素",
+    "description": "ワークステーション選びで注目したい代表的な技術や特徴をご紹介します。",
+    "backgroundPosition": "center",
+    "keywords": [
+      "ECC Memory",
+      "Professional GPU",
+      "Multi-Core CPU",
+      "ISV Certification",
+      "Expandability"
+    ]
+  },
+
+  "products": {
+    "title": "この世界を代表する製品",
+    "description": "この世界を代表するワークステーションです。性能や信頼性、拡張性を比較しながら、自分の業務に最適な一台を見つけましょう。",
+    "backgroundPosition": "center 70%"
+  },
+
+  "related": {
+    "title": "同じデバイスカテゴリーの世界",
+    "description": "ワークステーションと同じデバイスカテゴリーに属する、さまざまなセマンティックワールドを探索できます。",
+    "backgroundPosition": "center bottom"
+  },
+
+  "continue": {
+    "title": "次の世界を探索する",
+    "description": "用途や作業内容に合ったデバイスは他にもあります。新しいセマンティックワールドを探索し、自分に最適な制作・業務環境との出会いを広げましょう。",
+    "buttonLabel": "他のセマンティックワールドを探索する",
+    "backgroundPosition": "bottom"
+  }
+}
