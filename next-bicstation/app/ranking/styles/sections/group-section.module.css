@@ -1,0 +1,176 @@
+/* ============================================================================
+// FILE:
+// /app/ranking/styles/section/group-section.module.css
+// Copyright (c) 2024 Shin Corporation.
+// All rights reserved.
+============================================================================ */
+
+/* ============================================================================
+🔥 Section
+============================================================================ */
+
+.section {
+
+    margin-top: 4rem;
+
+}
+
+/* ============================================================================
+🔥 Header
+============================================================================ */
+
+.header {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: flex-end;
+
+    gap: 2rem;
+
+    margin-bottom: 1.8rem;
+
+    padding-bottom: 1rem;
+
+    border-bottom: 1px solid rgba(255, 255, 255, .06);
+
+}
+
+/* ============================================================================
+🔥 Left
+============================================================================ */
+
+.title {
+
+    margin: 0;
+
+    font-size: 2rem;
+
+    font-weight: 700;
+
+    line-height: 1.2;
+
+    color: #ffffff;
+
+    letter-spacing: -.02em;
+
+}
+
+.description {
+
+    margin-top: .55rem;
+
+    color: rgba(255, 255, 255, .62);
+
+    font-size: .95rem;
+
+    line-height: 1.7;
+
+}
+
+/* ============================================================================
+🔥 More
+============================================================================ */
+
+.more {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: .45rem;
+
+    padding: .65rem 1.1rem;
+
+    border: none;
+
+    background: transparent;
+
+    color: #58AFFF;
+
+    font-size: .92rem;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+
+        color .25s ease,
+
+        transform .25s ease;
+
+}
+
+.more:hover {
+
+    color: #8FD3FF;
+
+    transform: translateX(4px);
+
+}
+
+/* ============================================================================
+🔥 Divider Accent
+============================================================================ */
+
+.header::after {
+
+    content: "";
+
+    position: absolute;
+
+    display: none;
+
+}
+
+/* ============================================================================
+🔥 Tablet
+============================================================================ */
+
+@media (max-width:1024px) {
+
+    .title {
+
+        font-size: 1.75rem;
+
+    }
+
+}
+
+/* ============================================================================
+🔥 Mobile
+============================================================================ */
+
+@media (max-width:768px) {
+
+    .header {
+
+        flex-direction: column;
+
+        align-items: flex-start;
+
+        gap: 1rem;
+
+    }
+
+    .title {
+
+        font-size: 1.5rem;
+
+    }
+
+    .description {
+
+        font-size: .9rem;
+
+    }
+
+    .more {
+
+        padding: 0;
+
+    }
+
+}

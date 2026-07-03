@@ -29,13 +29,19 @@ import Breadcrumb
     from './components/Breadcrumb'
 
 import RankingHero
-    from './components/RankingHero'
+    from './components/hero/RankingHero'
 
-import FeaturedRanking
-    from './components/FeaturedRanking'
+import FeaturedOverallBanner
+    from './components/featured/FeaturedOverallBanner'
 
-import RankingTabs
-    from './components/RankingTabs'
+// import RankingTabs
+//     from './components/RankingTabs'
+
+import RankingNavigation
+    from './components/navigation/RankingNavigation'
+
+import RankingGroupSection
+    from './components/sections/RankingGroupSection'
 
 import RankingSummary
     from './components/RankingSummary'
@@ -74,7 +80,7 @@ export default function RankingPage() {
     } = useRanking()
 
     /* =========================================================================
-    🔥 Active Tab
+    🔥 Active Group
     ========================================================================= */
 
     const [
@@ -83,14 +89,10 @@ export default function RankingPage() {
 
         setActiveType,
 
-    ] = useState(
-
-        'all'
-
-    )
+    ] = useState('all')
 
     /* =========================================================================
-    🔥 Canonical Runtime
+    🔥 Runtime
     ========================================================================= */
 
     const items =
@@ -98,7 +100,7 @@ export default function RankingPage() {
         runtime?.intents ?? []
 
     /* =========================================================================
-    🔥 Filtered Items
+    🔥 Filter
     ========================================================================= */
 
     const filteredItems =
@@ -144,9 +146,7 @@ export default function RankingPage() {
         return (
 
             <main
-                className={
-                    styles.ranking
-                }
+                className={styles.ranking}
             >
 
                 Loading...
@@ -172,9 +172,7 @@ export default function RankingPage() {
         return (
 
             <main
-                className={
-                    styles.ranking
-                }
+                className={styles.ranking}
             >
 
                 Ranking Runtime Error
@@ -200,9 +198,7 @@ export default function RankingPage() {
     return (
 
         <main
-            className={
-                styles.ranking
-            }
+            className={styles.ranking}
         >
 
             {/* ==========================================================
@@ -213,45 +209,38 @@ export default function RankingPage() {
 
             {/* ==========================================================
             Hero
+            Ranking Experience Portal
             ========================================================== */}
 
             <RankingHero
 
-                runtime={
-                    runtime
-                }
+                runtime={runtime}
 
             />
 
             {/* ==========================================================
-            Featured Ranking
+            Featured Overall Ranking
+            Canonical Slug : all
             ========================================================== */}
 
-            <FeaturedRanking
+            <FeaturedOverallBanner
 
-                items={
-                    items
-                }
+                runtime={runtime}
 
             />
 
             {/* ==========================================================
-            Ranking Tabs
+            Semantic Group Navigation
+            Backend parent_group
             ========================================================== */}
 
-            <RankingTabs
+            <RankingNavigation
 
-                items={
-                    items
-                }
+                items={items}
 
-                activeType={
-                    activeType
-                }
+                activeGroup={activeType}
 
-                onSelect={
-                    setActiveType
-                }
+                onSelect={setActiveType}
 
             />
 
@@ -261,14 +250,13 @@ export default function RankingPage() {
 
             <RankingSummary
 
-                items={
-                    filteredItems
-                }
+                items={filteredItems}
 
             />
 
             {/* ==========================================================
-            Ranking Grid
+            Ranking Cards
+            group_slug
             ========================================================== */}
 
             {
@@ -279,9 +267,7 @@ export default function RankingPage() {
 
                         <RankingCardGrid
 
-                            items={
-                                filteredItems
-                            }
+                            items={filteredItems}
 
                         />
 
@@ -300,4 +286,3 @@ export default function RankingPage() {
     )
 
 }
-

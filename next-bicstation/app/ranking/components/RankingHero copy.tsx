@@ -1,8 +1,6 @@
 // ============================================================================
 // FILE:
 // /app/ranking/components/RankingHero.tsx
-// Copyright (c) 2024 Shin Corporation.
-// All rights reserved.
 // ============================================================================
 
 'use client'
@@ -22,7 +20,7 @@ import type {
 ============================================================================ */
 
 import styles
-    from '../styles/hero/hero.module.css'
+    from '../styles/ranking.module.css'
 
 /* ============================================================================
 🔥 Props
@@ -30,7 +28,8 @@ import styles
 
 type Props = {
 
-    runtime: RankingRuntime
+    runtime:
+    RankingRuntime
 
 }
 
@@ -45,7 +44,7 @@ export default function RankingHero({
 }: Props) {
 
     /* =========================================================================
-    🔥 Runtime
+    🔥 Runtime (Canonical Runtime V2)
     ========================================================================= */
 
     const totalRankings =
@@ -86,65 +85,37 @@ export default function RankingHero({
                 }
             >
 
-                {/* ==========================================================
-                Label
-                ========================================================== */}
-
                 <div
                     className={
                         styles.rankingHeroLabel
                     }
                 >
-
                     RANKING EXPERIENCE
-
                 </div>
-
-                {/* ==========================================================
-                Title
-                ========================================================== */}
 
                 <h1
                     className={
                         styles.rankingHeroTitle
                     }
                 >
-
                     {title}
-
                 </h1>
-
-                {/* ==========================================================
-                Subtitle
-                ========================================================== */}
 
                 <p
                     className={
                         styles.rankingHeroSubtitle
                     }
                 >
-
                     {subtitle}
-
                 </p>
-
-                {/* ==========================================================
-                Description
-                ========================================================== */}
 
                 <p
                     className={
                         styles.rankingHeroDescription
                     }
                 >
-
                     {description}
-
                 </p>
-
-                {/* ==========================================================
-                Statistics
-                ========================================================== */}
 
                 <div
                     className={
@@ -163,9 +134,7 @@ export default function RankingHero({
                                 styles.rankingHeroStatLabel
                             }
                         >
-
                             公開ランキング
-
                         </span>
 
                         <strong
@@ -173,9 +142,7 @@ export default function RankingHero({
                                 styles.rankingHeroStatValue
                             }
                         >
-
                             {totalRankings}
-
                         </strong>
 
                     </div>
@@ -191,9 +158,7 @@ export default function RankingHero({
                                 styles.rankingHeroStatLabel
                             }
                         >
-
                             Featured
-
                         </span>
 
                         <strong
@@ -201,28 +166,20 @@ export default function RankingHero({
                                 styles.rankingHeroStatValue
                             }
                         >
-
                             ALL
-
                         </strong>
 
                     </div>
 
                 </div>
 
-                {/* ==========================================================
-                Future Actions
-                ========================================================== */}
-
-                {/*
-                    次フェーズ
-
-                    ・アイコン4個
-                    ・CTAボタン
-                    ・更新日時
-                */}
-
             </div>
+
+            <div
+                className={
+                    styles.rankingHeroVisual
+                }
+            />
 
         </section>
 

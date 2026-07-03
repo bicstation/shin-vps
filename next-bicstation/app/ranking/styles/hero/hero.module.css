@@ -1,0 +1,318 @@
+/* ============================================================================
+// FILE:
+// /app/ranking/styles/hero/hero.module.css
+// Copyright (c) 2024 Shin Corporation.
+// All rights reserved.
+============================================================================ */
+
+/* ============================================================================
+🔥 Hero
+============================================================================ */
+
+.rankingHero {
+
+    position: relative;
+
+    display: flex;
+
+    align-items: center;
+
+    min-height: 540px;
+
+    margin-bottom: 2.5rem;
+
+    padding: 4rem;
+
+    overflow: hidden;
+
+    border-radius: 28px;
+
+    background:
+
+        linear-gradient(90deg,
+
+            rgba(5, 10, 28, .94) 0%,
+
+            rgba(8, 18, 48, .82) 34%,
+
+            rgba(8, 18, 48, .36) 62%,
+
+            rgba(8, 18, 48, .05) 82%,
+
+            rgba(8, 18, 48, 0) 100%),
+
+        url('/images/ranking/ranking-hero.webp');
+
+    background-size: cover;
+
+    background-position: center;
+
+    background-repeat: no-repeat;
+
+    color: #ffffff;
+
+}
+
+/* ============================================================================
+🔥 Content
+============================================================================ */
+
+.rankingHeroContent {
+
+    position: relative;
+
+    z-index: 2;
+
+    width: 100%;
+
+    max-width: 560px;
+
+}
+
+/* ============================================================================
+🔥 Label
+============================================================================ */
+
+.rankingHeroLabel {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    padding: .55rem 1.2rem;
+
+    border-radius: 999px;
+
+    border: 1px solid rgba(120, 170, 255, .25);
+
+    background: rgba(45, 75, 180, .18);
+
+    backdrop-filter: blur(12px);
+
+    font-size: .78rem;
+
+    font-weight: 700;
+
+    letter-spacing: .14em;
+
+    text-transform: uppercase;
+
+    color: rgba(255, 255, 255, .95);
+
+}
+
+/* ============================================================================
+🔥 Title
+============================================================================ */
+
+.rankingHeroTitle {
+
+    margin-top: 1.5rem;
+
+    font-size: 3.4rem;
+
+    font-weight: 700;
+
+    line-height: 1.12;
+
+    letter-spacing: -.03em;
+
+}
+
+/* ============================================================================
+🔥 Subtitle
+============================================================================ */
+
+.rankingHeroSubtitle {
+
+    margin-top: 1rem;
+
+    font-size: 1.18rem;
+
+    line-height: 1.8;
+
+    color: rgba(255, 255, 255, .95);
+
+}
+
+/* ============================================================================
+🔥 Description
+============================================================================ */
+
+.rankingHeroDescription {
+
+    margin-top: 1.5rem;
+
+    max-width: 520px;
+
+    font-size: 1rem;
+
+    line-height: 1.9;
+
+    color: rgba(255, 255, 255, .78);
+
+}
+
+/* ============================================================================
+🔥 Statistics
+============================================================================ */
+
+.rankingHeroStats {
+
+    display: flex;
+
+    gap: 1rem;
+
+    flex-wrap: wrap;
+
+    margin-top: 2.5rem;
+
+}
+
+/* ============================================================================
+🔥 Stat Card
+============================================================================ */
+
+.rankingHeroStat {
+
+    min-width: 170px;
+
+    padding: 1rem 1.25rem;
+
+    border-radius: 20px;
+
+    border: 1px solid rgba(255, 255, 255, .08);
+
+    background: rgba(10, 18, 40, .46);
+
+    backdrop-filter: blur(14px);
+
+    transition:
+
+        transform .25s ease,
+
+        border-color .25s ease,
+
+        background .25s ease;
+
+}
+
+.rankingHeroStat:hover {
+
+    transform: translateY(-2px);
+
+    border-color: rgba(120, 170, 255, .28);
+
+    background: rgba(20, 32, 70, .56);
+
+}
+
+/* ============================================================================
+🔥 Stat Label
+============================================================================ */
+
+.rankingHeroStatLabel {
+
+    display: block;
+
+    font-size: .8rem;
+
+    color: rgba(255, 255, 255, .72);
+
+}
+
+/* ============================================================================
+🔥 Stat Value
+============================================================================ */
+
+.rankingHeroStatValue {
+
+    display: block;
+
+    margin-top: .55rem;
+
+    font-size: 1.85rem;
+
+    font-weight: 700;
+
+    color: #ffffff;
+
+}
+
+/* ============================================================================
+🔥 Tablet
+============================================================================ */
+
+@media (max-width: 1024px) {
+
+    .rankingHero {
+
+        min-height: 480px;
+
+        padding: 3rem;
+
+        background-position: right center;
+
+    }
+
+    .rankingHeroContent {
+
+        max-width: 100%;
+
+    }
+
+    .rankingHeroTitle {
+
+        font-size: 2.8rem;
+
+    }
+
+}
+
+/* ============================================================================
+🔥 Mobile
+============================================================================ */
+
+@media (max-width: 768px) {
+
+    .rankingHero {
+
+        min-height: auto;
+
+        padding: 2rem;
+
+        background-position: center right;
+
+    }
+
+    .rankingHeroTitle {
+
+        font-size: 2.2rem;
+
+    }
+
+    .rankingHeroSubtitle {
+
+        font-size: 1rem;
+
+    }
+
+    .rankingHeroDescription {
+
+        font-size: .95rem;
+
+    }
+
+    .rankingHeroStats {
+
+        flex-direction: column;
+
+    }
+
+    .rankingHeroStat {
+
+        width: 100%;
+
+    }
+
+}

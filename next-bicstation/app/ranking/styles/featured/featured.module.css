@@ -1,0 +1,440 @@
+/* ============================================================================
+// FILE:
+// /app/ranking/styles/featured/featured.module.css
+// Copyright (c) 2024 Shin Corporation.
+// All rights reserved.
+============================================================================ */
+
+/* ============================================================================
+🔥 Featured Overall Banner
+============================================================================ */
+
+.featuredBanner {
+
+    position: relative;
+
+    display: flex;
+
+    align-items: center;
+
+    min-height: 320px;
+
+    margin-bottom: 2.5rem;
+
+    padding: 3rem 3.5rem;
+
+    overflow: hidden;
+
+    border-radius: 28px;
+
+    border: 1px solid rgba(255, 210, 120, .32);
+    outline: 1px solid rgba(255, 255, 255, .03);
+    outline-offset: -2px;
+
+    background:
+
+        linear-gradient(90deg,
+
+            rgba(8, 12, 28, .96) 0%,
+
+            rgba(12, 18, 42, .82) 36%,
+
+            rgba(12, 18, 42, .26) 66%,
+
+            rgba(12, 18, 42, 0) 100%),
+
+        url('/images/ranking/ranking-featured-overall.webp');
+
+    background-size: cover;
+
+    background-position: center;
+
+    background-repeat: no-repeat;
+
+    color: #ffffff;
+
+    box-shadow:
+
+        inset 0 1px 0 rgba(255, 255, 255, .05),
+
+        0 0 0 1px rgba(255, 210, 120, .08),
+
+        0 0 30px rgba(255, 190, 60, .12),
+
+        0 20px 60px rgba(0, 0, 0, .45);
+
+    transition:
+
+        transform .35s ease,
+
+        box-shadow .35s ease,
+
+        border-color .35s ease;
+
+}
+
+/* ============================================================================
+🔥 Gold Highlight
+============================================================================ */
+
+
+.featuredBanner::before {
+
+    content: "";
+
+    position: absolute;
+
+    top: -18px;
+
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    width: 180px;
+
+    height: 40px;
+
+    background: radial-gradient(ellipse,
+
+            rgba(255, 215, 120, .85),
+
+            rgba(255, 215, 120, .15) 55%,
+
+            transparent 75%);
+
+    filter: blur(8px);
+
+}
+
+/* ============================================================================
+🔥 Corner Glow
+============================================================================ */
+
+.featuredBanner::after {
+
+    content: "";
+
+    position: absolute;
+
+    inset: -1px;
+
+    border-radius: inherit;
+
+    box-shadow:
+
+        inset 0 1px 0 rgba(255, 255, 255, .04),
+
+        0 0 0 1px rgba(255, 210, 120, .08),
+
+        0 0 18px rgba(255, 190, 60, .10),
+
+        0 18px 60px rgba(0, 0, 0, .42);
+
+    pointer-events: none;
+
+}
+
+/* ============================================================================
+🔥 Hover
+============================================================================ */
+
+.featuredBanner:hover {
+
+    transform: translateY(-3px);
+
+    border-color: rgba(255, 220, 120, .70);
+
+    box-shadow:
+
+        inset 0 1px 0 rgba(255, 255, 255, .08),
+
+        0 0 0 1px rgba(255, 210, 120, .12),
+
+        0 0 45px rgba(255, 190, 60, .20),
+
+        0 30px 80px rgba(0, 0, 0, .55);
+
+}
+
+/* ============================================================================
+🔥 Content
+============================================================================ */
+
+.featuredContent {
+
+    position: relative;
+
+    z-index: 2;
+
+    width: 100%;
+
+    max-width: 520px;
+
+}
+
+/* ============================================================================
+🔥 Badge
+============================================================================ */
+
+.featuredBadge {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    padding: .45rem 1rem;
+
+    border-radius: 999px;
+
+    border: 1px solid rgba(255, 220, 140, .35);
+
+    background: rgba(255, 190, 60, .16);
+
+    backdrop-filter: blur(12px);
+
+    font-size: .78rem;
+
+    font-weight: 700;
+
+    letter-spacing: .16em;
+
+    text-transform: uppercase;
+
+    color: #FFD56A;
+
+}
+
+/* ============================================================================
+🔥 Title
+============================================================================ */
+
+.featuredTitle {
+
+    margin-top: 1.2rem;
+
+    font-size: 2.5rem;
+
+    font-weight: 700;
+
+    line-height: 1.15;
+
+    letter-spacing: -.02em;
+
+    text-shadow:
+
+        0 3px 18px rgba(0, 0, 0, .35);
+
+}
+
+/* ============================================================================
+🔥 Description
+============================================================================ */
+
+.featuredDescription {
+
+    margin-top: 1rem;
+
+    max-width: 480px;
+
+    line-height: 1.9;
+
+    font-size: 1rem;
+
+    color: rgba(255, 255, 255, .84);
+
+}
+
+/* ============================================================================
+🔥 Meta
+============================================================================ */
+
+.featuredMeta {
+
+    display: flex;
+
+    gap: .8rem;
+
+    flex-wrap: wrap;
+
+    margin-top: 1.8rem;
+
+}
+
+/* ============================================================================
+🔥 Chip
+============================================================================ */
+
+.featuredChip {
+
+    padding: .55rem 1rem;
+
+    border-radius: 999px;
+
+    border: 1px solid rgba(255, 255, 255, .08);
+
+    background: rgba(255, 255, 255, .08);
+
+    backdrop-filter: blur(12px);
+
+    font-size: .82rem;
+
+    font-weight: 600;
+
+    color: rgba(255, 255, 255, .92);
+
+}
+
+/* ============================================================================
+🔥 Button
+============================================================================ */
+
+.featuredButton {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    margin-top: 2rem;
+
+    padding: .95rem 1.9rem;
+
+    border-radius: 999px;
+
+    background:
+
+        linear-gradient(180deg,
+
+            #FFE9A8,
+
+            #FFD56A 35%,
+
+            #FFC44D 70%,
+
+            #F7A91C);
+
+    border: 1px solid rgba(255, 255, 255, .25);
+
+    color: #141414;
+
+    text-decoration: none;
+
+    font-weight: 700;
+
+    transition:
+
+        transform .25s ease,
+
+        box-shadow .25s ease;
+
+    box-shadow:
+
+        0 10px 30px rgba(255, 185, 60, .22);
+
+}
+
+
+.featuredButton:hover {
+
+    transform:
+
+        translateY(-2px) scale(1.02);
+
+    transition:
+
+        all .28s cubic-bezier(.22, .61, .36, 1);
+
+}
+
+.featuredBanner::after {
+
+    content: "";
+
+    position: absolute;
+
+    bottom: 22px;
+
+    left: 52%;
+
+    width: 420px;
+
+    height: 90px;
+
+    background:
+
+        radial-gradient(ellipse,
+
+            rgba(255, 200, 90, .18),
+
+            transparent 70%);
+
+    filter: blur(20px);
+
+    pointer-events: none;
+
+}
+
+/* ============================================================================
+🔥 Tablet
+============================================================================ */
+
+@media (max-width:1024px) {
+
+    .featuredBanner {
+
+        min-height: 280px;
+
+        padding: 2.5rem;
+
+    }
+
+    .featuredTitle {
+
+        font-size: 2.1rem;
+
+    }
+
+}
+
+/* ============================================================================
+🔥 Mobile
+============================================================================ */
+
+@media (max-width:768px) {
+
+    .featuredBanner {
+
+        min-height: auto;
+
+        padding: 2rem;
+
+        background-position: right center;
+
+    }
+
+    .featuredContent {
+
+        max-width: 100%;
+
+    }
+
+    .featuredTitle {
+
+        font-size: 1.8rem;
+
+    }
+
+    .featuredMeta {
+
+        gap: .6rem;
+
+    }
+
+    .featuredButton {
+
+        width: 100%;
+
+    }
+
+}

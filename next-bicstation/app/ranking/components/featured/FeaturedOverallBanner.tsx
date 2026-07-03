@@ -1,11 +1,18 @@
 // ============================================================================
 // FILE:
-// /app/ranking/components/RankingHero.tsx
+// /app/ranking/components/featured/FeaturedOverallBanner.tsx
 // Copyright (c) 2024 Shin Corporation.
 // All rights reserved.
 // ============================================================================
 
 'use client'
+
+/* ============================================================================
+🔥 Next
+============================================================================ */
+
+import Link
+    from 'next/link'
 
 /* ============================================================================
 🔥 Types
@@ -15,14 +22,14 @@ import type {
 
     RankingRuntime,
 
-} from '../types/ranking'
+} from '../../types/ranking'
 
 /* ============================================================================
 🔥 Styles
 ============================================================================ */
 
 import styles
-    from '../styles/hero/hero.module.css'
+    from '../../styles/featured/featured.module.css'
 
 /* ============================================================================
 🔥 Props
@@ -35,10 +42,10 @@ type Props = {
 }
 
 /* ============================================================================
-🔥 Ranking Hero
+🔥 Featured Overall Banner
 ============================================================================ */
 
-export default function RankingHero({
+export default function FeaturedOverallBanner({
 
     runtime,
 
@@ -56,17 +63,17 @@ export default function RankingHero({
     🔥 Presentation
     ========================================================================= */
 
+    const badge =
+
+        'FEATURED'
+
     const title =
 
-        'PCランキングから探す'
+        '総合ランキング'
 
     const subtitle =
 
-        '用途・性能・価格・メーカーなど、あなたに合ったランキングから最適なPCを見つけましょう。'
-
-    const description =
-
-        '総合ランキングをはじめ、AI・ゲーミング・クリエイター・ビジネスなど、目的別ランキングからおすすめ製品を比較できます。'
+        '現在公開されているランキングの中から、編集部がおすすめするベストPCをご紹介します。'
 
     /* =========================================================================
     🔥 Render
@@ -76,27 +83,27 @@ export default function RankingHero({
 
         <section
             className={
-                styles.rankingHero
+                styles.featuredBanner
             }
         >
 
             <div
                 className={
-                    styles.rankingHeroContent
+                    styles.featuredContent
                 }
             >
 
                 {/* ==========================================================
-                Label
+                Badge
                 ========================================================== */}
 
                 <div
                     className={
-                        styles.rankingHeroLabel
+                        styles.featuredBadge
                     }
                 >
 
-                    RANKING EXPERIENCE
+                    {badge}
 
                 </div>
 
@@ -104,23 +111,23 @@ export default function RankingHero({
                 Title
                 ========================================================== */}
 
-                <h1
+                <h2
                     className={
-                        styles.rankingHeroTitle
+                        styles.featuredTitle
                     }
                 >
 
                     {title}
 
-                </h1>
+                </h2>
 
                 {/* ==========================================================
-                Subtitle
+                Description
                 ========================================================== */}
 
                 <p
                     className={
-                        styles.rankingHeroSubtitle
+                        styles.featuredDescription
                     }
                 >
 
@@ -129,98 +136,54 @@ export default function RankingHero({
                 </p>
 
                 {/* ==========================================================
-                Description
-                ========================================================== */}
-
-                <p
-                    className={
-                        styles.rankingHeroDescription
-                    }
-                >
-
-                    {description}
-
-                </p>
-
-                {/* ==========================================================
-                Statistics
+                Meta
                 ========================================================== */}
 
                 <div
                     className={
-                        styles.rankingHeroStats
+                        styles.featuredMeta
                     }
                 >
 
                     <div
                         className={
-                            styles.rankingHeroStat
+                            styles.featuredChip
                         }
                     >
 
-                        <span
-                            className={
-                                styles.rankingHeroStatLabel
-                            }
-                        >
-
-                            公開ランキング
-
-                        </span>
-
-                        <strong
-                            className={
-                                styles.rankingHeroStatValue
-                            }
-                        >
-
-                            {totalRankings}
-
-                        </strong>
+                        ALL
 
                     </div>
 
                     <div
                         className={
-                            styles.rankingHeroStat
+                            styles.featuredChip
                         }
                     >
 
-                        <span
-                            className={
-                                styles.rankingHeroStatLabel
-                            }
-                        >
-
-                            Featured
-
-                        </span>
-
-                        <strong
-                            className={
-                                styles.rankingHeroStatValue
-                            }
-                        >
-
-                            ALL
-
-                        </strong>
+                        {totalRankings} Rankings
 
                     </div>
 
                 </div>
 
                 {/* ==========================================================
-                Future Actions
+                Action
                 ========================================================== */}
 
-                {/*
-                    次フェーズ
+                <Link
 
-                    ・アイコン4個
-                    ・CTAボタン
-                    ・更新日時
-                */}
+                    href="/ranking/all"
+
+                    className={
+                        styles.featuredButton
+                    }
+
+                >
+
+                    総合ランキングを見る
+
+                </Link>
 
             </div>
 

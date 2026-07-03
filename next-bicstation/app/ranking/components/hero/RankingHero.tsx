@@ -1,6 +1,6 @@
 // ============================================================================
 // FILE:
-// /app/ranking/components/RankingHero.tsx
+// /app/ranking/components/hero/RankingHero.tsx
 // Copyright (c) 2024 Shin Corporation.
 // All rights reserved.
 // ============================================================================
@@ -15,14 +15,14 @@ import type {
 
     RankingRuntime,
 
-} from '../types/ranking'
+} from '../../types/ranking'
 
 /* ============================================================================
 🔥 Styles
 ============================================================================ */
 
 import styles
-    from '../styles/hero/hero.module.css'
+    from '../../styles/hero/hero.module.css'
 
 /* ============================================================================
 🔥 Props
@@ -66,7 +66,7 @@ export default function RankingHero({
 
     const description =
 
-        '総合ランキングをはじめ、AI・ゲーミング・クリエイター・ビジネスなど、目的別ランキングからおすすめ製品を比較できます。'
+        '総合ランキングから用途別・デバイス別・パーツ別ランキングまで、目的に応じた比較をサポートします。'
 
     /* =========================================================================
     🔥 Render
@@ -192,7 +192,7 @@ export default function RankingHero({
                             }
                         >
 
-                            Featured
+                            総合ランキング
 
                         </span>
 
@@ -209,18 +209,6 @@ export default function RankingHero({
                     </div>
 
                 </div>
-
-                {/* ==========================================================
-                Future Actions
-                ========================================================== */}
-
-                {/*
-                    次フェーズ
-
-                    ・アイコン4個
-                    ・CTAボタン
-                    ・更新日時
-                */}
 
             </div>
 
