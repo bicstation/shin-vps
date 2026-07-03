@@ -64,7 +64,7 @@ export default function RankingCard({
 
     const backgroundImage =
 
-        `/images/ranking/${item.slug}.png`
+        `/images/discover/${item.slug}.png`
 
     const title =
 
