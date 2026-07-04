@@ -8,6 +8,7 @@ print("🔥 PC URLS LOADED")
 from api.views.discover_v2_view import ( semantic_discover_v2, )
 from api.views.finder_v2_view import ( semantic_finder_v2, )
 from api.views.ranking_v2_view import ( semantic_ranking_v2, )
+from api.views.ranking_universe_v2_view import ( semantic_ranking_universe_v2, )
 from api.views.product_detail_v2_view import ( semantic_product_detail_v2, )
 from api.views.related_v2_view import ( semantic_related_v2, )
 from api.views.top_v2_view import ( semantic_top_v2,)
@@ -30,6 +31,7 @@ from api.views.pc_product_view import ( semantic_discovery_runtime, semantic_she
 from api.views.general_views import ( PCProductRankingView,)
 from api.views.pc_stats_view import ( pc_sidebar_stats,)
 from api.views.finder_views import ( SemanticFinderView )
+
 
 app_name = "pc"
 
@@ -219,6 +221,12 @@ urlpatterns = [
     # =====================================================
     # RANKING
     # =====================================================
+    
+    path(
+        "ranking-universe/",
+        semantic_ranking_universe_v2,
+        name="ranking_universe",
+    ),
 
     path(
         "ranking/<slug:group_slug>/",

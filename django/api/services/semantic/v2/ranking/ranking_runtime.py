@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 # api/services/semantic/v2/ranking/ranking_runtime.py
 
+from api.services.semantic.v2.ranking.ranking_topology_runtime import (
+    build_ranking_topology_runtime,
+)
+
 from api.services.semantic.v2.authority.authority_runtime import (
     build_authority_runtime,
 )
@@ -71,6 +75,10 @@ def build_ranking_runtime(
 
     traversal = (
         build_traversal_runtime()
+    )
+
+    ranking_topology = (
+        build_ranking_topology_runtime()
     )
 
     products = []
@@ -222,6 +230,16 @@ def build_ranking_runtime(
 
         "seo":
             seo,
+           
+        # ----------------------------------------------
+        # Navigation Topology
+        # ----------------------------------------------
+
+        "categories":
+            ranking_topology.get(
+                "categories",
+                []
+            ),
 
         # ----------------------------------------------
         # Reality

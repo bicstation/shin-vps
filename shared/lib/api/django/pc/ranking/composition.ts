@@ -16,9 +16,9 @@
  *
  * NOT
  *
- * - Transport
- * - Normalize
- * - Projection
+ * - Runtime Fetch
+ * - Runtime Normalize
+ * - Runtime Projection
  * - Semantic Authority
  *
  * Backend remains:
@@ -45,7 +45,7 @@ import type {
 } from './contracts'
 
 /* ============================================================================
-🔥 Ranking Experience Runtime
+🔥 Experience Runtime
 ============================================================================ */
 
 export interface RankingExperienceRuntime {
@@ -53,10 +53,11 @@ export interface RankingExperienceRuntime {
     navigation: NavigationRuntime
 
     ranking: SemanticRankingRuntime
+
 }
 
 /* ============================================================================
-🔥 Composition
+🔥 Runtime Composition
 ============================================================================ */
 
 export function composeRankingRuntime(

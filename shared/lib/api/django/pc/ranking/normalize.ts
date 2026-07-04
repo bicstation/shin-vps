@@ -1,6 +1,38 @@
 // ============================================================================
-// Ranking Normalize V2
+// FILE:
+// /shared/lib/api/django/pc/ranking/normalize.ts
+// Copyright (c) 2026 Shin Corporation.
+// All rights reserved.
 // ============================================================================
+
+/**
+ * ============================================================================
+ * SHIN CORE LINX
+ * Ranking Runtime Normalize
+ * ============================================================================
+ *
+ * Responsibilities
+ *
+ * - Runtime Safety
+ * - Null Protection
+ * - Array Normalization
+ *
+ * NOT
+ *
+ * - Runtime Composition
+ * - Runtime Projection
+ * - Semantic Authority
+ *
+ * Backend remains:
+ *
+ * Semantic Authority
+ *
+ * Adapter remains:
+ *
+ * Runtime Normalize
+ *
+ * ============================================================================
+ */
 
 import type {
 
@@ -8,13 +40,15 @@ import type {
 
   RankingData,
 
+  RankingCategory,
+
 } from './contracts'
 
 /* ============================================================================
 🔥 Normalize Runtime
 ============================================================================ */
 
-export function normalizeRanking(
+export function normalizeRankingRuntime(
 
   runtime?: Partial<SemanticRankingRuntime>
 
@@ -32,7 +66,7 @@ export function normalizeRanking(
 
     meaning:
 
-      runtime?.meaning,
+      runtime?.meaning ?? {},
 
     /* --------------------------------------------------------------------
     Presentation
@@ -40,7 +74,7 @@ export function normalizeRanking(
 
     presentation:
 
-      runtime?.presentation,
+      runtime?.presentation ?? {},
 
     /* --------------------------------------------------------------------
     SEO
@@ -48,7 +82,19 @@ export function normalizeRanking(
 
     seo:
 
-      runtime?.seo,
+      runtime?.seo ?? {},
+
+    /* --------------------------------------------------------------------
+    Categories
+    -------------------------------------------------------------------- */
+
+    categories:
+
+      (runtime?.categories ?? []).map(
+
+        normalizeCategory
+
+      ),
 
     /* --------------------------------------------------------------------
     Data
@@ -88,8 +134,32 @@ export function normalizeRanking(
 
     raw:
 
-      runtime,
+      runtime?.raw ?? runtime,
+
   }
+
+}
+
+/* ============================================================================
+🔥 Normalize Categories
+============================================================================ */
+
+function normalizeCategory(
+
+  category: RankingCategory
+
+): RankingCategory {
+
+  return {
+
+    ...category,
+
+    groups:
+
+      category.groups ?? [],
+
+  }
+
 }
 
 /* ============================================================================
@@ -123,5 +193,21 @@ function normalizeData(
     products:
 
       data?.products ?? [],
+
   }
+
 }
+
+/* ============================================================================
+🔥 Alias
+============================================================================ */
+
+export const normalizeRanking =
+
+  normalizeRankingRuntime
+
+/* ============================================================================
+🔥 Default Export
+============================================================================ */
+
+export default normalizeRankingRuntime

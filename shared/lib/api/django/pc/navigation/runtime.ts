@@ -1,6 +1,6 @@
 // ============================================================================
 // FILE:
-// /shared/lib/api/django/pc/navigation/composition.ts
+// /shared/lib/api/django/pc/navigation/runtime.ts
 // Copyright (c) 2026 Shin Corporation.
 // All rights reserved.
 // ============================================================================
@@ -8,19 +8,24 @@
 /**
  * ============================================================================
  * SHIN CORE LINX
- * Navigation Runtime Composition
+ * Navigation Runtime Facade
  * ============================================================================
  *
- * Responsibilities
+ * PURPOSE
  *
- * - Runtime Composition
+ * Temporary compatibility facade.
  *
- * NOT
+ * Navigation does not require Runtime Composition.
  *
- * - Runtime Fetch
- * - Runtime Normalize
- * - UI Projection
- * - Semantic Authority
+ * This facade simply connects:
+ *
+ * Gateway
+ *      ↓
+ * Normalize
+ *      ↓
+ * Projection
+ *
+ * This file exists only for migration compatibility.
  *
  * Backend remains:
  *
@@ -28,55 +33,55 @@
  *
  * Adapter remains:
  *
- * Runtime Composition Authority
+ * Translation Authority
  *
  * ============================================================================
  */
 
-import type {
+import {
 
-    NavigationRuntime,
+    fetchNavigationRuntime,
 
-} from './contracts'
+} from './navigation'
+
+import {
+
+    projectNavigation,
+
+    type ProjectedNavigationRuntime,
+
+} from './projection'
 
 /* ============================================================================
-🔥 Experience Runtime
+🔥 Runtime Facade
 ============================================================================ */
 
-export interface NavigationExperienceRuntime {
+export async function getNavigationRuntime(
 
-    navigation: NavigationRuntime
+): Promise<ProjectedNavigationRuntime> {
+
+    const runtime =
+
+        await fetchNavigationRuntime()
+
+    return projectNavigation(
+
+        runtime
+
+    )
 
 }
 
 /* ============================================================================
-🔥 Runtime Composition
+🔥 Legacy Compatibility
 ============================================================================ */
 
-export function composeNavigationRuntime(
+export const fetchProjectedNavigationRuntime =
 
-    navigation: NavigationRuntime,
-
-): NavigationExperienceRuntime {
-
-    return {
-
-        navigation,
-
-    }
-
-}
-
-/* ============================================================================
-🔥 Alias
-============================================================================ */
-
-export const composeNavigationExperienceRuntime =
-
-    composeNavigationRuntime
+    getNavigationRuntime
 
 /* ============================================================================
 🔥 Default Export
 ============================================================================ */
 
-export default composeNavigationRuntime
+export default getNavigationRuntime

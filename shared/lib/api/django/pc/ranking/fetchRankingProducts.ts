@@ -1,9 +1,40 @@
 // ============================================================================
 // FILE:
-// fetchRankingProducts.ts
-// SHIN CORE LINX
-// Legacy Compatibility Layer
+// /shared/lib/api/django/pc/ranking/fetchRankingProducts.ts
+// Copyright (c) 2026 Shin Corporation.
+// All rights reserved.
 // ============================================================================
+
+/**
+ * ============================================================================
+ * SHIN CORE LINX
+ * Ranking Products Legacy Compatibility Layer
+ * ============================================================================
+ *
+ * PURPOSE
+ *
+ * Legacy Frontend API
+ *
+ * New Pipeline
+ *
+ * Gateway
+ *      ↓
+ * Normalize
+ *      ↓
+ * Composition
+ *      ↓
+ * Projection
+ *      ↓
+ * Runtime Facade
+ *
+ * This file exists only for backward compatibility.
+ *
+ * New implementations SHOULD use:
+ *
+ * getRankingRuntime()
+ *
+ * ============================================================================
+ */
 
 import type {
 
@@ -18,22 +49,22 @@ import {
 } from './runtime'
 
 /* ============================================================================
-🔥 Legacy Compatibility
+🔥 Legacy Products API
 ============================================================================ */
 
 /**
- * Legacy Frontend API
+ * Legacy Compatibility
  *
- * Runtime
- * ↓
- * Projection
- * ↓
- * Products
+ * Returns projected products only.
+ *
+ * New implementations should use:
+ *
+ * getRankingRuntime()
  */
 
 export async function fetchRankingProducts(
 
-  slug: string
+  slug: string,
 
 ): Promise<ProjectedRankingProduct[]> {
 
@@ -48,7 +79,16 @@ export async function fetchRankingProducts(
   )
 
   return projection.products
+
 }
+
+/* ============================================================================
+🔥 Alias
+============================================================================ */
+
+export const fetchProjectedRankingProducts =
+
+  fetchRankingProducts
 
 /* ============================================================================
 🔥 Default Export

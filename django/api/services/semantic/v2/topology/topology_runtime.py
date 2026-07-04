@@ -18,7 +18,9 @@ from api.services.semantic.v2.authority.tsv_loader import (
 # TOPOLOGY
 # ==========================================================
 
-def build_topology_runtime():
+def build_topology_runtime(
+    parent_groups=None,
+    ):
 
     authority = (
         build_authority_runtime()
@@ -45,6 +47,26 @@ def build_topology_runtime():
     groups = (
         load_semantic_groups()
     )
+
+
+    # ------------------------------------------------------
+    # Parent Group Filter
+    # ------------------------------------------------------
+
+    if parent_groups:
+
+        groups = [
+
+            group
+
+            for group in groups
+
+            if group.get(
+                "parent_group"
+            ) in parent_groups
+
+        ]
+
 
     attributes = (
         load_semantic_attributes()

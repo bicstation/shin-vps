@@ -1,27 +1,25 @@
 // ============================================================================
 // FILE:
-// /home/maya/shin-dev/shin-vps/shared/lib/api/django/pc/navigation/index.ts
-// Copyright (c) 2024 Shin Corporation.
+// /shared/lib/api/django/pc/navigation/index.ts
+// Copyright (c) 2026 Shin Corporation.
 // All rights reserved.
 // ============================================================================
 
 /**
  * ============================================================================
  * SHIN CORE LINX
- * Navigation Runtime Layer
+ * Navigation Adapter Layer
  * ============================================================================
  *
  * PURPOSE
  *
- * Canonical Navigation Runtime Exposure
+ * Canonical Navigation Adapter
  *
  * Backend
  *      ↓
  * Gateway
  *      ↓
  * Normalize
- *      ↓
- * Composition
  *      ↓
  * Projection
  *      ↓
@@ -33,11 +31,15 @@
  *
  * Adapter remains:
  *
- * Runtime Authority
+ * Translation Authority
  *
  * Frontend remains:
  *
  * Experience Authority
+ *
+ * IMPORTANT
+ *
+ * Navigation does NOT require Runtime Composition.
  *
  * ============================================================================
  */
@@ -49,31 +51,31 @@
 export * from './contracts'
 
 /* ============================================================================
-🔥 Runtime Gateway
+🔥 Gateway
 ============================================================================ */
 
 export * from './navigation'
 
 /* ============================================================================
-🔥 Runtime Normalize
+🔥 Normalize
 ============================================================================ */
 
 export * from './normalize'
 
 /* ============================================================================
-🔥 Runtime Composition
+🔥 Projection
 ============================================================================ */
 
-export * from './composition'
+export * from './projection'
 
 /* ============================================================================
-🔥 Runtime Projection
+🔥 Runtime Facade (Migration Compatibility)
 ============================================================================ */
 
-export * from './adapter'
+export * from './runtime'
 
 /* ============================================================================
-🔥 Runtime Observatory
+🔥 Observatory
 ============================================================================ */
 
 console.log(
@@ -81,34 +83,26 @@ console.log(
 )
 
 console.log(
-  '🔥 NAVIGATION RUNTIME INITIALIZED'
+  '🔥 NAVIGATION ADAPTER INITIALIZED'
 )
 
 console.log({
 
-  runtime:
-    'navigation-runtime-layer',
+  runtime: 'navigation',
 
-  authority:
-    'backend',
+  authority: 'backend',
 
-  transport:
-    true,
+  transport: true,
 
-  normalize:
-    true,
+  normalize: true,
 
-  composition:
-    true,
+  projection: true,
 
-  projection:
-    true,
+  composition: false,
 
-  observability:
-    true,
+  observability: true,
 
-  continuity:
-    'healthy',
+  continuity: 'healthy',
 
 })
 

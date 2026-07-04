@@ -1,6 +1,41 @@
 // ============================================================================
-// Ranking Runtime Gateway V2
+// FILE:
+// /shared/lib/api/django/pc/ranking/ranking.ts
+// Copyright (c) 2026 Shin Corporation.
+// All rights reserved.
 // ============================================================================
+
+/**
+ * ============================================================================
+ * SHIN CORE LINX
+ * Ranking Runtime Gateway
+ * ============================================================================
+ *
+ * PURPOSE
+ *
+ * GET /api/pc/ranking/{slug}/
+ *
+ * Frontend
+ *      ↓
+ * Gateway
+ *      ↓
+ * Backend Runtime
+ *
+ * Gateway Responsibilities
+ *
+ * ✓ Transport
+ * ✓ Endpoint Resolution
+ * ✓ Observability
+ *
+ * Gateway SHALL NOT
+ *
+ * ✗ Normalize Runtime
+ * ✗ Compose Runtime
+ * ✗ Project Runtime
+ * ✗ Generate Meaning
+ *
+ * ============================================================================
+ */
 
 import type {
 
@@ -20,12 +55,6 @@ import {
 
 } from '../utils/safeFetch'
 
-import {
-
-  normalizeRanking,
-
-} from './normalize'
-
 /* ============================================================================
 🔥 Endpoint
 ============================================================================ */
@@ -35,14 +64,14 @@ const RANKING_ENDPOINT =
   '/pc/ranking'
 
 /* ============================================================================
-🔥 Fetch Ranking Runtime
+🔥 Fetch Runtime
 ============================================================================ */
 
 export async function fetchRanking(
 
-  slug: string
+  slug: string,
 
-): Promise<SemanticRankingRuntime> {
+): Promise<SemanticRankingRuntime | null> {
 
   /* ------------------------------------------------------------------------
   Endpoint
@@ -52,9 +81,13 @@ export async function fetchRanking(
 
     buildEndpoint(
 
-      `${RANKING_ENDPOINT}/${slug}/`
+      `${RANKING_ENDPOINT}/${encodeURIComponent(slug)}/`
 
     )
+
+  /* ------------------------------------------------------------------------
+  Observatory
+  ------------------------------------------------------------------------ */
 
   console.log(
     '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
@@ -77,16 +110,26 @@ export async function fetchRanking(
   )
 
   /* ------------------------------------------------------------------------
-  Fetch
+  Transport
   ------------------------------------------------------------------------ */
 
   const payload =
 
     await safeFetch<SemanticRankingRuntime>(
 
-      endpoint
+      endpoint,
+
+      {
+
+        method: 'GET',
+
+      }
 
     )
+
+  /* ------------------------------------------------------------------------
+  RAW Runtime
+  ------------------------------------------------------------------------ */
 
   console.log(
 
@@ -96,89 +139,17 @@ export async function fetchRanking(
 
   )
 
-  /* ------------------------------------------------------------------------
-  Empty
-  ------------------------------------------------------------------------ */
+  return payload
 
-  if (!payload) {
-
-    console.warn(
-
-      '⚠️ RANKING RUNTIME EMPTY'
-
-    )
-
-    return normalizeRanking()
-  }
-
-  /* ------------------------------------------------------------------------
-  Normalize
-  ------------------------------------------------------------------------ */
-
-  const runtime =
-
-    normalizeRanking(
-
-      payload
-
-    )
-
-  /* ------------------------------------------------------------------------
-  Observatory
-  ------------------------------------------------------------------------ */
-
-  console.log(
-
-    '🔥 RANKING RUNTIME',
-
-    {
-
-      title:
-
-        runtime.presentation?.title,
-
-      group:
-
-        runtime.data.group_slug,
-
-      count:
-
-        runtime.data.product_count,
-
-      products:
-
-        runtime.data.products.length,
-
-      semantic_schema_version:
-
-        runtime.semantic_schema_version,
-
-      authority_version:
-
-        runtime.authority_version,
-
-      semantic_authority:
-
-        runtime.semantic_authority,
-
-      ready:
-
-        runtime.ready,
-
-      sample:
-
-        runtime.data.products[0],
-
-    }
-
-  )
-
-  /* ------------------------------------------------------------------------
-  Return
-  ------------------------------------------------------------------------ */
-
-  return runtime
 }
+
+/* ============================================================================
+🔥 Legacy Compatibility
+============================================================================ */
+
+export const getRanking =
+
+  fetchRanking
 
 /* ============================================================================
 🔥 Default Export

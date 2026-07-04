@@ -1,19 +1,51 @@
 // ============================================================================
-// Ranking Projection V2
+// FILE:
+// /shared/lib/api/django/pc/ranking/projection.ts
+// Copyright (c) 2026 Shin Corporation.
+// All rights reserved.
 // ============================================================================
+
+/**
+ * ============================================================================
+ * SHIN CORE LINX
+ * Ranking Runtime Projection
+ * ============================================================================
+ *
+ * Responsibilities
+ *
+ * - UI Projection
+ *
+ * NOT
+ *
+ * - Runtime Fetch
+ * - Runtime Normalize
+ * - Runtime Composition
+ * - Semantic Authority
+ *
+ * Backend remains:
+ *
+ * Semantic Authority
+ *
+ * Adapter remains:
+ *
+ * Runtime Projection Authority
+ *
+ * ============================================================================
+ */
 
 import type {
 
     SemanticRankingRuntime,
     RankingProduct,
+    RankingCategory,
 
 } from './contracts'
 
 /* ============================================================================
-🔥 Projection Runtime
+🔥 Experience Runtime
 ============================================================================ */
 
-export interface RankingProjectedRuntime {
+export interface ProjectedRankingExperienceRuntime {
 
     header: {
 
@@ -22,18 +54,39 @@ export interface RankingProjectedRuntime {
         subtitle: string
 
         description: string
+
     }
 
     stats: {
 
-        product_count: number
+        productCount: number
 
-        group_name: string
+        groupName: string
 
-        group_slug: string
+        groupSlug: string
+
     }
 
+    categories: ProjectedRankingCategory[]
+
     products: ProjectedRankingProduct[]
+
+}
+
+/* ============================================================================
+🔥 Projected Category
+============================================================================ */
+
+export interface ProjectedRankingCategory {
+
+    parentGroup: string
+
+    presentationName: string
+
+    groupCount: number
+
+    groups: RankingCategory['groups']
+
 }
 
 /* ============================================================================
@@ -63,6 +116,7 @@ export interface ProjectedRankingProduct {
         primary?: string
 
         secondary?: string
+
     }
 
     ui_state: {
@@ -75,7 +129,9 @@ export interface ProjectedRankingProduct {
         | 'creator'
         | 'business'
         | 'general'
+
     }
+
 }
 
 /* ============================================================================
@@ -86,17 +142,9 @@ export function projectRankingRuntime(
 
     runtime: SemanticRankingRuntime
 
-): RankingProjectedRuntime {
-
-    const products =
-
-        runtime.data?.products ?? []
+): ProjectedRankingExperienceRuntime {
 
     return {
-
-        /* --------------------------------------------------------------------
-        Header
-        -------------------------------------------------------------------- */
 
         header: {
 
@@ -111,39 +159,75 @@ export function projectRankingRuntime(
             description:
 
                 runtime.presentation?.description ?? '',
-        },
 
-        /* --------------------------------------------------------------------
-        Stats
-        -------------------------------------------------------------------- */
+        },
 
         stats: {
 
-            product_count:
+            productCount:
 
-                runtime.data?.product_count ?? 0,
+                runtime.data.product_count,
 
-            group_name:
+            groupName:
 
-                runtime.data?.group_name ?? '',
+                runtime.data.group_name,
 
-            group_slug:
+            groupSlug:
 
-                runtime.data?.group_slug ?? '',
+                runtime.data.group_slug,
+
         },
 
-        /* --------------------------------------------------------------------
-        Products
-        -------------------------------------------------------------------- */
+        categories:
+
+            (runtime.categories ?? []).map(
+
+                projectCategory
+
+            ),
 
         products:
 
-            products.map(
+            (runtime.data.products ?? []).map(
 
                 projectProduct
 
             ),
+
     }
+
+}
+
+/* ============================================================================
+🔥 Category Projection
+============================================================================ */
+
+function projectCategory(
+
+    category: RankingCategory
+
+): ProjectedRankingCategory {
+
+    return {
+
+        parentGroup:
+
+            category.parent_group,
+
+        presentationName:
+
+            category.presentation_name,
+
+        groupCount:
+
+            category.group_count,
+
+        groups:
+
+            category.groups,
+
+    }
+
 }
 
 /* ============================================================================
@@ -152,168 +236,116 @@ export function projectRankingRuntime(
 
 function projectProduct(
 
-    p: RankingProduct
+    product: RankingProduct
 
 ): ProjectedRankingProduct {
 
-    /* ------------------------------------------------------------------------
-    Variant
-    ------------------------------------------------------------------------ */
-
     const variant =
 
-        p.semantic_attributes?.includes('usage-ai')
+        product.semantic_attributes?.includes('usage-ai')
 
             ? 'ai'
 
-            : p.semantic_attributes?.includes('usage-gaming')
+            : product.semantic_attributes?.includes('usage-gaming')
 
                 ? 'gaming'
 
-                : p.semantic_attributes?.includes('usage-business')
+                : product.semantic_attributes?.includes('usage-business')
 
                     ? 'business'
 
-                    : p.semantic_attributes?.includes('usage-creator')
+                    : product.semantic_attributes?.includes('usage-creator')
 
                         ? 'creator'
 
                         : 'general'
 
-    /* ------------------------------------------------------------------------
-    Emphasis
-    ------------------------------------------------------------------------ */
+    const score =
 
-    const semanticScore =
-
-        p.semantic_score ?? 0
+        product.semantic_score ?? 0
 
     const emphasis =
 
-        semanticScore >= 90
+        score >= 90
 
             ? 'high'
 
-            : semanticScore >= 70
+            : score >= 70
 
                 ? 'medium'
 
                 : 'low'
 
-    /* ------------------------------------------------------------------------
-    Badges
-    ------------------------------------------------------------------------ */
-
     const badges: string[] = []
 
-    if (
+    if (product.semantic_attributes?.includes('gpu-rtx-5090')) {
 
-        p.semantic_attributes?.includes(
+        badges.push('RTX 5090')
 
-            'gpu-rtx-5090'
-
-        )
-
-    ) {
-
-        badges.push(
-
-            'RTX 5090'
-
-        )
     }
 
-    if (
+    if (product.semantic_attributes?.includes('gpu-rtx-5080')) {
 
-        p.semantic_attributes?.includes(
+        badges.push('RTX 5080')
 
-            'gpu-rtx-5080'
-
-        )
-
-    ) {
-
-        badges.push(
-
-            'RTX 5080'
-
-        )
     }
 
-    if (
+    if (product.semantic_attributes?.includes('cpu-ai')) {
 
-        p.semantic_attributes?.includes(
+        badges.push('AI Ready')
 
-            'cpu-ai'
-
-        )
-
-    ) {
-
-        badges.push(
-
-            'AI Ready'
-
-        )
     }
-
-    /* ------------------------------------------------------------------------
-    Tags
-    ------------------------------------------------------------------------ */
-
-    const tags = [
-
-        ...(p.workflow_tags ?? []),
-
-        ...(p.semantic_labels ?? []).slice(
-
-            0,
-
-            2
-
-        ),
-
-    ]
 
     return {
 
         id:
 
-            p.product_id,
+            product.product_id,
 
         name:
 
-            p.name,
+            product.name,
 
         maker:
 
-            p.maker,
+            product.maker,
 
         price:
 
-            p.price,
+            product.price,
 
         image:
 
-            p.image_url,
+            product.image_url,
 
-        score:
-
-            semanticScore,
+        score,
 
         badges,
 
-        tags,
+        tags: [
+
+            ...(product.workflow_tags ?? []),
+
+            ...(product.semantic_labels ?? []).slice(
+
+                0,
+
+                2
+
+            ),
+
+        ],
 
         highlight: {
 
             primary:
 
-                p.semantic_labels?.[0],
+                product.semantic_labels?.[0],
 
             secondary:
 
-                p.semantic_labels?.[1],
+                product.semantic_labels?.[1],
+
         },
 
         ui_state: {
@@ -321,6 +353,23 @@ function projectProduct(
             emphasis,
 
             variant,
+
         },
+
     }
+
 }
+
+/* ============================================================================
+🔥 Alias
+============================================================================ */
+
+export const projectRanking =
+
+    projectRankingRuntime
+
+/* ============================================================================
+🔥 Default Export
+============================================================================ */
+
+export default projectRankingRuntime

@@ -68,6 +68,9 @@ export interface RankingSEO {
   schema_jsonld?: any
 }
 
+
+
+
 /* ============================================================================
 🔥 Product
 ============================================================================ */
@@ -133,7 +136,6 @@ export interface RankingData {
 /* ============================================================================
 🔥 Runtime
 ============================================================================ */
-
 export interface SemanticRankingRuntime {
 
   success?: boolean
@@ -143,6 +145,8 @@ export interface SemanticRankingRuntime {
   presentation?: RankingPresentation
 
   seo?: RankingSEO
+
+  categories?: RankingCategory[]
 
   data: RankingData
 
@@ -155,4 +159,45 @@ export interface SemanticRankingRuntime {
   ready?: boolean
 
   raw?: any
+
 }
+
+
+/* ============================================================================
+🔥 Category Group
+============================================================================ */
+
+export interface RankingCategoryGroup {
+
+  group_slug: string
+
+  group_name: string
+
+  presentation_name?: string
+
+  presentation_description?: string
+
+  icon?: string
+
+  color?: string
+
+  sort_order?: string
+
+}
+
+/* ============================================================================
+🔥 Category
+============================================================================ */
+
+export interface RankingCategory {
+
+  parent_group: string
+
+  presentation_name: string
+
+  group_count: number
+
+  groups: RankingCategoryGroup[]
+
+}
+
