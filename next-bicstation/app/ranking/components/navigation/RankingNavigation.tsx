@@ -21,11 +21,11 @@ import {
 🔥 Types
 ============================================================================ */
 
-import type {
+// import type {
 
-    RankingItem,
+//     RankingItem,
 
-} from '../../types/ranking'
+// } from '../../types/ranking'
 
 /* ============================================================================
 🔥 Styles
@@ -69,6 +69,20 @@ export default function RankingNavigation({
     onSelect,
 
 }: Props) {
+
+    console.table(
+
+        items.map(item => ({
+
+            slug: item.slug,
+
+            type: item.type,
+
+            parent_group: item.parent_group,
+
+        }))
+
+    )
 
     /* =========================================================================
     🔥 Runtime Groups

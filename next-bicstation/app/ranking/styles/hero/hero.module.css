@@ -1,12 +1,12 @@
-/* ============================================================================
-// FILE:
-// /app/ranking/styles/hero/hero.module.css
-// Copyright (c) 2024 Shin Corporation.
-// All rights reserved.
-============================================================================ */
+/* ============================================================================ */
+/* FILE:                                                                        */
+/* /app/ranking/styles/hero/hero.module.css                                     */
+/* Copyright (c) 2024 Shin Corporation.                                         */
+/* All rights reserved.                                                         */
+/* ============================================================================ */
 
 /* ============================================================================
-🔥 Hero
+🔥 Ranking Hero
 ============================================================================ */
 
 .rankingHero {
@@ -29,17 +29,21 @@
 
     background:
 
-        linear-gradient(90deg,
+        linear-gradient(
+
+            90deg,
 
             rgba(5, 10, 28, .94) 0%,
 
-            rgba(8, 18, 48, .82) 34%,
+            rgba(8, 18, 48, .84) 35%,
 
-            rgba(8, 18, 48, .36) 62%,
+            rgba(8, 18, 48, .38) 62%,
 
-            rgba(8, 18, 48, .05) 82%,
+            rgba(8, 18, 48, .08) 82%,
 
-            rgba(8, 18, 48, 0) 100%),
+            rgba(8, 18, 48, 0) 100%
+
+        ),
 
         url('/images/ranking/ranking-hero.webp');
 
@@ -54,7 +58,7 @@
 }
 
 /* ============================================================================
-🔥 Content
+🔥 Hero Content
 ============================================================================ */
 
 .rankingHeroContent {
@@ -65,12 +69,12 @@
 
     width: 100%;
 
-    max-width: 560px;
+    max-width: 580px;
 
 }
 
 /* ============================================================================
-🔥 Label
+🔥 Experience Label
 ============================================================================ */
 
 .rankingHeroLabel {
@@ -97,7 +101,7 @@
 
     text-transform: uppercase;
 
-    color: rgba(255, 255, 255, .95);
+    color: rgba(255,255,255,.96);
 
 }
 
@@ -109,13 +113,15 @@
 
     margin-top: 1.5rem;
 
-    font-size: 3.4rem;
+    font-size: 3.5rem;
 
     font-weight: 700;
 
-    line-height: 1.12;
+    line-height: 1.1;
 
     letter-spacing: -.03em;
+
+    text-wrap: balance;
 
 }
 
@@ -125,13 +131,13 @@
 
 .rankingHeroSubtitle {
 
-    margin-top: 1rem;
+    margin-top: 1.3rem;
 
-    font-size: 1.18rem;
+    font-size: 1.2rem;
 
     line-height: 1.8;
 
-    color: rgba(255, 255, 255, .95);
+    color: rgba(255,255,255,.96);
 
 }
 
@@ -141,101 +147,15 @@
 
 .rankingHeroDescription {
 
-    margin-top: 1.5rem;
+    margin-top: 1.6rem;
 
-    max-width: 520px;
+    max-width: 540px;
 
     font-size: 1rem;
 
     line-height: 1.9;
 
-    color: rgba(255, 255, 255, .78);
-
-}
-
-/* ============================================================================
-🔥 Statistics
-============================================================================ */
-
-.rankingHeroStats {
-
-    display: flex;
-
-    gap: 1rem;
-
-    flex-wrap: wrap;
-
-    margin-top: 2.5rem;
-
-}
-
-/* ============================================================================
-🔥 Stat Card
-============================================================================ */
-
-.rankingHeroStat {
-
-    min-width: 170px;
-
-    padding: 1rem 1.25rem;
-
-    border-radius: 20px;
-
-    border: 1px solid rgba(255, 255, 255, .08);
-
-    background: rgba(10, 18, 40, .46);
-
-    backdrop-filter: blur(14px);
-
-    transition:
-
-        transform .25s ease,
-
-        border-color .25s ease,
-
-        background .25s ease;
-
-}
-
-.rankingHeroStat:hover {
-
-    transform: translateY(-2px);
-
-    border-color: rgba(120, 170, 255, .28);
-
-    background: rgba(20, 32, 70, .56);
-
-}
-
-/* ============================================================================
-🔥 Stat Label
-============================================================================ */
-
-.rankingHeroStatLabel {
-
-    display: block;
-
-    font-size: .8rem;
-
-    color: rgba(255, 255, 255, .72);
-
-}
-
-/* ============================================================================
-🔥 Stat Value
-============================================================================ */
-
-.rankingHeroStatValue {
-
-    display: block;
-
-    margin-top: .55rem;
-
-    font-size: 1.85rem;
-
-    font-weight: 700;
-
-    color: #ffffff;
+    color: rgba(255,255,255,.80);
 
 }
 
@@ -243,11 +163,11 @@
 🔥 Tablet
 ============================================================================ */
 
-@media (max-width: 1024px) {
+@media (max-width:1024px) {
 
     .rankingHero {
 
-        min-height: 480px;
+        min-height: 470px;
 
         padding: 3rem;
 
@@ -263,7 +183,7 @@
 
     .rankingHeroTitle {
 
-        font-size: 2.8rem;
+        font-size: 2.9rem;
 
     }
 
@@ -273,7 +193,7 @@
 🔥 Mobile
 ============================================================================ */
 
-@media (max-width: 768px) {
+@media (max-width:768px) {
 
     .rankingHero {
 
@@ -299,19 +219,11 @@
 
     .rankingHeroDescription {
 
+        margin-top: 1.3rem;
+
         font-size: .95rem;
 
-    }
-
-    .rankingHeroStats {
-
-        flex-direction: column;
-
-    }
-
-    .rankingHeroStat {
-
-        width: 100%;
+        line-height: 1.8;
 
     }
 

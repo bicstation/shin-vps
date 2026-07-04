@@ -1,83 +1,114 @@
-#!/bin/bash
-# ============================================================================
+#!/usr/bin/env bash
+
+# =============================================================================
 # SHIN CORE LINX
-# Discover Experience V2
-# Experience Dictionary Skeleton Generator
-# ============================================================================
+# Ranking Experience V1
+# Directory Setup Script
+# =============================================================================
 
 set -e
 
-FILES=(
-  "usage-ai"
-  "usage-business"
-  "usage-budget"
-  "usage-creator"
-  "usage-gaming"
-  "usage-mobile"
+ROOT="/home/maya/shin-dev/shin-vps/next-bicstation/app/ranking"
 
-  # Monitor
-  "monitor-business"
-  "monitor-color"
-  "monitor-gaming"
-  "monitor-portable"
-  "monitor-ultrawide"
+echo ""
+echo "========================================================="
+echo " SHIN CORE LINX"
+echo " Ranking Experience V1"
+echo " Directory Setup"
+echo "========================================================="
+echo ""
 
-  # CPU
-  "cpu-ai"
-  "cpu-business"
-  "cpu-budget"
-  "cpu-gaming"
+# =============================================================================
+# Components
+# =============================================================================
 
-  # GPU
-  "gpu-ai"
-  "gpu-budget"
-  "gpu-creator"
-  "gpu-gaming"
+mkdir -p "$ROOT/components/common"
+mkdir -p "$ROOT/components/hero"
+mkdir -p "$ROOT/components/featured"
+mkdir -p "$ROOT/components/navigation"
+mkdir -p "$ROOT/components/sections"
+mkdir -p "$ROOT/components/cards"
+mkdir -p "$ROOT/components/footer"
 
-  # Memory
-  "memory-ddr4"
-  "memory-ddr5"
+# =============================================================================
+# Styles
+# =============================================================================
 
-  # Storage
-  "storage-hdd"
-  "storage-nvme"
-  "storage-ssd"
+mkdir -p "$ROOT/styles/common"
+mkdir -p "$ROOT/styles/hero"
+mkdir -p "$ROOT/styles/featured"
+mkdir -p "$ROOT/styles/navigation"
+mkdir -p "$ROOT/styles/sections"
+mkdir -p "$ROOT/styles/cards"
+mkdir -p "$ROOT/styles/footer"
 
-  # Notebook
-  "notebook-2in1"
-  "notebook-business"
-  "notebook-gaming"
-  "notebook-lightweight"
+# =============================================================================
+# Legacy
+# =============================================================================
 
-  # Desktop
-  "desktop-allinone"
-  "desktop-gaming"
-  "desktop-mini"
-  "desktop-tower"
+mkdir -p "$ROOT/legacy/components"
+mkdir -p "$ROOT/legacy/styles"
+mkdir -p "$ROOT/legacy/page"
 
-  # Keyboard
-  "keyboard-gaming"
-  "keyboard-wireless"
+# =============================================================================
+# Safe Copy (Never overwrite)
+# =============================================================================
 
-  # Mouse
-  "mouse-gaming"
-  "mouse-wireless"
+echo ""
+echo "Copying current Experience components..."
 
-  # Others
-  "speaker-desktop"
-  "webcam-streaming"
-)
+cp -n "$ROOT/components/Breadcrumb.tsx" \
+      "$ROOT/components/common/Breadcrumb.tsx" 2>/dev/null || true
 
-for file in "${FILES[@]}"; do
+cp -n "$ROOT/components/EmptyRanking.tsx" \
+      "$ROOT/components/common/EmptyRanking.tsx" 2>/dev/null || true
 
-  if [ ! -f "${file}.ts" ]; then
-    touch "${file}.ts"
-    echo "Created ${file}.ts"
-  else
-    echo "Skip ${file}.ts"
-  fi
+cp -n "$ROOT/components/hero/RankingHero.tsx" \
+      "$ROOT/components/hero/RankingHero.tsx" 2>/dev/null || true
 
-done
+cp -n "$ROOT/components/featured/FeaturedOverallBanner.tsx" \
+      "$ROOT/components/featured/FeaturedOverallBanner.tsx" 2>/dev/null || true
 
-echo
-echo "Done."
+cp -n "$ROOT/components/navigation/RankingNavigation.tsx" \
+      "$ROOT/components/navigation/RankingNavigation.tsx" 2>/dev/null || true
+
+cp -n "$ROOT/components/sections/RankingGroupSection.tsx" \
+      "$ROOT/components/sections/RankingGroupSection.tsx" 2>/dev/null || true
+
+cp -n "$ROOT/components/RankingCard.tsx" \
+      "$ROOT/components/cards/RankingCard.tsx" 2>/dev/null || true
+
+cp -n "$ROOT/components/RankingCardGrid.tsx" \
+      "$ROOT/components/cards/RankingCardGrid.tsx" 2>/dev/null || true
+
+# =============================================================================
+# CSS
+# =============================================================================
+
+echo ""
+echo "Copying styles..."
+
+cp -n "$ROOT/styles/hero/hero.module.css" \
+      "$ROOT/styles/hero/hero.module.css" 2>/dev/null || true
+
+cp -n "$ROOT/styles/featured/featured.module.css" \
+      "$ROOT/styles/featured/featured.module.css" 2>/dev/null || true
+
+cp -n "$ROOT/styles/navigation/navigation.module.css" \
+      "$ROOT/styles/navigation/navigation.module.css" 2>/dev/null || true
+
+cp -n "$ROOT/styles/sections/group-section.module.css" \
+      "$ROOT/styles/sections/group-section.module.css" 2>/dev/null || true
+
+# =============================================================================
+# Complete
+# =============================================================================
+
+echo ""
+echo "========================================================="
+echo " Ranking Experience V1"
+echo " Directory setup completed successfully."
+echo "========================================================="
+echo ""
+
+tree "$ROOT"

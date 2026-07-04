@@ -1,0 +1,162 @@
+/* ============================================================================ */
+/* FILE:                                                                        */
+/* /app/ranking/styles/featured/featured-overall.module.css                     */
+/* Copyright (c) 2024 Shin Corporation.                                         */
+/* All rights reserved.                                                         */
+/* ============================================================================ */
+
+/* ============================================================================
+🔥 Featured Overall Experience
+============================================================================ */
+
+.featuredOverall {
+
+    position: relative;
+
+    display: grid;
+
+    grid-template-columns: 520px 1fr;
+
+    gap: 3rem;
+
+    align-items: center;
+
+    margin-bottom: 3rem;
+
+    padding: 3rem 3.5rem;
+
+    overflow: hidden;
+
+    border-radius: 28px;
+
+    border: 1px solid rgba(255, 210, 120, .40);
+
+    background:
+
+        linear-gradient(
+
+            90deg,
+
+            rgba(8,12,28,.96) 0%,
+
+            rgba(12,18,42,.84) 36%,
+
+            rgba(12,18,42,.28) 66%,
+
+            rgba(12,18,42,0) 100%
+
+        ),
+
+        url('/images/ranking/ranking-featured-overall.webp');
+
+    background-size: cover;
+
+    background-position: center;
+
+    background-repeat: no-repeat;
+
+    box-shadow:
+
+        inset 0 1px 0 rgba(255,255,255,.05),
+
+        0 0 0 1px rgba(255,210,120,.08),
+
+        0 0 32px rgba(255,190,60,.12),
+
+        0 24px 60px rgba(0,0,0,.45);
+
+}
+
+/* ============================================================================
+🔥 Gold Highlight
+============================================================================ */
+
+.featuredOverall::before {
+
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    border-radius: inherit;
+
+    background:
+
+        linear-gradient(
+
+            180deg,
+
+            rgba(255,220,140,.16),
+
+            rgba(255,220,140,.05) 22%,
+
+            transparent 48%
+
+        );
+
+    pointer-events: none;
+
+}
+
+/* ============================================================================
+🔥 Gold Frame
+============================================================================ */
+
+.featuredOverall::after {
+
+    content: "";
+
+    position: absolute;
+
+    inset: -1px;
+
+    border-radius: inherit;
+
+    box-shadow:
+
+        inset 0 0 0 1px rgba(255,220,140,.10),
+
+        0 0 40px rgba(255,190,60,.12);
+
+    pointer-events: none;
+
+}
+
+/* ============================================================================
+🔥 Tablet
+============================================================================ */
+
+@media (max-width:1024px) {
+
+    .featuredOverall {
+
+        grid-template-columns: 1fr;
+
+        gap: 2.5rem;
+
+        padding: 2.5rem;
+
+    }
+
+}
+
+/* ============================================================================
+🔥 Mobile
+============================================================================ */
+
+@media (max-width:768px) {
+
+    .featuredOverall {
+
+        gap: 2rem;
+
+        padding: 2rem;
+
+        border-radius: 22px;
+
+        background-position: center right;
+
+    }
+
+}

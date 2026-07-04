@@ -1,18 +1,46 @@
 // ============================================================================
 // FILE:
-// /app/ranking/components/sections/RankingGroupSection.tsx
+// /app/ranking/components/featured/FeaturedOverall.tsx
 // Copyright (c) 2024 Shin Corporation.
 // All rights reserved.
 // ============================================================================
 
 'use client'
 
+/**
+ * ============================================================================
+ * SHIN CORE LINX
+ * Featured Overall Experience
+ * ============================================================================
+ *
+ * Responsibilities
+ *
+ * - Compose Featured Overall Experience
+ * - Pass Runtime to child components
+ *
+ * This component SHALL NOT:
+ *
+ * - fetch Runtime
+ * - modify Runtime
+ * - calculate rankings
+ * - perform sorting
+ *
+ * Runtime Authority:
+ *
+ * useRanking()
+ *
+ * ============================================================================
+ */
+
 /* ============================================================================
 🔥 Components
 ============================================================================ */
 
-import RankingCardGrid
-    from '../RankingCardGrid'
+import FeaturedHero
+    from './FeaturedHero'
+
+import FeaturedRankingGrid
+    from './FeaturedRankingGrid'
 
 /* ============================================================================
 🔥 Types
@@ -20,16 +48,16 @@ import RankingCardGrid
 
 import type {
 
-    NavigationRuntimeItem,
+    SemanticRankingRuntime,
 
-} from '@/shared/lib/api/django/pc/navigation/contracts'
+} from '@/shared/lib/api/django/pc/ranking/contracts'
 
 /* ============================================================================
 🔥 Styles
 ============================================================================ */
 
 import styles
-    from '../../styles/sections/group-section.module.css'
+    from '../../styles/featured/featured-overall.module.css'
 
 /* ============================================================================
 🔥 Props
@@ -37,45 +65,27 @@ import styles
 
 type Props = {
 
-    title: string
-
-    description?: string
-
-    items: NavigationRuntimeItem[]
-
-    actionLabel?: string
+    runtime: SemanticRankingRuntime
 
 }
 
 /* ============================================================================
-🔥 Ranking Group Section
+🔥 Featured Overall Experience
 ============================================================================ */
 
-export default function RankingGroupSection({
+export default function FeaturedOverall({
 
-    title,
-
-    description,
-
-    items,
-
-    actionLabel = 'すべて見る',
+    runtime,
 
 }: Props) {
 
     /* =========================================================================
-    🔥 Empty
+    🔥 Products
     ========================================================================= */
 
-    if (
+    const products =
 
-        items.length === 0
-
-    ) {
-
-        return null
-
-    }
+        runtime.data.products ?? []
 
     /* =========================================================================
     🔥 Render
@@ -84,75 +94,22 @@ export default function RankingGroupSection({
     return (
 
         <section
-            className={
-                styles.section
-            }
+            className={styles.featuredOverall}
         >
 
             {/* ==========================================================
-            Header
+            Featured Hero
             ========================================================== */}
 
-            <header
-                className={
-                    styles.header
-                }
-            >
-
-                <div>
-
-                    <h2
-                        className={
-                            styles.title
-                        }
-                    >
-
-                        {title}
-
-                    </h2>
-
-                    {
-
-                        description && (
-
-                            <p
-                                className={
-                                    styles.description
-                                }
-                            >
-
-                                {description}
-
-                            </p>
-
-                        )
-
-                    }
-
-                </div>
-
-                <button
-                    type="button"
-                    className={
-                        styles.more
-                    }
-                >
-
-                    {actionLabel}
-
-                    →
-
-                </button>
-
-            </header>
+            <FeaturedHero />
 
             {/* ==========================================================
-            Ranking Cards
+            Featured Top 3
             ========================================================== */}
 
-            <RankingCardGrid
+            <FeaturedRankingGrid
 
-                items={items}
+                items={products}
 
             />
 

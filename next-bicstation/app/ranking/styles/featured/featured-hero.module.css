@@ -1,0 +1,220 @@
+/* ============================================================================ */
+/* FILE:                                                                        */
+/* /app/ranking/styles/featured/featured-hero.module.css                        */
+/* Copyright (c) 2024 Shin Corporation.                                         */
+/* All rights reserved.                                                         */
+/* ============================================================================ */
+
+/* ============================================================================
+🔥 Featured Hero
+============================================================================ */
+
+.hero {
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+
+    align-items: flex-start;
+
+    width: 100%;
+
+    max-width: 520px;
+
+}
+
+/* ============================================================================
+🔥 Label
+============================================================================ */
+
+.label {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    padding: .5rem 1rem;
+
+    border-radius: 999px;
+
+    border: 1px solid rgba(255, 220, 120, .30);
+
+    background: rgba(255, 190, 60, .14);
+
+    backdrop-filter: blur(12px);
+
+    font-size: .78rem;
+
+    font-weight: 700;
+
+    letter-spacing: .18em;
+
+    text-transform: uppercase;
+
+    color: #FFD56A;
+
+}
+
+/* ============================================================================
+🔥 Title
+============================================================================ */
+
+.title {
+
+    margin-top: 1.4rem;
+
+    font-size: 3rem;
+
+    font-weight: 700;
+
+    line-height: 1.12;
+
+    letter-spacing: -.03em;
+
+    color: #ffffff;
+
+    text-wrap: balance;
+
+}
+
+/* ============================================================================
+🔥 Description
+============================================================================ */
+
+.description {
+
+    margin-top: 1.3rem;
+
+    max-width: 480px;
+
+    font-size: 1rem;
+
+    line-height: 1.9;
+
+    color: rgba(255,255,255,.82);
+
+}
+
+/* ============================================================================
+🔥 Button
+============================================================================ */
+
+.button {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    margin-top: 2rem;
+
+    padding: .95rem 1.8rem;
+
+    border-radius: 999px;
+
+    border: 1px solid rgba(255,220,120,.24);
+
+    background:
+
+        linear-gradient(
+
+            135deg,
+
+            #FFE08A,
+
+            #FFC44D,
+
+            #FFB938
+
+        );
+
+    color: #161616;
+
+    font-size: .95rem;
+
+    font-weight: 700;
+
+    text-decoration: none;
+
+    transition:
+
+        transform .25s ease,
+
+        box-shadow .25s ease,
+
+        filter .25s ease;
+
+    box-shadow:
+
+        0 12px 30px rgba(255,185,60,.22);
+
+}
+
+.button:hover {
+
+    transform: translateY(-2px);
+
+    filter: brightness(1.04);
+
+    box-shadow:
+
+        0 18px 45px rgba(255,185,60,.36);
+
+}
+
+/* ============================================================================
+🔥 Tablet
+============================================================================ */
+
+@media (max-width:1024px) {
+
+    .hero {
+
+        max-width: 100%;
+
+    }
+
+    .title {
+
+        font-size: 2.5rem;
+
+    }
+
+}
+
+/* ============================================================================
+🔥 Mobile
+============================================================================ */
+
+@media (max-width:768px) {
+
+    .hero {
+
+        align-items: flex-start;
+
+    }
+
+    .title {
+
+        font-size: 2rem;
+
+    }
+
+    .description {
+
+        font-size: .95rem;
+
+        line-height: 1.8;
+
+    }
+
+    .button {
+
+        width: 100%;
+
+    }
+
+}

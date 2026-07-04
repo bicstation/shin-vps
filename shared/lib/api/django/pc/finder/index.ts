@@ -1,72 +1,135 @@
 // ============================================================================
-// Finder Public API Entry Point V2
+// FILE:
+// /shared/lib/api/django/pc/finder/index.ts
+// Copyright (c) 2026 Shin Corporation.
+// All rights reserved.
 // ============================================================================
 
-import {
-
-    fetchFinderRuntime
-
-} from './gateway'
-
-import {
-
-    normalizeFinder
-
-} from './normalize'
-
-import {
-
-    projectFinderRuntime
-
-} from './projection'
-
-import type {
-
-    FinderRuntimeContract,
-
-    FinderRequest
-
-} from './contracts'
-
-/* ============================================================================
-🔥 Public API
-============================================================================ */
-
-export async function getFinder(
-
-    request: FinderRequest
-
-) {
-
-    /* --------------------------------
-    1. FETCH (Gateway)
-    -------------------------------- */
-    const raw = await fetchFinderRuntime(request)
-
-    /* --------------------------------
-    2. NORMALIZE
-    -------------------------------- */
-    const runtime: FinderRuntimeContract =
-        normalizeFinder(raw)
-
-    /* --------------------------------
-    3. PROJECT (UI)
-    -------------------------------- */
-    const view = projectFinderRuntime(runtime)
-
-    /* --------------------------------
-    4. RETURN
-    -------------------------------- */
-    return {
-
-        raw,        // Backend Reality
-        runtime,    // Safe Runtime V2
-        view        // UI Ready
-    }
-}
+/**
+ * ============================================================================
+ * SHIN CORE LINX
+ * Finder Runtime Layer
+ * ============================================================================
+ *
+ * PURPOSE
+ *
+ * Finder Runtime Exposure
+ *
+ * Backend
+ *      ↓
+ * Gateway
+ *      ↓
+ * Normalize
+ *      ↓
+ * Composition
+ *      ↓
+ * Projection
+ *      ↓
+ * Frontend
+ *
+ * IMPORTANT
+ *
+ * Backend remains:
+ *
+ * Semantic Authority
+ *
+ * Adapter remains:
+ *
+ * Runtime Authority
+ *
+ * Frontend remains:
+ *
+ * Experience Authority
+ *
+ * Adapter SHALL
+ *
+ * ✓ Transport
+ * ✓ Normalize
+ * ✓ Composition
+ * ✓ Projection
+ * ✓ Observe
+ *
+ * ONLY
+ *
+ * ============================================================================
+ */
 
 /* ============================================================================
-🔥 Default Export
+🔥 Contracts
 ============================================================================ */
 
-export default getFinder
+export * from './contracts'
+
+/* ============================================================================
+🔥 Runtime Gateway
+============================================================================ */
+
+export * from './gateway'
+
+/* ============================================================================
+🔥 Runtime Normalize
+============================================================================ */
+
+export * from './normalize'
+
+/* ============================================================================
+🔥 Runtime Composition
+============================================================================ */
+
+export * from './composition'
+
+/* ============================================================================
+🔥 Runtime Projection
+============================================================================ */
+
+export * from './projection'
+
+/* ============================================================================
+🔥 Runtime Facade
+============================================================================ */
+
+export * from './runtime'
+
+/* ============================================================================
+🔥 Runtime Observatory
+============================================================================ */
+
+console.log(
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+)
+
+console.log(
+    '🔥 FINDER RUNTIME INITIALIZED'
+)
+
+console.log({
+
+    runtime:
+        'finder-runtime-layer',
+
+    authority:
+        'backend',
+
+    transport:
+        true,
+
+    normalize:
+        true,
+
+    composition:
+        true,
+
+    projection:
+        true,
+
+    observability:
+        true,
+
+    continuity:
+        'healthy',
+
+})
+
+console.log(
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+)

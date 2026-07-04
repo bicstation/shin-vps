@@ -7,15 +7,18 @@
 
 'use client'
 
+/* ============================================================================
+🔥 React
+============================================================================ */
+
 import {
 
-    useMemo,
     useState,
 
 } from 'react'
 
 /* ============================================================================
-🔥 Hook
+🔥 Runtime
 ============================================================================ */
 
 import useRanking
@@ -26,31 +29,22 @@ import useRanking
 ============================================================================ */
 
 import Breadcrumb
-    from './components/Breadcrumb'
+    from './components/common/Breadcrumb'
+
+import EmptyRanking
+    from './components/common/EmptyRanking'
 
 import RankingHero
     from './components/hero/RankingHero'
 
-import FeaturedOverallBanner
-    from './components/featured/FeaturedOverallBanner'
-
-// import RankingTabs
-//     from './components/RankingTabs'
+import FeaturedOverall
+    from './components/featured/FeaturedOverall'
 
 import RankingNavigation
     from './components/navigation/RankingNavigation'
 
 import RankingGroupSection
     from './components/sections/RankingGroupSection'
-
-import RankingSummary
-    from './components/RankingSummary'
-
-import RankingCardGrid
-    from './components/RankingCardGrid'
-
-import EmptyRanking
-    from './components/EmptyRanking'
 
 /* ============================================================================
 🔥 Styles
@@ -71,7 +65,9 @@ export default function RankingPage() {
 
     const {
 
-        runtime,
+        navigationRuntime,
+
+        featuredRuntime,
 
         loading,
 
@@ -85,69 +81,69 @@ export default function RankingPage() {
 
     const [
 
-        activeType,
+        activeGroup,
 
-        setActiveType,
+        setActiveGroup,
 
     ] = useState('all')
 
     /* =========================================================================
-    🔥 Runtime
+    🔥 Navigation
     ========================================================================= */
 
     const items =
 
-        runtime?.intents ?? []
+        navigationRuntime?.intents ?? []
 
     /* =========================================================================
-    🔥 Filter
+    🔥 Active Items
     ========================================================================= */
 
     const filteredItems =
 
-        useMemo(() => {
+        activeGroup === 'all'
 
-            if (
+            ? items
 
-                activeType === 'all'
-
-            ) {
-
-                return items
-
-            }
-
-            return items.filter(
+            : items.filter(
 
                 item =>
 
-                    item.type === activeType
+                    item.parent_group === activeGroup
 
             )
 
-        }, [
+    /* =========================================================================
+    🔥 Section Presentation
+    ※ Temporary
+    ※ Later supplied by Experience Dictionary
+    ========================================================================= */
 
-            items,
+    const sectionTitle =
 
-            activeType,
+        activeGroup === 'all'
 
-        ])
+            ? 'すべてのランキング'
+
+            : 'ランキング'
+
+    const sectionDescription =
+
+        activeGroup === 'all'
+
+            ? '公開中のランキング一覧です。'
+
+            : '選択したカテゴリのランキングです。'
 
     /* =========================================================================
     🔥 Loading
     ========================================================================= */
 
-    if (
-
-        loading
-
-    ) {
+    if (loading) {
 
         return (
 
-            <main
-                className={styles.ranking}
-            >
+            <main className={styles.ranking}>
 
                 Loading...
 
@@ -165,15 +161,15 @@ export default function RankingPage() {
 
         error ||
 
-        !runtime
+        !navigationRuntime ||
+
+        !featuredRuntime
 
     ) {
 
         return (
 
-            <main
-                className={styles.ranking}
-            >
+            <main className={styles.ranking}>
 
                 Ranking Runtime Error
 
@@ -184,88 +180,48 @@ export default function RankingPage() {
     }
 
     /* =========================================================================
-    🔥 Runtime
-    ========================================================================= */
-
-    const hasItems =
-
-        filteredItems.length > 0
-
-    /* =========================================================================
     🔥 Render
     ========================================================================= */
 
     return (
 
-        <main
-            className={styles.ranking}
-        >
-
-            {/* ==========================================================
-            Breadcrumb
-            ========================================================== */}
+        <main className={styles.ranking}>
 
             <Breadcrumb />
 
-            {/* ==========================================================
-            Hero
-            Ranking Experience Portal
-            ========================================================== */}
-
             <RankingHero
 
-                runtime={runtime}
+                runtime={navigationRuntime}
 
             />
 
-            {/* ==========================================================
-            Featured Overall Ranking
-            Canonical Slug : all
-            ========================================================== */}
+            <FeaturedOverall
 
-            <FeaturedOverallBanner
-
-                runtime={runtime}
+                runtime={featuredRuntime}
 
             />
-
-            {/* ==========================================================
-            Semantic Group Navigation
-            Backend parent_group
-            ========================================================== */}
 
             <RankingNavigation
 
                 items={items}
 
-                activeGroup={activeType}
+                activeGroup={activeGroup}
 
-                onSelect={setActiveType}
-
-            />
-
-            {/* ==========================================================
-            Summary
-            ========================================================== */}
-
-            <RankingSummary
-
-                items={filteredItems}
+                onSelect={setActiveGroup}
 
             />
-
-            {/* ==========================================================
-            Ranking Cards
-            group_slug
-            ========================================================== */}
 
             {
 
-                hasItems
+                filteredItems.length > 0
 
                     ? (
 
-                        <RankingCardGrid
+                        <RankingGroupSection
+
+                            title={sectionTitle}
+
+                            description={sectionDescription}
 
                             items={filteredItems}
 

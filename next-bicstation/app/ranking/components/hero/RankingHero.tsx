@@ -45,16 +45,12 @@ export default function RankingHero({
 }: Props) {
 
     /* =========================================================================
-    🔥 Runtime
-    ========================================================================= */
-
-    const totalRankings =
-
-        runtime.intents.length
-
-    /* =========================================================================
     🔥 Presentation
     ========================================================================= */
+
+    const label =
+
+        'RANKING EXPERIENCE'
 
     const title =
 
@@ -66,7 +62,7 @@ export default function RankingHero({
 
     const description =
 
-        '総合ランキングから用途別・デバイス別・パーツ別ランキングまで、目的に応じた比較をサポートします。'
+        '公開中のランキングを用途別・デバイス別・CPU・GPU・モニターなどのカテゴリから比較し、自分に合った一台をスムーズに見つけられます。'
 
     /* =========================================================================
     🔥 Render
@@ -87,18 +83,18 @@ export default function RankingHero({
             >
 
                 {/* ==========================================================
-                Label
+                Experience Label
                 ========================================================== */}
 
-                <div
+                <span
                     className={
                         styles.rankingHeroLabel
                     }
                 >
 
-                    RANKING EXPERIENCE
+                    {label}
 
-                </div>
+                </span>
 
                 {/* ==========================================================
                 Title
@@ -141,74 +137,6 @@ export default function RankingHero({
                     {description}
 
                 </p>
-
-                {/* ==========================================================
-                Statistics
-                ========================================================== */}
-
-                <div
-                    className={
-                        styles.rankingHeroStats
-                    }
-                >
-
-                    <div
-                        className={
-                            styles.rankingHeroStat
-                        }
-                    >
-
-                        <span
-                            className={
-                                styles.rankingHeroStatLabel
-                            }
-                        >
-
-                            公開ランキング
-
-                        </span>
-
-                        <strong
-                            className={
-                                styles.rankingHeroStatValue
-                            }
-                        >
-
-                            {totalRankings}
-
-                        </strong>
-
-                    </div>
-
-                    <div
-                        className={
-                            styles.rankingHeroStat
-                        }
-                    >
-
-                        <span
-                            className={
-                                styles.rankingHeroStatLabel
-                            }
-                        >
-
-                            総合ランキング
-
-                        </span>
-
-                        <strong
-                            className={
-                                styles.rankingHeroStatValue
-                            }
-                        >
-
-                            ALL
-
-                        </strong>
-
-                    </div>
-
-                </div>
 
             </div>
 

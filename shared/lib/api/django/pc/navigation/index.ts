@@ -13,17 +13,19 @@
  *
  * PURPOSE
  *
- * Navigation Runtime Exposure
+ * Canonical Navigation Runtime Exposure
  *
  * Backend
- * ↓
- * Runtime
- * ↓
+ *      ↓
+ * Gateway
+ *      ↓
+ * Normalize
+ *      ↓
+ * Composition
+ *      ↓
  * Projection
- * ↓
- * Frontend
- *
- * IMPORTANT
+ *      ↓
+ * Frontend Experience
  *
  * Backend remains:
  *
@@ -31,20 +33,11 @@
  *
  * Adapter remains:
  *
- * Projection Authority
+ * Runtime Authority
  *
  * Frontend remains:
  *
- * Rendering Authority
- *
- * Adapter SHALL:
- *
- * Transport
- * Normalize
- * Project
- * Observe
- *
- * ONLY
+ * Experience Authority
  *
  * ============================================================================
  */
@@ -66,6 +59,12 @@ export * from './navigation'
 ============================================================================ */
 
 export * from './normalize'
+
+/* ============================================================================
+🔥 Runtime Composition
+============================================================================ */
+
+export * from './composition'
 
 /* ============================================================================
 🔥 Runtime Projection
@@ -97,6 +96,9 @@ console.log({
     true,
 
   normalize:
+    true,
+
+  composition:
     true,
 
   projection:

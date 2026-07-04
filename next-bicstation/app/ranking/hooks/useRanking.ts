@@ -7,6 +7,28 @@
 
 'use client'
 
+/**
+ * ============================================================================
+ * SHIN CORE LINX
+ * Ranking Experience Runtime Gateway
+ * ============================================================================
+ *
+ * Responsibilities
+ *
+ * - Load Navigation Runtime
+ * - Load Featured Overall Runtime
+ *
+ * This Hook SHALL NOT:
+ *
+ * - transform Runtime
+ * - generate semantic meaning
+ * - calculate rankings
+ *
+ * Backend remains the Semantic Authority.
+ *
+ * ============================================================================
+ */
+
 /* ============================================================================
 🔥 React
 ============================================================================ */
@@ -19,7 +41,7 @@ import {
 } from 'react'
 
 /* ============================================================================
-🔥 Runtime
+🔥 Navigation Runtime
 ============================================================================ */
 
 import {
@@ -28,15 +50,27 @@ import {
 
 } from '@/shared/lib/api/django/pc/navigation'
 
+import type {
+
+    NavigationRuntime,
+
+} from '@/shared/lib/api/django/pc/navigation/contracts'
+
 /* ============================================================================
-🔥 Types
+🔥 Ranking Runtime
 ============================================================================ */
+
+import {
+
+    fetchRanking,
+
+} from '@/shared/lib/api/django/pc/ranking'
 
 import type {
 
-    RankingRuntime,
+    SemanticRankingRuntime,
 
-} from '../types/ranking'
+} from '@/shared/lib/api/django/pc/ranking/contracts'
 
 /* ============================================================================
 🔥 Hook
@@ -45,20 +79,36 @@ import type {
 export default function useRanking() {
 
     /* =========================================================================
-    🔥 State
+    🔥 Runtime
     ========================================================================= */
 
     const [
 
-        runtime,
+        navigationRuntime,
 
-        setRuntime,
+        setNavigationRuntime,
 
-    ] = useState<RankingRuntime | null>(
+    ] = useState<NavigationRuntime | null>(
 
         null
 
     )
+
+    const [
+
+        featuredRuntime,
+
+        setFeaturedRuntime,
+
+    ] = useState<SemanticRankingRuntime | null>(
+
+        null
+
+    )
+
+    /* =========================================================================
+    🔥 State
+    ========================================================================= */
 
     const [
 
@@ -88,45 +138,53 @@ export default function useRanking() {
 
         async function loadRuntime() {
 
-            setLoading(true)
-
-            setError(null)
-
             try {
 
-                const data =
+                const [
 
-                    await fetchNavigationRuntime()
+                    navigationRuntime,
 
-                console.log(
+                    featuredRuntime,
 
-                    '🔥 RANKING RUNTIME',
+                ] = await Promise.all([
 
-                    data
+                    fetchNavigationRuntime(),
+
+                    fetchRanking('all'),
+
+                ])
+
+                setNavigationRuntime(
+
+                    navigationRuntime
 
                 )
 
-                setRuntime(
+                setFeaturedRuntime(
 
-                    data
+                    featuredRuntime
 
                 )
 
             }
 
-            catch (err) {
+            catch (
+
+                error
+
+            ) {
 
                 console.error(
 
-                    'RANKING RUNTIME ERROR',
+                    'Ranking Runtime Error',
 
-                    err
+                    error
 
                 )
 
                 setError(
 
-                    err as Error
+                    error as Error
 
                 )
 
@@ -150,7 +208,9 @@ export default function useRanking() {
 
     return {
 
-        runtime,
+        navigationRuntime,
+
+        featuredRuntime,
 
         loading,
 

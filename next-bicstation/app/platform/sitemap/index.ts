@@ -1,6 +1,6 @@
 // ============================================================================
 // FILE:
-// /app/ranking/types/ranking.ts
+// /shared/lib/platform/sitemap/index.ts
 // Copyright (c) 2024 Shin Corporation.
 // All rights reserved.
 // ============================================================================
@@ -8,45 +8,43 @@
 /**
  * ============================================================================
  * SHIN CORE LINX
- * Ranking Experience V2
+ * Platform Runtime
+ * Sitemap
  * ============================================================================
  *
- * Frontend Experience Types
- *
- * Backend
- * ↓
- * Adapter
- * ↓
- * Frontend
- *
- * Frontend SHALL consume the Navigation Runtime directly.
+ * Public entry point for the Sitemap Platform Runtime.
  *
  * ============================================================================
  */
 
 /* ============================================================================
-🔥 Navigation Runtime
+🔥 Runtime
 ============================================================================ */
 
-import type {
-
-    NavigationRuntime,
-    NavigationRuntimeItem,
-
-} from '@/shared/lib/api/django/pc/navigation/contracts'
+export {
+  generateSitemap,
+} from './runtime'
 
 /* ============================================================================
-🔥 Ranking Runtime
+🔥 Generator
 ============================================================================ */
 
-export type RankingRuntime =
-
-    NavigationRuntime
+export {
+  generateStaticUrls,
+  generateDiscoverUrls,
+  generateRankingUrls,
+  generateProductUrls,
+  deduplicateUrls,
+} from './generator'
 
 /* ============================================================================
-🔥 Ranking Item
+🔥 Constants
 ============================================================================ */
 
-export type RankingItem =
-
-    NavigationRuntimeItem
+export {
+  BASE_URL,
+  STATIC_ROUTES,
+  ENABLE_RANKING_DETAIL,
+  PRIORITY,
+  CHANGE_FREQUENCY,
+} from './constants'

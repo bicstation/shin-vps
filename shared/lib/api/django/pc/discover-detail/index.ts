@@ -1,22 +1,33 @@
 // ============================================================================
 // FILE:
 // /shared/lib/api/django/pc/discover-detail/index.ts
-// Copyright (c) 2024 Shin Corporation.
+// Copyright (c) 2026 Shin Corporation.
 // All rights reserved.
 // ============================================================================
 
 /**
  * ============================================================================
  * SHIN CORE LINX
- * Discover Detail Adapter
+ * Discover Detail Runtime Layer
  * ============================================================================
  *
- * Responsibilities
+ * PURPOSE
  *
- * - Runtime Contract
- * - Runtime Gateway
- * - Runtime Normalize
- * - UI Projection
+ * Discover Detail Runtime Exposure
+ *
+ * Backend
+ *      ↓
+ * Gateway
+ *      ↓
+ * Normalize
+ *      ↓
+ * Composition
+ *      ↓
+ * Projection
+ *      ↓
+ * Frontend
+ *
+ * IMPORTANT
  *
  * Backend remains:
  *
@@ -24,7 +35,21 @@
  *
  * Adapter remains:
  *
- * Projection Authority
+ * Runtime Authority
+ *
+ * Frontend remains:
+ *
+ * Experience Authority
+ *
+ * Adapter SHALL
+ *
+ * ✓ Transport
+ * ✓ Normalize
+ * ✓ Composition
+ * ✓ Projection
+ * ✓ Observe
+ *
+ * ONLY
  *
  * ============================================================================
  */
@@ -36,41 +61,75 @@
 export * from './contracts'
 
 /* ============================================================================
-🔥 Gateway
+🔥 Runtime Gateway
 ============================================================================ */
 
 export * from './gateway'
 
 /* ============================================================================
-🔥 Normalize
+🔥 Runtime Normalize
 ============================================================================ */
 
 export * from './normalize'
 
 /* ============================================================================
-🔥 Projection
+🔥 Runtime Composition
+============================================================================ */
+
+export * from './composition'
+
+/* ============================================================================
+🔥 Runtime Projection
 ============================================================================ */
 
 export * from './projection'
 
 /* ============================================================================
-🔥 Legacy Compatibility
+🔥 Runtime Facade
 ============================================================================ */
 
-export {
-
-    fetchDiscoverDetailRuntime as fetchDiscoverDetail,
-
-    getDiscoverDetail,
-
-} from './gateway'
+export * from './runtime'
 
 /* ============================================================================
-🔥 Default Export
+🔥 Runtime Observatory
 ============================================================================ */
 
-export {
+console.log(
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+)
 
-    default,
+console.log(
+    '🔥 DISCOVER DETAIL RUNTIME INITIALIZED'
+)
 
-} from './gateway'
+console.log({
+
+    runtime:
+        'discover-detail-runtime-layer',
+
+    authority:
+        'backend',
+
+    transport:
+        true,
+
+    normalize:
+        true,
+
+    composition:
+        true,
+
+    projection:
+        true,
+
+    observability:
+        true,
+
+    continuity:
+        'healthy',
+
+})
+
+console.log(
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+)

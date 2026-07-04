@@ -1,109 +1,210 @@
 // ============================================================================
-// Finder Projection V2
+// FILE:
+// /shared/lib/api/django/pc/finder/projection.ts
+// Copyright (c) 2026 Shin Corporation.
+// All rights reserved.
 // ============================================================================
 
+/**
+ * ============================================================================
+ * SHIN CORE LINX
+ * Finder Runtime Projection
+ * ============================================================================
+ *
+ * Responsibilities
+ *
+ * - Runtime Projection
+ * - UI Projection
+ *
+ * NOT
+ *
+ * - Runtime Fetch
+ * - Runtime Normalize
+ * - Runtime Composition
+ * - Semantic Authority
+ *
+ * Backend remains:
+ *
+ * Semantic Authority
+ *
+ * Adapter remains:
+ *
+ * Projection Authority
+ *
+ * ============================================================================
+ */
+
 import type {
+
     FinderRuntimeContract,
-    FinderProductContract
+    FinderProductContract,
+
 } from './contracts'
 
 /* ============================================================================
-🔥 Projection Entry
+🔥 Projected Runtime
 ============================================================================ */
 
-export interface FinderProjectedRuntime {
+export interface ProjectedFinderRuntime {
 
     header: {
+
         title: string
+
         subtitle: string
+
         description: string
+
     }
 
     stats: {
+
         result_count: number
+
         group_count: number
+
         has_result: boolean
+
     }
 
     filters: {
+
         groups: string[]
+
         max_price: number | null
+
     }
 
     products: ProjectedProduct[]
+
 }
 
 /* ============================================================================
-🔥 Projected Product (UI専用)
+🔥 Projected Product
 ============================================================================ */
 
 export interface ProjectedProduct {
 
     id: number
+
     name: string
+
     maker: string
+
     price: number
+
     image: string
 
     badges: string[]
+
     tags: string[]
 
     score: number
 
     highlight?: {
+
         primary?: string
+
         secondary?: string
+
     }
 
     ui_state: {
+
         emphasis: 'high' | 'medium' | 'low'
+
         variant: 'ai' | 'gaming' | 'business' | 'creator' | 'general'
+
     }
+
 }
 
 /* ============================================================================
-🔥 Main Projection
+🔥 Projection
 ============================================================================ */
 
 export function projectFinderRuntime(
-    runtime: FinderRuntimeContract
-): FinderProjectedRuntime {
 
-    const products = runtime.data?.products ?? []
+    runtime: FinderRuntimeContract
+
+): ProjectedFinderRuntime {
+
+    const products =
+
+        runtime.data?.products ?? []
 
     return {
 
-        /* =========================
-        HEADER
-        ========================= */
+        /* --------------------------------------------------------------------
+        Header
+        -------------------------------------------------------------------- */
+
         header: {
-            title: runtime.presentation?.title ?? 'Finder',
-            subtitle: runtime.presentation?.subtitle ?? '',
-            description: runtime.presentation?.description ?? '',
+
+            title:
+
+                runtime.presentation?.title ?? 'Finder',
+
+            subtitle:
+
+                runtime.presentation?.subtitle ?? '',
+
+            description:
+
+                runtime.presentation?.description ?? '',
+
         },
 
-        /* =========================
-        STATS
-        ========================= */
+        /* --------------------------------------------------------------------
+        Stats
+        -------------------------------------------------------------------- */
+
         stats: {
-            result_count: runtime.data?.summary?.result_count ?? 0,
-            group_count: runtime.data?.summary?.group_count ?? 0,
-            has_result: runtime.data?.summary?.has_result ?? false,
+
+            result_count:
+
+                runtime.data?.summary?.result_count ?? 0,
+
+            group_count:
+
+                runtime.data?.summary?.group_count ?? 0,
+
+            has_result:
+
+                runtime.data?.summary?.has_result ?? false,
+
         },
 
-        /* =========================
-        FILTER STATE
-        ========================= */
+        /* --------------------------------------------------------------------
+        Filters
+        -------------------------------------------------------------------- */
+
         filters: {
-            groups: runtime.data?.query?.selected_groups ?? [],
-            max_price: runtime.data?.query?.max_price ?? null,
+
+            groups:
+
+                runtime.data?.query?.selected_groups ?? [],
+
+            max_price:
+
+                runtime.data?.query?.max_price ?? null,
+
         },
 
-        /* =========================
-        PRODUCTS
-        ========================= */
-        products: products.map(projectProduct)
+        /* --------------------------------------------------------------------
+        Products
+        -------------------------------------------------------------------- */
+
+        products:
+
+            products.map(
+
+                projectProduct
+
+            ),
+
     }
+
 }
 
 /* ============================================================================
@@ -111,81 +212,213 @@ export function projectFinderRuntime(
 ============================================================================ */
 
 function projectProduct(
-    p: FinderProductContract
+
+    product: FinderProductContract
+
 ): ProjectedProduct {
 
-    /* --------------------------------
-    UI Variant判定（軽い分類のみOK）
-    -------------------------------- */
+    /* ------------------------------------------------------------------------
+    UI Variant
+    ------------------------------------------------------------------------ */
+
     const variant =
-        p.semantic_attributes?.includes('usage-ai')
+
+        product.semantic_attributes?.includes(
+
+            'usage-ai'
+
+        )
+
             ? 'ai'
-            : p.semantic_attributes?.includes('usage-gaming')
+
+            : product.semantic_attributes?.includes(
+
+                'usage-gaming'
+
+            )
+
                 ? 'gaming'
-                : p.semantic_attributes?.includes('usage-business')
+
+                : product.semantic_attributes?.includes(
+
+                    'usage-business'
+
+                )
+
                     ? 'business'
-                    : p.semantic_attributes?.includes('usage-creator')
+
+                    : product.semantic_attributes?.includes(
+
+                        'usage-creator'
+
+                    )
+
                         ? 'creator'
+
                         : 'general'
 
+    /* ------------------------------------------------------------------------
+    Emphasis
+    ------------------------------------------------------------------------ */
 
-    /* --------------------------------
-    Emphasis（表示強度）
-    -------------------------------- */
-    const semanticScore = p.semantic_score ?? 0
+    const semanticScore =
+
+        product.semantic_score ?? 0
 
     const emphasis =
+
         semanticScore >= 90
+
             ? 'high'
+
             : semanticScore >= 70
+
                 ? 'medium'
+
                 : 'low'
 
-    /* --------------------------------
-    Badges（UI装飾のみ）
-    -------------------------------- */
+    /* ------------------------------------------------------------------------
+    Badges
+    ------------------------------------------------------------------------ */
+
     const badges: string[] = []
 
-    if (p.semantic_attributes?.includes('gpu-rtx-5080')) {
-        badges.push('High-End GPU')
+    if (
+
+        product.semantic_attributes?.includes(
+
+            'gpu-rtx-5080'
+
+        )
+
+    ) {
+
+        badges.push(
+
+            'High-End GPU'
+
+        )
+
     }
 
-    if (p.semantic_attributes?.includes('cpu-ai')) {
-        badges.push('AI Ready')
+    if (
+
+        product.semantic_attributes?.includes(
+
+            'cpu-ai'
+
+        )
+
+    ) {
+
+        badges.push(
+
+            'AI Ready'
+
+        )
+
     }
 
-    if (p.semantic_attributes?.includes('ssd-2tb-plus')) {
-        badges.push('Large Storage')
+    if (
+
+        product.semantic_attributes?.includes(
+
+            'ssd-2tb-plus'
+
+        )
+
+    ) {
+
+        badges.push(
+
+            'Large Storage'
+
+        )
+
     }
 
-    /* --------------------------------
-    Tags（軽量メタ）
-    -------------------------------- */
+    /* ------------------------------------------------------------------------
+    Tags
+    ------------------------------------------------------------------------ */
+
     const tags = [
-        ...(p.workflow_tags ?? []),
-        ...(p.semantic_labels ?? []).slice(0, 2)
+
+        ...(product.workflow_tags ?? []),
+
+        ...(product.semantic_labels ?? []).slice(
+
+            0,
+
+            2
+
+        ),
+
     ]
 
     return {
-        id: p.product_id,
-        name: p.name,
-        maker: p.maker,
-        price: p.price,
-        image: p.image_url,
+
+        id:
+
+            product.product_id,
+
+        name:
+
+            product.name,
+
+        maker:
+
+            product.maker,
+
+        price:
+
+            product.price,
+
+        image:
+
+            product.image_url,
 
         badges,
+
         tags,
 
-        score: p.semantic_score ?? 0,
+        score:
+
+            product.semantic_score ?? 0,
 
         highlight: {
-            primary: p.semantic_labels?.[0],
-            secondary: p.semantic_labels?.[1],
+
+            primary:
+
+                product.semantic_labels?.[0],
+
+            secondary:
+
+                product.semantic_labels?.[1],
+
         },
 
         ui_state: {
+
             emphasis,
+
             variant,
-        }
+
+        },
+
     }
+
 }
+
+/* ============================================================================
+🔥 Alias
+============================================================================ */
+
+export const projectFinder =
+
+    projectFinderRuntime
+
+/* ============================================================================
+🔥 Default Export
+============================================================================ */
+
+export default projectFinderRuntime
