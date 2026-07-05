@@ -1,6 +1,6 @@
 // ============================================================================
 // FILE:
-// /app/ranking/components/RankingCardGrid.tsx
+// /app/ranking/components/sections/RankingCardGrid.tsx
 // Copyright (c) 2024 Shin Corporation.
 // All rights reserved.
 // ============================================================================
@@ -20,16 +20,16 @@ import RankingCard
 
 import type {
 
-    RankingItem,
+    NavigationRuntimeItem,
 
-} from '../types/ranking'
+} from '@/shared/lib/api/django/pc/navigation/contracts'
 
 /* ============================================================================
 🔥 Styles
 ============================================================================ */
 
 import styles
-    from '../styles/ranking.module.css'
+    from '../../styles/sections/grid-section.module.css'
 
 /* ============================================================================
 🔥 Props
@@ -37,9 +37,7 @@ import styles
 
 type Props = {
 
-    items:
-
-        RankingItem[]
+    items: NavigationRuntimeItem[]
 
 }
 
@@ -53,62 +51,61 @@ export default function RankingCardGrid({
 
 }: Props) {
 
+    /* =========================================================================
+    🔥 Empty
+    ========================================================================= */
+
+    if (
+
+        items.length === 0
+
+    ) {
+
+        return null
+
+    }
+
+    /* =========================================================================
+    🔥 Render
+    ========================================================================= */
+
     return (
 
-
-        <section
+        <div
             className={
-                styles.rankingSection
+                styles.rankingGrid
             }
         >
 
-            <header
-                className={
-                    styles.rankingSectionHeader
-                }
-            >
+            {
 
-                <h2
-                    className={
-                        styles.rankingSectionTitle
-                    }
-                >
+                items.map(
 
-                    公開中のランキング
+                    item => (
 
-                </h2>
+                        <RankingCard
 
-                <p
-                    className={
-                        styles.rankingSectionDescription
-                    }
-                >
+                            key={
 
-                    用途・価格帯・メーカーなど、
-                    公開中のランキングから比較できます。
+                                item.slug
 
-                </p>
+                            }
 
-            </header>
+                            item={
 
-            <div
-                className={
-                    styles.rankingGrid
-                }
-            >
+                                item
 
-                {items.map(item => (
+                            }
 
-                    <RankingCard
-                        key={item.slug}
-                        item={item}
-                    />
+                        />
 
-                ))}
+                    )
 
-            </div>
+                )
 
-        </section>
+            }
+
+        </div>
 
     )
 

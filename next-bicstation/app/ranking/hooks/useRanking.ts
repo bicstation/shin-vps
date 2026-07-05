@@ -7,28 +7,6 @@
 
 'use client'
 
-/**
- * ============================================================================
- * SHIN CORE LINX
- * Ranking Experience Runtime Gateway
- * ============================================================================
- *
- * Responsibilities
- *
- * - Load Navigation Runtime
- * - Load Featured Overall Runtime
- *
- * This Hook SHALL NOT:
- *
- * - transform Runtime
- * - generate semantic meaning
- * - calculate rankings
- *
- * Backend remains the Semantic Authority.
- *
- * ============================================================================
- */
-
 /* ============================================================================
 🔥 React
 ============================================================================ */
@@ -57,20 +35,20 @@ import type {
 } from '@/shared/lib/api/django/pc/navigation/contracts'
 
 /* ============================================================================
-🔥 Ranking Runtime
+🔥 Ranking Runtime Facade (V2)
 ============================================================================ */
 
 import {
 
-    fetchRanking,
+    getRankingRuntime,
 
 } from '@/shared/lib/api/django/pc/ranking'
 
 import type {
 
-    SemanticRankingRuntime,
+    RankingRuntimeResult,
 
-} from '@/shared/lib/api/django/pc/ranking/contracts'
+} from '@/shared/lib/api/django/pc/ranking/runtime'
 
 /* ============================================================================
 🔥 Hook
@@ -96,11 +74,11 @@ export default function useRanking() {
 
     const [
 
-        featuredRuntime,
+        rankingRuntime,
 
-        setFeaturedRuntime,
+        setRankingRuntime,
 
-    ] = useState<SemanticRankingRuntime | null>(
+    ] = useState<RankingRuntimeResult | null>(
 
         null
 
@@ -142,27 +120,27 @@ export default function useRanking() {
 
                 const [
 
-                    navigationRuntime,
+                    navigation,
 
-                    featuredRuntime,
+                    ranking,
 
                 ] = await Promise.all([
 
                     fetchNavigationRuntime(),
 
-                    fetchRanking('all'),
+                    getRankingRuntime('all'),
 
                 ])
 
                 setNavigationRuntime(
 
-                    navigationRuntime
+                    navigation
 
                 )
 
-                setFeaturedRuntime(
+                setRankingRuntime(
 
-                    featuredRuntime
+                    ranking
 
                 )
 
@@ -203,6 +181,181 @@ export default function useRanking() {
     }, [])
 
     /* =========================================================================
+    🔥 Debug Navigation Runtime
+    ========================================================================= */
+
+    useEffect(() => {
+
+        if (!navigationRuntime) {
+
+            console.log(
+                '🔥 Navigation Runtime: null'
+            )
+
+            return
+
+        }
+
+        console.log(
+            '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+        )
+
+        console.log(
+            '🔥 NAVIGATION RUNTIME DEBUG'
+        )
+
+        console.log(
+            'Intent Count:',
+            navigationRuntime.intents.length
+        )
+
+        console.table(
+
+            navigationRuntime.intents.map(
+
+                item => ({
+
+                    slug: item.slug,
+
+                    type: item.type,
+
+                    parent_group: item.parent_group,
+
+                    product_count: item.product_count,
+
+                    sort_order: item.sort_order,
+
+                })
+
+            )
+
+        )
+
+        console.log(
+            '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+        )
+
+    }, [
+
+        navigationRuntime,
+
+    ])
+
+        /* =========================================================================
+        🔥 Debug Ranking Runtime
+        ========================================================================= */
+
+        useEffect(() => {
+
+            if (!rankingRuntime) {
+
+                console.log(
+                    '🔥 Ranking Runtime: null'
+                )
+
+                return
+
+            }
+
+            console.log(
+                '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+            )
+
+            console.log(
+                '🔥 RANKING RUNTIME DEBUG'
+            )
+
+            console.log(
+                rankingRuntime
+            )
+
+            /* --------------------------------------------------------------------
+            Projection Categories
+            -------------------------------------------------------------------- */
+
+            console.log(
+                '🔥 PROJECTION CATEGORY COUNT:',
+                rankingRuntime.projection.categories.length
+            )
+
+            console.table(
+
+                rankingRuntime.projection.categories.map(
+
+                    category => ({
+
+                        parentGroup:
+                            category.parentGroup,
+
+                        presentationName:
+                            category.presentationName,
+
+                        groupCount:
+                            category.groupCount,
+
+                        groups:
+                            category.groups.length,
+
+                    })
+
+                )
+
+            )
+
+            /* --------------------------------------------------------------------
+            Projection Products
+            -------------------------------------------------------------------- */
+
+            console.log(
+                '🔥 PROJECTION PRODUCT COUNT:',
+                rankingRuntime.projection.products.length
+            )
+
+            console.table(
+
+                rankingRuntime.projection.products
+
+                    .slice(0, 10)
+
+                    .map(
+
+                        product => ({
+
+                            id:
+                                product.id,
+
+                            name:
+                                product.name,
+
+                            maker:
+                                product.maker,
+
+                            score:
+                                product.score,
+
+                            emphasis:
+                                product.ui_state.emphasis,
+
+                            variant:
+                                product.ui_state.variant,
+
+                        })
+
+                    )
+
+            )
+
+            console.log(
+                '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+            )
+
+        }, [
+
+            rankingRuntime,
+
+        ])
+
+    /* =========================================================================
     🔥 Return
     ========================================================================= */
 
@@ -210,12 +363,21 @@ export default function useRanking() {
 
         navigationRuntime,
 
-        featuredRuntime,
+        rankingRuntime,
+
+        /* ---------------------------------------------------------------------
+        V2 Projection
+        --------------------------------------------------------------------- */
+
+        rankingCategories:
+
+            rankingRuntime?.projection.categories ?? [],
 
         loading,
 
         error,
 
     }
+
 
 }

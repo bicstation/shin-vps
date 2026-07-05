@@ -1,6 +1,6 @@
 // ============================================================================
 // FILE:
-// /shared/lib/api/django/pc/navigation/runtime.ts
+// /shared/lib/api/django/pc/discover/composition.ts
 // Copyright (c) 2026 Shin Corporation.
 // All rights reserved.
 // ============================================================================
@@ -8,29 +8,22 @@
 /**
  * ============================================================================
  * SHIN CORE LINX
- * Navigation Runtime Facade
+ * Discover Composition Layer
  * ============================================================================
  *
  * PURPOSE
  *
- * Temporary compatibility facade.
+ * Light composition between:
  *
- * Navigation does not require Runtime Composition.
+ * - Navigation Runtime (context)
+ * - Discover Runtime (content)
  *
- * This facade exists only to preserve the legacy public API during the
- * Adapter Foundation refactoring.
+ * IMPORTANT
  *
- * Backend JSON
- *      ↓
- * Gateway
- *      ↓
- * Normalize
- *      ↓
- * Navigation Backend Contract
- *      ↓
- * Projection
- *      ↓
- * Navigation View Model
+ * This layer is OPTIONAL.
+ *
+ * It exists only to provide
+ * cross-domain context merging.
  *
  * Backend remains:
  *
@@ -38,47 +31,49 @@
  *
  * Adapter remains:
  *
- * Translation Authority
- *
- * NOTE
- *
- * This facade may be removed after all consumers migrate to the
- * canonical Gateway + Projection workflow.
+ * Composition Authority
  *
  * ============================================================================
  */
 
-import {
+import type {
+    NavigationRuntimeContract,
+} from '../navigation/contracts'
 
-    fetchNavigationRuntime,
-
-} from './navigation'
-
-import {
-
-    projectNavigation,
-
-    type ProjectedNavigationRuntime,
-
-} from './projection'
+import type {
+    DiscoverRuntimeContract,
+} from './contracts'
 
 /* ============================================================================
-🔥 Navigation Facade
+🔥 Composition Result
 ============================================================================ */
 
-export async function getNavigationRuntime(
+export interface DiscoverExperienceRuntime {
 
-): Promise<ProjectedNavigationRuntime> {
+    navigation: NavigationRuntimeContract
 
-    const contract =
+    discover: DiscoverRuntimeContract
 
-        await fetchNavigationRuntime()
+}
 
-    return projectNavigation(
+/* ============================================================================
+🔥 Compose Discover Runtime
+============================================================================ */
 
-        contract
+export function composeDiscoverRuntime(
 
-    )
+    navigation: NavigationRuntimeContract,
+    discover: DiscoverRuntimeContract,
+
+): DiscoverExperienceRuntime {
+
+    return {
+
+        navigation,
+
+        discover,
+
+    }
 
 }
 
@@ -86,12 +81,11 @@ export async function getNavigationRuntime(
 🔥 Legacy Compatibility
 ============================================================================ */
 
-export const fetchProjectedNavigationRuntime =
-
-    getNavigationRuntime
+export const composeDiscoverExperienceRuntime =
+    composeDiscoverRuntime
 
 /* ============================================================================
 🔥 Default Export
 ============================================================================ */
 
-export default getNavigationRuntime
+export default composeDiscoverRuntime

@@ -1,455 +1,291 @@
 // ============================================================================
 // FILE:
 // /shared/lib/api/django/pc/discover/normalize.ts
-// Copyright (c) 2024 Shin Corporation. All rights reserved.
+// Copyright (c) 2026 Shin Corporation.
+// All rights reserved.
 // ============================================================================
 
 /**
+ * ============================================================================
  * SHIN CORE LINX
- * Discover Runtime Normalization
+ * Discover Normalize
+ * ============================================================================
  *
- * IMPORTANT:
+ * PURPOSE
  *
- * This layer exists for:
+ * Convert Backend Discover JSON into the
+ * Canonical Discover Backend Contract.
  *
- * semantic exploration topology absorption
+ * Backend Discover Runtime
+ *      ↓
+ * Contract Guarantee
+ *      ↓
+ * Discover Backend Contract
  *
- * NOT:
+ * Normalize Responsibilities
  *
- * semantic meaning generation
+ * ✓ Preserve Backend Reality
+ * ✓ Guarantee Contract Safety
+ * ✓ Null Safety
+ * ✓ Array Safety
  *
- * Responsibilities:
+ * Normalize SHALL NOT
  *
- * - discover topology normalization
- * - runtime continuity stabilization
- * - exploration contract continuity
- * - frontend-safe discover exposure
- *
- * IMPORTANT:
+ * ✗ Generate Meaning
+ * ✗ Generate Presentation
+ * ✗ Generate Authority
+ * ✗ Generate UI
+ * ✗ Generate Runtime
  *
  * Backend remains:
  *
- * semantic authority
+ * Semantic Authority
  *
- * Discover remains:
- *
- * exploration continuity authority
+ * ============================================================================
  */
-
-/* ============================================================================
-🔥 Contracts
-============================================================================ */
 
 import type {
 
-  DiscoverRuntime,
+    DiscoverRuntimeContract,
+    DiscoverData,
+    DiscoverAttribute,
+    DiscoverSiblingGroup,
+    DiscoverSampleProduct,
 
 } from './contracts'
 
 /* ============================================================================
-🔥 Normalize Layers
+🔥 Normalize Discover
 ============================================================================ */
 
-import {
+export function normalizeDiscover(
 
-  normalizeDiscoverClusters,
+    runtime?: Partial<DiscoverRuntimeContract>
 
-} from './clusters'
+): DiscoverRuntimeContract {
 
-import {
+    return {
 
-  normalizeDiscoverIntents,
+        /* --------------------------------------------------------------------
+        Backend Status
+        -------------------------------------------------------------------- */
 
-} from './intent'
+        found:
 
-/* ============================================================================
-🔥 Normalize Products
-============================================================================ */
+            runtime?.found ?? false,
 
-function normalizePaths(
+        /* --------------------------------------------------------------------
+        Meaning
+        -------------------------------------------------------------------- */
 
-  payload?: any
+        meaning:
 
-): any[] {
+            runtime?.meaning,
 
-  // ======================================
-  // Topology Absorption
-  // ======================================
+        /* --------------------------------------------------------------------
+        Presentation
+        -------------------------------------------------------------------- */
 
-  const rawPaths =
+        presentation:
 
-    Array.isArray(
-      payload?.paths
-    )
+            runtime?.presentation,
 
-      ? payload.paths
+        /* --------------------------------------------------------------------
+        SEO
+        -------------------------------------------------------------------- */
 
-    : Array.isArray(
-        payload?.semantic_paths
-      )
+        seo:
 
-        ? payload.semantic_paths
+            runtime?.seo,
 
-    : Array.isArray(
-        payload?.traversal_paths
-      )
+        /* --------------------------------------------------------------------
+        Data
+        -------------------------------------------------------------------- */
 
-        ? payload.traversal_paths
+        data:
 
-    : []
+            normalizeData(
 
-  // ======================================
-  // Normalize
-  // ======================================
+                runtime?.data
 
-  return rawPaths.map(
-    (
-      path
-    ) => ({
+            ),
 
-      id:
-        path?.id || '',
+        /* --------------------------------------------------------------------
+        Authority
+        -------------------------------------------------------------------- */
 
-      slug:
-        path?.slug || '',
+        semantic_schema_version:
 
-      title:
-        path?.title || '',
+            runtime?.semantic_schema_version,
 
-      description:
-        path?.description || '',
+        authority_version:
 
-      intent:
-        path?.intent || '',
+            runtime?.authority_version,
 
-      semantic_route:
+        semantic_authority:
 
-        Array.isArray(
-          path?.semantic_route
-        )
+            runtime?.semantic_authority,
 
-          ? path.semantic_route
+        ready:
 
-          : [],
+            runtime?.ready ?? false,
 
-      workflow_tags:
-
-        Array.isArray(
-          path?.workflow_tags
-        )
-
-          ? path.workflow_tags
-
-          : [],
-
-      products:
-
-        normalizeProducts(
-
-          Array.isArray(
-            path?.products
-          )
-
-            ? path.products
-
-          : Array.isArray(
-              path?.results
-            )
-
-              ? path.results
-
-          : []
-        ),
-
-      raw:
-        path,
-    })
-  )
-}
-
-/* ============================================================================
-🔥 Normalize Recommendations
-============================================================================ */
-
-function normalizeRecommendations(
-
-  payload?: any
-
-): any[] {
-
-  // ======================================
-  // Topology Absorption
-  // ======================================
-
-  const rawRecommendations =
-
-    Array.isArray(
-      payload?.recommendations
-    )
-
-      ? payload.recommendations
-
-    : Array.isArray(
-        payload?.discover_recommendations
-      )
-
-        ? payload.discover_recommendations
-
-    : Array.isArray(
-        payload?.results
-      )
-
-        ? payload.results
-
-    : []
-
-  // ======================================
-  // Normalize
-  // ======================================
-
-  return rawRecommendations.map(
-    (
-      recommendation
-    ) => ({
-
-      id:
-        recommendation?.id || '',
-
-      type:
-        recommendation?.type || '',
-
-      title:
-        recommendation?.title || '',
-
-      description:
-        recommendation?.description || '',
-
-      reason:
-        recommendation?.reason || '',
-
-      semantic_weight:
-        recommendation?.semantic_weight || 0,
-
-      workflow_tags:
-
-        Array.isArray(
-          recommendation?.workflow_tags
-        )
-
-          ? recommendation.workflow_tags
-
-          : [],
-
-      products:
-
-        normalizeProducts(
-
-          Array.isArray(
-            recommendation?.products
-          )
-
-            ? recommendation.products
-
-          : Array.isArray(
-              recommendation?.results
-            )
-
-              ? recommendation.results
-
-          : []
-        ),
-
-      raw:
-        recommendation,
-    })
-  )
-}
-
-/* ============================================================================
-🔥 Normalize Discover Runtime
-============================================================================ */
-
-export function normalizeDiscoverRuntime(
-
-  payload?: any
-
-): DiscoverRuntime {
-
-  // ======================================
-  // Canonical Continuity
-  // ======================================
-
-  const products =
-    normalizeProducts(payload)
-
-  const clusters =
-    normalizeDiscoverClusters(payload)
-
-  const intents =
-    normalizeDiscoverIntents(payload)
-
-  const paths =
-    normalizePaths(payload)
-
-  const recommendations =
-    normalizeRecommendations(payload)
-
-  // ======================================
-  // Runtime Debug
-  // ======================================
-
-  console.log(
-    '🔥 DISCOVER NORMALIZE',
-    {
-
-      products:
-        products.length,
-
-      clusters:
-        clusters.length,
-
-      intents:
-        intents.length,
-
-      paths:
-        paths.length,
-
-      recommendations:
-        recommendations.length,
     }
-  )
 
-  // ======================================
-  // Return
-  // ======================================
-
-  return {
-
-    success:
-      payload?.success || false,
-
-    semantic_schema_version:
-      payload?.semantic_schema_version || 1,
-
-    semantic_runtime:
-      payload?.semantic_runtime || {},
-
-    adaptive_runtime:
-      payload?.adaptive_runtime || {},
-
-    render_hints:
-      payload?.render_hints || {},
-
-    // ====================================
-    // Canonical Continuity
-    // ====================================
-
-    products,
-    clusters,
-    intents,
-    paths,
-    recommendations,
-
-    // ====================================
-    // Exploration Continuity
-    // ====================================
-
-    grouped_attributes:
-      payload?.grouped_attributes || {},
-
-    semantic_graph:
-
-      Array.isArray(
-        payload?.semantic_graph
-      )
-
-        ? payload.semantic_graph
-
-        : [],
-
-    workflow_tags:
-
-      Array.isArray(
-        payload?.workflow_tags
-      )
-
-        ? payload.workflow_tags
-
-        : [],
-
-    semantic_labels:
-
-      Array.isArray(
-        payload?.semantic_labels
-      )
-
-        ? payload.semantic_labels
-
-        : [],
-
-    // ====================================
-    // Observatory
-    // ====================================
-
-    observatory: {
-
-      topology_source:
-        payload?.topology_source
-        || 'discover-runtime',
-
-      continuity_status:
-        'normalized',
-
-      normalized:
-        true,
-
-      runtime_path:
-        'discover/normalize',
-
-      warnings: [],
-    },
-
-    // ====================================
-    // SEO
-    // ====================================
-
-    seo:
-      payload?.seo || {},
-
-    faq:
-
-      Array.isArray(
-        payload?.faq
-      )
-
-        ? payload.faq
-
-        : [],
-
-    breadcrumbs:
-
-      Array.isArray(
-        payload?.breadcrumbs
-      )
-
-        ? payload.breadcrumbs
-
-        : [],
-
-    schemas:
-      payload?.schemas || {},
-
-    // ====================================
-    // Raw Backup
-    // ====================================
-
-    raw:
-      payload,
-  }
 }
+
+/* ============================================================================
+🔥 Normalize Data
+============================================================================ */
+
+function normalizeData(
+
+    data?: Partial<DiscoverData>
+
+): DiscoverData {
+
+    return {
+
+        group_slug:
+
+            data?.group_slug ?? '',
+
+        group_name:
+
+            data?.group_name,
+
+        presentation_name:
+
+            data?.presentation_name,
+
+        presentation_description:
+
+            data?.presentation_description,
+
+        type:
+
+            data?.type,
+
+        parent_group:
+
+            data?.parent_group,
+
+        icon:
+
+            data?.icon,
+
+        color:
+
+            data?.color,
+
+        sort_order:
+
+            data?.sort_order,
+
+        attribute:
+
+            data?.attribute
+
+                ? normalizeAttribute(
+
+                    data.attribute
+
+                )
+
+                : undefined,
+
+        product_count:
+
+            data?.product_count,
+
+        aliases:
+
+            data?.aliases ?? [],
+
+        sibling_groups:
+
+            (data?.sibling_groups ?? []).map(
+
+                normalizeSiblingGroup
+
+            ),
+
+        sample_products:
+
+            (data?.sample_products ?? []).map(
+
+                normalizeSampleProduct
+
+            ),
+
+    }
+
+}
+
+/* ============================================================================
+🔥 Normalize Attribute
+============================================================================ */
+
+function normalizeAttribute(
+
+    attribute: DiscoverAttribute
+
+): DiscoverAttribute {
+
+    return {
+
+        ...attribute,
+
+    }
+
+}
+
+/* ============================================================================
+🔥 Normalize Sibling Group
+============================================================================ */
+
+function normalizeSiblingGroup(
+
+    sibling: DiscoverSiblingGroup
+
+): DiscoverSiblingGroup {
+
+    return {
+
+        ...sibling,
+
+    }
+
+}
+
+/* ============================================================================
+🔥 Normalize Sample Product
+============================================================================ */
+
+function normalizeSampleProduct(
+
+    product: DiscoverSampleProduct
+
+): DiscoverSampleProduct {
+
+    return {
+
+        ...product,
+
+    }
+
+}
+
+/* ============================================================================
+🔥 Legacy Compatibility
+============================================================================ */
+
+export const normalizeDiscoverRuntime =
+
+    normalizeDiscover
 
 /* ============================================================================
 🔥 Default Export
 ============================================================================ */
 
-export default normalizeDiscoverRuntime
+export default normalizeDiscover

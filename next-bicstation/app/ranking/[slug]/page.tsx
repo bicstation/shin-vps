@@ -12,8 +12,9 @@ import type {
 } from 'next'
 
 import {
-    fetchSemanticRankingRuntime,
-} from '@/shared/lib/api/django/pc/ranking/fetchSemanticRankingRuntime'
+    getRankingRuntime,
+} from '@/shared/lib/api/django/pc/ranking'
+
 
 import {
 
@@ -71,17 +72,15 @@ export async function generateMetadata({
 
     } = await params
 
-    const runtime =
+    const ranking =
 
-        await fetchSemanticRankingRuntime(
-
+        await getRankingRuntime(
             slug,
-
         )
 
     const seo =
 
-        runtime?.seo ?? {}
+        ranking.runtime.seo ?? {}
 
     return {
 
@@ -242,13 +241,13 @@ export default async function RankingSlugPage({
     } = await searchParams
 
 
-    const runtime =
+    const ranking =
 
-        await fetchSemanticRankingRuntime(
+        await getRankingRuntime(
             slug,
         )
 
-    if (!runtime) {
+    if (!ranking) {
 
         return (
 
@@ -288,7 +287,7 @@ export default async function RankingSlugPage({
 
             <RankingRuntime
                 runtime={
-                    runtime
+                    ranking.runtime
                 }
             />
 
@@ -302,7 +301,7 @@ export default async function RankingSlugPage({
 
                     <RankingDebug
                         runtime={
-                            runtime
+                            ranking.runtime
                         }
                     />
 

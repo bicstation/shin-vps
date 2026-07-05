@@ -39,13 +39,13 @@ export * from './contracts'
 ============================================================================ */
 
 export * from './ranking'
-export * from './fetchRankingProducts'
+// export * from './fetchRankingProducts'
 
 /* ============================================================================
 🔥 Legacy Compatibility
 ============================================================================ */
 
-export * from './fetchSemanticRankingRuntime'
+// export * from './fetchSemanticRankingRuntime'
 
 /* ============================================================================
 🔥 Normalize
@@ -57,7 +57,7 @@ export * from './normalize'
 🔥 Runtime Composition
 ============================================================================ */
 
-export * from './composition'
+// export * from './composition'
 
 /* ============================================================================
 🔥 Projection

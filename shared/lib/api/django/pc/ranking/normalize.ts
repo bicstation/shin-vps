@@ -8,157 +8,171 @@
 /**
  * ============================================================================
  * SHIN CORE LINX
- * Ranking Runtime Normalize
+ * Ranking Normalize
  * ============================================================================
  *
- * Responsibilities
+ * PURPOSE
  *
- * - Runtime Safety
- * - Null Protection
- * - Array Normalization
+ * Convert the Backend Ranking API into the
+ * Canonical Ranking Backend Contract.
  *
- * NOT
+ * Backend Ranking API
+ *      ↓
+ * Contract Guarantee
+ *      ↓
+ * Ranking Backend Contract
  *
- * - Runtime Composition
- * - Runtime Projection
- * - Semantic Authority
+ * Normalize Responsibilities
+ *
+ * ✓ Preserve Backend Reality
+ * ✓ Guarantee Contract Safety
+ * ✓ Null Safety
+ * ✓ Array Safety
+ *
+ * Normalize SHALL NOT
+ *
+ * ✗ Generate Meaning
+ * ✗ Generate Presentation
+ * ✗ Generate Authority
+ * ✗ Generate UI
+ * ✗ Generate Runtime
  *
  * Backend remains:
  *
  * Semantic Authority
- *
- * Adapter remains:
- *
- * Runtime Normalize
  *
  * ============================================================================
  */
 
 import type {
 
-  SemanticRankingRuntime,
+    SemanticRankingRuntime,
 
-  RankingData,
+    RankingData,
 
-  RankingCategory,
+    RankingCategory,
 
 } from './contracts'
 
 /* ============================================================================
-🔥 Normalize Runtime
+🔥 Normalize Ranking
 ============================================================================ */
 
 export function normalizeRankingRuntime(
 
-  runtime?: Partial<SemanticRankingRuntime>
+    runtime?: Partial<SemanticRankingRuntime>
 
 ): SemanticRankingRuntime {
 
-  return {
+    return {
 
-    success:
+        /* --------------------------------------------------------------------
+        Status
+        -------------------------------------------------------------------- */
 
-      runtime?.success ?? true,
+        success:
 
-    /* --------------------------------------------------------------------
-    Meaning
-    -------------------------------------------------------------------- */
+            runtime?.success ?? true,
 
-    meaning:
+        /* --------------------------------------------------------------------
+        Meaning
+        -------------------------------------------------------------------- */
 
-      runtime?.meaning ?? {},
+        meaning:
 
-    /* --------------------------------------------------------------------
-    Presentation
-    -------------------------------------------------------------------- */
+            runtime?.meaning ?? {},
 
-    presentation:
+        /* --------------------------------------------------------------------
+        Presentation
+        -------------------------------------------------------------------- */
 
-      runtime?.presentation ?? {},
+        presentation:
 
-    /* --------------------------------------------------------------------
-    SEO
-    -------------------------------------------------------------------- */
+            runtime?.presentation ?? {},
 
-    seo:
+        /* --------------------------------------------------------------------
+        SEO
+        -------------------------------------------------------------------- */
 
-      runtime?.seo ?? {},
+        seo:
 
-    /* --------------------------------------------------------------------
-    Categories
-    -------------------------------------------------------------------- */
+            runtime?.seo ?? {},
 
-    categories:
+        /* --------------------------------------------------------------------
+        Categories
+        -------------------------------------------------------------------- */
 
-      (runtime?.categories ?? []).map(
+        categories:
 
-        normalizeCategory
+            (runtime?.categories ?? []).map(
 
-      ),
+                normalizeCategory
 
-    /* --------------------------------------------------------------------
-    Data
-    -------------------------------------------------------------------- */
+            ),
 
-    data:
+        /* --------------------------------------------------------------------
+        Data
+        -------------------------------------------------------------------- */
 
-      normalizeData(
+        data:
 
-        runtime?.data
+            normalizeData(
 
-      ),
+                runtime?.data
 
-    /* --------------------------------------------------------------------
-    Authority
-    -------------------------------------------------------------------- */
+            ),
 
-    semantic_schema_version:
+        /* --------------------------------------------------------------------
+        Authority
+        -------------------------------------------------------------------- */
 
-      runtime?.semantic_schema_version,
+        semantic_schema_version:
 
-    authority_version:
+            runtime?.semantic_schema_version,
 
-      runtime?.authority_version,
+        authority_version:
 
-    semantic_authority:
+            runtime?.authority_version,
 
-      runtime?.semantic_authority,
+        semantic_authority:
 
-    ready:
+            runtime?.semantic_authority,
 
-      runtime?.ready ?? false,
+        ready:
 
-    /* --------------------------------------------------------------------
-    Raw Backup
-    -------------------------------------------------------------------- */
+            runtime?.ready ?? false,
 
-    raw:
+        /* --------------------------------------------------------------------
+        Raw Backup
+        -------------------------------------------------------------------- */
 
-      runtime?.raw ?? runtime,
+        raw:
 
-  }
+            runtime?.raw ?? runtime,
+
+    }
 
 }
 
 /* ============================================================================
-🔥 Normalize Categories
+🔥 Normalize Category
 ============================================================================ */
 
 function normalizeCategory(
 
-  category: RankingCategory
+    category: RankingCategory
 
 ): RankingCategory {
 
-  return {
+    return {
 
-    ...category,
+        ...category,
 
-    groups:
+        groups:
 
-      category.groups ?? [],
+            category.groups ?? [],
 
-  }
+    }
 
 }
 
@@ -168,43 +182,39 @@ function normalizeCategory(
 
 function normalizeData(
 
-  data?: Partial<RankingData>
+    data?: Partial<RankingData>
 
 ): RankingData {
 
-  return {
+    return {
 
-    group_slug:
+        group_slug:
 
-      data?.group_slug ?? '',
+            data?.group_slug ?? '',
 
-    group_name:
+        group_name:
 
-      data?.group_name ?? '',
+            data?.group_name ?? '',
 
-    product_count:
+        product_count:
 
-      data?.product_count ??
+            data?.product_count ?? 0,
 
-      data?.products?.length ??
+        products:
 
-      0,
+            data?.products ?? [],
 
-    products:
-
-      data?.products ?? [],
-
-  }
+    }
 
 }
 
 /* ============================================================================
-🔥 Alias
+🔥 Legacy Compatibility
 ============================================================================ */
 
 export const normalizeRanking =
 
-  normalizeRankingRuntime
+    normalizeRankingRuntime
 
 /* ============================================================================
 🔥 Default Export

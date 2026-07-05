@@ -4,18 +4,22 @@
 """
 SHIN CORE LINX
 
-Ranking Topology Runtime
-
 Responsibility
 
 Topology Runtime
-↓
-
+        ↓
 Ranking Category Projection
+        ↓
+Category Statistics Projection
 
-No Semantic Authority
-No Traversal
+Dependencies
+
+- Topology Runtime
+- Authority Runtime
+- Traversal Runtime
+
 No Product Ranking
+
 """
 
 from collections import defaultdict
@@ -33,28 +37,26 @@ from api.services.semantic.v2.authority.authority_runtime import (
 )
 
 # ==========================================================
-# PRESENTATION LABELS
-# ==========================================================
-
-authority = (
-    build_authority_runtime()
-)
-
-universe_index = {
-
-    row["universe_slug"]: row
-
-    for row in authority.get(
-        "universes",
-        []
-    )
-}
-
-# ==========================================================
 # RANKING TOPOLOGY
 # ==========================================================
 
 def build_ranking_topology_runtime():
+
+    # ==========================================================
+    # Universe Authority
+    # ==========================================================
+    
+    authority = (
+        build_authority_runtime()
+    )
+
+    universe_index = {
+        row["universe_slug"]: row
+        for row in authority.get(
+            "universes",
+            []
+        )
+    }
     
     topology = (
         build_topology_runtime(
@@ -71,6 +73,21 @@ def build_ranking_topology_runtime():
         )
     )
     
+    # ------------------------------------------------------
+    # Group Index
+    # ------------------------------------------------------
+    
+    group_index = {
+
+        group.get("group_slug"): group
+
+        for group in topology.get(
+            "groups",
+            []
+        )
+    }
+    
+    
     parent_index = defaultdict(list)
     
        
@@ -84,20 +101,57 @@ def build_ranking_topology_runtime():
     # ------------------------------------------------------
 
     group_counts = defaultdict(int)
+    
+    # Reality Count
+    #
+    # UniverseはRealityを表すため、
+    # unique_id単位で重複を除去する。
+    
+    parent_products = defaultdict(set)
 
     for product in traversal.get(
         "products",
         [],
     ):
 
+        seen_parent = set()
+
         for group_slug in product.get(
             "matched_groups",
             [],
         ):
 
-            group_counts[
+            # Membership Count
+            group_counts[group_slug] += 1
+
+            group = group_index.get(
                 group_slug
-            ] += 1
+            )
+
+            if group is None:
+                continue
+
+            parent_group = group.get(
+                "parent_group"
+            )
+
+            if not parent_group:
+                continue
+
+            if parent_group in seen_parent:
+                continue
+
+            parent_products[
+                parent_group
+            ].add(
+                product.get(
+                    "unique_id"
+                )
+            )
+
+            seen_parent.add(
+                parent_group
+            )
     
 
     # ------------------------------------------------------
@@ -142,18 +196,16 @@ def build_ranking_topology_runtime():
                 ),
         )
         
-        parent_product_count = sum(
-
-            group_counts.get(
-                group.get(
-                    "group_slug"
-                ),
-                0,
-            )
-
-            for group in groups
-        )
         
+        parent_product_count = len(
+
+            parent_products.get(
+
+                parent_group,
+
+                set(),
+            )
+        )
 
         categories.append({
 

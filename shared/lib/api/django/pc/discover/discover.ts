@@ -1,75 +1,62 @@
 // ============================================================================
 // FILE:
 // /shared/lib/api/django/pc/discover/discover.ts
-// Copyright (c) 2024 Shin Corporation. All rights reserved.
+// Copyright (c) 2026 Shin Corporation.
+// All rights reserved.
 // ============================================================================
 
 /**
+ * ============================================================================
  * SHIN CORE LINX
- * Discover Continuity Gateway
+ * Discover Gateway
+ * ============================================================================
  *
- * IMPORTANT:
+ * PURPOSE
  *
- * This layer exists for:
+ * Transport Backend Discover Runtime into Adapter Layer.
  *
- * semantic exploration continuity exposure
+ * Backend Discover Runtime
+ *      ↓
+ * Gateway (this file)
+ *      ↓
+ * Normalize
  *
- * NOT:
+ * IMPORTANT
  *
- * semantic recommendation generation
+ * Gateway SHALL:
  *
- * Responsibilities:
+ * ✓ Resolve Endpoint
+ * ✓ Fetch Runtime
+ * ✓ Observe Runtime
  *
- * - discover transport continuity
- * - exploration runtime stabilization
- * - frontend-safe discover exposure
- * - topology continuity absorption
+ * Gateway SHALL NOT:
  *
- * IMPORTANT:
+ * ✗ Normalize Data
+ * ✗ Compose Runtime
+ * ✗ Project Runtime
+ * ✗ Generate Meaning
  *
  * Backend remains:
  *
- * semantic authority
+ * Semantic Authority
  *
- * Discover remains:
- *
- * exploration continuity authority
+ * ============================================================================
  */
 
-/* ============================================================================
-🔥 Contracts
-============================================================================ */
-
 import type {
-
-  DiscoverRuntime,
-
+    DiscoverRuntimeContract,
 } from './contracts'
 
-/* ============================================================================
-🔥 Utils
-============================================================================ */
-
 import {
-
-  buildEndpoint,
-
+    buildEndpoint,
 } from '../utils/buildEndpoint'
 
 import {
-
-  safeFetch,
-
+    safeFetch,
 } from '../utils/safeFetch'
 
-/* ============================================================================
-🔥 Normalize
-============================================================================ */
-
 import {
-
-  normalizeDiscoverRuntime,
-
+    normalizeDiscover,
 } from './normalize'
 
 /* ============================================================================
@@ -77,188 +64,137 @@ import {
 ============================================================================ */
 
 const DISCOVER_ENDPOINT =
-  '/pc/discover'
+    '/pc/discover'
 
 /* ============================================================================
 🔥 Fetch Discover Runtime
 ============================================================================ */
 
-/**
- * Frontend-safe discover gateway.
- *
- * IMPORTANT:
- *
- * This layer intentionally avoids:
- *
- * - semantic inference
- * - AI recommendation generation
- * - workflow mutation
- * - exploration rewriting
- *
- * Backend remains semantic authority.
- */
-export async function fetchDiscover(
+export async function fetchDiscoverRuntime(
+    groupSlug: string
+): Promise<DiscoverRuntimeContract> {
 
-  slug = 'default',
+    /* ------------------------------------------------------------------------
+    Endpoint
+    ------------------------------------------------------------------------ */
 
-): Promise<DiscoverRuntime | null> {
+    const endpoint =
+        buildEndpoint(
+            `${DISCOVER_ENDPOINT}/${encodeURIComponent(groupSlug)}/`
+        )
 
-  // ======================================
-  // Empty Guard
-  // ======================================
-
-  if (!slug) {
-
-    console.warn(
-      '⚠️ DISCOVER EMPTY SLUG'
+    console.log(
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
     )
 
-    return null
-  }
-
-  // ======================================
-  // Endpoint
-  // ======================================
-
-  const endpoint =
-
-    buildEndpoint(
-      `${DISCOVER_ENDPOINT}/${slug}/`
+    console.log(
+        '🔥 FETCH DISCOVER RUNTIME'
     )
 
-  // ======================================
-  // Fetch
-  // ======================================
-
-  const response =
-
-    await safeFetch<DiscoverRuntime>(
-      endpoint
-    )
-
-  // ======================================
-  // Runtime Debug
-  // ======================================
-
-  console.log(
-    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
-  )
-
-  console.log(
-    '🔥 DISCOVER FETCH'
-  )
-
-  console.log({
-
-    slug,
-    endpoint,
-
-    pipeline:
-      'discover-continuity-gateway',
-  })
-
-  console.log(
-    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
-  )
-
-  console.log(
-    '🔥 DISCOVER RESPONSE',
-    response
-  )
-
-  // ======================================
-  // Invalid Response
-  // ======================================
-
-  if (!response) {
-
-    console.error(
-      '🔥 DISCOVER FETCH FAILURE',
-      {
-        slug,
+    console.log({
+        groupSlug,
         endpoint,
-      }
+    })
+
+    console.log(
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
     )
 
-    return {
+    /* ------------------------------------------------------------------------
+    Transport
+    ------------------------------------------------------------------------ */
 
-      success: false,
+    const payload =
+        await safeFetch<DiscoverRuntimeContract>(
+            endpoint,
+            {
+                method: 'GET',
+            }
+        )
 
-      products: [],
+    /* ------------------------------------------------------------------------
+    Raw Runtime
+    ------------------------------------------------------------------------ */
 
-      clusters: [],
-
-      paths: [],
-
-      recommendations: [],
-
-      intents: [],
-
-      observatory: {
-
-        continuity_status:
-          'failure',
-
-        normalized:
-          false,
-
-        runtime_path:
-          'discover/failure',
-      },
-
-      raw: null,
-    }
-  }
-
-  // ======================================
-  // Normalize
-  // ======================================
-
-  const normalized =
-
-    normalizeDiscoverRuntime(
-      response
+    console.log(
+        '🔥 DISCOVER RAW PAYLOAD',
+        payload
     )
 
-  // ======================================
-  // Runtime Visibility
-  // ======================================
+    /* ------------------------------------------------------------------------
+    Empty Guard
+    ------------------------------------------------------------------------ */
 
-  console.log(
-    '🔥 NORMALIZED DISCOVER',
-    normalized
-  )
+    if (!payload) {
 
-  console.log(
-    '🔥 DISCOVER TOPOLOGY',
-    {
+        console.warn(
+            '⚠️ DISCOVER EMPTY'
+        )
 
-      products:
-        normalized?.products?.length,
-
-      clusters:
-        normalized?.clusters?.length,
-
-      paths:
-        normalized?.paths?.length,
-
-      recommendations:
-        normalized?.recommendations?.length,
-
-      intents:
-        normalized?.intents?.length,
+        return normalizeDiscover()
     }
-  )
 
-  // ======================================
-  // Return
-  // ======================================
+    /* ------------------------------------------------------------------------
+    Normalize
+    ------------------------------------------------------------------------ */
 
-  return normalized
+    const runtime =
+        normalizeDiscover(payload)
+
+    /* ------------------------------------------------------------------------
+    Observability
+    ------------------------------------------------------------------------ */
+
+    console.log(
+        '🔥 DISCOVER NORMALIZED',
+        {
+
+            found:
+                runtime.found,
+
+            group:
+                runtime.data?.group_slug,
+
+            product_count:
+                runtime.data?.product_count,
+
+            semantic_schema_version:
+                runtime.semantic_schema_version,
+
+            authority_version:
+                runtime.authority_version,
+
+            semantic_authority:
+                runtime.semantic_authority,
+
+            ready:
+                runtime.ready,
+
+            sample_product:
+                runtime.data?.sample_products?.[0],
+        }
+    )
+
+    console.log(
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+    )
+
+    /* ------------------------------------------------------------------------
+    Return
+    ------------------------------------------------------------------------ */
+
+    return runtime
 }
+
+/* ============================================================================
+🔥 Legacy Compatibility
+============================================================================ */
+
+export const fetchDiscover =
+    fetchDiscoverRuntime
 
 /* ============================================================================
 🔥 Default Export
 ============================================================================ */
 
-export default fetchDiscover
+export default fetchDiscoverRuntime

@@ -1,29 +1,54 @@
-// /home/maya/shin-vps/next-bicstation/app/page.tsx
+// ============================================================================
+// FILE:
+// /app/page.tsx
+// ============================================================================
 
 /* ============================================================================
-🔥 Runtime
+🔥 Sidebar Runtime
 ============================================================================ */
 
 import {
-fetchSidebar,
+
+    fetchSidebar,
+
 } from '@/shared/lib/api/django/pc/sidebar/sidebar'
 
+/* ============================================================================
+🔥 Ranking Runtime (V2)
+============================================================================ */
+
 import {
-fetchSemanticRankingRuntime,
-} from '@/shared/lib/api/django/pc/ranking/fetchSemanticRankingRuntime'
+
+    getRankingRuntime,
+
+} from '@/shared/lib/api/django/pc/ranking'
+
+/* ============================================================================
+🔥 Navigation Runtime
+============================================================================ */
+
+import {
+
+    fetchNavigationRuntime,
+
+} from '@/shared/lib/api/django/pc/navigation'
+
+/* ============================================================================
+🔥 Top Runtime
+============================================================================ */
+
+import {
+
+    fetchTopRuntime,
+
+} from '@/shared/lib/api/django/pc/top'
 
 /* ============================================================================
 🔥 Home Runtime
 ============================================================================ */
 
 import HomeRuntimeOrchestrator
-from './home/orchestration/HomeRuntimeOrchestrator'
-import {
-  fetchNavigationRuntime,
-} from '@/shared/lib/api/django/pc/navigation'
-import {
-  fetchTopRuntime,
-} from '@/shared/lib/api/django/pc/top'
+    from './home/orchestration/HomeRuntimeOrchestrator'
 
 /* ============================================================================
 🔥 Home Page
@@ -31,83 +56,84 @@ import {
 
 export default async function Page() {
 
-// ======================================================
-// Runtime Fetch
-// ======================================================
+    // ========================================================================
+    // Runtime Fetch
+    // ========================================================================
 
-const [
+    const [
 
-  sidebar,
+        sidebar,
 
-  ranking,
+        ranking,
 
-  navigation,
+        navigation,
 
-  top,
+        top,
 
-] = await Promise.all([
+    ] = await Promise.all([
 
-  fetchSidebar(),
+        fetchSidebar(),
 
-  fetchSemanticRankingRuntime(),
+        getRankingRuntime('all'),
 
-  fetchNavigationRuntime(),
+        fetchNavigationRuntime(),
 
-  fetchTopRuntime(),
+        fetchTopRuntime(),
 
-])
+    ])
 
+    // ========================================================================
+    // Runtime
+    // ========================================================================
 
-// ======================================================
-// Runtime
-// ======================================================
+    const runtime = {
 
-const runtime = {
+        sidebar,
 
-  sidebar,
+        ranking,
 
-  ranking,
+        navigation,
 
-  navigation,
+        top,
 
-  top,
+        heroRanking:
 
-  heroRanking:
+            Array.isArray(
 
-    Array.isArray(
-      ranking?.products
+                ranking?.projection?.products
+
+            )
+
+                ? ranking.projection.products[0]
+
+                : null,
+
+        semantic_runtime: true,
+
+        adaptive_runtime: true,
+
+    }
+
+    console.log(
+
+        '🔥 NAVIGATION',
+
+        runtime.navigation
+
     )
 
-      ? ranking.products[0]
+    // ========================================================================
+    // Render
+    // ========================================================================
 
-      : null,
+    return (
 
-  semantic_runtime:
-    true,
+        <HomeRuntimeOrchestrator
 
-  adaptive_runtime:
-    true,
+            runtime={runtime}
 
-}
+        />
 
-console.log(
-  '🔥 NAVIGATION',
-  runtime?.navigation
-)
-
-
-// ======================================================
-// Render
-// ======================================================
-
-return (
-
-
-<HomeRuntimeOrchestrator
-  runtime={runtime}
-/>
-
-
-)
+    )
 
 }

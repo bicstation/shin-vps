@@ -1,190 +1,197 @@
 // ============================================================================
 // FILE:
 // /shared/lib/api/django/pc/discover/runtime.ts
-// Copyright (c) 2024 Shin Corporation. All rights reserved.
+// Copyright (c) 2026 Shin Corporation.
+// All rights reserved.
 // ============================================================================
 
 /**
+ * ============================================================================
  * SHIN CORE LINX
- * Discover Runtime Continuity
+ * Discover Runtime Facade
+ * ============================================================================
  *
- * IMPORTANT:
+ * PURPOSE
  *
- * This layer exists for:
+ * Canonical entry point for the Discover Adapter.
  *
- * semantic exploration runtime continuity
+ * Backend
+ *      ↓
+ * Gateway
+ *      ↓
+ * Normalize
+ *      ↓
+ * Composition
+ *      ↓
+ * Projection
  *
- * NOT:
+ * Runtime SHALL:
  *
- * semantic authority generation
+ * ✓ Orchestrate Adapter Layers
+ * ✓ Return Runtime + Projection
  *
- * Responsibilities:
+ * Runtime SHALL NOT:
  *
- * - discover runtime stabilization
- * - topology continuity absorption
- * - canonical discover runtime exposure
- * - observability-safe runtime continuity
- *
- * IMPORTANT:
+ * ✗ Generate Meaning
+ * ✗ Generate Runtime
+ * ✗ Generate UI
+ * ✗ Modify Backend Reality
  *
  * Backend remains:
  *
- * semantic authority
+ * Semantic Authority
  *
- * Discover remains:
+ * Adapter remains:
  *
- * exploration continuity authority
+ * Runtime Facade
+ *
+ * ============================================================================
  */
-
-/* ============================================================================
-🔥 Contracts
-============================================================================ */
 
 import type {
 
-  DiscoverRuntime,
+    DiscoverRuntimeContract,
 
 } from './contracts'
 
-/* ============================================================================
-🔥 Normalize
-============================================================================ */
+import {
+
+    fetchDiscoverRuntime,
+
+} from './discover'
 
 import {
 
-  normalizeDiscoverRuntime,
+    normalizeDiscover,
 
 } from './normalize'
 
-/* ============================================================================
-🔥 Observatory
-============================================================================ */
+import {
+
+    composeDiscoverRuntime,
+
+    type DiscoverExperienceRuntime,
+
+} from './composition'
 
 import {
 
-  inspectDiscoverRuntime,
+    projectDiscoverRuntime,
 
-} from './observatory'
+    type ProjectedDiscoverRuntime,
+
+} from './projection'
+
+import {
+
+    fetchNavigationRuntime,
+
+} from '../navigation/navigation'
 
 /* ============================================================================
-🔥 Create Discover Runtime
+🔥 Runtime Result
 ============================================================================ */
 
-/**
- * IMPORTANT:
- *
- * This layer intentionally avoids:
- *
- * - semantic inference
- * - recommendation generation
- * - exploration rewriting
- * - workflow mutation
- *
- * This layer ONLY stabilizes:
- *
- * discover runtime continuity.
- */
-export function createDiscoverRuntime(
+export interface DiscoverRuntimeResult {
 
-  payload?: any
+    runtime: DiscoverExperienceRuntime
 
-): DiscoverRuntime {
+    projection: ProjectedDiscoverRuntime
 
-  // ======================================
-  // Normalize
-  // ======================================
-
-  const normalized =
-
-    normalizeDiscoverRuntime(
-      payload
-    )
-
-  // ======================================
-  // Observatory
-  // ======================================
-
-  const observatory =
-
-    inspectDiscoverRuntime(
-      normalized
-    )
-
-  // ======================================
-  // Runtime Debug
-  // ======================================
-
-  console.log(
-    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
-  )
-
-  console.log(
-    '🔥 DISCOVER RUNTIME'
-  )
-
-  console.log({
-
-    products:
-      normalized?.products?.length,
-
-    clusters:
-      normalized?.clusters?.length,
-
-    intents:
-      normalized?.intents?.length,
-
-    paths:
-      normalized?.paths?.length,
-
-    recommendations:
-      normalized?.recommendations?.length,
-
-    continuity:
-      observatory?.continuity
-        ?.continuity_status,
-  })
-
-  console.log(
-    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
-  )
-
-  // ======================================
-  // Return
-  // ======================================
-
-  return {
-
-    ...normalized,
-
-    observatory: {
-
-      topology_source:
-        normalized?.observatory
-          ?.topology_source
-
-        || 'discover-runtime',
-
-      continuity_status:
-
-        observatory?.success
-
-          ? 'healthy'
-
-          : 'warning',
-
-      normalized: true,
-
-      runtime_path:
-        'discover/runtime',
-
-      warnings:
-        observatory?.warnings || [],
-    },
-  }
 }
+
+/* ============================================================================
+🔥 Runtime Facade
+============================================================================ */
+
+export async function getDiscoverRuntime(
+
+    groupSlug: string,
+
+): Promise<DiscoverRuntimeResult> {
+
+    /* ------------------------------------------------------------------------
+    Navigation
+    ------------------------------------------------------------------------ */
+
+    const navigation =
+
+        await fetchNavigationRuntime()
+
+    /* ------------------------------------------------------------------------
+    Discover
+    ------------------------------------------------------------------------ */
+
+    const discover =
+
+        await fetchDiscoverRuntime(
+
+            groupSlug
+
+        )
+
+    /* ------------------------------------------------------------------------
+    Normalize
+    ------------------------------------------------------------------------ */
+
+    const normalized =
+
+        normalizeDiscover(
+
+            discover
+
+        )
+
+    /* ------------------------------------------------------------------------
+    Composition
+    ------------------------------------------------------------------------ */
+
+    const runtime =
+
+        composeDiscoverRuntime(
+
+            navigation,
+
+            normalized,
+
+        )
+
+    /* ------------------------------------------------------------------------
+    Projection
+    ------------------------------------------------------------------------ */
+
+    const projection =
+
+        projectDiscoverRuntime(
+
+            runtime.discover
+
+        )
+
+    /* ------------------------------------------------------------------------
+    Return
+    ------------------------------------------------------------------------ */
+
+    return {
+
+        runtime,
+
+        projection,
+
+    }
+
+}
+
+/* ============================================================================
+🔥 Legacy Compatibility
+============================================================================ */
+
+export const fetchProjectedDiscoverRuntime =
+
+    getDiscoverRuntime
 
 /* ============================================================================
 🔥 Default Export
 ============================================================================ */
 
-export default createDiscoverRuntime
+export default getDiscoverRuntime

@@ -13,14 +13,23 @@
  *
  * PURPOSE
  *
- * Backend Reality
+ * Translate the Navigation Backend Contract into a lightweight
+ * Frontend View Model.
+ *
+ * Backend JSON
  *      ↓
- * Frontend Projection
+ * Normalize
+ *      ↓
+ * Navigation Backend Contract
+ *      ↓
+ * Projection
+ *      ↓
+ * Navigation View Model
  *
  * Projection Responsibilities
  *
- * ✓ UI Translation
  * ✓ Naming Translation
+ * ✓ UI Translation
  * ✓ Lightweight View Model
  *
  * Projection SHALL NOT
@@ -28,10 +37,15 @@
  * ✗ Generate Meaning
  * ✗ Generate Runtime
  * ✗ Generate Authority
+ * ✗ Modify Backend Reality
  *
  * Backend remains:
  *
  * Semantic Authority
+ *
+ * Adapter remains:
+ *
+ * Translation Authority
  *
  * ============================================================================
  */
@@ -46,7 +60,7 @@ import type {
 } from './contracts'
 
 /* ============================================================================
-🔥 Projected Runtime
+🔥 Navigation View Model
 ============================================================================ */
 
 export interface ProjectedNavigationRuntime {
@@ -56,7 +70,7 @@ export interface ProjectedNavigationRuntime {
 }
 
 /* ============================================================================
-🔥 Projected Intent
+🔥 Navigation Intent View Model
 ============================================================================ */
 
 export interface ProjectedNavigationIntent {
@@ -94,7 +108,7 @@ export interface ProjectedNavigationIntent {
 }
 
 /* ============================================================================
-🔥 Projected Attribute
+🔥 Navigation Attribute View Model
 ============================================================================ */
 
 export interface ProjectedNavigationAttribute {
@@ -124,7 +138,7 @@ export interface ProjectedNavigationAttribute {
 }
 
 /* ============================================================================
-🔥 Projected Sibling Group
+🔥 Navigation Sibling Group View Model
 ============================================================================ */
 
 export interface ProjectedNavigationSiblingGroup {
@@ -153,7 +167,7 @@ export interface ProjectedNavigationSiblingGroup {
 
 export function projectNavigation(
 
-    runtime: NavigationRuntimeContract
+    contract: NavigationRuntimeContract
 
 ): ProjectedNavigationRuntime {
 
@@ -161,7 +175,7 @@ export function projectNavigation(
 
         intents:
 
-            (runtime.intents ?? []).map(
+            contract.intents.map(
 
                 projectIntent
 
@@ -237,19 +251,19 @@ function projectIntent(
 
         attributes:
 
-            (intent.attributes ?? []).map(
+            intent.attributes?.map(
 
                 projectAttribute
 
-            ),
+            ) ?? [],
 
         siblingGroups:
 
-            (intent.sibling_groups ?? []).map(
+            intent.sibling_groups?.map(
 
                 projectSiblingGroup
 
-            ),
+            ) ?? [],
 
     }
 
@@ -264,6 +278,12 @@ function projectAttribute(
     attribute: NavigationAttribute
 
 ): ProjectedNavigationAttribute {
+
+    const rankingEnabled =
+
+        attribute.is_ranking_enabled === true ||
+
+        attribute.is_ranking_enabled === 'TRUE'
 
     return {
 
@@ -307,11 +327,7 @@ function projectAttribute(
 
             attribute.semantic_weight,
 
-        rankingEnabled:
-
-            attribute.is_ranking_enabled === true ||
-
-            attribute.is_ranking_enabled === 'TRUE',
+        rankingEnabled,
 
     }
 

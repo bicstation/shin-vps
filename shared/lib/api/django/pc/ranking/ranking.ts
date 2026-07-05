@@ -8,50 +8,56 @@
 /**
  * ============================================================================
  * SHIN CORE LINX
- * Ranking Runtime Gateway
+ * Ranking Gateway
  * ============================================================================
  *
  * PURPOSE
  *
- * GET /api/pc/ranking/{slug}/
+ * Transport the Backend Ranking API into the
+ * Canonical Ranking Backend Contract.
  *
  * Frontend
  *      ↓
  * Gateway
  *      ↓
- * Backend Runtime
+ * Backend Ranking API
+ *
+ * Backend remains:
+ *
+ * Semantic Authority
  *
  * Gateway Responsibilities
  *
- * ✓ Transport
- * ✓ Endpoint Resolution
- * ✓ Observability
+ * ✓ Resolve Endpoint
+ * ✓ Transport Backend API
+ * ✓ Observe Runtime
  *
  * Gateway SHALL NOT
  *
- * ✗ Normalize Runtime
+ * ✗ Normalize Contract
  * ✗ Compose Runtime
- * ✗ Project Runtime
+ * ✗ Project View Model
  * ✗ Generate Meaning
+ * ✗ Generate UI
  *
  * ============================================================================
  */
 
 import type {
 
-  SemanticRankingRuntime,
+    SemanticRankingRuntime,
 
 } from './contracts'
 
 import {
 
-  buildEndpoint,
+    buildEndpoint,
 
 } from '../utils/buildEndpoint'
 
 import {
 
-  safeFetch,
+    safeFetch,
 
 } from '../utils/safeFetch'
 
@@ -61,85 +67,89 @@ import {
 
 const RANKING_ENDPOINT =
 
-  '/pc/ranking'
+    '/pc/ranking'
 
 /* ============================================================================
-🔥 Fetch Runtime
+🔥 Fetch Ranking Contract
 ============================================================================ */
 
 export async function fetchRanking(
 
-  slug: string,
+    slug: string,
 
 ): Promise<SemanticRankingRuntime | null> {
 
-  /* ------------------------------------------------------------------------
-  Endpoint
-  ------------------------------------------------------------------------ */
+    /* ------------------------------------------------------------------------
+    Endpoint
+    ------------------------------------------------------------------------ */
 
-  const endpoint =
+    const endpoint =
 
-    buildEndpoint(
+        buildEndpoint(
 
-      `${RANKING_ENDPOINT}/${encodeURIComponent(slug)}/`
+            `${RANKING_ENDPOINT}/${encodeURIComponent(slug)}/`
+
+        )
+
+    /* ------------------------------------------------------------------------
+    Observatory
+    ------------------------------------------------------------------------ */
+
+    console.log(
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+    )
+
+    console.log(
+        '🔥 FETCH RANKING'
+    )
+
+    console.log({
+
+        slug,
+
+        endpoint,
+
+    })
+
+    console.log(
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+    )
+
+    /* ------------------------------------------------------------------------
+    Transport
+    ------------------------------------------------------------------------ */
+
+    const payload =
+
+        await safeFetch<SemanticRankingRuntime>(
+
+            endpoint,
+
+            {
+
+                method: 'GET',
+
+            }
+
+        )
+
+    /* ------------------------------------------------------------------------
+    Raw Observability
+    ------------------------------------------------------------------------ */
+
+    console.log(
+
+        '🔥 RANKING RAW',
+
+        payload
 
     )
 
-  /* ------------------------------------------------------------------------
-  Observatory
-  ------------------------------------------------------------------------ */
+    /* ------------------------------------------------------------------------
+    Return Backend Contract
+    ------------------------------------------------------------------------ */
 
-  console.log(
-    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
-  )
-
-  console.log(
-    '🔥 FETCH RANKING RUNTIME'
-  )
-
-  console.log({
-
-    slug,
-
-    endpoint,
-
-  })
-
-  console.log(
-    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
-  )
-
-  /* ------------------------------------------------------------------------
-  Transport
-  ------------------------------------------------------------------------ */
-
-  const payload =
-
-    await safeFetch<SemanticRankingRuntime>(
-
-      endpoint,
-
-      {
-
-        method: 'GET',
-
-      }
-
-    )
-
-  /* ------------------------------------------------------------------------
-  RAW Runtime
-  ------------------------------------------------------------------------ */
-
-  console.log(
-
-    '🔥 RANKING RAW PAYLOAD',
-
-    payload
-
-  )
-
-  return payload
+    return payload
 
 }
 
@@ -149,7 +159,7 @@ export async function fetchRanking(
 
 export const getRanking =
 
-  fetchRanking
+    fetchRanking
 
 /* ============================================================================
 🔥 Default Export

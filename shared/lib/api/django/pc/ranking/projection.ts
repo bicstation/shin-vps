@@ -8,19 +8,32 @@
 /**
  * ============================================================================
  * SHIN CORE LINX
- * Ranking Runtime Projection
+ * Ranking Projection
  * ============================================================================
  *
- * Responsibilities
+ * PURPOSE
  *
- * - UI Projection
+ * Translate the Ranking Backend Contract into a lightweight
+ * Frontend View Model.
  *
- * NOT
+ * Backend Ranking Contract
+ *      ↓
+ * Projection
+ *      ↓
+ * Ranking View Model
  *
- * - Runtime Fetch
- * - Runtime Normalize
- * - Runtime Composition
- * - Semantic Authority
+ * Projection Responsibilities
+ *
+ * ✓ Naming Translation
+ * ✓ UI Translation
+ * ✓ Lightweight View Model
+ *
+ * Projection SHALL NOT
+ *
+ * ✗ Generate Meaning
+ * ✗ Generate Runtime
+ * ✗ Generate Authority
+ * ✗ Modify Backend Reality
  *
  * Backend remains:
  *
@@ -28,7 +41,7 @@
  *
  * Adapter remains:
  *
- * Runtime Projection Authority
+ * Translation Authority
  *
  * ============================================================================
  */
@@ -42,10 +55,10 @@ import type {
 } from './contracts'
 
 /* ============================================================================
-🔥 Experience Runtime
+🔥 Ranking View Model
 ============================================================================ */
 
-export interface ProjectedRankingExperienceRuntime {
+export interface ProjectedRankingRuntime {
 
     header: {
 
@@ -74,7 +87,7 @@ export interface ProjectedRankingExperienceRuntime {
 }
 
 /* ============================================================================
-🔥 Projected Category
+🔥 Ranking Category View Model
 ============================================================================ */
 
 export interface ProjectedRankingCategory {
@@ -90,7 +103,7 @@ export interface ProjectedRankingCategory {
 }
 
 /* ============================================================================
-🔥 Projected Product
+🔥 Ranking Product View Model
 ============================================================================ */
 
 export interface ProjectedRankingProduct {
@@ -124,25 +137,25 @@ export interface ProjectedRankingProduct {
         emphasis: 'high' | 'medium' | 'low'
 
         variant:
-        | 'ai'
-        | 'gaming'
-        | 'creator'
-        | 'business'
-        | 'general'
+            | 'ai'
+            | 'gaming'
+            | 'creator'
+            | 'business'
+            | 'general'
 
     }
 
 }
 
 /* ============================================================================
-🔥 Runtime Projection
+🔥 Projection
 ============================================================================ */
 
 export function projectRankingRuntime(
 
-    runtime: SemanticRankingRuntime
+    contract: SemanticRankingRuntime
 
-): ProjectedRankingExperienceRuntime {
+): ProjectedRankingRuntime {
 
     return {
 
@@ -150,15 +163,15 @@ export function projectRankingRuntime(
 
             title:
 
-                runtime.presentation?.title ?? '',
+                contract.presentation?.title ?? '',
 
             subtitle:
 
-                runtime.presentation?.subtitle ?? '',
+                contract.presentation?.subtitle ?? '',
 
             description:
 
-                runtime.presentation?.description ?? '',
+                contract.presentation?.description ?? '',
 
         },
 
@@ -166,21 +179,21 @@ export function projectRankingRuntime(
 
             productCount:
 
-                runtime.data.product_count,
+                contract.data.product_count,
 
             groupName:
 
-                runtime.data.group_name,
+                contract.data.group_name,
 
             groupSlug:
 
-                runtime.data.group_slug,
+                contract.data.group_slug,
 
         },
 
         categories:
 
-            (runtime.categories ?? []).map(
+            (contract.categories ?? []).map(
 
                 projectCategory
 
@@ -188,7 +201,7 @@ export function projectRankingRuntime(
 
         products:
 
-            (runtime.data.products ?? []).map(
+            (contract.data.products ?? []).map(
 
                 projectProduct
 
@@ -240,6 +253,10 @@ function projectProduct(
 
 ): ProjectedRankingProduct {
 
+    /* ------------------------------------------------------------------------
+    Variant
+    ------------------------------------------------------------------------ */
+
     const variant =
 
         product.semantic_attributes?.includes('usage-ai')
@@ -260,9 +277,17 @@ function projectProduct(
 
                         : 'general'
 
+    /* ------------------------------------------------------------------------
+    Score
+    ------------------------------------------------------------------------ */
+
     const score =
 
         product.semantic_score ?? 0
+
+    /* ------------------------------------------------------------------------
+    Emphasis
+    ------------------------------------------------------------------------ */
 
     const emphasis =
 
@@ -275,6 +300,10 @@ function projectProduct(
                 ? 'medium'
 
                 : 'low'
+
+    /* ------------------------------------------------------------------------
+    Badges
+    ------------------------------------------------------------------------ */
 
     const badges: string[] = []
 
@@ -295,6 +324,10 @@ function projectProduct(
         badges.push('AI Ready')
 
     }
+
+    /* ------------------------------------------------------------------------
+    Return View Model
+    ------------------------------------------------------------------------ */
 
     return {
 
@@ -361,7 +394,7 @@ function projectProduct(
 }
 
 /* ============================================================================
-🔥 Alias
+🔥 Legacy Compatibility
 ============================================================================ */
 
 export const projectRanking =

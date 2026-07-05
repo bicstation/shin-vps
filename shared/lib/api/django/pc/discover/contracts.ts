@@ -1,311 +1,287 @@
 // ============================================================================
 // FILE:
 // /shared/lib/api/django/pc/discover/contracts.ts
-// Copyright (c) 2024 Shin Corporation. All rights reserved.
+// Copyright (c) 2026 Shin Corporation.
+// All rights reserved.
 // ============================================================================
 
 /**
+ * ============================================================================
  * SHIN CORE LINX
- * Discover Continuity Contracts
+ * Discover Backend Contract
+ * ============================================================================
  *
- * IMPORTANT:
+ * PURPOSE
  *
- * This layer exists for:
+ * Defines the canonical TypeScript contract that represents the
+ * Backend Discover JSON.
  *
- * semantic exploration continuity
+ * This file mirrors Backend Reality.
  *
- * NOT:
+ * It does NOT define:
  *
- * semantic authority
- *
- * Responsibilities:
- *
- * - exploration continuity contracts
- * - discover topology stabilization
- * - runtime-safe discover structures
- * - frontend-safe exploration contracts
- *
- * IMPORTANT:
+ * ✗ Frontend UI
+ * ✗ Projection Models
+ * ✗ Runtime Helpers
+ * ✗ Exploration Helpers
  *
  * Backend remains:
  *
- * semantic authority
+ * Semantic Authority
  *
- * Discover remains:
+ * Adapter remains:
  *
- * exploration continuity authority
+ * Translation Authority
+ *
+ * ============================================================================
  */
 
 /* ============================================================================
-🔥 Discover Product
+🔥 Meaning
 ============================================================================ */
 
-export type DiscoverProduct = {
+export interface DiscoverMeaning {
 
-  /* ========================================
-  Identity
-  ======================================== */
+    identity?: string
 
-  id?: number
+    mission?: string
 
-  unique_id?: string
+    user_intent?: string
 
-  /* ========================================
-  Basic
-  ======================================== */
+    meaning_statement?: string
 
-  name?: string
+    existence_reason?: string
 
-  maker?: string
-
-  description?: string
-
-  /* ========================================
-  Media
-  ======================================== */
-
-  image_url?: string
-
-  /* ========================================
-  Pricing
-  ======================================== */
-
-  price?: number
-
-  /* ========================================
-  Semantic
-  ======================================== */
-
-  semantic_role?: string
-
-  semantic_weight?: number
-
-  semantic_score?: number
-
-  semantic_labels?: string[]
-
-  workflow_tags?: string[]
-
-  grouped_attributes?: Record<string, any>
-
-  semantic_runtime?: any
-
-  adaptive_runtime?: any
-
-  render_hints?: Record<string, any>
-
-  /* ========================================
-  Discovery
-  ======================================== */
-
-  discover_reason?: string
-
-  discover_path?: string
-
-  discover_cluster?: string
-
-  discover_confidence?: number
-
-  /* ========================================
-  Raw Backup
-  ======================================== */
-
-  raw?: any
 }
 
 /* ============================================================================
-🔥 Discover Cluster
+🔥 Presentation
 ============================================================================ */
 
-export type DiscoverCluster = {
+export interface DiscoverPresentation {
 
-  id?: string
+    slug?: string
 
-  slug?: string
+    name?: string
 
-  title?: string
+    title?: string
 
-  description?: string
+    subtitle?: string
 
-  icon?: string
+    description?: string
 
-  color?: string
+    seo_title?: string
 
-  semantic_weight?: number
+    seo_description?: string
 
-  products?: DiscoverProduct[]
+    canonical_path?: string
 
-  grouped_attributes?: Record<string, any>
+    schema_type?: string
 
-  workflow_tags?: string[]
+    icon_key?: string
 
-  raw?: any
+    theme_key?: string
+
+    color_key?: string
+
+    og_title?: string
+
+    og_description?: string
+
+    og_image?: string
+
+    priority?: string
+
+    visibility?: string
+
+    is_adult?: string
+
 }
 
 /* ============================================================================
-🔥 Discover Path
+🔥 SEO
 ============================================================================ */
 
-export type DiscoverPath = {
+export interface DiscoverSEO {
 
-  id?: string
+    title?: string
 
-  slug?: string
+    description?: string
 
-  title?: string
+    keywords?: string[]
 
-  description?: string
+    canonical?: string
 
-  intent?: string
+    schema_jsonld?: any
 
-  semantic_route?: string[]
-
-  workflow_tags?: string[]
-
-  products?: DiscoverProduct[]
-
-  clusters?: DiscoverCluster[]
-
-  raw?: any
 }
 
 /* ============================================================================
-🔥 Discover Recommendation
+🔥 Attribute
 ============================================================================ */
 
-export type DiscoverRecommendation = {
+export interface DiscoverAttribute {
 
-  id?: string
+    type?: string
 
-  type?: string
+    name?: string
 
-  title?: string
+    slug?: string
 
-  description?: string
+    title?: string
 
-  reason?: string
+    description?: string
 
-  products?: DiscoverProduct[]
+    order?: string | number
 
-  semantic_weight?: number
+    is_adult?: string
 
-  workflow_tags?: string[]
+    semantic_role?: string
 
-  raw?: any
+    semantic_weight?: string | number
+
+    icon?: string
+
+    color?: string
+
+    is_ranking_enabled?: string | boolean
+
 }
 
 /* ============================================================================
-🔥 Discover Intent
+🔥 Sibling Group
 ============================================================================ */
 
-export type DiscoverIntent = {
+export interface DiscoverSiblingGroup {
 
-  id?: string
+    group_slug: string
 
-  slug?: string
+    group_name: string
 
-  title?: string
+    presentation_name?: string
 
-  description?: string
+    presentation_description?: string
 
-  workflow_tags?: string[]
+    icon?: string
 
-  semantic_labels?: string[]
+    color?: string
 
-  products?: DiscoverProduct[]
+    sort_order?: string | number
 
-  clusters?: DiscoverCluster[]
+    is_current?: boolean
 
-  raw?: any
+}
+
+/* ============================================================================
+🔥 Sample Product
+============================================================================ */
+
+export interface DiscoverSampleProduct {
+
+    unique_id: string
+
+    name: string
+
+    maker: string
+
+    price: number
+
+    image_url: string
+
+}
+
+/* ============================================================================
+🔥 Discover Data
+============================================================================ */
+
+export interface DiscoverData {
+
+    group_slug: string
+
+    group_name?: string
+
+    presentation_name?: string
+
+    presentation_description?: string
+
+    type?: string
+
+    parent_group?: string
+
+    icon?: string
+
+    color?: string
+
+    sort_order?: string | number
+
+    attribute?: DiscoverAttribute
+
+    product_count?: number
+
+    aliases?: string[]
+
+    sibling_groups?: DiscoverSiblingGroup[]
+
+    sample_products?: DiscoverSampleProduct[]
+
 }
 
 /* ============================================================================
 🔥 Discover Runtime
 ============================================================================ */
 
-export type DiscoverRuntime = {
+export interface DiscoverRuntimeContract {
 
-  /* ========================================
-  Runtime
-  ======================================== */
+    /* ------------------------------------------------------------------------
+    Backend Status
+    ------------------------------------------------------------------------ */
 
-  success?: boolean
+    found?: boolean
 
-  semantic_schema_version?: number
+    /* ------------------------------------------------------------------------
+    Backend Meaning
+    ------------------------------------------------------------------------ */
 
-  semantic_runtime?: any
+    meaning?: DiscoverMeaning
 
-  adaptive_runtime?: any
+    /* ------------------------------------------------------------------------
+    Backend Presentation
+    ------------------------------------------------------------------------ */
 
-  render_hints?: Record<string, any>
+    presentation?: DiscoverPresentation
 
-  /* ========================================
-  Canonical Continuity
-  ======================================== */
+    /* ------------------------------------------------------------------------
+    Backend SEO
+    ------------------------------------------------------------------------ */
 
-  products?: DiscoverProduct[]
+    seo?: DiscoverSEO
 
-  clusters?: DiscoverCluster[]
+    /* ------------------------------------------------------------------------
+    Backend Data
+    ------------------------------------------------------------------------ */
 
-  paths?: DiscoverPath[]
+    data: DiscoverData
 
-  recommendations?: DiscoverRecommendation[]
+    /* ------------------------------------------------------------------------
+    Backend Authority
+    ------------------------------------------------------------------------ */
 
-  intents?: DiscoverIntent[]
+    semantic_schema_version?: number
 
-  /* ========================================
-  Exploration Continuity
-  ======================================== */
+    authority_version?: string
 
-  grouped_attributes?: Record<string, any>
+    semantic_authority?: string
 
-  semantic_graph?: any[]
+    ready?: boolean
 
-  workflow_tags?: string[]
-
-  semantic_labels?: string[]
-
-  /* ========================================
-  Observability
-  ======================================== */
-
-  observatory?: {
-
-    topology_source?: string
-
-    continuity_status?: string
-
-    normalized?: boolean
-
-    runtime_path?: string
-
-    warnings?: string[]
-  }
-
-  /* ========================================
-  SEO
-  ======================================== */
-
-  seo?: any
-
-  faq?: any[]
-
-  breadcrumbs?: any[]
-
-  schemas?: {
-
-    itemSchema?: any
-
-    breadcrumbSchema?: any
-
-    faqSchema?: any
-
-    collectionSchema?: any
-  }
-
-  /* ========================================
-  Raw Backup
-  ======================================== */
-
-  raw?: any
 }
+
+/* ============================================================================
+🔥 Legacy Compatibility
+============================================================================ */
+
+export type DiscoverRuntime =
+    DiscoverRuntimeContract
+
+export type DiscoverRuntimeResponse =
+    DiscoverRuntimeContract

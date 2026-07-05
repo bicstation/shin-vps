@@ -11,42 +11,37 @@
 🔥 React
 ============================================================================ */
 
-import {
-
-    useMemo,
-
-} from 'react'
+import {     useMemo,} from 'react'
 
 /* ============================================================================
-🔥 Types
+🔥 Runtime Contracts
 ============================================================================ */
 
-// import type {
-
-//     RankingItem,
-
-// } from '../../types/ranking'
+import type {    NavigationRuntimeItem,} from '@/shared/lib/api/django/pc/navigation/contracts'
+import type {    ProjectedRankingCategory,} from '@/shared/lib/api/django/pc/ranking/projection'
 
 /* ============================================================================
 🔥 Styles
 ============================================================================ */
 
-import styles
-    from '../../styles/navigation/navigation.module.css'
+import styles  from '../../styles/navigation/navigation.module.css'
 
+/* ============================================================================
+🔥 Semantic Icons
+============================================================================ */
+
+import {   resolveSemanticIcon, } from '@/shared/lib/semantic/semanticIcons'
 /* ============================================================================
 🔥 Props
 ============================================================================ */
 
 type Props = {
 
-    items:
+    items?: NavigationRuntimeItem[]
 
-    RankingItem[]
+    categories?: ProjectedRankingCategory[]
 
-    activeGroup?:
-
-    string
+    activeGroup?: string
 
     onSelect?: (
 
@@ -62,7 +57,9 @@ type Props = {
 
 export default function RankingNavigation({
 
-    items,
+    items = [],
+
+    categories = [],
 
     activeGroup = 'all',
 
@@ -70,27 +67,35 @@ export default function RankingNavigation({
 
 }: Props) {
 
-    console.table(
-
-        items.map(item => ({
-
-            slug: item.slug,
-
-            type: item.type,
-
-            parent_group: item.parent_group,
-
-        }))
-
-    )
-
     /* =========================================================================
-    🔥 Runtime Groups
+    🔥 Navigation Groups
     ========================================================================= */
 
     const groups =
 
         useMemo(() => {
+
+            if (
+
+                categories.length > 0
+
+            ) {
+
+                return [
+
+                    'all',
+
+                    ...categories.map(
+
+                        category =>
+
+                            category.parentGroup
+
+                    ),
+
+                ]
+
+            }
 
             const values =
 
@@ -102,13 +107,13 @@ export default function RankingNavigation({
 
                     if (
 
-                        item.type
+                        item.parent_group
 
                     ) {
 
                         values.add(
 
-                            item.type
+                            item.parent_group
 
                         )
 
@@ -132,12 +137,14 @@ export default function RankingNavigation({
 
         }, [
 
+            categories,
+
             items,
 
         ])
 
     /* =========================================================================
-    🔥 Label
+    🔥 Experience Label
     ========================================================================= */
 
     function getLabel(
@@ -148,7 +155,7 @@ export default function RankingNavigation({
 
         switch (
 
-        group
+            group
 
         ) {
 
@@ -184,6 +191,10 @@ export default function RankingNavigation({
 
                 return 'モニター'
 
+            case 'maker':
+
+                return 'メーカー'
+
             default:
 
                 return group
@@ -199,64 +210,134 @@ export default function RankingNavigation({
     return (
 
         <section
-            className={
-                styles.navigation
-            }
+            className={styles.navigation}
         >
 
-            {
+            {/* ==========================================================
+            Header
+            ========================================================== */}
 
-                groups.map(
+            <header
+                className={styles.header}
+            >
 
-                    group => (
+                <h2
+                    className={styles.title}
+                >
 
-                        <button
+                    ランキングカテゴリ
 
-                            key={
-                                group
-                            }
+                </h2>
 
-                            type="button"
+                <p
+                    className={styles.description}
+                >
 
-                            className={
+                    用途・CPU・GPU・メーカーなど、
+                    気になるカテゴリからランキングをご覧いただけます。
 
-                                group === activeGroup
+                </p>
 
-                                    ? styles.navigationItemActive
+            </header>
 
-                                    : styles.navigationItem
+            {/* ==========================================================
+            Navigation
+            ========================================================== */}
 
-                            }
+            <nav
+                className={styles.items}
+                aria-label="ランキングカテゴリ"
+            >
 
-                            onClick={() =>
+                {
 
-                                onSelect?.(
+                    groups.map(
+
+                        group => {
+
+                            const icon =
+
+                                resolveSemanticIcon(
 
                                     group
 
                                 )
 
-                            }
+                            return (
 
-                        >
+                                <button
 
-                            {
+                                    key={group}
 
-                                getLabel(
+                                    type="button"
 
-                                    group
+                                    aria-current={
 
-                                )
+                                        group === activeGroup
 
-                            }
+                                            ? 'page'
 
-                        </button>
+                                            : undefined
+
+                                    }
+
+                                    className={
+
+                                        group === activeGroup
+
+                                            ? styles.navigationItemActive
+
+                                            : styles.navigationItem
+
+                                    }
+
+                                    onClick={() =>
+
+                                        onSelect?.(
+
+                                            group
+
+                                        )
+
+                                    }
+
+                                >
+
+                                    <span
+                                        className={styles.icon}
+                                    >
+
+                                        {icon}
+
+                                    </span>
+
+                                    <span
+                                        className={styles.label}
+                                    >
+
+                                        {
+
+                                            getLabel(
+
+                                                group
+
+                                            )
+
+                                        }
+
+                                    </span>
+
+                                </button>
+
+                            )
+
+                        }
 
                     )
 
-                )
+                }
 
-            }
+            </nav>
 
         </section>
 

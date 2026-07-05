@@ -11,17 +11,21 @@
  * Ranking Runtime Facade
  * ============================================================================
  *
- * Responsibilities
+ * PURPOSE
  *
- * - Runtime Orchestration
+ * Temporary compatibility facade.
  *
- * NOT
+ * Ranking no longer requires Runtime Composition.
  *
- * - Runtime Fetch
- * - Runtime Normalize
- * - Runtime Composition
- * - Runtime Projection
- * - Semantic Authority
+ * This facade simply connects:
+ *
+ * Gateway
+ *      ↓
+ * Normalize
+ *      ↓
+ * Projection
+ *
+ * This file exists only for migration compatibility.
  *
  * Backend remains:
  *
@@ -29,48 +33,36 @@
  *
  * Adapter remains:
  *
- * Runtime Facade
+ * Translation Authority
  *
  * ============================================================================
  */
 
 import type {
 
-  SemanticRankingRuntime,
+    SemanticRankingRuntime,
 
 } from './contracts'
 
 import {
 
-  fetchRanking,
+    fetchRanking,
 
 } from './ranking'
 
 import {
 
-  normalizeRankingRuntime,
+    normalizeRankingRuntime,
 
 } from './normalize'
 
 import {
 
-  composeRankingRuntime,
+    projectRankingRuntime,
 
-} from './composition'
-
-import {
-
-  projectRankingRuntime,
-
-  type ProjectedRankingExperienceRuntime,
+    type ProjectedRankingRuntime,
 
 } from './projection'
-
-import {
-
-  getNavigationRuntime,
-
-} from '../navigation/runtime'
 
 /* ============================================================================
 🔥 Runtime Result
@@ -78,9 +70,9 @@ import {
 
 export interface RankingRuntimeResult {
 
-  runtime: SemanticRankingRuntime
+    runtime: SemanticRankingRuntime
 
-  projection: ProjectedRankingExperienceRuntime
+    projection: ProjectedRankingRuntime
 
 }
 
@@ -90,81 +82,57 @@ export interface RankingRuntimeResult {
 
 export async function getRankingRuntime(
 
-  slug: string,
+    slug: string,
 
 ): Promise<RankingRuntimeResult> {
 
-  /* ------------------------------------------------------------------------
-  Ranking Runtime
-  ------------------------------------------------------------------------ */
+    /* ------------------------------------------------------------------------
+    Gateway
+    ------------------------------------------------------------------------ */
 
-  const ranking =
+    const payload =
 
-    await fetchRanking(
+        await fetchRanking(
 
-      slug
+            slug
 
-    )
+        )
 
-  /* ------------------------------------------------------------------------
-  Navigation Runtime
-  ------------------------------------------------------------------------ */
+    /* ------------------------------------------------------------------------
+    Normalize
+    ------------------------------------------------------------------------ */
 
-  const navigation =
+    const runtime =
 
-    await getNavigationRuntime()
+        normalizeRankingRuntime(
 
-  /* ------------------------------------------------------------------------
-  Normalize
-  ------------------------------------------------------------------------ */
+            payload ?? undefined
 
-  const normalized =
+        )
 
-    normalizeRankingRuntime(
+    /* ------------------------------------------------------------------------
+    Projection
+    ------------------------------------------------------------------------ */
 
-      ranking
+    const projection =
 
-    )
+        projectRankingRuntime(
 
-  /* ------------------------------------------------------------------------
-  Composition
-  ------------------------------------------------------------------------ */
+            runtime
 
-  const composed =
+        )
 
-    composeRankingRuntime(
+    /* ------------------------------------------------------------------------
+    Return
+    ------------------------------------------------------------------------ */
 
-      navigation,
+    return {
 
-      normalized,
+        runtime,
 
-    )
+        projection,
 
-  /* ------------------------------------------------------------------------
-  Projection
-  ------------------------------------------------------------------------ */
-
-  const projection =
-
-    projectRankingRuntime(
-
-      composed.ranking
-
-    )
-
-  /* ------------------------------------------------------------------------
-  Return
-  ------------------------------------------------------------------------ */
-
-  return {
-
-    runtime:
-
-      composed.ranking,
-
-    projection,
-
-  }
+    }
 
 }
 
@@ -174,7 +142,7 @@ export async function getRankingRuntime(
 
 export const fetchProjectedRankingRuntime =
 
-  getRankingRuntime
+    getRankingRuntime
 
 /* ============================================================================
 🔥 Default Export

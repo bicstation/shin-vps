@@ -13,11 +13,16 @@
  *
  * PURPOSE
  *
- * Backend Runtime
+ * Transport the Backend Navigation JSON into the
+ * Canonical Navigation Backend Contract.
+ *
+ * Backend Navigation JSON
  *      ↓
  * Transport
  *      ↓
  * Normalize
+ *      ↓
+ * Navigation Backend Contract
  *
  * Backend remains:
  *
@@ -26,9 +31,9 @@
  * Gateway Responsibilities
  *
  * ✓ Resolve Endpoint
- * ✓ Fetch Runtime
+ * ✓ Transport Runtime
+ * ✓ Invoke Normalize
  * ✓ Observe Runtime
- * ✓ Normalize Runtime
  *
  * Gateway SHALL NOT
  *
@@ -73,16 +78,12 @@ const NAVIGATION_ENDPOINT =
     '/pc/navigation/'
 
 /* ============================================================================
-🔥 Fetch Navigation Runtime
+🔥 Fetch Navigation Contract
 ============================================================================ */
 
 export async function fetchNavigationRuntime(
 
 ): Promise<NavigationRuntimeContract> {
-
-    /* ------------------------------------------------------------------------
-    Endpoint
-    ------------------------------------------------------------------------ */
 
     const endpoint =
 
@@ -97,7 +98,7 @@ export async function fetchNavigationRuntime(
     )
 
     console.log(
-        '🔥 FETCH NAVIGATION RUNTIME'
+        '🔥 FETCH NAVIGATION'
     )
 
     console.log({
@@ -110,10 +111,6 @@ export async function fetchNavigationRuntime(
         '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
     )
 
-    /* ------------------------------------------------------------------------
-    Transport
-    ------------------------------------------------------------------------ */
-
     const payload =
 
         await safeFetch<NavigationRuntimeContract>(
@@ -122,27 +119,19 @@ export async function fetchNavigationRuntime(
 
         )
 
-    /* ------------------------------------------------------------------------
-    Raw Observability
-    ------------------------------------------------------------------------ */
-
     console.log(
 
-        '🔥 NAVIGATION RAW PAYLOAD',
+        '🔥 NAVIGATION RAW',
 
         payload
 
     )
 
-    /* ------------------------------------------------------------------------
-    Empty Runtime
-    ------------------------------------------------------------------------ */
-
     if (!payload) {
 
         console.warn(
 
-            '⚠️ NAVIGATION RUNTIME EMPTY'
+            '⚠️ NAVIGATION EMPTY'
 
         )
 
@@ -150,11 +139,7 @@ export async function fetchNavigationRuntime(
 
     }
 
-    /* ------------------------------------------------------------------------
-    Normalize
-    ------------------------------------------------------------------------ */
-
-    const runtime =
+    const contract =
 
         normalizeNavigation(
 
@@ -162,39 +147,35 @@ export async function fetchNavigationRuntime(
 
         )
 
-    /* ------------------------------------------------------------------------
-    Runtime Observability
-    ------------------------------------------------------------------------ */
-
     console.log(
 
-        '🔥 NAVIGATION RUNTIME',
+        '🔥 NAVIGATION CONTRACT',
 
         {
 
             intents:
 
-                runtime.intents.length,
+                contract.intents.length,
 
             semantic_schema_version:
 
-                runtime.semantic_schema_version,
+                contract.semantic_schema_version,
 
             authority_version:
 
-                runtime.authority_version,
+                contract.authority_version,
 
             semantic_authority:
 
-                runtime.semantic_authority,
+                contract.semantic_authority,
 
             ready:
 
-                runtime.ready,
+                contract.ready,
 
             sample:
 
-                runtime.intents[0],
+                contract.intents[0],
 
         }
 
@@ -204,7 +185,7 @@ export async function fetchNavigationRuntime(
         '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
     )
 
-    return runtime
+    return contract
 
 }
 

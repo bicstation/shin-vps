@@ -1,0 +1,388 @@
+/* ============================================================================ */
+/* FILE:                                                                        */
+/* /app/ranking/styles/sections/card-section.module.css                         */
+/* Copyright (c) 2024 Shin Corporation.                                         */
+/* All rights reserved.                                                         */
+/* ============================================================================ */
+
+/* ============================================================================
+🔥 Card
+============================================================================ */
+
+.card {
+
+    position: relative;
+
+    display: flex;
+
+    overflow: hidden;
+
+    min-height: 320px;
+
+    border-radius: 22px;
+
+    text-decoration: none;
+
+    isolation: isolate;
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(20,26,48,.96),
+            rgba(10,14,28,.96)
+        );
+
+    border:
+
+        1px solid rgba(255,255,255,.08);
+
+    transition:
+
+        transform .3s ease,
+        border-color .3s ease,
+        box-shadow .3s ease;
+
+}
+
+.card:hover {
+
+    transform:
+
+        translateY(-6px);
+
+    border-color:
+
+        rgba(70,220,255,.35);
+
+    box-shadow:
+
+        0 18px 48px rgba(0,0,0,.35);
+
+}
+
+/* ============================================================================
+🔥 Background
+============================================================================ */
+
+.background {
+
+    position: absolute;
+
+    inset: 0;
+
+    background-repeat: no-repeat;
+
+    background-size: cover;
+
+    background-position: center;
+
+    transform:
+
+        scale(1);
+
+    transition:
+
+        transform .45s ease;
+
+}
+
+.card:hover .background {
+
+    transform:
+
+        scale(1.05);
+
+}
+
+/* ============================================================================
+🔥 Overlay
+============================================================================ */
+
+.overlay {
+
+    position: absolute;
+
+    inset: 0;
+
+    background:
+
+        linear-gradient(
+
+            180deg,
+
+            rgba(7,12,22,.10),
+
+            rgba(7,12,22,.45),
+
+            rgba(7,12,22,.88)
+
+        );
+
+}
+
+/* ============================================================================
+🔥 Content
+============================================================================ */
+
+.content {
+
+    position: relative;
+
+    z-index: 2;
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: space-between;
+
+    width: 100%;
+
+    padding: 1.6rem;
+
+}
+
+/* ============================================================================
+🔥 Icon
+============================================================================ */
+
+.icon {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    width: 56px;
+
+    height: 56px;
+
+    border-radius: 16px;
+
+    background:
+
+        rgba(255,255,255,.08);
+
+    backdrop-filter:
+
+        blur(12px);
+
+}
+
+/* ============================================================================
+🔥 Body
+============================================================================ */
+
+.body {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: .75rem;
+
+    margin-top: 2rem;
+
+}
+
+/* ============================================================================
+🔥 Title
+============================================================================ */
+
+.title {
+
+    margin: 0;
+
+    font-size: 1.35rem;
+
+    font-weight: 800;
+
+    line-height: 1.4;
+
+    color:
+
+        #ffffff;
+
+}
+
+/* ============================================================================
+🔥 Description
+============================================================================ */
+
+.description {
+
+    margin: 0;
+
+    font-size: .95rem;
+
+    line-height: 1.8;
+
+    color:
+
+        rgba(255,255,255,.78);
+
+}
+
+/* ============================================================================
+🔥 Meta
+============================================================================ */
+
+.meta {
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: .6rem;
+
+    margin-top: 1.5rem;
+
+}
+
+/* ============================================================================
+🔥 Count
+============================================================================ */
+
+.count {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    padding:
+
+        .45rem .85rem;
+
+    border-radius: 999px;
+
+    background:
+
+        rgba(255,255,255,.10);
+
+    font-size: .82rem;
+
+    color:
+
+        rgba(255,255,255,.88);
+
+}
+
+/* ============================================================================
+🔥 Footer
+============================================================================ */
+
+.footer {
+
+    display: flex;
+
+    justify-content: flex-end;
+
+    margin-top: 2rem;
+
+}
+
+/* ============================================================================
+🔥 Link
+============================================================================ */
+
+.link {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: .4rem;
+
+    font-size: .95rem;
+
+    font-weight: 700;
+
+    color:
+
+        #66d9ff;
+
+    transition:
+
+        transform .25s ease,
+        color .25s ease;
+
+}
+
+.card:hover .link {
+
+    color:
+
+        #9be9ff;
+
+    transform:
+
+        translateX(4px);
+
+}
+
+/* ============================================================================
+🔥 Tablet
+============================================================================ */
+
+@media (max-width:1024px) {
+
+    .card {
+
+        min-height: 300px;
+
+    }
+
+    .content {
+
+        padding: 1.4rem;
+
+    }
+
+    .title {
+
+        font-size: 1.2rem;
+
+    }
+
+}
+
+/* ============================================================================
+🔥 Mobile
+============================================================================ */
+
+@media (max-width:768px) {
+
+    .card {
+
+        min-height: 260px;
+
+    }
+
+    .content {
+
+        padding: 1.25rem;
+
+    }
+
+    .title {
+
+        font-size: 1.1rem;
+
+    }
+
+    .description {
+
+        font-size: .9rem;
+
+    }
+
+    .footer {
+
+        margin-top: 1.5rem;
+
+    }
+
+}

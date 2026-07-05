@@ -1,233 +1,123 @@
 // ============================================================================
 // FILE:
 // /shared/lib/api/django/pc/discover/index.ts
-// Copyright (c) 2024 Shin Corporation. All rights reserved.
+// Copyright (c) 2026 Shin Corporation.
+// All rights reserved.
 // ============================================================================
 
 /**
+ * ============================================================================
  * SHIN CORE LINX
- * Discover Continuity Exports
+ * Discover Adapter Layer
+ * ============================================================================
  *
- * IMPORTANT:
+ * PURPOSE
  *
- * This layer exists for:
+ * Canonical Discover Adapter
  *
- * discover continuity exposure
- *
- * NOT:
- *
- * semantic authority generation
- *
- * Responsibilities:
- *
- * - discover module exposure
- * - continuity-safe exports
- * - unified discover access
- * - runtime-safe discover aggregation
- *
- * IMPORTANT:
+ * Backend
+ *      ↓
+ * Gateway
+ *      ↓
+ * Normalize
+ *      ↓
+ * Composition
+ *      ↓
+ * Projection
+ *      ↓
+ * Frontend Experience
  *
  * Backend remains:
  *
- * semantic authority
+ * Semantic Authority
  *
- * Discover remains:
+ * Adapter remains:
  *
- * exploration continuity authority
+ * Translation Authority
+ *
+ * Frontend remains:
+ *
+ * Experience Authority
+ *
+ * ============================================================================
  */
 
 /* ============================================================================
 🔥 Contracts
 ============================================================================ */
 
-export type {
-
-  DiscoverProduct,
-  DiscoverCluster,
-  DiscoverPath,
-  DiscoverRecommendation,
-  DiscoverIntent,
-  DiscoverRuntime,
-
-} from './contracts'
+export * from './contracts'
 
 /* ============================================================================
-🔥 Discover Gateway
+🔥 Gateway
 ============================================================================ */
 
-export {
-
-  fetchDiscover,
-
-} from './discover'
-
-export {
-
-  default as fetchDiscoverRuntime,
-
-} from './discover'
+export * from './discover'
 
 /* ============================================================================
 🔥 Normalize
 ============================================================================ */
 
-export {
-
-  normalizeDiscoverRuntime,
-
-} from './normalize'
-
-export {
-
-  default as normalizeDiscover,
-
-} from './normalize'
+export * from './normalize'
 
 /* ============================================================================
-🔥 Runtime
+🔥 Runtime Composition
 ============================================================================ */
 
-export {
-
-  createDiscoverRuntime,
-
-} from './runtime'
-
-export {
-
-  default as discoverRuntime,
-
-} from './runtime'
+export * from './composition'
 
 /* ============================================================================
-🔥 Clusters
+🔥 Projection
 ============================================================================ */
 
-export {
-
-  normalizeDiscoverClusters,
-
-} from './clusters'
-
-export {
-
-  default as discoverClusters,
-
-} from './clusters'
+export * from './projection'
 
 /* ============================================================================
-🔥 Intent
+🔥 Runtime Facade
 ============================================================================ */
 
-export {
-
-  normalizeDiscoverIntents,
-
-} from './intent'
-
-export {
-
-  default as discoverIntent,
-
-} from './intent'
-
-/* ============================================================================
-🔥 Recommendations
-============================================================================ */
-
-export {
-
-  normalizeDiscoverRecommendations,
-
-} from './recommendations'
-
-export {
-
-  default as discoverRecommendations,
-
-} from './recommendations'
-
-/* ============================================================================
-🔥 Semantic Paths
-============================================================================ */
-
-export {
-
-  normalizeSemanticPaths,
-
-} from './semanticPaths'
-
-export {
-
-  default as semanticPaths,
-
-} from './semanticPaths'
-
-/* ============================================================================
-🔥 Topology
-============================================================================ */
-
-export type {
-
-  DiscoverTopologyNode,
-  DiscoverTopologyEdge,
-  DiscoverTopologyRuntime,
-
-} from './topology'
-
-export {
-
-  createDiscoverTopology,
-
-} from './topology'
-
-export {
-
-  default as discoverTopology,
-
-} from './topology'
-
-/* ============================================================================
-🔥 Traversal
-============================================================================ */
-
-export type {
-
-  DiscoverTraversalStep,
-  DiscoverTraversalRuntime,
-
-} from './traversal'
-
-export {
-
-  normalizeDiscoverTraversal,
-
-} from './traversal'
-
-export {
-
-  default as discoverTraversal,
-
-} from './traversal'
+export * from './runtime'
 
 /* ============================================================================
 🔥 Observatory
 ============================================================================ */
 
-export type {
+console.log(
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+)
 
-  DiscoverObservatoryReport,
+console.log(
+    '🔥 DISCOVER ADAPTER INITIALIZED'
+)
 
-} from './observatory'
+console.log({
 
-export {
+    runtime:
+        'discover-adapter-layer',
 
-  inspectDiscoverRuntime,
+    authority:
+        'backend',
 
-} from './observatory'
+    transport:
+        true,
 
-export {
+    normalize:
+        true,
 
-  default as discoverObservatory,
+    composition:
+        true,
 
-} from './observatory'
+    projection:
+        true,
+
+    observability:
+        true,
+
+    continuity:
+        'healthy',
+
+})
+
+console.log(
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+)

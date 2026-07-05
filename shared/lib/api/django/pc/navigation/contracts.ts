@@ -8,24 +8,30 @@
 /**
  * ============================================================================
  * SHIN CORE LINX
- * Navigation Runtime Contract
+ * Navigation Backend Contract
  * ============================================================================
  *
- * IMPORTANT
+ * PURPOSE
  *
- * This file represents:
+ * Defines the canonical TypeScript contract that represents the
+ * Backend Navigation JSON.
  *
- * Backend Reality
+ * This file mirrors Backend Reality.
  *
- * NOT:
+ * It does NOT define:
  *
- * UI Model
- * Future Design
- * Projection Model
+ * ✗ Frontend UI
+ * ✗ Projection Models
+ * ✗ Runtime Helpers
+ * ✗ Future Architecture
  *
  * Backend remains:
  *
  * Semantic Authority
+ *
+ * Adapter remains:
+ *
+ * Translation Authority
  *
  * ============================================================================
  */
@@ -123,20 +129,20 @@ export interface NavigationRuntimeItem {
 }
 
 /* ============================================================================
-🔥 Navigation Runtime
+🔥 Navigation Backend Runtime
 ============================================================================ */
 
 export interface NavigationRuntimeContract {
 
-    /* =====================================================================
-    Navigation Reality
-    ===================================================================== */
+    /* ------------------------------------------------------------------------
+    Backend Reality
+    ------------------------------------------------------------------------ */
 
     intents: NavigationRuntimeItem[]
 
-    /* =====================================================================
-    Runtime Authority
-    ===================================================================== */
+    /* ------------------------------------------------------------------------
+    Backend Authority
+    ------------------------------------------------------------------------ */
 
     semantic_schema_version?: number
 
@@ -145,12 +151,6 @@ export interface NavigationRuntimeContract {
     semantic_authority?: string
 
     ready?: boolean
-
-    /* =====================================================================
-    Raw Backup
-    ===================================================================== */
-
-    raw?: any
 
 }
 

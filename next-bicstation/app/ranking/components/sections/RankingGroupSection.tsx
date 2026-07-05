@@ -12,7 +12,7 @@
 ============================================================================ */
 
 import RankingCardGrid
-    from '../RankingCardGrid'
+    from './RankingCardGrid'
 
 /* ============================================================================
 🔥 Types
@@ -45,6 +45,8 @@ type Props = {
 
     actionLabel?: string
 
+    icon?: string
+
 }
 
 /* ============================================================================
@@ -60,6 +62,8 @@ export default function RankingGroupSection({
     items,
 
     actionLabel = 'すべて見る',
+
+    icon = '✨',
 
 }: Props) {
 
@@ -84,77 +88,109 @@ export default function RankingGroupSection({
     return (
 
         <section
-            className={
-                styles.section
-            }
+            className={styles.section}
         >
 
             {/* ==========================================================
-            Header
+            Background Layer
             ========================================================== */}
 
-            <header
-                className={
-                    styles.header
-                }
-            >
-
-                <div>
-
-                    <h2
-                        className={
-                            styles.title
-                        }
-                    >
-
-                        {title}
-
-                    </h2>
-
-                    {
-
-                        description && (
-
-                            <p
-                                className={
-                                    styles.description
-                                }
-                            >
-
-                                {description}
-
-                            </p>
-
-                        )
-
-                    }
-
-                </div>
-
-                <button
-                    type="button"
-                    className={
-                        styles.more
-                    }
-                >
-
-                    {actionLabel}
-
-                    →
-
-                </button>
-
-            </header>
+            <div
+                className={styles.background}
+            />
 
             {/* ==========================================================
-            Ranking Cards
+            Content
             ========================================================== */}
 
-            <RankingCardGrid
+            <div
+                className={styles.content}
+            >
 
-                items={items}
+                {/* ======================================================
+                Header
+                ====================================================== */}
 
-            />
+                <header
+                    className={styles.header}
+                >
+
+                    <div
+                        className={styles.heading}
+                    >
+
+                        <div
+                            className={styles.badge}
+                        >
+
+                            <span
+                                className={styles.icon}
+                            >
+
+                                {icon}
+
+                            </span>
+
+                            <span
+                                className={styles.badgeLabel}
+                            >
+
+                                CATEGORY
+
+                            </span>
+
+                        </div>
+
+                        <h2
+                            className={styles.title}
+                        >
+
+                            {title}
+
+                        </h2>
+
+                        {
+
+                            description && (
+
+                                <p
+                                    className={styles.description}
+                                >
+
+                                    {description}
+
+                                </p>
+
+                            )
+
+                        }
+
+                    </div>
+
+                    <button
+                        type="button"
+                        className={styles.more}
+                    >
+
+                        {actionLabel}
+
+                        →
+
+                    </button>
+
+                </header>
+
+                {/* ======================================================
+                Ranking Cards
+                ====================================================== */}
+
+                <RankingCardGrid
+
+                    items={items}
+
+                />
+
+            </div>
 
         </section>
 

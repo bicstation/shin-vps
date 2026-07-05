@@ -5,6 +5,21 @@
 // All rights reserved.
 // ============================================================================
 
+/* =========================================================================
+🔥 Experience
+
+This page orchestrates the Ranking Experience.
+
+Runtime acquisition belongs to the Canonical Adapter.
+
+This page is responsible only for:
+
+- Customer Journey
+- Experience Binding
+- Experience Presentation
+
+============================================================================ */
+
 'use client'
 
 /* ============================================================================
@@ -67,13 +82,16 @@ export default function RankingPage() {
 
         navigationRuntime,
 
-        featuredRuntime,
+        rankingRuntime,
+
+        rankingCategories,
 
         loading,
 
         error,
 
     } = useRanking()
+
 
     /* =========================================================================
     🔥 Active Group
@@ -94,6 +112,10 @@ export default function RankingPage() {
     const items =
 
         navigationRuntime?.intents ?? []
+
+    const categories =
+
+        rankingCategories ?? []
 
     /* =========================================================================
     🔥 Active Items
@@ -163,7 +185,7 @@ export default function RankingPage() {
 
         !navigationRuntime ||
 
-        !featuredRuntime
+        !rankingRuntime
 
     ) {
 
@@ -197,16 +219,15 @@ export default function RankingPage() {
 
             <FeaturedOverall
 
-                runtime={featuredRuntime}
+                runtime={rankingRuntime.runtime}
 
             />
 
             <RankingNavigation
 
                 items={items}
-
+                categories={categories}
                 activeGroup={activeGroup}
-
                 onSelect={setActiveGroup}
 
             />
@@ -217,15 +238,17 @@ export default function RankingPage() {
 
                     ? (
 
+
                         <RankingGroupSection
 
+                            icon="🎮"
                             title={sectionTitle}
-
                             description={sectionDescription}
-
                             items={filteredItems}
+                            actionLabel="ランキングを見る"
 
                         />
+
 
                     )
 

@@ -8,22 +8,26 @@
 /**
  * ============================================================================
  * SHIN CORE LINX
- * Navigation Runtime Normalize
+ * Navigation Normalize
  * ============================================================================
  *
  * PURPOSE
  *
- * Backend Runtime
+ * Convert Backend Navigation JSON into the
+ * Canonical Navigation Backend Contract.
+ *
+ * Backend Navigation Runtime
  *      ↓
- * Runtime Contract
+ * Contract Guarantee
+ *      ↓
+ * Navigation Backend Contract
  *
  * Normalize Responsibilities
  *
  * ✓ Preserve Backend Reality
- * ✓ Guarantee Runtime Contract
+ * ✓ Guarantee Contract Safety
  * ✓ Null Safety
  * ✓ Array Safety
- * ✓ Preserve Raw Runtime
  *
  * Normalize SHALL NOT
  *
@@ -31,6 +35,7 @@
  * ✗ Generate Presentation
  * ✗ Generate Authority
  * ✗ Generate UI
+ * ✗ Generate Runtime
  *
  * Backend remains:
  *
@@ -52,7 +57,7 @@ import type {
 } from './contracts'
 
 /* ============================================================================
-🔥 Normalize Runtime
+🔥 Normalize Navigation
 ============================================================================ */
 
 export function normalizeNavigation(
@@ -94,14 +99,6 @@ export function normalizeNavigation(
         ready:
 
             runtime?.ready ?? false,
-
-        /* --------------------------------------------------------------------
-        Raw Backup
-        -------------------------------------------------------------------- */
-
-        raw:
-
-            runtime ?? null,
 
     }
 

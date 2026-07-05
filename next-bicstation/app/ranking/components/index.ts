@@ -19,10 +19,10 @@ export {
   default as RankingActiveHeader,
 } from './RankingActiveHeader'
 
-export {
-  default as RankingCardGrid,
-} from './RankingCardGrid'
+// export {
+//   default as RankingCardGrid,
+// } from './RankingCardGrid'
 
-export {
-  default as RankingCard,
-} from './RankingCard'
+// export {
+//   default as RankingCard,
+// } from './RankingCard'
