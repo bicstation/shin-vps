@@ -30,7 +30,7 @@ import SemanticIcon
 
 import type {
     NavigationIntent,
-} from '@/shared/lib/api/django/pc/navigation/adapter'
+} from '@/shared/lib/api/django/pc/navigation/'
 
 /* ============================================================================
 🔥 Props
@@ -55,7 +55,7 @@ export default function UniverseCard({
     console.log(item)
 
     const backgroundImage =
-        `/images/discover/${item.group_slug}.png`
+        `/images/discover/${item.group_slug}.webp`
 
     return (
 

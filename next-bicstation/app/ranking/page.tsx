@@ -234,7 +234,7 @@ export default function RankingPage() {
 
             {
 
-                filteredItems.length > 0
+                filteredItems.length >= 0
 
                     ? (
 
