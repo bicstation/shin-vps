@@ -57,13 +57,19 @@ Version 0.2
 ------------------------------
 Runtime Projection
 
+✔ Current
+
 Version 0.3
 ------------------------------
 Frontend Projection
 
+✔ Current
+
 Version 0.4
 ------------------------------
 Ranking Projection
+
+✔ Current
 
 Version 1.0
 ------------------------------
@@ -89,19 +95,31 @@ Commander Approval
 """
 
 # --------------------------------------------------
-# Version
-# --------------------------------------------------
-
-VERSION = "0.1"
-
-# --------------------------------------------------
 # Imports
 # --------------------------------------------------
 
 from pathlib import Path
+from datetime import date
+
 import csv
 import sys
 
+
+# --------------------------------------------------
+# Version
+# --------------------------------------------------
+
+VERSION = "0.4"
+
+REVIEW_VERSION = "1"
+
+# --------------------------------------------------
+# Review Metadata
+# --------------------------------------------------
+
+TSV_SNAPSHOT = "master_data"
+
+OBSERVATION_DATE = date.today().isoformat()
 
 # --------------------------------------------------
 # Paths
@@ -359,7 +377,7 @@ def build_markdown(
     # --------------------------------------------------
     # Header
     # --------------------------------------------------
-
+    
     lines.append("# Semantic Entity Review")
     lines.append("")
 
@@ -371,15 +389,52 @@ def build_markdown(
         f"Entity   : {group['group_slug']}"
     )
 
+    lines.append("")
+
     lines.append(
-        f"Version  : {VERSION}"
+        f"Review Version    : {REVIEW_VERSION}"
+    )
+
+    lines.append(
+        f"Generator Version : {VERSION}"
+    )
+
+    lines.append(
+        f"Observation Date  : {OBSERVATION_DATE}"
+    )
+
+    lines.append(
+        f"TSV Snapshot      : {TSV_SNAPSHOT}"
     )
 
     lines.append("")
 
     lines.append("Status : Draft")
-
     lines.append("")
+
+    lines.append("## Review Status")
+    lines.append("")
+
+    lines.append("Reviewer")
+    lines.append("")
+    lines.append("-")
+    lines.append("")
+
+    lines.append("Started")
+    lines.append("")
+    lines.append("-")
+    lines.append("")
+
+    lines.append("Completed")
+    lines.append("")
+    lines.append("-")
+    lines.append("")
+
+    lines.append("Commander Review")
+    lines.append("")
+    lines.append("Pending")
+    lines.append("")
+
     lines.append("---")
     lines.append("")
 
@@ -568,12 +623,61 @@ def build_markdown(
 
     lines.append("---")
     lines.append("")
+    
+    
+    lines.append("## Review Checklist")
+    lines.append("")
+
+    lines.append("- [ ] Presentation")
+    lines.append("- [ ] Attribute Mapping")
+    lines.append("- [ ] Alias")
+    lines.append("- [ ] Negative Alias")
+    lines.append("- [ ] Workflow")
+    lines.append("- [ ] Metadata")
+    lines.append("- [ ] Runtime Projection")
+    lines.append("- [ ] Frontend Projection")
+
+    lines.append("")
+    lines.append("---")
+    lines.append("")
 
     # --------------------------------------------------
     # Observation
     # --------------------------------------------------
 
+    
     lines.append("## Observation")
+    lines.append("")
+
+    lines.append("### Observation 001")
+    lines.append("")
+
+    lines.append("Category")
+    lines.append("")
+    lines.append("-")
+    lines.append("")
+
+    lines.append("Observed")
+    lines.append("")
+    lines.append("-")
+    lines.append("")
+
+   
+    lines.append("Evidence")
+    lines.append("")
+
+    lines.append("Source")
+    lines.append("")
+    lines.append("-")
+    lines.append("")
+
+    lines.append("Reference")
+    lines.append("")
+    lines.append("-")
+    lines.append("")
+    
+
+    lines.append("Interpretation")
     lines.append("")
     lines.append("-")
     lines.append("")
@@ -585,7 +689,11 @@ def build_markdown(
     # Good
     # --------------------------------------------------
 
+
     lines.append("## Good")
+    lines.append("")
+
+    lines.append("### Good 001")
     lines.append("")
     lines.append("-")
     lines.append("")
@@ -599,7 +707,11 @@ def build_markdown(
 
     lines.append("## Concern")
     lines.append("")
+
+    lines.append("### Concern 001")
+    lines.append("")
     lines.append("-")
+    lines.append("")
     lines.append("")
 
     lines.append("---")
@@ -611,8 +723,74 @@ def build_markdown(
 
     lines.append("## Proposal")
     lines.append("")
+
+    lines.append("### Presentation")
+    lines.append("")
     lines.append("-")
     lines.append("")
+
+    lines.append("### Description")
+    lines.append("")
+    lines.append("-")
+    lines.append("")
+
+    lines.append("### Attribute")
+    lines.append("")
+    lines.append("-")
+    lines.append("")
+
+    lines.append("### Alias")
+    lines.append("")
+    lines.append("-")
+    lines.append("")
+
+    lines.append("### Negative Alias")
+    lines.append("")
+    lines.append("-")
+    lines.append("")
+
+    lines.append("### Workflow")
+    lines.append("")
+    lines.append("-")
+    lines.append("")
+
+    lines.append("### Metadata")
+    lines.append("")
+    lines.append("-")
+    lines.append("")
+
+    lines.append("### Other")
+    lines.append("")
+    lines.append("-")
+    lines.append("")
+    lines.append("")
+    
+    lines.append("---")
+    lines.append("")
+
+    lines.append("## Review Summary")
+    lines.append("")
+
+    lines.append("Observation Count")
+    lines.append("")
+    lines.append("0")
+    lines.append("")
+
+    lines.append("Good Count")
+    lines.append("")
+    lines.append("0")
+    lines.append("")
+
+    lines.append("Concern Count")
+    lines.append("")
+    lines.append("0")
+    lines.append("")
+
+    lines.append("Proposal Count")
+    lines.append("")
+    lines.append("0")
+    lines.append("")
+    
 
     return "\n".join(lines)
 

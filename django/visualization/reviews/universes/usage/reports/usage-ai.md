@@ -2,9 +2,31 @@
 
 Universe : usage
 Entity   : usage-ai
-Version  : 0.1
+
+Review Version    : 1
+Generator Version : 0.4
+Observation Date  : 2026-07-07
+TSV Snapshot      : master_data
 
 Status : Draft
+
+## Review Status
+
+Reviewer
+
+-
+
+Started
+
+-
+
+Completed
+
+-
+
+Commander Review
+
+Pending
 
 ---
 
@@ -130,7 +152,42 @@ is_adult : 0
 
 ---
 
+## Review Checklist
+
+- [ ] Presentation
+- [ ] Attribute Mapping
+- [ ] Alias
+- [ ] Negative Alias
+- [ ] Workflow
+- [ ] Metadata
+- [ ] Runtime Projection
+- [ ] Frontend Projection
+
+---
+
 ## Observation
+
+### Observation 001
+
+Category
+
+-
+
+Observed
+
+-
+
+Evidence
+
+Source
+
+-
+
+Reference
+
+-
+
+Interpretation
 
 -
 
@@ -138,16 +195,72 @@ is_adult : 0
 
 ## Good
 
+### Good 001
+
 -
 
 ---
 
 ## Concern
 
+### Concern 001
+
 -
+
 
 ---
 
 ## Proposal
 
+### Presentation
+
 -
+
+### Description
+
+-
+
+### Attribute
+
+-
+
+### Alias
+
+-
+
+### Negative Alias
+
+-
+
+### Workflow
+
+-
+
+### Metadata
+
+-
+
+### Other
+
+-
+
+
+---
+
+## Review Summary
+
+Observation Count
+
+0
+
+Good Count
+
+0
+
+Concern Count
+
+0
+
+Proposal Count
+
+0
