@@ -1,0 +1,381 @@
+digraph SemanticReality {
+
+    rankdir=LR;
+
+    compound=true;
+
+    graph [
+        fontname="Helvetica",
+        fontsize=12,
+        splines=ortho
+    ];
+
+    node [
+        fontname="Helvetica"
+    ];
+
+    edge [
+        fontname="Helvetica"
+    ];
+
+    subgraph cluster_usage {
+        label="用途";
+        style="rounded";
+        color="gray70";
+
+        "usage" [
+            shape=folder,
+            label="用途"
+        ];
+
+        "usage-ai" [
+            shape=box,
+            label="AI"
+        ];
+        "usage" -> "usage-ai";
+
+        "usage-gaming" [
+            shape=box,
+            label="ゲーム"
+        ];
+        "usage" -> "usage-gaming";
+
+        "usage-creator" [
+            shape=box,
+            label="動画編集・制作"
+        ];
+        "usage" -> "usage-creator";
+
+        "usage-business" [
+            shape=box,
+            label="仕事"
+        ];
+        "usage" -> "usage-business";
+
+        "usage-mobile" [
+            shape=box,
+            label="持ち運び"
+        ];
+        "usage" -> "usage-mobile";
+
+        "usage-budget" [
+            shape=box,
+            label="コスパ重視"
+        ];
+        "usage" -> "usage-budget";
+
+    }
+
+    subgraph cluster_device {
+        label="デバイス";
+        style="rounded";
+        color="gray70";
+
+        "device" [
+            shape=folder,
+            label="デバイス"
+        ];
+
+        "device-laptop" [
+            shape=box,
+            label="ノートPC"
+        ];
+        "device" -> "device-laptop";
+
+        "device-desktop" [
+            shape=box,
+            label="デスクトップ"
+        ];
+        "device" -> "device-desktop";
+
+        "device-mini" [
+            shape=box,
+            label="ミニPC"
+        ];
+        "device" -> "device-mini";
+
+        "device-server" [
+            shape=box,
+            label="サーバー"
+        ];
+        "device" -> "device-server";
+
+        "device-workstation" [
+            shape=box,
+            label="ワークステーション"
+        ];
+        "device" -> "device-workstation";
+
+        "device-mobile" [
+            shape=box,
+            label="モバイルPC"
+        ];
+        "device" -> "device-mobile";
+
+    }
+
+    subgraph cluster_gpu {
+        label="GPU";
+        style="rounded";
+        color="gray70";
+
+        "gpu" [
+            shape=folder,
+            label="GPU"
+        ];
+
+        "gpu-highend" [
+            shape=box,
+            label="AI・ゲーム"
+        ];
+        "gpu" -> "gpu-highend";
+
+        "gpu-mainstream" [
+            shape=box,
+            label="定番モデル"
+        ];
+        "gpu" -> "gpu-mainstream";
+
+        "gpu-entry" [
+            shape=box,
+            label="普段使い"
+        ];
+        "gpu" -> "gpu-entry";
+
+        "gpu-professional" [
+            shape=box,
+            label="制作・設計"
+        ];
+        "gpu" -> "gpu-professional";
+
+        "gpu-integrated" [
+            shape=box,
+            label="Web・Office"
+        ];
+        "gpu" -> "gpu-integrated";
+
+    }
+
+    subgraph cluster_cpu {
+        label="CPU";
+        style="rounded";
+        color="gray70";
+
+        "cpu" [
+            shape=folder,
+            label="CPU"
+        ];
+
+        "cpu-ai" [
+            shape=box,
+            label="AI"
+        ];
+        "cpu" -> "cpu-ai";
+
+        "cpu-highend" [
+            shape=box,
+            label="最高性能"
+        ];
+        "cpu" -> "cpu-highend";
+
+        "cpu-mainstream" [
+            shape=box,
+            label="定番CPU"
+        ];
+        "cpu" -> "cpu-mainstream";
+
+        "cpu-entry" [
+            shape=box,
+            label="普段使い"
+        ];
+        "cpu" -> "cpu-entry";
+
+        "cpu-workstation" [
+            shape=box,
+            label="プロ向け"
+        ];
+        "cpu" -> "cpu-workstation";
+
+        "cpu-arm" [
+            shape=box,
+            label="省電力"
+        ];
+        "cpu" -> "cpu-arm";
+
+    }
+
+    subgraph cluster_memory {
+        label="メモリ";
+        style="rounded";
+        color="gray70";
+
+        "memory" [
+            shape=folder,
+            label="メモリ"
+        ];
+
+        "memory-highend" [
+            shape=box,
+            label="大容量"
+        ];
+        "memory" -> "memory-highend";
+
+        "memory-standard" [
+            shape=box,
+            label="標準"
+        ];
+        "memory" -> "memory-standard";
+
+        "memory-entry" [
+            shape=box,
+            label="軽作業向け"
+        ];
+        "memory" -> "memory-entry";
+
+    }
+
+    subgraph cluster_storage {
+        label="ストレージ";
+        style="rounded";
+        color="gray70";
+
+        "storage" [
+            shape=folder,
+            label="ストレージ"
+        ];
+
+        "storage-highend" [
+            shape=box,
+            label="大容量保存"
+        ];
+        "storage" -> "storage-highend";
+
+        "storage-standard" [
+            shape=box,
+            label="標準容量"
+        ];
+        "storage" -> "storage-standard";
+
+        "storage-fast" [
+            shape=box,
+            label="高速SSD"
+        ];
+        "storage" -> "storage-fast";
+
+    }
+
+    subgraph cluster_monitor {
+        label="モニター";
+        style="rounded";
+        color="gray70";
+
+        "monitor" [
+            shape=folder,
+            label="モニター"
+        ];
+
+        "monitor-gaming" [
+            shape=box,
+            label="ゲーム向け"
+        ];
+        "monitor" -> "monitor-gaming";
+
+        "monitor-creator" [
+            shape=box,
+            label="制作向け"
+        ];
+        "monitor" -> "monitor-creator";
+
+        "monitor-business" [
+            shape=box,
+            label="仕事向け"
+        ];
+        "monitor" -> "monitor-business";
+
+        "monitor-ultrawide" [
+            shape=box,
+            label="横長画面"
+        ];
+        "monitor" -> "monitor-ultrawide";
+
+        "monitor-highrefresh" [
+            shape=box,
+            label="なめらか表示"
+        ];
+        "monitor" -> "monitor-highrefresh";
+
+        "monitor-oled" [
+            shape=box,
+            label="OLED"
+        ];
+        "monitor" -> "monitor-oled";
+
+    }
+
+    subgraph cluster_maker {
+        label="メーカー";
+        style="rounded";
+        color="gray70";
+
+        "maker" [
+            shape=folder,
+            label="メーカー"
+        ];
+
+        "maker-global" [
+            shape=box,
+            label="海外ブランド"
+        ];
+        "maker" -> "maker-global";
+
+        "maker-japan" [
+            shape=box,
+            label="国内ブランド"
+        ];
+        "maker" -> "maker-japan";
+
+        "maker-gaming" [
+            shape=box,
+            label="ゲームブランド"
+        ];
+        "maker" -> "maker-gaming";
+
+    }
+
+    subgraph cluster_adult {
+        label="アダルト";
+        style="rounded";
+        color="gray70";
+
+        "adult" [
+            shape=folder,
+            label="アダルト"
+        ];
+
+        "adult-actress" [
+            shape=box,
+            label="出演者"
+        ];
+        "adult" -> "adult-actress";
+
+        "adult-body" [
+            shape=box,
+            label="スタイル"
+        ];
+        "adult" -> "adult-body";
+
+        "adult-scene" [
+            shape=box,
+            label="シーン"
+        ];
+        "adult" -> "adult-scene";
+
+        "adult-style" [
+            shape=box,
+            label="プレイ"
+        ];
+        "adult" -> "adult-style";
+
+    }
+
+}

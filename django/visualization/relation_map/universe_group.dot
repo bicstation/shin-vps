@@ -1,0 +1,111 @@
+digraph SemanticReality {
+
+    rankdir=LR;
+
+    graph [fontname="Helvetica"];
+    node  [fontname="Helvetica"];
+    edge  [fontname="Helvetica"];
+
+    // Universe
+
+    "usage" [shape=folder,label="用途"];
+    "device" [shape=folder,label="デバイス"];
+    "gpu" [shape=folder,label="GPU"];
+    "cpu" [shape=folder,label="CPU"];
+    "memory" [shape=folder,label="メモリ"];
+    "storage" [shape=folder,label="ストレージ"];
+    "monitor" [shape=folder,label="モニター"];
+    "maker" [shape=folder,label="メーカー"];
+    "adult" [shape=folder,label="アダルト"];
+
+    // Group
+
+    "gpu-highend" [shape=box,label="AI・ゲーム"];
+    "cpu-ai" [shape=box,label="AI"];
+    "memory-highend" [shape=box,label="大容量"];
+    "storage-highend" [shape=box,label="大容量保存"];
+    "usage-ai" [shape=box,label="AI"];
+    "device-laptop" [shape=box,label="ノートPC"];
+    "monitor-gaming" [shape=box,label="ゲーム向け"];
+    "maker-global" [shape=box,label="海外ブランド"];
+    "adult-actress" [shape=box,label="出演者"];
+    "gpu-mainstream" [shape=box,label="定番モデル"];
+    "cpu-highend" [shape=box,label="最高性能"];
+    "memory-standard" [shape=box,label="標準"];
+    "storage-standard" [shape=box,label="標準容量"];
+    "usage-gaming" [shape=box,label="ゲーム"];
+    "device-desktop" [shape=box,label="デスクトップ"];
+    "monitor-creator" [shape=box,label="制作向け"];
+    "maker-japan" [shape=box,label="国内ブランド"];
+    "adult-body" [shape=box,label="スタイル"];
+    "gpu-entry" [shape=box,label="普段使い"];
+    "cpu-mainstream" [shape=box,label="定番CPU"];
+    "memory-entry" [shape=box,label="軽作業向け"];
+    "storage-fast" [shape=box,label="高速SSD"];
+    "usage-creator" [shape=box,label="動画編集・制作"];
+    "device-mini" [shape=box,label="ミニPC"];
+    "monitor-business" [shape=box,label="仕事向け"];
+    "maker-gaming" [shape=box,label="ゲームブランド"];
+    "adult-scene" [shape=box,label="シーン"];
+    "gpu-professional" [shape=box,label="制作・設計"];
+    "cpu-entry" [shape=box,label="普段使い"];
+    "usage-business" [shape=box,label="仕事"];
+    "device-server" [shape=box,label="サーバー"];
+    "monitor-ultrawide" [shape=box,label="横長画面"];
+    "adult-style" [shape=box,label="プレイ"];
+    "gpu-integrated" [shape=box,label="Web・Office"];
+    "cpu-workstation" [shape=box,label="プロ向け"];
+    "usage-mobile" [shape=box,label="持ち運び"];
+    "device-workstation" [shape=box,label="ワークステーション"];
+    "monitor-highrefresh" [shape=box,label="なめらか表示"];
+    "cpu-arm" [shape=box,label="省電力"];
+    "usage-budget" [shape=box,label="コスパ重視"];
+    "device-mobile" [shape=box,label="モバイルPC"];
+    "monitor-oled" [shape=box,label="OLED"];
+
+    // Universe -> Group
+
+    "gpu" -> "gpu-highend";
+    "cpu" -> "cpu-ai";
+    "memory" -> "memory-highend";
+    "storage" -> "storage-highend";
+    "usage" -> "usage-ai";
+    "device" -> "device-laptop";
+    "monitor" -> "monitor-gaming";
+    "maker" -> "maker-global";
+    "adult" -> "adult-actress";
+    "gpu" -> "gpu-mainstream";
+    "cpu" -> "cpu-highend";
+    "memory" -> "memory-standard";
+    "storage" -> "storage-standard";
+    "usage" -> "usage-gaming";
+    "device" -> "device-desktop";
+    "monitor" -> "monitor-creator";
+    "maker" -> "maker-japan";
+    "adult" -> "adult-body";
+    "gpu" -> "gpu-entry";
+    "cpu" -> "cpu-mainstream";
+    "memory" -> "memory-entry";
+    "storage" -> "storage-fast";
+    "usage" -> "usage-creator";
+    "device" -> "device-mini";
+    "monitor" -> "monitor-business";
+    "maker" -> "maker-gaming";
+    "adult" -> "adult-scene";
+    "gpu" -> "gpu-professional";
+    "cpu" -> "cpu-entry";
+    "usage" -> "usage-business";
+    "device" -> "device-server";
+    "monitor" -> "monitor-ultrawide";
+    "adult" -> "adult-style";
+    "gpu" -> "gpu-integrated";
+    "cpu" -> "cpu-workstation";
+    "usage" -> "usage-mobile";
+    "device" -> "device-workstation";
+    "monitor" -> "monitor-highrefresh";
+    "cpu" -> "cpu-arm";
+    "usage" -> "usage-budget";
+    "device" -> "device-mobile";
+    "monitor" -> "monitor-oled";
+
+}
