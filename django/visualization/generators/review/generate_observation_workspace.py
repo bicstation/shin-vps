@@ -25,7 +25,7 @@ Mission
 
 Current Version
 
-    Version 0.1
+    Version 0.3
 
 Status
 
@@ -54,7 +54,7 @@ Generator NEVER creates:
 # Version
 # --------------------------------------------------
 
-VERSION = "0.1"
+VERSION = "0.3"
 
 # --------------------------------------------------
 # Imports
@@ -188,14 +188,12 @@ def main():
     )
     
     markdown = build_workspace(
-
+        entity,
         universe_slug,
-
         group_slug,
-
         observation_no,
-
     )
+    
 
     observation_file.write_text(
 
@@ -328,11 +326,10 @@ def get_observation_file(
 # --------------------------------------------------
 
 def build_workspace(
-
+    entity,
     universe_slug,
     group_slug,
     observation_no,
-
 ):
 
     lines = []
@@ -353,6 +350,31 @@ def build_workspace(
     lines.append("")
     lines.append("---")
     lines.append("")
+    
+    # --------------------------------------------------
+    # Reality Snapshot
+    # --------------------------------------------------
+
+    lines.append("# Reality Snapshot")
+    lines.append("")
+
+    lines.append(f"Universe")
+    lines.append("")
+    lines.append(universe_slug)
+    lines.append("")
+
+    lines.append("Entity")
+    lines.append("")
+    lines.append(group_slug)
+    lines.append("")
+
+    lines.append("Current Reality")
+    lines.append("")
+    lines.append("Generated from TSV")
+    lines.append("")
+
+    lines.append("---")
+    lines.append("")
 
     lines.append("# Mission")
     lines.append("")
@@ -371,27 +393,74 @@ def build_workspace(
     lines.append("---")
     lines.append("")
 
+
     categories = [
 
-        "Presentation",
+        {
+            "name": "Presentation",
+            "question": "現在の名称は Reality を適切に表現しているか。",
+            "source": "semantic_groups.tsv",
+            "reference": "group_slug : usage-ai",
+        },
 
-        "Description",
+        {
+            "name": "Description",
+            "question": "Description は Semantic Reality を十分説明しているか。",
+            "source": "semantic_groups.tsv",
+            "reference": "description",
+        },
 
-        "Attribute Mapping",
+        {
+            "name": "Attribute Mapping",
+            "question": "Reality を構成する Attribute は適切に整理されているか。",
+            "source": "semantic_group_mappings.tsv",
+            "reference": "group_slug",
+        },
 
-        "Alias",
+        {
+            "name": "Alias",
+            "question": "Reality を検索・発見するために十分な Alias が登録されているか。",
+            "source": "semantic_aliases.tsv",
+            "reference": "group_slug",
+        },
 
-        "Negative Alias",
+        {
+            "name": "Negative Alias",
+            "question": "誤認識を防ぐための Negative Alias が登録されているか。",
+            "source": "semantic_negative_aliases.tsv",
+            "reference": "group_slug",
+        },
 
-        "Workflow",
+        {
+            "name": "Workflow",
+            "question": "Workflow は Reality を自然に表現しているか。",
+            "source": "semantic_workflow_mappings.tsv",
+            "reference": "group_slug",
+        },
 
-        "Metadata",
+        {
+            "name": "Metadata",
+            "question": "Metadata は Semantic Entity を補足できているか。",
+            "source": "semantic_slug_metadata.tsv",
+            "reference": "slug",
+        },
 
-        "Runtime Projection",
+        {
+            "name": "Runtime Projection",
+            "question": "Runtime は TSV を正しく投影しているか。",
+            "source": "Authority Runtime / Generated Runtime",
+            "reference": "runtime payload",
+        },
 
-        "Frontend Projection",
+        {
+            "name": "Frontend Projection",
+            "question": "Frontend は Runtime を正しく表示しているか。",
+            "source": "Generated Runtime",
+            "reference": "frontend payload",
+        },
 
     ]
+
 
     for index, category in enumerate(
 
@@ -401,44 +470,85 @@ def build_workspace(
 
     ):
 
-    lines.append(
+        lines.append(
             f"# Observation {index:03d}"
-    )
+        )
 
-    lines.append("")
+        lines.append("")
 
-    lines.append("## Category")
-    lines.append("")
-    lines.append(category)
-    lines.append("")
+        # ----------------------------------
+        # Category
+        # ----------------------------------
 
-    lines.append("### Observed")
-    lines.append("")
-    lines.append("-")
-    lines.append("")
+        lines.append("## Category")
+        lines.append("")
+        lines.append(category["name"])
+        lines.append("")
 
-    lines.append("### Evidence")
-    lines.append("")
+        # ----------------------------------
+        # Review Question
+        # ----------------------------------
 
-    lines.append("#### Source")
-    lines.append("")
-    lines.append("-")
-    lines.append("")
+        lines.append("## Review Question")
+        lines.append("")
+        lines.append(category["question"])
+        lines.append("")
 
-    lines.append("#### Reference")
-    lines.append("")
-    lines.append("-")
-    lines.append("")
+        # ----------------------------------
+        # Observation
+        # ----------------------------------
 
-    lines.append("### Interpretation")
-    lines.append("")
-    lines.append("-")
-    lines.append("")
+        lines.append("### Observed")
+        lines.append("")
+        lines.append("-")
+        lines.append("")
 
-    lines.append("---")
-    lines.append("")
-        
+        # ----------------------------------
+        # Evidence
+        # ----------------------------------
+
+        lines.append("### Evidence")
+        lines.append("")
+
+        lines.append("#### Source")
+        lines.append("")
+        lines.append(category["source"])
+        lines.append("")
+
+        lines.append("#### Reference")
+        lines.append("")
+        lines.append(category["reference"])
+        lines.append("")
+
+        # ----------------------------------
+        # Interpretation
+        # ----------------------------------
+
+        lines.append("### Interpretation")
+        lines.append("")
+        lines.append("-")
+        lines.append("")
+
+        lines.append("---")
+        lines.append("")
+    
+
     lines.append("# Observation Summary")
+    lines.append("")
+    
+    # ----------------------------------
+    # Review Progress
+    # ----------------------------------
+    
+    lines.append("Review Progress")
+    lines.append("")
+
+    for category in categories:
+
+        lines.append(
+            f"- [ ] {category['name']}"
+        )
+
     lines.append("")
 
     lines.append("Observation Count")
@@ -446,9 +556,35 @@ def build_workspace(
     lines.append(str(len(categories)))
     lines.append("")
 
+    lines.append("Completed")
+    lines.append("")
+    lines.append("0")
+    lines.append("")
+
+    lines.append("Remaining")
+    lines.append("")
+    lines.append(str(len(categories)))
+    lines.append("")
+    
     lines.append("Evidence Sources")
     lines.append("")
-    lines.append("-")
+
+    sources = []
+
+    for category in categories:
+
+        if category["source"] not in sources:
+
+            sources.append(
+                category["source"]
+            )
+
+    for source in sources:
+
+        lines.append(
+            f"- {source}"
+        )
+
     lines.append("")
 
     lines.append("Overall Status")
@@ -458,10 +594,28 @@ def build_workspace(
 
     lines.append("---")
     lines.append("")
-
+    
     lines.append("# Commander Review")
     lines.append("")
+
+    lines.append("Status")
+    lines.append("")
     lines.append("Pending")
+    lines.append("")
+
+    lines.append("Review Date")
+    lines.append("")
+    lines.append("-")
+    lines.append("")
+
+    lines.append("Decision")
+    lines.append("")
+    lines.append("-")
+    lines.append("")
+
+    lines.append("Comments")
+    lines.append("")
+    lines.append("-")
     lines.append("")
 
     return "\n".join(lines)
