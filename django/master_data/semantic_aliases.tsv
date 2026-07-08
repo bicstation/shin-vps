@@ -372,6 +372,20 @@ usage-ai	llm開発	category	0	0.78
 usage-ai	aiエージェント	category	0	0.78
 usage-ai	cursor	category	0	0.78
 usage-ai	claude code	category	0	0.78
+usage-ai	chatgpt	service	0	1.00
+usage-ai	claude	service	0	1.00
+usage-ai	gemini	service	0	1.00
+usage-ai	open webui	software	0	0.94
+usage-ai	anythingllm	software	0	0.94
+usage-ai	llama	model	0	0.94
+usage-ai	deepseek	model	0	0.94
+usage-ai	qwen	model	0	0.94
+usage-ai	gemma	model	0	0.94
+usage-ai	sdxl	model	0	0.94
+usage-ai	flux	model	0	0.94
+usage-ai	fooocus	software	0	0.94
+usage-ai	windsurf	software	0	0.92
+usage-ai	cline	software	0	0.92
 usage-mobile	軽量ノート	category	0	0.94
 usage-mobile	持ち運び	category	0	0.88
 usage-mobile	1kg以下	spec	0	0.98
