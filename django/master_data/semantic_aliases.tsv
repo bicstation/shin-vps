@@ -348,6 +348,7 @@ usage-business	probook	series	0	0.82
 usage-business	vpro	feature	0	0.74
 usage-business	office pc	category	0	0.88
 usage-business	business laptop	category	0	0.86
+usage-ai	proart	canonical	0	0.99
 usage-ai	ai生成	category	0	0.96
 usage-ai	ローカルai	category	0	0.96
 usage-ai	stable diffusion	software	0	0.94
@@ -362,7 +363,6 @@ usage-ai	cuda	hardware_feature	0	0.74
 usage-ai	tensor	core	0	0.7
 usage-ai	local llm	category	0	0.96
 usage-ai	ai pc	category	0	0.82
-usage-ai	copilot+ pc	category	0	0.78
 usage-ai	ai開発	category	0	0.78
 usage-ai	ai開発向け	category	0	0.78
 usage-ai	ai開発用	category	0	0.78
