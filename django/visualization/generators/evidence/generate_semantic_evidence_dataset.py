@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# /home/maya/shin-vps/django/visualization/generators/runtime/generate_runtime_observation.py
+# /home/maya/shin-vps/django/visualization/generators/evidence/generate_semantic_evidence_dataset.py
 
 """
 ============================================================
@@ -39,6 +39,7 @@ VERSION = "0.1"
 # Imports
 # --------------------------------------------------
 
+
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -64,6 +65,11 @@ from api.services.semantic.v2.discover.group_identity_runtime import (
     build_group_identity_runtime,
 )
 
+from api.models import (
+    PCProduct,
+)
+
+
 # --------------------------------------------------
 # Paths
 # --------------------------------------------------
@@ -83,6 +89,71 @@ STRUCTURES = (
     / "visualization"
     / "evidence"
 )
+
+# --------------------------------------------------
+# Load Products
+# --------------------------------------------------
+
+def load_products(
+
+    entity_slug,
+
+):
+    products = (
+
+        PCProduct.objects.filter(
+
+            is_active=True,
+
+        )
+
+        .order_by(
+            "id"
+        )
+
+    )
+
+    return products
+
+
+# --------------------------------------------------
+# Find Product Evidence
+# --------------------------------------------------
+
+def find_product_evidence(
+
+    alias,
+    products,
+
+):
+
+    matches = []
+
+    alias_lower = alias.lower()
+
+    for product in products:
+
+        name = (
+            product.name
+            or ""
+        )
+
+        if alias_lower in name.lower():
+
+            matches.append({
+
+                "unique_id":
+                    product.unique_id,
+
+                "name":
+                    name,
+
+                "source":
+                    "Product Name",
+
+            })
+
+    return matches
 
 # --------------------------------------------------
 # Load Runtime
@@ -126,6 +197,115 @@ def load_group(entity_slug):
 
     return None
 
+
+
+# --------------------------------------------------
+# Load Aliases
+# --------------------------------------------------
+
+def load_aliases(
+
+    entity_slug,
+
+):
+
+    aliases = []
+
+    with open(
+        ALIASES,
+        encoding="utf-8",
+    ) as f:
+
+        reader = csv.DictReader(
+            f,
+            delimiter="\t",
+        )
+
+        for row in reader:
+
+            if row.get(
+                "is_active",
+                "1",
+            ) != "1":
+
+                continue
+
+            if row.get(
+                "slug",
+            ) != entity_slug:
+
+                continue
+
+            aliases.append(
+
+                row.get(
+                    "alias",
+                    "",
+                )
+
+            )
+
+    return sorted(
+        list(
+            set(
+                aliases
+            )
+        )
+    )
+
+# --------------------------------------------------
+# Load Negative Aliases
+# --------------------------------------------------
+
+def load_negative_aliases(
+
+    entity_slug,
+
+):
+
+    aliases = []
+
+    with open(
+        NEGATIVE_ALIASES,
+        encoding="utf-8",
+    ) as f:
+
+        reader = csv.DictReader(
+            f,
+            delimiter="\t",
+        )
+
+        for row in reader:
+
+            if row.get(
+                "is_active",
+                "1",
+            ) != "1":
+
+                continue
+
+            if row.get(
+                "slug",
+            ) != entity_slug:
+
+                continue
+
+            aliases.append(
+
+                row.get(
+                    "negative_alias",
+                    "",
+                )
+
+            )
+
+    return sorted(
+        list(
+            set(
+                aliases
+            )
+        )
+    )
 
 # --------------------------------------------------
 # Universe
@@ -190,7 +370,9 @@ def get_structure_file(
 def build_semantic_evidence_dataset(
 
     group,
-    runtime,
+    aliases,
+    negative_aliases,
+    products,
 
 ):
 
@@ -198,19 +380,100 @@ def build_semantic_evidence_dataset(
 
     lines.append("# Semantic Evidence Dataset")
     lines.append("")
+    
+    lines.append("Semantic Entity")
+    lines.append(f"└── {group['group_slug']}")
+    lines.append("")
+    
+    # -----------------------------
+    # Alias Evidence
+    # -----------------------------
 
-    lines.append("Status")
+    lines.append("Alias Evidence")
 
-    ready = runtime.get(
-        "ready",
-        False,
-    )
+    if aliases:
 
-    lines.append(
-        f"└── Ready : {ready}"
-    )
+        for alias in aliases:
+
+            matches = find_product_evidence(
+                alias,
+                products,
+            )
+            
+            lines.append(f"├── {alias}")
+            lines.append(
+                f"│   ├── Match : {len(matches)}"
+            )
+
+            if matches:
+
+                for match in matches:
+
+                    lines.append(
+
+                        "│   ├── "
+                        f"{match['unique_id']}"
+
+                    )
+
+                    lines.append(
+
+                        "│   │   "
+                        f"{match['name']}"
+
+                    )
+
+                    lines.append(
+
+                        "│   │   "
+                        f"Source : {match['source']}"
+
+                    )
+
+            else:
+
+                lines.append(
+                    "│   └── No Evidence"
+                )
+
+    else:
+
+        lines.append(
+            "└── -"
+        )
 
     lines.append("")
+
+    
+    # -----------------------------
+    # Negative Alias
+    # -----------------------------
+
+    lines.append("Negative Alias")
+
+    if negative_aliases:
+
+        for alias in negative_aliases:
+
+            lines.append(
+                f"├── {alias}"
+            )
+
+    else:
+
+        lines.append(
+            "└── -"
+        )
+
+    lines.append("")
+
+
+    lines.append("Products")
+    lines.append(
+        f"└── Count : {products.count()}"
+    )
+    lines.append("")
+
 
     return "\n".join(lines)
 
@@ -226,17 +489,31 @@ def main():
 
         print()
         print("Usage:")
-        print("python3 generate_runtime_observation.py <group_slug>")
+        print("python3 generate_semantic_evidence_dataset.py <group_slug>")
         print()
         print("Example:")
-        print("python3 generate_runtime_observation.py usage-ai")
+        print("python3 generate_semantic_evidence_dataset.py usage-ai")
         print()
 
         return
-
+    
+   
     entity_slug = sys.argv[1]
 
     group = load_group(entity_slug)
+
+    products = load_products(
+        entity_slug,
+    )
+
+    
+    aliases = load_aliases(
+        entity_slug,
+    )
+
+    negative_aliases = load_negative_aliases(
+        entity_slug,
+    )
 
     if group is None:
 
@@ -257,18 +534,18 @@ def main():
         entity_slug,
     )
 
-    #
-    # Runtime Observation 
-    # （Phase 2 で load_runtime() を実装）
-    #
-
+    # Phase 6
+    # Runtime Comparison
+    
     runtime = load_runtime(
         entity_slug,
     )
 
     markdown = build_semantic_evidence_dataset(
         group,
-        runtime,
+        aliases,
+        negative_aliases,
+        products,
     )
 
     structure_file.write_text(
