@@ -170,3 +170,9 @@ Negative Alias
 
 Products
 └── Count : 1048
+
+Summary
+├── Total Alias : 38
+├── Matched Alias : 2
+├── No Evidence : 36
+└── Coverage : 5.26%
