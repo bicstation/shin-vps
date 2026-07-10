@@ -1,381 +1,1556 @@
-digraph SemanticReality {
+digraph SemanticRelationMap {
 
     rankdir=LR;
-
-    compound=true;
-
-    graph [
-        fontname="Helvetica",
-        fontsize=12,
-        splines=ortho
-    ];
-
-    node [
-        fontname="Helvetica"
-    ];
-
-    edge [
-        fontname="Helvetica"
-    ];
-
-    subgraph cluster_usage {
-        label="用途";
-        style="rounded";
-        color="gray70";
-
-        "usage" [
-            shape=folder,
-            label="用途"
-        ];
-
-        "usage-ai" [
-            shape=box,
-            label="AI"
-        ];
-        "usage" -> "usage-ai";
-
-        "usage-gaming" [
-            shape=box,
-            label="ゲーム"
-        ];
-        "usage" -> "usage-gaming";
-
-        "usage-creator" [
-            shape=box,
-            label="動画編集・制作"
-        ];
-        "usage" -> "usage-creator";
-
-        "usage-business" [
-            shape=box,
-            label="仕事"
-        ];
-        "usage" -> "usage-business";
-
-        "usage-mobile" [
-            shape=box,
-            label="持ち運び"
-        ];
-        "usage" -> "usage-mobile";
-
-        "usage-budget" [
-            shape=box,
-            label="コスパ重視"
-        ];
-        "usage" -> "usage-budget";
-
-    }
-
-    subgraph cluster_device {
-        label="デバイス";
-        style="rounded";
-        color="gray70";
-
-        "device" [
-            shape=folder,
-            label="デバイス"
-        ];
-
-        "device-laptop" [
-            shape=box,
-            label="ノートPC"
-        ];
-        "device" -> "device-laptop";
-
-        "device-desktop" [
-            shape=box,
-            label="デスクトップ"
-        ];
-        "device" -> "device-desktop";
-
-        "device-mini" [
-            shape=box,
-            label="ミニPC"
-        ];
-        "device" -> "device-mini";
-
-        "device-server" [
-            shape=box,
-            label="サーバー"
-        ];
-        "device" -> "device-server";
-
-        "device-workstation" [
-            shape=box,
-            label="ワークステーション"
-        ];
-        "device" -> "device-workstation";
-
-        "device-mobile" [
-            shape=box,
-            label="モバイルPC"
-        ];
-        "device" -> "device-mobile";
-
-    }
-
-    subgraph cluster_gpu {
-        label="GPU";
-        style="rounded";
-        color="gray70";
-
-        "gpu" [
-            shape=folder,
-            label="GPU"
-        ];
-
-        "gpu-highend" [
-            shape=box,
-            label="AI・ゲーム"
-        ];
-        "gpu" -> "gpu-highend";
-
-        "gpu-mainstream" [
-            shape=box,
-            label="定番モデル"
-        ];
-        "gpu" -> "gpu-mainstream";
-
-        "gpu-entry" [
-            shape=box,
-            label="普段使い"
-        ];
-        "gpu" -> "gpu-entry";
-
-        "gpu-professional" [
-            shape=box,
-            label="制作・設計"
-        ];
-        "gpu" -> "gpu-professional";
-
-        "gpu-integrated" [
-            shape=box,
-            label="Web・Office"
-        ];
-        "gpu" -> "gpu-integrated";
-
-    }
-
-    subgraph cluster_cpu {
-        label="CPU";
-        style="rounded";
-        color="gray70";
-
-        "cpu" [
-            shape=folder,
-            label="CPU"
-        ];
-
-        "cpu-ai" [
-            shape=box,
-            label="AI"
-        ];
-        "cpu" -> "cpu-ai";
-
-        "cpu-highend" [
-            shape=box,
-            label="最高性能"
-        ];
-        "cpu" -> "cpu-highend";
-
-        "cpu-mainstream" [
-            shape=box,
-            label="定番CPU"
-        ];
-        "cpu" -> "cpu-mainstream";
-
-        "cpu-entry" [
-            shape=box,
-            label="普段使い"
-        ];
-        "cpu" -> "cpu-entry";
-
-        "cpu-workstation" [
-            shape=box,
-            label="プロ向け"
-        ];
-        "cpu" -> "cpu-workstation";
-
-        "cpu-arm" [
-            shape=box,
-            label="省電力"
-        ];
-        "cpu" -> "cpu-arm";
-
-    }
-
-    subgraph cluster_memory {
-        label="メモリ";
-        style="rounded";
-        color="gray70";
-
-        "memory" [
-            shape=folder,
-            label="メモリ"
-        ];
-
-        "memory-highend" [
-            shape=box,
-            label="大容量"
-        ];
-        "memory" -> "memory-highend";
-
-        "memory-standard" [
-            shape=box,
-            label="標準"
-        ];
-        "memory" -> "memory-standard";
-
-        "memory-entry" [
-            shape=box,
-            label="軽作業向け"
-        ];
-        "memory" -> "memory-entry";
-
-    }
-
-    subgraph cluster_storage {
-        label="ストレージ";
-        style="rounded";
-        color="gray70";
-
-        "storage" [
-            shape=folder,
-            label="ストレージ"
-        ];
-
-        "storage-highend" [
-            shape=box,
-            label="大容量保存"
-        ];
-        "storage" -> "storage-highend";
-
-        "storage-standard" [
-            shape=box,
-            label="標準容量"
-        ];
-        "storage" -> "storage-standard";
-
-        "storage-fast" [
-            shape=box,
-            label="高速SSD"
-        ];
-        "storage" -> "storage-fast";
-
-    }
-
-    subgraph cluster_monitor {
-        label="モニター";
-        style="rounded";
-        color="gray70";
-
-        "monitor" [
-            shape=folder,
-            label="モニター"
-        ];
-
-        "monitor-gaming" [
-            shape=box,
-            label="ゲーム向け"
-        ];
-        "monitor" -> "monitor-gaming";
-
-        "monitor-creator" [
-            shape=box,
-            label="制作向け"
-        ];
-        "monitor" -> "monitor-creator";
-
-        "monitor-business" [
-            shape=box,
-            label="仕事向け"
-        ];
-        "monitor" -> "monitor-business";
-
-        "monitor-ultrawide" [
-            shape=box,
-            label="横長画面"
-        ];
-        "monitor" -> "monitor-ultrawide";
-
-        "monitor-highrefresh" [
-            shape=box,
-            label="なめらか表示"
-        ];
-        "monitor" -> "monitor-highrefresh";
-
-        "monitor-oled" [
-            shape=box,
-            label="OLED"
-        ];
-        "monitor" -> "monitor-oled";
-
-    }
-
-    subgraph cluster_maker {
-        label="メーカー";
-        style="rounded";
-        color="gray70";
-
-        "maker" [
-            shape=folder,
-            label="メーカー"
-        ];
-
-        "maker-global" [
-            shape=box,
-            label="海外ブランド"
-        ];
-        "maker" -> "maker-global";
-
-        "maker-japan" [
-            shape=box,
-            label="国内ブランド"
-        ];
-        "maker" -> "maker-japan";
-
-        "maker-gaming" [
-            shape=box,
-            label="ゲームブランド"
-        ];
-        "maker" -> "maker-gaming";
-
-    }
-
-    subgraph cluster_adult {
-        label="アダルト";
-        style="rounded";
-        color="gray70";
-
-        "adult" [
-            shape=folder,
-            label="アダルト"
-        ];
-
-        "adult-actress" [
-            shape=box,
-            label="出演者"
-        ];
-        "adult" -> "adult-actress";
-
-        "adult-body" [
-            shape=box,
-            label="スタイル"
-        ];
-        "adult" -> "adult-body";
-
-        "adult-scene" [
-            shape=box,
-            label="シーン"
-        ];
-        "adult" -> "adult-scene";
-
-        "adult-style" [
-            shape=box,
-            label="プレイ"
-        ];
-        "adult" -> "adult-style";
-
-    }
+    node [shape=box];
+
+    "usage" [label="usage"];
+    "device" [label="device"];
+    "gpu" [label="gpu"];
+    "cpu" [label="cpu"];
+    "memory" [label="memory"];
+    "storage" [label="storage"];
+    "monitor" [label="monitor"];
+    "maker" [label="maker"];
+    "adult" [label="adult"];
+    "gpu-highend" [label="AI・ゲーム"];
+    "gpu-mainstream" [label="定番モデル"];
+    "gpu-entry" [label="普段使い"];
+    "gpu-professional" [label="制作・設計"];
+    "gpu-integrated" [label="Web・Office"];
+    "cpu-ai" [label="AI"];
+    "cpu-highend" [label="最高性能"];
+    "cpu-mainstream" [label="定番CPU"];
+    "cpu-entry" [label="普段使い"];
+    "cpu-workstation" [label="プロ向け"];
+    "cpu-arm" [label="省電力"];
+    "memory-highend" [label="大容量"];
+    "memory-standard" [label="標準"];
+    "memory-entry" [label="軽作業向け"];
+    "storage-highend" [label="大容量保存"];
+    "storage-standard" [label="標準容量"];
+    "storage-fast" [label="高速SSD"];
+    "usage-ai" [label="AI"];
+    "usage-gaming" [label="ゲーム"];
+    "usage-creator" [label="動画編集・制作"];
+    "usage-business" [label="仕事"];
+    "usage-mobile" [label="持ち運び"];
+    "usage-budget" [label="コスパ重視"];
+    "device-laptop" [label="ノートPC"];
+    "device-desktop" [label="デスクトップ"];
+    "device-mini" [label="ミニPC"];
+    "device-server" [label="サーバー"];
+    "device-workstation" [label="ワークステーション"];
+    "device-mobile" [label="モバイルPC"];
+    "monitor-gaming" [label="ゲーム向け"];
+    "monitor-creator" [label="制作向け"];
+    "monitor-business" [label="仕事向け"];
+    "monitor-ultrawide" [label="横長画面"];
+    "monitor-highrefresh" [label="なめらか表示"];
+    "monitor-oled" [label="OLED"];
+    "maker-global" [label="海外ブランド"];
+    "maker-japan" [label="国内ブランド"];
+    "maker-gaming" [label="ゲームブランド"];
+    "adult-actress" [label="出演者"];
+    "adult-body" [label="スタイル"];
+    "adult-scene" [label="シーン"];
+    "adult-style" [label="プレイ"];
+    "product-monitor" [label="モニター"];
+    "product-desktop" [label="デスクトップPC"];
+    "product-notebook" [label="ノートPC"];
+    "product-mini-pc" [label="ミニPC"];
+    "product-server" [label="サーバー"];
+    "product-workstation" [label="ワークステーション"];
+    "device-laptop" [label="ノートPC"];
+    "device-desktop" [label="デスクトップPC"];
+    "device-server" [label="サーバー"];
+    "device-workstation" [label="ワークステーション"];
+    "device-mini-pc" [label="ミニPC"];
+    "device-mobile-pc" [label="モバイルPC"];
+    "intel-core-ultra-9" [label="Core Ultra 9"];
+    "intel-core-ultra-7" [label="Core Ultra 7"];
+    "intel-core-ultra-5" [label="Core Ultra 5"];
+    "intel-core-i9" [label="Core i9"];
+    "intel-core-i7" [label="Core i7"];
+    "intel-core-i5" [label="Core i5"];
+    "intel-core-i3" [label="Core i3"];
+    "amd-ryzen-ai" [label="Ryzen AI"];
+    "amd-threadripper" [label="Ryzen Threadripper"];
+    "arm-snapdragon-x" [label="Snapdragon X Elite / Plus"];
+    "amd-ryzen-9" [label="Ryzen 9"];
+    "amd-ryzen-7" [label="Ryzen 7"];
+    "amd-ryzen-5" [label="Ryzen 5"];
+    "amd-ryzen-3" [label="Ryzen 3"];
+    "intel-xeon" [label="Intel Xeon"];
+    "intel-low-end" [label="Celeron / Pentium"];
+    "cpu-npu" [label="NPU搭載"];
+    "cpu-ai" [label="AI CPU"];
+    "gpu-rtx-5090" [label="GeForce RTX 5090"];
+    "gpu-rtx-5080" [label="GeForce RTX 5080"];
+    "gpu-rtx-5070-ti" [label="GeForce RTX 5070 Ti"];
+    "gpu-rtx-5070" [label="GeForce RTX 5070"];
+    "gpu-rtx-4090" [label="GeForce RTX 4090"];
+    "gpu-rtx-4080" [label="GeForce RTX 4080"];
+    "gpu-rtx-4070-ti" [label="GeForce RTX 4070 Ti"];
+    "gpu-rtx-4070" [label="GeForce RTX 4070"];
+    "gpu-rtx-4060-ti" [label="GeForce RTX 4060 Ti"];
+    "gpu-rtx-4060" [label="GeForce RTX 4060"];
+    "gpu-rtx-4050" [label="GeForce RTX 4050"];
+    "gpu-radeon-ai-pro" [label="Radeon AI PRO"];
+    "gpu-intel-arc" [label="Intel Arc Graphics"];
+    "gpu-intel-graphics" [label="Intel Graphics (内蔵)"];
+    "gpu-amd-graphics" [label="AMD Radeon Graphics (内蔵)"];
+    "gpu-professional" [label="プロ向け"];
+    "vram-24gb-plus" [label="24GB以上"];
+    "vram-16gb" [label="16GB"];
+    "vram-12gb" [label="12GB"];
+    "vram-8gb" [label="8GB"];
+    "vram-6gb" [label="6GB"];
+    "vram-4gb" [label="4GB以下"];
+    "mem-64gb-plus" [label="64GB以上（超大容量）"];
+    "mem-32gb" [label="32GB（大容量）"];
+    "mem-16gb" [label="16GB（標準）"];
+    "mem-8gb" [label="8GB（最低限）"];
+    "ssd-2tb-plus" [label="2TB以上（超大容量）"];
+    "ssd-1tb" [label="1TB（大容量）"];
+    "ssd-512gb" [label="512GB（標準）"];
+    "ssd-256gb" [label="256GB（最低限）"];
+    "storage-nvme" [label="NVMe SSD"];
+    "storage-sata" [label="SATA SSD"];
+    "usage-gaming" [label="ゲーミングPC"];
+    "usage-creator" [label="クリエイター向け"];
+    "usage-business" [label="ビジネス・法人向け"];
+    "usage-ai" [label="AI・ローカルAI用途"];
+    "usage-mobile" [label="モバイル・軽量"];
+    "usage-budget" [label="コスパ重視"];
+    "feat-weight-1kg" [label="1kg未満（超軽量）"];
+    "feat-weight-1-5kg" [label="1.0〜1.5kg（軽量）"];
+    "feat-weight-2kg" [label="1.5〜2.0kg（標準）"];
+    "maker-asus" [label="ASUS"];
+    "maker-dell" [label="DELL"];
+    "maker-hp" [label="HP"];
+    "maker-lenovo" [label="Lenovo"];
+    "maker-msi" [label="MSI"];
+    "maker-nec" [label="NEC"];
+    "maker-fujitsu" [label="FUJITSU"];
+    "maker-dynabook" [label="Dynabook"];
+    "maker-mouse" [label="MouseComputer"];
+    "maker-dospara" [label="Dospara"];
+    "maker-acer" [label="Acer"];
+    "maker-razer" [label="Razer"];
+    "maker-vaio" [label="VAIO"];
+    "maker-minisforum" [label="MINISFORUM"];
+    "maker-beelink" [label="Beelink"];
+    "monitor-24inch" [label="24インチ前後（標準）"];
+    "monitor-27inch" [label="27インチ（大画面）"];
+    "monitor-32inch" [label="32インチ以上（特大）"];
+    "monitor-small" [label="22インチ以下（小型）"];
+    "fhd" [label="FHD"];
+    "wqhd" [label="WQHD"];
+    "4k" [label="4K"];
+    "res-8k" [label="8K（超高精細）"];
+    "hz-60hz" [label="60Hz（標準）"];
+    "hz-120hz" [label="120Hz以上（高リフレッシュ）"];
+    "hz-240hz" [label="240Hz以上（ゲーミング）"];
+    "refresh-500hz" [label="500Hz"];
+    "panel-ips" [label="IPS"];
+    "panel-va" [label="VA"];
+    "panel-oled" [label="OLED"];
+    "aspect-32-9" [label="スーパーウルトラワイド（32:9）"];
+    "aspect-21-9" [label="ウルトラワイド（21:9）"];
+    "solo-actress" [label="単体女優"];
+    "amateur" [label="素人・ナンパ"];
+    "mature" [label="熟女・人妻"];
+    "college-girl" [label="女子大生"];
+    "big-breasts" [label="巨乳"];
+    "beautiful-girl" [label="美少女"];
+    "slender" [label="スレンダー"];
+    "chubby" [label="ぽっちゃり"];
+    "ultra-hd-4k" [label="4K / 高画質"];
+    "vr-content" [label="VR / 3D"];
+    "self-shot" [label="個人撮影"];
+    "ai-analyzed" [label="AI解析済 / 高圧縮"];
+    "cosplay" [label="制服・コスプレ"];
+    "fetish" [label="巨乳・フェチ"];
+    "public-exposure" [label="痴漢・露出"];
+    "nursing" [label="白衣・奉仕"];
+    "creampie" [label="中出し"];
+    "sm-bondage" [label="拘束・SM"];
+    "squirting" [label="潮吹き"];
+    "female-led" [label="逆レイ・攻め"];
+    "adult" [label="ギャル系"];
+    "beautiful-breasts" [label="美乳"];
+    "big-ass" [label="巨尻"];
+    "monitor" [label="monitor"];
+    "モニター" [label="モニター"];
+    "display" [label="display"];
+    "qd-oled" [label="qd-oled"];
+    "desktop" [label="desktop"];
+    "デスクトップ" [label="デスクトップ"];
+    "tower" [label="tower"];
+    "notebook" [label="notebook"];
+    "laptop" [label="laptop"];
+    "ノート" [label="ノート"];
+    "mini pc" [label="mini pc"];
+    "nuc" [label="nuc"];
+    "ミニpc" [label="ミニpc"];
+    "server" [label="server"];
+    "poweredge" [label="poweredge"];
+    "proliant" [label="proliant"];
+    "workstation" [label="workstation"];
+    "precision" [label="precision"];
+    "zbook" [label="zbook"];
+    "notebook" [label="notebook"];
+    "laptop" [label="laptop"];
+    "zenbook" [label="zenbook"];
+    "thinkpad" [label="thinkpad"];
+    "latitude" [label="latitude"];
+    "vivobook" [label="vivobook"];
+    "ideapad" [label="ideapad"];
+    "pavilion" [label="pavilion"];
+    "envy" [label="envy"];
+    "gram" [label="gram"];
+    "swift" [label="swift"];
+    "inspiron" [label="inspiron"];
+    "legion slim" [label="legion slim"];
+    "macbook" [label="macbook"];
+    "desktop" [label="desktop"];
+    "tower" [label="tower"];
+    "vostro" [label="vostro"];
+    "optiplex" [label="optiplex"];
+    "elitedesk" [label="elitedesk"];
+    "prodesk" [label="prodesk"];
+    "thinkcentre" [label="thinkcentre"];
+    "omen" [label="omen"];
+    "predator" [label="predator"];
+    "desktop pc" [label="desktop pc"];
+    "server" [label="server"];
+    "poweredge" [label="poweredge"];
+    "proliant" [label="proliant"];
+    "primergy" [label="primergy"];
+    "rack server" [label="rack server"];
+    "tower server" [label="tower server"];
+    "enterprise server" [label="enterprise server"];
+    "workstation" [label="workstation"];
+    "precision" [label="precision"];
+    "zbook" [label="zbook"];
+    "thinkstation" [label="thinkstation"];
+    "pro max" [label="pro max"];
+    "creatorpro" [label="creatorpro"];
+    "mobile workstation" [label="mobile workstation"];
+    "cad workstation" [label="cad workstation"];
+    "mini pc" [label="mini pc"];
+    "nuc" [label="nuc"];
+    "minisforum" [label="minisforum"];
+    "beelink" [label="beelink"];
+    "small form factor" [label="small form factor"];
+    "sff" [label="sff"];
+    "tiny pc" [label="tiny pc"];
+    "micro pc" [label="micro pc"];
+    "mobile" [label="mobile"];
+    "lightweight" [label="lightweight"];
+    "ultrabook" [label="ultrabook"];
+    "thin and light" [label="thin and light"];
+    "portable" [label="portable"];
+    "travel laptop" [label="travel laptop"];
+    "compact laptop" [label="compact laptop"];
+    "core ultra 9" [label="core ultra 9"];
+    "ultra 9" [label="ultra 9"];
+    "ultra9" [label="ultra9"];
+    "285k" [label="285k"];
+    "275k" [label="275k"];
+    "185h" [label="185h"];
+    "288v" [label="288v"];
+    "ultra 9 285k" [label="ultra 9 285k"];
+    "ultra 9 185h" [label="ultra 9 185h"];
+    "arrow lake" [label="arrow lake"];
+    "lunar lake" [label="lunar lake"];
+    "meteor lake" [label="meteor lake"];
+    "ai pc" [label="ai pc"];
+    "copilot+ pc" [label="copilot+ pc"];
+    "intel ai" [label="intel ai"];
+    "core ultra 7" [label="core ultra 7"];
+    "ultra 7" [label="ultra 7"];
+    "ultra7" [label="ultra7"];
+    "265k" [label="265k"];
+    "255h" [label="255h"];
+    "165h" [label="165h"];
+    "155h" [label="155h"];
+    "ultra 7 265k" [label="ultra 7 265k"];
+    "arrow lake" [label="arrow lake"];
+    "meteor lake" [label="meteor lake"];
+    "ai pc" [label="ai pc"];
+    "core i9" [label="core i9"];
+    "i9-1" [label="i9-1"];
+    "i9 1" [label="i9 1"];
+    "i9" [label="i9"];
+    "14900" [label="14900"];
+    "14900k" [label="14900k"];
+    "14900kf" [label="14900kf"];
+    "raptor lake" [label="raptor lake"];
+    "intel 14th gen" [label="intel 14th gen"];
+    "unlocked" [label="unlocked"];
+    "core i5" [label="core i5"];
+    "core i7" [label="core i7"];
+    "core i9" [label="core i9"];
+    "ryzen ai" [label="ryzen ai"];
+    "ryzen ai 9" [label="ryzen ai 9"];
+    "ryzen ai 7" [label="ryzen ai 7"];
+    "ai hx 370" [label="ai hx 370"];
+    "ai 9 hx" [label="ai 9 hx"];
+    "amd ai" [label="amd ai"];
+    "xdna" [label="xdna"];
+    "ai pc" [label="ai pc"];
+    "copilot+ pc" [label="copilot+ pc"];
+    "npu" [label="npu"];
+    "threadripper" [label="threadripper"];
+    "7995wx" [label="7995wx"];
+    "7980x" [label="7980x"];
+    "pro workstation" [label="pro workstation"];
+    "hedt" [label="hedt"];
+    "zen 4" [label="zen 4"];
+    "snapdragon x elite" [label="snapdragon x elite"];
+    "snapdragon x plus" [label="snapdragon x plus"];
+    "x1e" [label="x1e"];
+    "x1p" [label="x1p"];
+    "qualcomm" [label="qualcomm"];
+    "arm pc" [label="arm pc"];
+    "copilot+ pc" [label="copilot+ pc"];
+    "npu" [label="npu"];
+    "ryzen 9" [label="ryzen 9"];
+    "9950x" [label="9950x"];
+    "7950x" [label="7950x"];
+    "7945hx" [label="7945hx"];
+    "8945hs" [label="8945hs"];
+    "zen 5" [label="zen 5"];
+    "zen 4" [label="zen 4"];
+    "x3d" [label="x3d"];
+    "enthusiast" [label="enthusiast"];
+    "celeron" [label="celeron"];
+    "pentium" [label="pentium"];
+    "n100" [label="n100"];
+    "n200" [label="n200"];
+    "entry pc" [label="entry pc"];
+    "low power" [label="low power"];
+    "fanless" [label="fanless"];
+    "ryzen ai" [label="ryzen ai"];
+    "intel npu" [label="intel npu"];
+    "xdna" [label="xdna"];
+    "neural processing unit" [label="neural processing unit"];
+    "npu" [label="npu"];
+    "ai acceleration" [label="ai acceleration"];
+    "rtx 5090" [label="rtx 5090"];
+    "rtx5090" [label="rtx5090"];
+    "r5090" [label="r5090"];
+    "5090" [label="5090"];
+    "geforce rtx 5090" [label="geforce rtx 5090"];
+    "geforce rtx5090" [label="geforce rtx5090"];
+    "nvidia rtx 5090" [label="nvidia rtx 5090"];
+    "rtx 5090搭載" [label="rtx 5090搭載"];
+    "5090搭載" [label="5090搭載"];
+    "rtx5090搭載" [label="rtx5090搭載"];
+    "rtx5090 laptop gpu" [label="rtx5090 laptop gpu"];
+    "rtx 5090 laptop gpu" [label="rtx 5090 laptop gpu"];
+    "laptop gpu 5090" [label="laptop gpu 5090"];
+    "gb203" [label="gb203"];
+    "blackwell" [label="blackwell"];
+    "cuda" [label="cuda"];
+    "dlss" [label="dlss"];
+    "ray tracing" [label="ray tracing"];
+    "rtx 5080" [label="rtx 5080"];
+    "rtx5080" [label="rtx5080"];
+    "r5080" [label="r5080"];
+    "5080" [label="5080"];
+    "geforce rtx 5080" [label="geforce rtx 5080"];
+    "5080搭載" [label="5080搭載"];
+    "rtx5080 laptop gpu" [label="rtx5080 laptop gpu"];
+    "blackwell" [label="blackwell"];
+    "rtx 5070 ti" [label="rtx 5070 ti"];
+    "rtx5070ti" [label="rtx5070ti"];
+    "5070ti" [label="5070ti"];
+    "5070 ti" [label="5070 ti"];
+    "rtx5070 ti" [label="rtx5070 ti"];
+    "rtx 5070ti" [label="rtx 5070ti"];
+    "5070ti搭載" [label="5070ti搭載"];
+    "rtx5070ti laptop gpu" [label="rtx5070ti laptop gpu"];
+    "rtx 5070" [label="rtx 5070"];
+    "rtx5070" [label="rtx5070"];
+    "r5070" [label="r5070"];
+    "5070" [label="5070"];
+    "geforce rtx 5070" [label="geforce rtx 5070"];
+    "5070搭載" [label="5070搭載"];
+    "rtx5070 laptop gpu" [label="rtx5070 laptop gpu"];
+    "blackwell" [label="blackwell"];
+    "rtx 4090" [label="rtx 4090"];
+    "rtx4090" [label="rtx4090"];
+    "geforce rtx 4090" [label="geforce rtx 4090"];
+    "rtx 4090搭載" [label="rtx 4090搭載"];
+    "r4090" [label="r4090"];
+    "rtx 4080" [label="rtx 4080"];
+    "rtx4080" [label="rtx4080"];
+    "r4080" [label="r4080"];
+    "rtx 4070 ti" [label="rtx 4070 ti"];
+    "rtx4070ti" [label="rtx4070ti"];
+    "4070ti" [label="4070ti"];
+    "rtx 4070" [label="rtx 4070"];
+    "rtx4070" [label="rtx4070"];
+    "rtx 4060 ti" [label="rtx 4060 ti"];
+    "rtx4060ti" [label="rtx4060ti"];
+    "4060ti" [label="4060ti"];
+    "rtx 4060" [label="rtx 4060"];
+    "rtx4060" [label="rtx4060"];
+    "r4060" [label="r4060"];
+    "rtx 4050" [label="rtx 4050"];
+    "rtx4050" [label="rtx4050"];
+    "radeon ai pro" [label="radeon ai pro"];
+    "radeon w7900" [label="radeon w7900"];
+    "radeon w7800" [label="radeon w7800"];
+    "radeon w7600" [label="radeon w7600"];
+    "intel arc" [label="intel arc"];
+    "arc graphics" [label="arc graphics"];
+    "arc a770" [label="arc a770"];
+    "arc a750" [label="arc a750"];
+    "arc a380" [label="arc a380"];
+    "arc a140v" [label="arc a140v"];
+    "arc b580" [label="arc b580"];
+    "arc b570" [label="arc b570"];
+    "intel uhd" [label="intel uhd"];
+    "iris xe" [label="iris xe"];
+    "intel graphics" [label="intel graphics"];
+    "radeon graphics" [label="radeon graphics"];
+    "radeon 780m" [label="radeon 780m"];
+    "radeon 760m" [label="radeon 760m"];
+    "quadro" [label="quadro"];
+    "a2000" [label="a2000"];
+    "a4000" [label="a4000"];
+    "t1000" [label="t1000"];
+    "t600" [label="t600"];
+    "24gb" [label="24gb"];
+    "24gb gddr6" [label="24gb gddr6"];
+    "24gb gddr6x" [label="24gb gddr6x"];
+    "24gb vram" [label="24gb vram"];
+    "16gb gddr6" [label="16gb gddr6"];
+    "16gb gddr6x" [label="16gb gddr6x"];
+    "16gb vram" [label="16gb vram"];
+    "16gb gpu memory" [label="16gb gpu memory"];
+    "12gb gddr6" [label="12gb gddr6"];
+    "12gb gddr6x" [label="12gb gddr6x"];
+    "12gb vram" [label="12gb vram"];
+    "8gb gddr6" [label="8gb gddr6"];
+    "8gb gddr6x" [label="8gb gddr6x"];
+    "8gb vram" [label="8gb vram"];
+    "6gb gddr6" [label="6gb gddr6"];
+    "6gb vram" [label="6gb vram"];
+    "4gb vram" [label="4gb vram"];
+    "4gb gddr6" [label="4gb gddr6"];
+    "2gb" [label="2gb"];
+    "4gb vram" [label="4gb vram"];
+    "2gb vram" [label="2gb vram"];
+    "64gbメモリ" [label="64gbメモリ"];
+    "64 gb ram" [label="64 gb ram"];
+    "64gb ram" [label="64gb ram"];
+    "128gb" [label="128gb"];
+    "128gb ram" [label="128gb ram"];
+    "32gbx2" [label="32gbx2"];
+    "64gb ddr5" [label="64gb ddr5"];
+    "32gbメモリ" [label="32gbメモリ"];
+    "32 gb ram" [label="32 gb ram"];
+    "32gb ram" [label="32gb ram"];
+    "16gbx2" [label="16gbx2"];
+    "32gb ddr5" [label="32gb ddr5"];
+    "16gbメモリ" [label="16gbメモリ"];
+    "16 gb ram" [label="16 gb ram"];
+    "16gb ram" [label="16gb ram"];
+    "8gbx2" [label="8gbx2"];
+    "16gb ddr5" [label="16gb ddr5"];
+    "8gbメモリ" [label="8gbメモリ"];
+    "8 gb ram" [label="8 gb ram"];
+    "8gb ram" [label="8gb ram"];
+    "4gbx2" [label="4gbx2"];
+    "8gb ddr4" [label="8gb ddr4"];
+    "2tb ssd" [label="2tb ssd"];
+    "4tb ssd" [label="4tb ssd"];
+    "8tb ssd" [label="8tb ssd"];
+    "nvme 2tb" [label="nvme 2tb"];
+    "2tb nvme" [label="2tb nvme"];
+    "pcie 4.0 ssd" [label="pcie 4.0 ssd"];
+    "1tb ssd" [label="1tb ssd"];
+    "nvme 1tb" [label="nvme 1tb"];
+    "1tb nvme" [label="1tb nvme"];
+    "pcie 1tb" [label="pcie 1tb"];
+    "1tb pcie ssd" [label="1tb pcie ssd"];
+    "512gb ssd" [label="512gb ssd"];
+    "512 gb ssd" [label="512 gb ssd"];
+    "512gb nvme" [label="512gb nvme"];
+    "256gb ssd" [label="256gb ssd"];
+    "256 gb ssd" [label="256 gb ssd"];
+    "256gb nvme" [label="256gb nvme"];
+    "nvme" [label="nvme"];
+    "m.2 nvme" [label="m.2 nvme"];
+    "pci express ssd" [label="pci express ssd"];
+    "pcie ssd" [label="pcie ssd"];
+    "gen4 nvme" [label="gen4 nvme"];
+    "gen5 nvme" [label="gen5 nvme"];
+    "sata ssd" [label="sata ssd"];
+    "2.5インチ ssd" [label="2.5インチ ssd"];
+    "sata iii" [label="sata iii"];
+    "2.5 sata" [label="2.5 sata"];
+    "ゲーミング" [label="ゲーミング"];
+    "ゲーム" [label="ゲーム"];
+    "g-tune" [label="g-tune"];
+    "nextgear" [label="nextgear"];
+    "fps" [label="fps"];
+    "rtx" [label="rtx"];
+    "esports" [label="esports"];
+    "high fps" [label="high fps"];
+    "gaming pc" [label="gaming pc"];
+    "rgb" [label="rgb"];
+    "dlss" [label="dlss"];
+    "ray tracing" [label="ray tracing"];
+    "クリエイター" [label="クリエイター"];
+    "動画編集" [label="動画編集"];
+    "raw現像" [label="raw現像"];
+    "adobe" [label="adobe"];
+    "daiv" [label="daiv"];
+    "blender" [label="blender"];
+    "davinci resolve" [label="davinci resolve"];
+    "premiere pro" [label="premiere pro"];
+    "after effects" [label="after effects"];
+    "creator pc" [label="creator pc"];
+    "cad" [label="cad"];
+    "ビジネス" [label="ビジネス"];
+    "事務" [label="事務"];
+    "法人" [label="法人"];
+    "office搭載" [label="office搭載"];
+    "versapro" [label="versapro"];
+    "thinkpad" [label="thinkpad"];
+    "latitude" [label="latitude"];
+    "elitebook" [label="elitebook"];
+    "probook" [label="probook"];
+    "vpro" [label="vpro"];
+    "office pc" [label="office pc"];
+    "business laptop" [label="business laptop"];
+    "proart" [label="proart"];
+    "ai生成" [label="ai生成"];
+    "ローカルai" [label="ローカルai"];
+    "stable diffusion" [label="stable diffusion"];
+    "llm" [label="llm"];
+    "comfyui" [label="comfyui"];
+    "automatic1111" [label="automatic1111"];
+    "ollama" [label="ollama"];
+    "lm studio" [label="lm studio"];
+    "vllm" [label="vllm"];
+    "text generation" [label="text generation"];
+    "cuda" [label="cuda"];
+    "tensor" [label="tensor"];
+    "local llm" [label="local llm"];
+    "ai pc" [label="ai pc"];
+    "ai開発" [label="ai開発"];
+    "ai開発向け" [label="ai開発向け"];
+    "ai開発用" [label="ai開発用"];
+    "ai学習" [label="ai学習"];
+    "機械学習" [label="機械学習"];
+    "llm開発" [label="llm開発"];
+    "aiエージェント" [label="aiエージェント"];
+    "cursor" [label="cursor"];
+    "claude code" [label="claude code"];
+    "chatgpt" [label="chatgpt"];
+    "claude" [label="claude"];
+    "gemini" [label="gemini"];
+    "open webui" [label="open webui"];
+    "anythingllm" [label="anythingllm"];
+    "llama" [label="llama"];
+    "deepseek" [label="deepseek"];
+    "qwen" [label="qwen"];
+    "gemma" [label="gemma"];
+    "sdxl" [label="sdxl"];
+    "flux" [label="flux"];
+    "fooocus" [label="fooocus"];
+    "windsurf" [label="windsurf"];
+    "cline" [label="cline"];
+    "軽量ノート" [label="軽量ノート"];
+    "持ち運び" [label="持ち運び"];
+    "1kg以下" [label="1kg以下"];
+    "モバイルpc" [label="モバイルpc"];
+    "薄型" [label="薄型"];
+    "ultrabook" [label="ultrabook"];
+    "thin and light" [label="thin and light"];
+    "compact laptop" [label="compact laptop"];
+    "travel laptop" [label="travel laptop"];
+    "安い" [label="安い"];
+    "コスパ" [label="コスパ"];
+    "格安" [label="格安"];
+    "エントリー" [label="エントリー"];
+    "低価格" [label="低価格"];
+    "best value" [label="best value"];
+    "budget pc" [label="budget pc"];
+    "900g" [label="900g"];
+    "800g" [label="800g"];
+    "700g" [label="700g"];
+    "1kg未満" [label="1kg未満"];
+    "超軽量" [label="超軽量"];
+    "under 1kg" [label="under 1kg"];
+    "1.1kg" [label="1.1kg"];
+    "1.2kg" [label="1.2kg"];
+    "1.3kg" [label="1.3kg"];
+    "1.4kg" [label="1.4kg"];
+    "1.5kg" [label="1.5kg"];
+    "lightweight" [label="lightweight"];
+    "1.6kg" [label="1.6kg"];
+    "1.7kg" [label="1.7kg"];
+    "1.8kg" [label="1.8kg"];
+    "1.9kg" [label="1.9kg"];
+    "2kg" [label="2kg"];
+    "standard weight" [label="standard weight"];
+    "asus" [label="asus"];
+    "rog" [label="rog"];
+    "tuf" [label="tuf"];
+    "zenbook" [label="zenbook"];
+    "vivobook" [label="vivobook"];
+    "proart" [label="proart"];
+    "republic of gamers" [label="republic of gamers"];
+    "dell" [label="dell"];
+    "alienware" [label="alienware"];
+    "inspiron" [label="inspiron"];
+    "xps" [label="xps"];
+    "g-series" [label="g-series"];
+    "latitude" [label="latitude"];
+    "precision" [label="precision"];
+    "vostro" [label="vostro"];
+    "optiplex" [label="optiplex"];
+    "hp" [label="hp"];
+    "omen" [label="omen"];
+    "victus" [label="victus"];
+    "pavilion" [label="pavilion"];
+    "envy" [label="envy"];
+    "elitebook" [label="elitebook"];
+    "probook" [label="probook"];
+    "zbook" [label="zbook"];
+    "spectre" [label="spectre"];
+    "dynabook" [label="dynabook"];
+    "23.8型" [label="23.8型"];
+    "24型" [label="24型"];
+    "24インチ" [label="24インチ"];
+    "24.5型" [label="24.5型"];
+    "24inch" [label="24inch"];
+    "27型" [label="27型"];
+    "27インチ" [label="27インチ"];
+    "27-inch" [label="27-inch"];
+    "27inch" [label="27inch"];
+    "27 monitor" [label="27 monitor"];
+    "31.5型" [label="31.5型"];
+    "32型" [label="32型"];
+    "34型" [label="34型"];
+    "40型" [label="40型"];
+    "43型" [label="43型"];
+    "49型" [label="49型"];
+    "large monitor" [label="large monitor"];
+    "21.5型" [label="21.5型"];
+    "22型" [label="22型"];
+    "21インチ" [label="21インチ"];
+    "small monitor" [label="small monitor"];
+    "1920x1080" [label="1920x1080"];
+    "fhd" [label="fhd"];
+    "フルhd" [label="フルhd"];
+    "full hd" [label="full hd"];
+    "1080p" [label="1080p"];
+    "2560x1440" [label="2560x1440"];
+    "wqhd" [label="wqhd"];
+    "qhd" [label="qhd"];
+    "2k" [label="2k"];
+    "1440p" [label="1440p"];
+    "3840x2160" [label="3840x2160"];
+    "4k" [label="4k"];
+    "uhd" [label="uhd"];
+    "2160p" [label="2160p"];
+    "ultra hd" [label="ultra hd"];
+    "7680x4320" [label="7680x4320"];
+    "8k" [label="8k"];
+    "super high resolution" [label="super high resolution"];
+    "60hz" [label="60hz"];
+    "75hz" [label="75hz"];
+    "standard refresh" [label="standard refresh"];
+    "100hz" [label="100hz"];
+    "120hz" [label="120hz"];
+    "144hz" [label="144hz"];
+    "165hz" [label="165hz"];
+    "170hz" [label="170hz"];
+    "180hz" [label="180hz"];
+    "high refresh" [label="high refresh"];
+    "240hz" [label="240hz"];
+    "360hz" [label="360hz"];
+    "esports monitor" [label="esports monitor"];
+    "500hz" [label="500hz"];
+    "500 hz" [label="500 hz"];
+    "ultra high refresh" [label="ultra high refresh"];
+    "ips" [label="ips"];
+    "ips液晶" [label="ips液晶"];
+    "ipsパネル" [label="ipsパネル"];
+    "wide viewing angle" [label="wide viewing angle"];
+    "va" [label="va"];
+    "va液晶" [label="va液晶"];
+    "high contrast" [label="high contrast"];
+    "oled" [label="oled"];
+    "有機el" [label="有機el"];
+    "qd-oled" [label="qd-oled"];
+    "true black" [label="true black"];
+    "32:9" [label="32:9"];
+    "5120x1440" [label="5120x1440"];
+    "super ultrawide" [label="super ultrawide"];
+    "21:9" [label="21:9"];
+    "2560x1080" [label="2560x1080"];
+    "3440x1440" [label="3440x1440"];
+    "ultrawide" [label="ultrawide"];
+    "単体" [label="単体"];
+    "専属" [label="専属"];
+    "独占" [label="独占"];
+    "ソロ作品" [label="ソロ作品"];
+    "素人" [label="素人"];
+    "投稿" [label="投稿"];
+    "ナンパ" [label="ナンパ"];
+    "街録" [label="街録"];
+    "熟女" [label="熟女"];
+    "人妻" [label="人妻"];
+    "お母さん" [label="お母さん"];
+    "義母" [label="義母"];
+    "40代" [label="40代"];
+    "50代" [label="50代"];
+    "女子大生" [label="女子大生"];
+    "現役jd" [label="現役jd"];
+    "女子大" [label="女子大"];
+    "20歳" [label="20歳"];
+    "巨乳" [label="巨乳"];
+    "爆乳" [label="爆乳"];
+    "ボイン" [label="ボイン"];
+    "デカパイ" [label="デカパイ"];
+    "kカップ" [label="kカップ"];
+    "美少女" [label="美少女"];
+    "美人" [label="美人"];
+    "美白" [label="美白"];
+    "モデル級" [label="モデル級"];
+    "スレンダー" [label="スレンダー"];
+    "細身" [label="細身"];
+    "モデル体型" [label="モデル体型"];
+    "美脚" [label="美脚"];
+    "ぽっちゃり" [label="ぽっちゃり"];
+    "マシュマロ" [label="マシュマロ"];
+    "デブ" [label="デブ"];
+    "肉感" [label="肉感"];
+    "4k" [label="4k"];
+    "uhd" [label="uhd"];
+    "高画質" [label="高画質"];
+    "最高画質" [label="最高画質"];
+    "vr" [label="vr"];
+    "バーチャルリアリティ" [label="バーチャルリアリティ"];
+    "3d" [label="3d"];
+    "立体" [label="立体"];
+    "自撮り" [label="自撮り"];
+    "個人撮影" [label="個人撮影"];
+    "スマホ撮影" [label="スマホ撮影"];
+    "縦動画" [label="縦動画"];
+    "ai解析" [label="ai解析"];
+    "高効率" [label="高効率"];
+    "最適化済" [label="最適化済"];
+    "gemma" [label="gemma"];
+    "制服" [label="制服"];
+    "セーラー服" [label="セーラー服"];
+    "ca" [label="ca"];
+    "看護師" [label="看護師"];
+    "足コキ" [label="足コキ"];
+    "手コキ" [label="手コキ"];
+    "フェチ" [label="フェチ"];
+    "匂い" [label="匂い"];
+    "痴漢" [label="痴漢"];
+    "露出" [label="露出"];
+    "野外" [label="野外"];
+    "密室" [label="密室"];
+    "ナース" [label="ナース"];
+    "白衣" [label="白衣"];
+    "介護" [label="介護"];
+    "看病" [label="看病"];
+    "中出し" [label="中出し"];
+    "生ハメ" [label="生ハメ"];
+    "ザーメン" [label="ザーメン"];
+    "拘束" [label="拘束"];
+    "緊縛" [label="緊縛"];
+    "sm" [label="sm"];
+    "放置" [label="放置"];
+    "潮吹き" [label="潮吹き"];
+    "絶頂" [label="絶頂"];
+    "噴射" [label="噴射"];
+    "感度" [label="感度"];
+    "逆レイ" [label="逆レイ"];
+    "女攻め" [label="女攻め"];
+    "騎乗位" [label="騎乗位"];
+    "逆ナン" [label="逆ナン"];
+    "ギャル" [label="ギャル"];
+    "黒ギャル" [label="黒ギャル"];
+    "金髪ギャル" [label="金髪ギャル"];
+    "ヤマンバ" [label="ヤマンバ"];
+    "美乳" [label="美乳"];
+    "巨尻" [label="巨尻"];
+    "デカ尻" [label="デカ尻"];
+    "未亡人" [label="未亡人"];
+    "女子校生" [label="女子校生"];
+    "痴女" [label="痴女"];
+    "お姉さん" [label="お姉さん"];
+    "メイド" [label="メイド"];
+    "天然巨乳" [label="天然巨乳"];
+    "Iカップ" [label="Iカップ"];
+    "Jカップ" [label="Jカップ"];
+    "Kカップ" [label="Kカップ"];
+    "華奢" [label="華奢"];
+    "モデル体型" [label="モデル体型"];
+    "豊満" [label="豊満"];
+    "グラマー" [label="グラマー"];
+    "肉感" [label="肉感"];
+    "痴女" [label="痴女"];
+    "ryzen 3" [label="ryzen 3"];
+    "ryzen3" [label="ryzen3"];
+    "ryzen 5" [label="ryzen 5"];
+    "ryzen5" [label="ryzen5"];
+    "ryzen 7" [label="ryzen 7"];
+    "ryzen7" [label="ryzen7"];
+    "radeon" [label="radeon"];
+    "8gb" [label="8gb"];
+    "16gb" [label="16gb"];
+    "32gb" [label="32gb"];
+    "64gb" [label="64gb"];
+    "256gb" [label="256gb"];
+    "512gb" [label="512gb"];
+    "1tb" [label="1tb"];
+    "2tb" [label="2tb"];
+
+    "gpu" -> "gpu-highend" [label="belongs_to"];
+    "gpu" -> "gpu-mainstream" [label="belongs_to"];
+    "gpu" -> "gpu-entry" [label="belongs_to"];
+    "gpu" -> "gpu-professional" [label="belongs_to"];
+    "gpu" -> "gpu-integrated" [label="belongs_to"];
+    "cpu" -> "cpu-ai" [label="belongs_to"];
+    "cpu" -> "cpu-highend" [label="belongs_to"];
+    "cpu" -> "cpu-mainstream" [label="belongs_to"];
+    "cpu" -> "cpu-entry" [label="belongs_to"];
+    "cpu" -> "cpu-workstation" [label="belongs_to"];
+    "cpu" -> "cpu-arm" [label="belongs_to"];
+    "memory" -> "memory-highend" [label="belongs_to"];
+    "memory" -> "memory-standard" [label="belongs_to"];
+    "memory" -> "memory-entry" [label="belongs_to"];
+    "storage" -> "storage-highend" [label="belongs_to"];
+    "storage" -> "storage-standard" [label="belongs_to"];
+    "storage" -> "storage-fast" [label="belongs_to"];
+    "usage" -> "usage-ai" [label="belongs_to"];
+    "usage" -> "usage-gaming" [label="belongs_to"];
+    "usage" -> "usage-creator" [label="belongs_to"];
+    "usage" -> "usage-business" [label="belongs_to"];
+    "usage" -> "usage-mobile" [label="belongs_to"];
+    "usage" -> "usage-budget" [label="belongs_to"];
+    "device" -> "device-laptop" [label="belongs_to"];
+    "device" -> "device-desktop" [label="belongs_to"];
+    "device" -> "device-mini" [label="belongs_to"];
+    "device" -> "device-server" [label="belongs_to"];
+    "device" -> "device-workstation" [label="belongs_to"];
+    "device" -> "device-mobile" [label="belongs_to"];
+    "monitor" -> "monitor-gaming" [label="belongs_to"];
+    "monitor" -> "monitor-creator" [label="belongs_to"];
+    "monitor" -> "monitor-business" [label="belongs_to"];
+    "monitor" -> "monitor-ultrawide" [label="belongs_to"];
+    "monitor" -> "monitor-highrefresh" [label="belongs_to"];
+    "monitor" -> "monitor-oled" [label="belongs_to"];
+    "maker" -> "maker-global" [label="belongs_to"];
+    "maker" -> "maker-japan" [label="belongs_to"];
+    "maker" -> "maker-gaming" [label="belongs_to"];
+    "adult" -> "adult-actress" [label="belongs_to"];
+    "adult" -> "adult-body" [label="belongs_to"];
+    "adult" -> "adult-scene" [label="belongs_to"];
+    "adult" -> "adult-style" [label="belongs_to"];
+    "product-monitor" -> "monitor" [label="has_alias"];
+    "product-monitor" -> "モニター" [label="has_alias"];
+    "product-monitor" -> "display" [label="has_alias"];
+    "product-monitor" -> "qd-oled" [label="has_alias"];
+    "product-desktop" -> "desktop" [label="has_alias"];
+    "product-desktop" -> "デスクトップ" [label="has_alias"];
+    "product-desktop" -> "tower" [label="has_alias"];
+    "product-notebook" -> "notebook" [label="has_alias"];
+    "product-notebook" -> "laptop" [label="has_alias"];
+    "product-notebook" -> "ノート" [label="has_alias"];
+    "product-mini-pc" -> "mini pc" [label="has_alias"];
+    "product-mini-pc" -> "nuc" [label="has_alias"];
+    "product-mini-pc" -> "ミニpc" [label="has_alias"];
+    "product-server" -> "server" [label="has_alias"];
+    "product-server" -> "poweredge" [label="has_alias"];
+    "product-server" -> "proliant" [label="has_alias"];
+    "product-workstation" -> "workstation" [label="has_alias"];
+    "product-workstation" -> "precision" [label="has_alias"];
+    "product-workstation" -> "zbook" [label="has_alias"];
+    "device-laptop" -> "notebook" [label="has_alias"];
+    "device-laptop" -> "laptop" [label="has_alias"];
+    "device-laptop" -> "zenbook" [label="has_alias"];
+    "device-laptop" -> "thinkpad" [label="has_alias"];
+    "device-laptop" -> "latitude" [label="has_alias"];
+    "device-laptop" -> "vivobook" [label="has_alias"];
+    "device-laptop" -> "ideapad" [label="has_alias"];
+    "device-laptop" -> "pavilion" [label="has_alias"];
+    "device-laptop" -> "envy" [label="has_alias"];
+    "device-laptop" -> "gram" [label="has_alias"];
+    "device-laptop" -> "swift" [label="has_alias"];
+    "device-laptop" -> "inspiron" [label="has_alias"];
+    "device-laptop" -> "legion slim" [label="has_alias"];
+    "device-laptop" -> "macbook" [label="has_alias"];
+    "device-desktop" -> "desktop" [label="has_alias"];
+    "device-desktop" -> "tower" [label="has_alias"];
+    "device-desktop" -> "vostro" [label="has_alias"];
+    "device-desktop" -> "optiplex" [label="has_alias"];
+    "device-desktop" -> "elitedesk" [label="has_alias"];
+    "device-desktop" -> "prodesk" [label="has_alias"];
+    "device-desktop" -> "thinkcentre" [label="has_alias"];
+    "device-desktop" -> "omen" [label="has_alias"];
+    "device-desktop" -> "predator" [label="has_alias"];
+    "device-desktop" -> "desktop pc" [label="has_alias"];
+    "device-server" -> "server" [label="has_alias"];
+    "device-server" -> "poweredge" [label="has_alias"];
+    "device-server" -> "proliant" [label="has_alias"];
+    "device-server" -> "primergy" [label="has_alias"];
+    "device-server" -> "rack server" [label="has_alias"];
+    "device-server" -> "tower server" [label="has_alias"];
+    "device-server" -> "enterprise server" [label="has_alias"];
+    "device-workstation" -> "workstation" [label="has_alias"];
+    "device-workstation" -> "precision" [label="has_alias"];
+    "device-workstation" -> "zbook" [label="has_alias"];
+    "device-workstation" -> "thinkstation" [label="has_alias"];
+    "device-workstation" -> "pro max" [label="has_alias"];
+    "device-workstation" -> "creatorpro" [label="has_alias"];
+    "device-workstation" -> "mobile workstation" [label="has_alias"];
+    "device-workstation" -> "cad workstation" [label="has_alias"];
+    "device-mini-pc" -> "mini pc" [label="has_alias"];
+    "device-mini-pc" -> "nuc" [label="has_alias"];
+    "device-mini-pc" -> "minisforum" [label="has_alias"];
+    "device-mini-pc" -> "beelink" [label="has_alias"];
+    "device-mini-pc" -> "small form factor" [label="has_alias"];
+    "device-mini-pc" -> "sff" [label="has_alias"];
+    "device-mini-pc" -> "tiny pc" [label="has_alias"];
+    "device-mini-pc" -> "micro pc" [label="has_alias"];
+    "device-mobile-pc" -> "mobile" [label="has_alias"];
+    "device-mobile-pc" -> "lightweight" [label="has_alias"];
+    "device-mobile-pc" -> "ultrabook" [label="has_alias"];
+    "device-mobile-pc" -> "thin and light" [label="has_alias"];
+    "device-mobile-pc" -> "portable" [label="has_alias"];
+    "device-mobile-pc" -> "travel laptop" [label="has_alias"];
+    "device-mobile-pc" -> "compact laptop" [label="has_alias"];
+    "intel-core-ultra-9" -> "core ultra 9" [label="has_alias"];
+    "intel-core-ultra-9" -> "ultra 9" [label="has_alias"];
+    "intel-core-ultra-9" -> "ultra9" [label="has_alias"];
+    "intel-core-ultra-9" -> "285k" [label="has_alias"];
+    "intel-core-ultra-9" -> "275k" [label="has_alias"];
+    "intel-core-ultra-9" -> "185h" [label="has_alias"];
+    "intel-core-ultra-9" -> "288v" [label="has_alias"];
+    "intel-core-ultra-9" -> "ultra 9 285k" [label="has_alias"];
+    "intel-core-ultra-9" -> "ultra 9 185h" [label="has_alias"];
+    "intel-core-ultra-9" -> "arrow lake" [label="has_alias"];
+    "intel-core-ultra-9" -> "lunar lake" [label="has_alias"];
+    "intel-core-ultra-9" -> "meteor lake" [label="has_alias"];
+    "intel-core-ultra-9" -> "ai pc" [label="has_alias"];
+    "intel-core-ultra-9" -> "copilot+ pc" [label="has_alias"];
+    "intel-core-ultra-9" -> "intel ai" [label="has_alias"];
+    "intel-core-ultra-7" -> "core ultra 7" [label="has_alias"];
+    "intel-core-ultra-7" -> "ultra 7" [label="has_alias"];
+    "intel-core-ultra-7" -> "ultra7" [label="has_alias"];
+    "intel-core-ultra-7" -> "265k" [label="has_alias"];
+    "intel-core-ultra-7" -> "255h" [label="has_alias"];
+    "intel-core-ultra-7" -> "165h" [label="has_alias"];
+    "intel-core-ultra-7" -> "155h" [label="has_alias"];
+    "intel-core-ultra-7" -> "ultra 7 265k" [label="has_alias"];
+    "intel-core-ultra-7" -> "arrow lake" [label="has_alias"];
+    "intel-core-ultra-7" -> "meteor lake" [label="has_alias"];
+    "intel-core-ultra-7" -> "ai pc" [label="has_alias"];
+    "intel-core-i9" -> "core i9" [label="has_alias"];
+    "intel-core-i9" -> "i9-1" [label="has_alias"];
+    "intel-core-i9" -> "i9 1" [label="has_alias"];
+    "intel-core-i9" -> "i9" [label="has_alias"];
+    "intel-core-i9" -> "14900" [label="has_alias"];
+    "intel-core-i9" -> "14900k" [label="has_alias"];
+    "intel-core-i9" -> "14900kf" [label="has_alias"];
+    "intel-core-i9" -> "raptor lake" [label="has_alias"];
+    "intel-core-i9" -> "intel 14th gen" [label="has_alias"];
+    "intel-core-i9" -> "unlocked" [label="has_alias"];
+    "intel-core-i5" -> "core i5" [label="has_alias"];
+    "intel-core-i7" -> "core i7" [label="has_alias"];
+    "intel-core-i9" -> "core i9" [label="has_alias"];
+    "amd-ryzen-ai" -> "ryzen ai" [label="has_alias"];
+    "amd-ryzen-ai" -> "ryzen ai 9" [label="has_alias"];
+    "amd-ryzen-ai" -> "ryzen ai 7" [label="has_alias"];
+    "amd-ryzen-ai" -> "ai hx 370" [label="has_alias"];
+    "amd-ryzen-ai" -> "ai 9 hx" [label="has_alias"];
+    "amd-ryzen-ai" -> "amd ai" [label="has_alias"];
+    "amd-ryzen-ai" -> "xdna" [label="has_alias"];
+    "amd-ryzen-ai" -> "ai pc" [label="has_alias"];
+    "amd-ryzen-ai" -> "copilot+ pc" [label="has_alias"];
+    "amd-ryzen-ai" -> "npu" [label="has_alias"];
+    "amd-threadripper" -> "threadripper" [label="has_alias"];
+    "amd-threadripper" -> "7995wx" [label="has_alias"];
+    "amd-threadripper" -> "7980x" [label="has_alias"];
+    "amd-threadripper" -> "pro workstation" [label="has_alias"];
+    "amd-threadripper" -> "hedt" [label="has_alias"];
+    "amd-threadripper" -> "zen 4" [label="has_alias"];
+    "arm-snapdragon-x" -> "snapdragon x elite" [label="has_alias"];
+    "arm-snapdragon-x" -> "snapdragon x plus" [label="has_alias"];
+    "arm-snapdragon-x" -> "x1e" [label="has_alias"];
+    "arm-snapdragon-x" -> "x1p" [label="has_alias"];
+    "arm-snapdragon-x" -> "qualcomm" [label="has_alias"];
+    "arm-snapdragon-x" -> "arm pc" [label="has_alias"];
+    "arm-snapdragon-x" -> "copilot+ pc" [label="has_alias"];
+    "arm-snapdragon-x" -> "npu" [label="has_alias"];
+    "amd-ryzen-9" -> "ryzen 9" [label="has_alias"];
+    "amd-ryzen-9" -> "9950x" [label="has_alias"];
+    "amd-ryzen-9" -> "7950x" [label="has_alias"];
+    "amd-ryzen-9" -> "7945hx" [label="has_alias"];
+    "amd-ryzen-9" -> "8945hs" [label="has_alias"];
+    "amd-ryzen-9" -> "zen 5" [label="has_alias"];
+    "amd-ryzen-9" -> "zen 4" [label="has_alias"];
+    "amd-ryzen-9" -> "x3d" [label="has_alias"];
+    "amd-ryzen-9" -> "enthusiast" [label="has_alias"];
+    "intel-low-end" -> "celeron" [label="has_alias"];
+    "intel-low-end" -> "pentium" [label="has_alias"];
+    "intel-low-end" -> "n100" [label="has_alias"];
+    "intel-low-end" -> "n200" [label="has_alias"];
+    "intel-low-end" -> "entry pc" [label="has_alias"];
+    "intel-low-end" -> "low power" [label="has_alias"];
+    "intel-low-end" -> "fanless" [label="has_alias"];
+    "cpu-npu" -> "ryzen ai" [label="has_alias"];
+    "cpu-npu" -> "intel npu" [label="has_alias"];
+    "cpu-npu" -> "xdna" [label="has_alias"];
+    "cpu-npu" -> "neural processing unit" [label="has_alias"];
+    "cpu-npu" -> "npu" [label="has_alias"];
+    "cpu-npu" -> "ai acceleration" [label="has_alias"];
+    "gpu-rtx-5090" -> "rtx 5090" [label="has_alias"];
+    "gpu-rtx-5090" -> "rtx5090" [label="has_alias"];
+    "gpu-rtx-5090" -> "r5090" [label="has_alias"];
+    "gpu-rtx-5090" -> "5090" [label="has_alias"];
+    "gpu-rtx-5090" -> "geforce rtx 5090" [label="has_alias"];
+    "gpu-rtx-5090" -> "geforce rtx5090" [label="has_alias"];
+    "gpu-rtx-5090" -> "nvidia rtx 5090" [label="has_alias"];
+    "gpu-rtx-5090" -> "rtx 5090搭載" [label="has_alias"];
+    "gpu-rtx-5090" -> "5090搭載" [label="has_alias"];
+    "gpu-rtx-5090" -> "rtx5090搭載" [label="has_alias"];
+    "gpu-rtx-5090" -> "rtx5090 laptop gpu" [label="has_alias"];
+    "gpu-rtx-5090" -> "rtx 5090 laptop gpu" [label="has_alias"];
+    "gpu-rtx-5090" -> "laptop gpu 5090" [label="has_alias"];
+    "gpu-rtx-5090" -> "gb203" [label="has_alias"];
+    "gpu-rtx-5090" -> "blackwell" [label="has_alias"];
+    "gpu-rtx-5090" -> "cuda" [label="has_alias"];
+    "gpu-rtx-5090" -> "dlss" [label="has_alias"];
+    "gpu-rtx-5090" -> "ray tracing" [label="has_alias"];
+    "gpu-rtx-5080" -> "rtx 5080" [label="has_alias"];
+    "gpu-rtx-5080" -> "rtx5080" [label="has_alias"];
+    "gpu-rtx-5080" -> "r5080" [label="has_alias"];
+    "gpu-rtx-5080" -> "5080" [label="has_alias"];
+    "gpu-rtx-5080" -> "geforce rtx 5080" [label="has_alias"];
+    "gpu-rtx-5080" -> "5080搭載" [label="has_alias"];
+    "gpu-rtx-5080" -> "rtx5080 laptop gpu" [label="has_alias"];
+    "gpu-rtx-5080" -> "blackwell" [label="has_alias"];
+    "gpu-rtx-5070-ti" -> "rtx 5070 ti" [label="has_alias"];
+    "gpu-rtx-5070-ti" -> "rtx5070ti" [label="has_alias"];
+    "gpu-rtx-5070-ti" -> "5070ti" [label="has_alias"];
+    "gpu-rtx-5070-ti" -> "5070 ti" [label="has_alias"];
+    "gpu-rtx-5070-ti" -> "rtx5070 ti" [label="has_alias"];
+    "gpu-rtx-5070-ti" -> "rtx 5070ti" [label="has_alias"];
+    "gpu-rtx-5070-ti" -> "5070ti搭載" [label="has_alias"];
+    "gpu-rtx-5070-ti" -> "rtx5070ti laptop gpu" [label="has_alias"];
+    "gpu-rtx-5070" -> "rtx 5070" [label="has_alias"];
+    "gpu-rtx-5070" -> "rtx5070" [label="has_alias"];
+    "gpu-rtx-5070" -> "r5070" [label="has_alias"];
+    "gpu-rtx-5070" -> "5070" [label="has_alias"];
+    "gpu-rtx-5070" -> "geforce rtx 5070" [label="has_alias"];
+    "gpu-rtx-5070" -> "5070搭載" [label="has_alias"];
+    "gpu-rtx-5070" -> "rtx5070 laptop gpu" [label="has_alias"];
+    "gpu-rtx-5070" -> "blackwell" [label="has_alias"];
+    "gpu-rtx-4090" -> "rtx 4090" [label="has_alias"];
+    "gpu-rtx-4090" -> "rtx4090" [label="has_alias"];
+    "gpu-rtx-4090" -> "geforce rtx 4090" [label="has_alias"];
+    "gpu-rtx-4090" -> "rtx 4090搭載" [label="has_alias"];
+    "gpu-rtx-4090" -> "r4090" [label="has_alias"];
+    "gpu-rtx-4080" -> "rtx 4080" [label="has_alias"];
+    "gpu-rtx-4080" -> "rtx4080" [label="has_alias"];
+    "gpu-rtx-4080" -> "r4080" [label="has_alias"];
+    "gpu-rtx-4070-ti" -> "rtx 4070 ti" [label="has_alias"];
+    "gpu-rtx-4070-ti" -> "rtx4070ti" [label="has_alias"];
+    "gpu-rtx-4070-ti" -> "4070ti" [label="has_alias"];
+    "gpu-rtx-4070" -> "rtx 4070" [label="has_alias"];
+    "gpu-rtx-4070" -> "rtx4070" [label="has_alias"];
+    "gpu-rtx-4060-ti" -> "rtx 4060 ti" [label="has_alias"];
+    "gpu-rtx-4060-ti" -> "rtx4060ti" [label="has_alias"];
+    "gpu-rtx-4060-ti" -> "4060ti" [label="has_alias"];
+    "gpu-rtx-4060" -> "rtx 4060" [label="has_alias"];
+    "gpu-rtx-4060" -> "rtx4060" [label="has_alias"];
+    "gpu-rtx-4060" -> "r4060" [label="has_alias"];
+    "gpu-rtx-4050" -> "rtx 4050" [label="has_alias"];
+    "gpu-rtx-4050" -> "rtx4050" [label="has_alias"];
+    "gpu-radeon-ai-pro" -> "radeon ai pro" [label="has_alias"];
+    "gpu-radeon-ai-pro" -> "radeon w7900" [label="has_alias"];
+    "gpu-radeon-ai-pro" -> "radeon w7800" [label="has_alias"];
+    "gpu-radeon-ai-pro" -> "radeon w7600" [label="has_alias"];
+    "gpu-intel-arc" -> "intel arc" [label="has_alias"];
+    "gpu-intel-arc" -> "arc graphics" [label="has_alias"];
+    "gpu-intel-arc" -> "arc a770" [label="has_alias"];
+    "gpu-intel-arc" -> "arc a750" [label="has_alias"];
+    "gpu-intel-arc" -> "arc a380" [label="has_alias"];
+    "gpu-intel-arc" -> "arc a140v" [label="has_alias"];
+    "gpu-intel-arc" -> "arc b580" [label="has_alias"];
+    "gpu-intel-arc" -> "arc b570" [label="has_alias"];
+    "gpu-intel-graphics" -> "intel uhd" [label="has_alias"];
+    "gpu-intel-graphics" -> "iris xe" [label="has_alias"];
+    "gpu-intel-graphics" -> "intel graphics" [label="has_alias"];
+    "gpu-amd-graphics" -> "radeon graphics" [label="has_alias"];
+    "gpu-amd-graphics" -> "radeon 780m" [label="has_alias"];
+    "gpu-amd-graphics" -> "radeon 760m" [label="has_alias"];
+    "gpu-professional" -> "quadro" [label="has_alias"];
+    "gpu-professional" -> "a2000" [label="has_alias"];
+    "gpu-professional" -> "a4000" [label="has_alias"];
+    "gpu-professional" -> "t1000" [label="has_alias"];
+    "gpu-professional" -> "t600" [label="has_alias"];
+    "vram-24gb-plus" -> "24gb" [label="has_alias"];
+    "vram-24gb-plus" -> "24gb gddr6" [label="has_alias"];
+    "vram-24gb-plus" -> "24gb gddr6x" [label="has_alias"];
+    "vram-24gb-plus" -> "24gb vram" [label="has_alias"];
+    "vram-16gb" -> "16gb gddr6" [label="has_alias"];
+    "vram-16gb" -> "16gb gddr6x" [label="has_alias"];
+    "vram-16gb" -> "16gb vram" [label="has_alias"];
+    "vram-16gb" -> "16gb gpu memory" [label="has_alias"];
+    "vram-12gb" -> "12gb gddr6" [label="has_alias"];
+    "vram-12gb" -> "12gb gddr6x" [label="has_alias"];
+    "vram-12gb" -> "12gb vram" [label="has_alias"];
+    "vram-8gb" -> "8gb gddr6" [label="has_alias"];
+    "vram-8gb" -> "8gb gddr6x" [label="has_alias"];
+    "vram-8gb" -> "8gb vram" [label="has_alias"];
+    "vram-6gb" -> "6gb gddr6" [label="has_alias"];
+    "vram-6gb" -> "6gb vram" [label="has_alias"];
+    "vram-4gb" -> "4gb vram" [label="has_alias"];
+    "vram-4gb" -> "4gb gddr6" [label="has_alias"];
+    "vram-4gb" -> "2gb" [label="has_alias"];
+    "vram-4gb" -> "4gb vram" [label="has_alias"];
+    "vram-4gb" -> "2gb vram" [label="has_alias"];
+    "mem-64gb-plus" -> "64gbメモリ" [label="has_alias"];
+    "mem-64gb-plus" -> "64 gb ram" [label="has_alias"];
+    "mem-64gb-plus" -> "64gb ram" [label="has_alias"];
+    "mem-64gb-plus" -> "128gb" [label="has_alias"];
+    "mem-64gb-plus" -> "128gb ram" [label="has_alias"];
+    "mem-64gb-plus" -> "32gbx2" [label="has_alias"];
+    "mem-64gb-plus" -> "64gb ddr5" [label="has_alias"];
+    "mem-32gb" -> "32gbメモリ" [label="has_alias"];
+    "mem-32gb" -> "32 gb ram" [label="has_alias"];
+    "mem-32gb" -> "32gb ram" [label="has_alias"];
+    "mem-32gb" -> "16gbx2" [label="has_alias"];
+    "mem-32gb" -> "32gb ddr5" [label="has_alias"];
+    "mem-16gb" -> "16gbメモリ" [label="has_alias"];
+    "mem-16gb" -> "16 gb ram" [label="has_alias"];
+    "mem-16gb" -> "16gb ram" [label="has_alias"];
+    "mem-16gb" -> "8gbx2" [label="has_alias"];
+    "mem-16gb" -> "16gb ddr5" [label="has_alias"];
+    "mem-8gb" -> "8gbメモリ" [label="has_alias"];
+    "mem-8gb" -> "8 gb ram" [label="has_alias"];
+    "mem-8gb" -> "8gb ram" [label="has_alias"];
+    "mem-8gb" -> "4gbx2" [label="has_alias"];
+    "mem-8gb" -> "8gb ddr4" [label="has_alias"];
+    "ssd-2tb-plus" -> "2tb ssd" [label="has_alias"];
+    "ssd-2tb-plus" -> "4tb ssd" [label="has_alias"];
+    "ssd-2tb-plus" -> "8tb ssd" [label="has_alias"];
+    "ssd-2tb-plus" -> "nvme 2tb" [label="has_alias"];
+    "ssd-2tb-plus" -> "2tb nvme" [label="has_alias"];
+    "ssd-2tb-plus" -> "pcie 4.0 ssd" [label="has_alias"];
+    "ssd-1tb" -> "1tb ssd" [label="has_alias"];
+    "ssd-1tb" -> "nvme 1tb" [label="has_alias"];
+    "ssd-1tb" -> "1tb nvme" [label="has_alias"];
+    "ssd-1tb" -> "pcie 1tb" [label="has_alias"];
+    "ssd-1tb" -> "1tb pcie ssd" [label="has_alias"];
+    "ssd-512gb" -> "512gb ssd" [label="has_alias"];
+    "ssd-512gb" -> "512 gb ssd" [label="has_alias"];
+    "ssd-512gb" -> "512gb nvme" [label="has_alias"];
+    "ssd-256gb" -> "256gb ssd" [label="has_alias"];
+    "ssd-256gb" -> "256 gb ssd" [label="has_alias"];
+    "ssd-256gb" -> "256gb nvme" [label="has_alias"];
+    "storage-nvme" -> "nvme" [label="has_alias"];
+    "storage-nvme" -> "m.2 nvme" [label="has_alias"];
+    "storage-nvme" -> "pci express ssd" [label="has_alias"];
+    "storage-nvme" -> "pcie ssd" [label="has_alias"];
+    "storage-nvme" -> "gen4 nvme" [label="has_alias"];
+    "storage-nvme" -> "gen5 nvme" [label="has_alias"];
+    "storage-sata" -> "sata ssd" [label="has_alias"];
+    "storage-sata" -> "2.5インチ ssd" [label="has_alias"];
+    "storage-sata" -> "sata iii" [label="has_alias"];
+    "storage-sata" -> "2.5 sata" [label="has_alias"];
+    "usage-gaming" -> "ゲーミング" [label="has_alias"];
+    "usage-gaming" -> "ゲーム" [label="has_alias"];
+    "usage-gaming" -> "g-tune" [label="has_alias"];
+    "usage-gaming" -> "nextgear" [label="has_alias"];
+    "usage-gaming" -> "fps" [label="has_alias"];
+    "usage-gaming" -> "rtx" [label="has_alias"];
+    "usage-gaming" -> "esports" [label="has_alias"];
+    "usage-gaming" -> "high fps" [label="has_alias"];
+    "usage-gaming" -> "gaming pc" [label="has_alias"];
+    "usage-gaming" -> "rgb" [label="has_alias"];
+    "usage-gaming" -> "dlss" [label="has_alias"];
+    "usage-gaming" -> "ray tracing" [label="has_alias"];
+    "usage-creator" -> "クリエイター" [label="has_alias"];
+    "usage-creator" -> "動画編集" [label="has_alias"];
+    "usage-creator" -> "raw現像" [label="has_alias"];
+    "usage-creator" -> "adobe" [label="has_alias"];
+    "usage-creator" -> "daiv" [label="has_alias"];
+    "usage-creator" -> "blender" [label="has_alias"];
+    "usage-creator" -> "davinci resolve" [label="has_alias"];
+    "usage-creator" -> "premiere pro" [label="has_alias"];
+    "usage-creator" -> "after effects" [label="has_alias"];
+    "usage-creator" -> "creator pc" [label="has_alias"];
+    "usage-creator" -> "cad" [label="has_alias"];
+    "usage-business" -> "ビジネス" [label="has_alias"];
+    "usage-business" -> "事務" [label="has_alias"];
+    "usage-business" -> "法人" [label="has_alias"];
+    "usage-business" -> "office搭載" [label="has_alias"];
+    "usage-business" -> "versapro" [label="has_alias"];
+    "usage-business" -> "thinkpad" [label="has_alias"];
+    "usage-business" -> "latitude" [label="has_alias"];
+    "usage-business" -> "elitebook" [label="has_alias"];
+    "usage-business" -> "probook" [label="has_alias"];
+    "usage-business" -> "vpro" [label="has_alias"];
+    "usage-business" -> "office pc" [label="has_alias"];
+    "usage-business" -> "business laptop" [label="has_alias"];
+    "usage-ai" -> "proart" [label="has_alias"];
+    "usage-ai" -> "ai生成" [label="has_alias"];
+    "usage-ai" -> "ローカルai" [label="has_alias"];
+    "usage-ai" -> "stable diffusion" [label="has_alias"];
+    "usage-ai" -> "llm" [label="has_alias"];
+    "usage-ai" -> "comfyui" [label="has_alias"];
+    "usage-ai" -> "automatic1111" [label="has_alias"];
+    "usage-ai" -> "ollama" [label="has_alias"];
+    "usage-ai" -> "lm studio" [label="has_alias"];
+    "usage-ai" -> "vllm" [label="has_alias"];
+    "usage-ai" -> "text generation" [label="has_alias"];
+    "usage-ai" -> "cuda" [label="has_alias"];
+    "usage-ai" -> "tensor" [label="has_alias"];
+    "usage-ai" -> "local llm" [label="has_alias"];
+    "usage-ai" -> "ai pc" [label="has_alias"];
+    "usage-ai" -> "ai開発" [label="has_alias"];
+    "usage-ai" -> "ai開発向け" [label="has_alias"];
+    "usage-ai" -> "ai開発用" [label="has_alias"];
+    "usage-ai" -> "ai学習" [label="has_alias"];
+    "usage-ai" -> "機械学習" [label="has_alias"];
+    "usage-ai" -> "llm開発" [label="has_alias"];
+    "usage-ai" -> "aiエージェント" [label="has_alias"];
+    "usage-ai" -> "cursor" [label="has_alias"];
+    "usage-ai" -> "claude code" [label="has_alias"];
+    "usage-ai" -> "chatgpt" [label="has_alias"];
+    "usage-ai" -> "claude" [label="has_alias"];
+    "usage-ai" -> "gemini" [label="has_alias"];
+    "usage-ai" -> "open webui" [label="has_alias"];
+    "usage-ai" -> "anythingllm" [label="has_alias"];
+    "usage-ai" -> "llama" [label="has_alias"];
+    "usage-ai" -> "deepseek" [label="has_alias"];
+    "usage-ai" -> "qwen" [label="has_alias"];
+    "usage-ai" -> "gemma" [label="has_alias"];
+    "usage-ai" -> "sdxl" [label="has_alias"];
+    "usage-ai" -> "flux" [label="has_alias"];
+    "usage-ai" -> "fooocus" [label="has_alias"];
+    "usage-ai" -> "windsurf" [label="has_alias"];
+    "usage-ai" -> "cline" [label="has_alias"];
+    "usage-mobile" -> "軽量ノート" [label="has_alias"];
+    "usage-mobile" -> "持ち運び" [label="has_alias"];
+    "usage-mobile" -> "1kg以下" [label="has_alias"];
+    "usage-mobile" -> "モバイルpc" [label="has_alias"];
+    "usage-mobile" -> "薄型" [label="has_alias"];
+    "usage-mobile" -> "ultrabook" [label="has_alias"];
+    "usage-mobile" -> "thin and light" [label="has_alias"];
+    "usage-mobile" -> "compact laptop" [label="has_alias"];
+    "usage-mobile" -> "travel laptop" [label="has_alias"];
+    "usage-budget" -> "安い" [label="has_alias"];
+    "usage-budget" -> "コスパ" [label="has_alias"];
+    "usage-budget" -> "格安" [label="has_alias"];
+    "usage-budget" -> "エントリー" [label="has_alias"];
+    "usage-budget" -> "低価格" [label="has_alias"];
+    "usage-budget" -> "best value" [label="has_alias"];
+    "usage-budget" -> "budget pc" [label="has_alias"];
+    "feat-weight-1kg" -> "900g" [label="has_alias"];
+    "feat-weight-1kg" -> "800g" [label="has_alias"];
+    "feat-weight-1kg" -> "700g" [label="has_alias"];
+    "feat-weight-1kg" -> "1kg未満" [label="has_alias"];
+    "feat-weight-1kg" -> "超軽量" [label="has_alias"];
+    "feat-weight-1kg" -> "under 1kg" [label="has_alias"];
+    "feat-weight-1-5kg" -> "1.1kg" [label="has_alias"];
+    "feat-weight-1-5kg" -> "1.2kg" [label="has_alias"];
+    "feat-weight-1-5kg" -> "1.3kg" [label="has_alias"];
+    "feat-weight-1-5kg" -> "1.4kg" [label="has_alias"];
+    "feat-weight-1-5kg" -> "1.5kg" [label="has_alias"];
+    "feat-weight-1-5kg" -> "lightweight" [label="has_alias"];
+    "feat-weight-2kg" -> "1.6kg" [label="has_alias"];
+    "feat-weight-2kg" -> "1.7kg" [label="has_alias"];
+    "feat-weight-2kg" -> "1.8kg" [label="has_alias"];
+    "feat-weight-2kg" -> "1.9kg" [label="has_alias"];
+    "feat-weight-2kg" -> "2kg" [label="has_alias"];
+    "feat-weight-2kg" -> "standard weight" [label="has_alias"];
+    "maker-asus" -> "asus" [label="has_alias"];
+    "maker-asus" -> "rog" [label="has_alias"];
+    "maker-asus" -> "tuf" [label="has_alias"];
+    "maker-asus" -> "zenbook" [label="has_alias"];
+    "maker-asus" -> "vivobook" [label="has_alias"];
+    "maker-asus" -> "proart" [label="has_alias"];
+    "maker-asus" -> "republic of gamers" [label="has_alias"];
+    "maker-dell" -> "dell" [label="has_alias"];
+    "maker-dell" -> "alienware" [label="has_alias"];
+    "maker-dell" -> "inspiron" [label="has_alias"];
+    "maker-dell" -> "xps" [label="has_alias"];
+    "maker-dell" -> "g-series" [label="has_alias"];
+    "maker-dell" -> "latitude" [label="has_alias"];
+    "maker-dell" -> "precision" [label="has_alias"];
+    "maker-dell" -> "vostro" [label="has_alias"];
+    "maker-dell" -> "optiplex" [label="has_alias"];
+    "maker-hp" -> "hp" [label="has_alias"];
+    "maker-hp" -> "omen" [label="has_alias"];
+    "maker-hp" -> "victus" [label="has_alias"];
+    "maker-hp" -> "pavilion" [label="has_alias"];
+    "maker-hp" -> "envy" [label="has_alias"];
+    "maker-hp" -> "elitebook" [label="has_alias"];
+    "maker-hp" -> "probook" [label="has_alias"];
+    "maker-hp" -> "zbook" [label="has_alias"];
+    "maker-hp" -> "spectre" [label="has_alias"];
+    "maker-dynabook" -> "dynabook" [label="has_alias"];
+    "monitor-24inch" -> "23.8型" [label="has_alias"];
+    "monitor-24inch" -> "24型" [label="has_alias"];
+    "monitor-24inch" -> "24インチ" [label="has_alias"];
+    "monitor-24inch" -> "24.5型" [label="has_alias"];
+    "monitor-24inch" -> "24inch" [label="has_alias"];
+    "monitor-27inch" -> "27型" [label="has_alias"];
+    "monitor-27inch" -> "27インチ" [label="has_alias"];
+    "monitor-27inch" -> "27-inch" [label="has_alias"];
+    "monitor-27inch" -> "27inch" [label="has_alias"];
+    "monitor-27inch" -> "27 monitor" [label="has_alias"];
+    "monitor-32inch" -> "31.5型" [label="has_alias"];
+    "monitor-32inch" -> "32型" [label="has_alias"];
+    "monitor-32inch" -> "34型" [label="has_alias"];
+    "monitor-32inch" -> "40型" [label="has_alias"];
+    "monitor-32inch" -> "43型" [label="has_alias"];
+    "monitor-32inch" -> "49型" [label="has_alias"];
+    "monitor-32inch" -> "large monitor" [label="has_alias"];
+    "monitor-small" -> "21.5型" [label="has_alias"];
+    "monitor-small" -> "22型" [label="has_alias"];
+    "monitor-small" -> "21インチ" [label="has_alias"];
+    "monitor-small" -> "small monitor" [label="has_alias"];
+    "fhd" -> "1920x1080" [label="has_alias"];
+    "fhd" -> "fhd" [label="has_alias"];
+    "fhd" -> "フルhd" [label="has_alias"];
+    "fhd" -> "full hd" [label="has_alias"];
+    "fhd" -> "1080p" [label="has_alias"];
+    "wqhd" -> "2560x1440" [label="has_alias"];
+    "wqhd" -> "wqhd" [label="has_alias"];
+    "wqhd" -> "qhd" [label="has_alias"];
+    "wqhd" -> "2k" [label="has_alias"];
+    "wqhd" -> "1440p" [label="has_alias"];
+    "4k" -> "3840x2160" [label="has_alias"];
+    "4k" -> "4k" [label="has_alias"];
+    "4k" -> "uhd" [label="has_alias"];
+    "4k" -> "2160p" [label="has_alias"];
+    "4k" -> "ultra hd" [label="has_alias"];
+    "res-8k" -> "7680x4320" [label="has_alias"];
+    "res-8k" -> "8k" [label="has_alias"];
+    "res-8k" -> "super high resolution" [label="has_alias"];
+    "hz-60hz" -> "60hz" [label="has_alias"];
+    "hz-60hz" -> "75hz" [label="has_alias"];
+    "hz-60hz" -> "standard refresh" [label="has_alias"];
+    "hz-120hz" -> "100hz" [label="has_alias"];
+    "hz-120hz" -> "120hz" [label="has_alias"];
+    "hz-120hz" -> "144hz" [label="has_alias"];
+    "hz-120hz" -> "165hz" [label="has_alias"];
+    "hz-120hz" -> "170hz" [label="has_alias"];
+    "hz-120hz" -> "180hz" [label="has_alias"];
+    "hz-120hz" -> "high refresh" [label="has_alias"];
+    "hz-240hz" -> "240hz" [label="has_alias"];
+    "hz-240hz" -> "360hz" [label="has_alias"];
+    "hz-240hz" -> "esports monitor" [label="has_alias"];
+    "refresh-500hz" -> "500hz" [label="has_alias"];
+    "refresh-500hz" -> "500 hz" [label="has_alias"];
+    "refresh-500hz" -> "ultra high refresh" [label="has_alias"];
+    "panel-ips" -> "ips" [label="has_alias"];
+    "panel-ips" -> "ips液晶" [label="has_alias"];
+    "panel-ips" -> "ipsパネル" [label="has_alias"];
+    "panel-ips" -> "wide viewing angle" [label="has_alias"];
+    "panel-va" -> "va" [label="has_alias"];
+    "panel-va" -> "va液晶" [label="has_alias"];
+    "panel-va" -> "high contrast" [label="has_alias"];
+    "panel-oled" -> "oled" [label="has_alias"];
+    "panel-oled" -> "有機el" [label="has_alias"];
+    "panel-oled" -> "qd-oled" [label="has_alias"];
+    "panel-oled" -> "true black" [label="has_alias"];
+    "aspect-32-9" -> "32:9" [label="has_alias"];
+    "aspect-32-9" -> "5120x1440" [label="has_alias"];
+    "aspect-32-9" -> "super ultrawide" [label="has_alias"];
+    "aspect-21-9" -> "21:9" [label="has_alias"];
+    "aspect-21-9" -> "2560x1080" [label="has_alias"];
+    "aspect-21-9" -> "3440x1440" [label="has_alias"];
+    "aspect-21-9" -> "ultrawide" [label="has_alias"];
+    "solo-actress" -> "単体" [label="has_alias"];
+    "solo-actress" -> "専属" [label="has_alias"];
+    "solo-actress" -> "独占" [label="has_alias"];
+    "solo-actress" -> "ソロ作品" [label="has_alias"];
+    "amateur" -> "素人" [label="has_alias"];
+    "amateur" -> "投稿" [label="has_alias"];
+    "amateur" -> "ナンパ" [label="has_alias"];
+    "amateur" -> "街録" [label="has_alias"];
+    "mature" -> "熟女" [label="has_alias"];
+    "mature" -> "人妻" [label="has_alias"];
+    "mature" -> "お母さん" [label="has_alias"];
+    "mature" -> "義母" [label="has_alias"];
+    "mature" -> "40代" [label="has_alias"];
+    "mature" -> "50代" [label="has_alias"];
+    "college-girl" -> "女子大生" [label="has_alias"];
+    "college-girl" -> "現役jd" [label="has_alias"];
+    "college-girl" -> "女子大" [label="has_alias"];
+    "college-girl" -> "20歳" [label="has_alias"];
+    "big-breasts" -> "巨乳" [label="has_alias"];
+    "big-breasts" -> "爆乳" [label="has_alias"];
+    "big-breasts" -> "ボイン" [label="has_alias"];
+    "big-breasts" -> "デカパイ" [label="has_alias"];
+    "big-breasts" -> "kカップ" [label="has_alias"];
+    "beautiful-girl" -> "美少女" [label="has_alias"];
+    "beautiful-girl" -> "美人" [label="has_alias"];
+    "beautiful-girl" -> "美白" [label="has_alias"];
+    "beautiful-girl" -> "モデル級" [label="has_alias"];
+    "slender" -> "スレンダー" [label="has_alias"];
+    "slender" -> "細身" [label="has_alias"];
+    "slender" -> "モデル体型" [label="has_alias"];
+    "slender" -> "美脚" [label="has_alias"];
+    "chubby" -> "ぽっちゃり" [label="has_alias"];
+    "chubby" -> "マシュマロ" [label="has_alias"];
+    "chubby" -> "デブ" [label="has_alias"];
+    "chubby" -> "肉感" [label="has_alias"];
+    "ultra-hd-4k" -> "4k" [label="has_alias"];
+    "ultra-hd-4k" -> "uhd" [label="has_alias"];
+    "ultra-hd-4k" -> "高画質" [label="has_alias"];
+    "ultra-hd-4k" -> "最高画質" [label="has_alias"];
+    "vr-content" -> "vr" [label="has_alias"];
+    "vr-content" -> "バーチャルリアリティ" [label="has_alias"];
+    "vr-content" -> "3d" [label="has_alias"];
+    "vr-content" -> "立体" [label="has_alias"];
+    "self-shot" -> "自撮り" [label="has_alias"];
+    "self-shot" -> "個人撮影" [label="has_alias"];
+    "self-shot" -> "スマホ撮影" [label="has_alias"];
+    "self-shot" -> "縦動画" [label="has_alias"];
+    "ai-analyzed" -> "ai解析" [label="has_alias"];
+    "ai-analyzed" -> "高効率" [label="has_alias"];
+    "ai-analyzed" -> "最適化済" [label="has_alias"];
+    "ai-analyzed" -> "gemma" [label="has_alias"];
+    "cosplay" -> "制服" [label="has_alias"];
+    "cosplay" -> "セーラー服" [label="has_alias"];
+    "cosplay" -> "ca" [label="has_alias"];
+    "cosplay" -> "看護師" [label="has_alias"];
+    "fetish" -> "足コキ" [label="has_alias"];
+    "fetish" -> "手コキ" [label="has_alias"];
+    "fetish" -> "フェチ" [label="has_alias"];
+    "fetish" -> "匂い" [label="has_alias"];
+    "public-exposure" -> "痴漢" [label="has_alias"];
+    "public-exposure" -> "露出" [label="has_alias"];
+    "public-exposure" -> "野外" [label="has_alias"];
+    "public-exposure" -> "密室" [label="has_alias"];
+    "nursing" -> "ナース" [label="has_alias"];
+    "nursing" -> "白衣" [label="has_alias"];
+    "nursing" -> "介護" [label="has_alias"];
+    "nursing" -> "看病" [label="has_alias"];
+    "creampie" -> "中出し" [label="has_alias"];
+    "creampie" -> "生ハメ" [label="has_alias"];
+    "creampie" -> "ザーメン" [label="has_alias"];
+    "sm-bondage" -> "拘束" [label="has_alias"];
+    "sm-bondage" -> "緊縛" [label="has_alias"];
+    "sm-bondage" -> "sm" [label="has_alias"];
+    "sm-bondage" -> "放置" [label="has_alias"];
+    "squirting" -> "潮吹き" [label="has_alias"];
+    "squirting" -> "絶頂" [label="has_alias"];
+    "squirting" -> "噴射" [label="has_alias"];
+    "squirting" -> "感度" [label="has_alias"];
+    "female-led" -> "逆レイ" [label="has_alias"];
+    "female-led" -> "女攻め" [label="has_alias"];
+    "female-led" -> "騎乗位" [label="has_alias"];
+    "female-led" -> "逆ナン" [label="has_alias"];
+    "adult" -> "ギャル" [label="has_alias"];
+    "adult" -> "黒ギャル" [label="has_alias"];
+    "adult" -> "金髪ギャル" [label="has_alias"];
+    "adult" -> "ヤマンバ" [label="has_alias"];
+    "beautiful-breasts" -> "美乳" [label="has_alias"];
+    "big-ass" -> "巨尻" [label="has_alias"];
+    "big-ass" -> "デカ尻" [label="has_alias"];
+    "mature" -> "未亡人" [label="has_alias"];
+    "college-girl" -> "女子校生" [label="has_alias"];
+    "female-led" -> "痴女" [label="has_alias"];
+    "mature" -> "お姉さん" [label="has_alias"];
+    "cosplay" -> "メイド" [label="has_alias"];
+    "big-breasts" -> "天然巨乳" [label="has_alias"];
+    "big-breasts" -> "Iカップ" [label="has_alias"];
+    "big-breasts" -> "Jカップ" [label="has_alias"];
+    "big-breasts" -> "Kカップ" [label="has_alias"];
+    "slender" -> "華奢" [label="has_alias"];
+    "slender" -> "モデル体型" [label="has_alias"];
+    "big-breasts" -> "豊満" [label="has_alias"];
+    "big-breasts" -> "グラマー" [label="has_alias"];
+    "chubby" -> "肉感" [label="has_alias"];
+    "female-led" -> "痴女" [label="has_alias"];
+    "amd-ryzen-3" -> "ryzen 3" [label="has_alias"];
+    "amd-ryzen-3" -> "ryzen3" [label="has_alias"];
+    "amd-ryzen-5" -> "ryzen 5" [label="has_alias"];
+    "amd-ryzen-5" -> "ryzen5" [label="has_alias"];
+    "amd-ryzen-7" -> "ryzen 7" [label="has_alias"];
+    "amd-ryzen-7" -> "ryzen7" [label="has_alias"];
+    "gpu-amd-graphics" -> "radeon" [label="has_alias"];
+    "mem-8gb" -> "8gb" [label="has_alias"];
+    "mem-16gb" -> "16gb" [label="has_alias"];
+    "mem-32gb" -> "32gb" [label="has_alias"];
+    "mem-64gb-plus" -> "64gb" [label="has_alias"];
+    "ssd-256gb" -> "256gb" [label="has_alias"];
+    "ssd-512gb" -> "512gb" [label="has_alias"];
+    "ssd-1tb" -> "1tb" [label="has_alias"];
+    "ssd-2tb-plus" -> "2tb" [label="has_alias"];
+    "gpu-highend" -> "usage-gaming" [label="workflow"];
+    "gpu-highend" -> "usage-creator" [label="workflow"];
+    "gpu-highend" -> "usage-ai" [label="workflow"];
+    "gpu-mainstream" -> "usage-gaming" [label="workflow"];
+    "gpu-mainstream" -> "usage-business" [label="workflow"];
+    "gpu-professional" -> "usage-creator" [label="workflow"];
+    "gpu-professional" -> "usage-business" [label="workflow"];
+    "gpu-integrated" -> "usage-business" [label="workflow"];
+    "gpu-integrated" -> "usage-mobile" [label="workflow"];
+    "cpu-ai" -> "usage-ai" [label="workflow"];
+    "cpu-highend" -> "usage-gaming" [label="workflow"];
+    "cpu-highend" -> "usage-creator" [label="workflow"];
+    "cpu-mainstream" -> "usage-business" [label="workflow"];
+    "cpu-entry" -> "usage-budget" [label="workflow"];
+    "cpu-arm" -> "usage-mobile" [label="workflow"];
+    "memory-highend" -> "usage-ai" [label="workflow"];
+    "memory-highend" -> "usage-creator" [label="workflow"];
+    "memory-highend" -> "usage-gaming" [label="workflow"];
+    "memory-standard" -> "usage-business" [label="workflow"];
+    "storage-fast" -> "usage-gaming" [label="workflow"];
+    "storage-fast" -> "usage-creator" [label="workflow"];
+    "storage-highend" -> "usage-creator" [label="workflow"];
+    "monitor-gaming" -> "usage-gaming" [label="workflow"];
+    "monitor-oled" -> "usage-creator" [label="workflow"];
+    "monitor-ultrawide" -> "usage-creator" [label="workflow"];
+    "monitor-highrefresh" -> "usage-gaming" [label="workflow"];
+    "device-laptop" -> "usage-mobile" [label="workflow"];
+    "device-mini" -> "usage-business" [label="workflow"];
+    "device-mini" -> "usage-mobile" [label="workflow"];
+    "device-workstation" -> "usage-creator" [label="workflow"];
+    "device-workstation" -> "usage-ai" [label="workflow"];
+    "maker-gaming" -> "usage-gaming" [label="workflow"];
+    "gpu-professional" -> "usage-ai" [label="workflow"];
+    "monitor-oled" -> "usage-ai" [label="workflow"];
+    "storage-fast" -> "usage-ai" [label="workflow"];
+    "gpu-entry" -> "usage-budget" [label="workflow"];
+    "cpu-workstation" -> "usage-creator" [label="workflow"];
+    "cpu-workstation" -> "usage-ai" [label="workflow"];
+    "memory-entry" -> "usage-budget" [label="workflow"];
+    "storage-standard" -> "usage-business" [label="workflow"];
+    "storage-standard" -> "usage-budget" [label="workflow"];
+    "monitor-business" -> "usage-business" [label="workflow"];
+    "monitor-creator" -> "usage-creator" [label="workflow"];
+    "device-desktop" -> "usage-business" [label="workflow"];
+    "device-server" -> "usage-ai" [label="workflow"];
+    "device-server" -> "usage-business" [label="workflow"];
+    "device-mobile" -> "usage-mobile" [label="workflow"];
+    "storage-standard" -> "ssd-256gb" [label="workflow"];
+    "storage-standard" -> "ssd-512gb" [label="workflow"];
+    "storage-highend" -> "ssd-1tb" [label="workflow"];
+    "storage-highend" -> "ssd-2tb-plus" [label="workflow"];
 
 }

@@ -1,5 +1,3 @@
-# /home/maya/shin-dev/shin-vps/django/visualization/generators/review/generate_review.py
-
 #!/usr/bin/env python3
 
 # /home/maya/shin-dev/shin-vps/django/visualization/generators/review/generate_review.py
@@ -20,6 +18,8 @@ Observation
 Loader
         ↓
 Collector
+        ↓
+Analyzer
         ↓
 Builder
         ↓
@@ -81,7 +81,18 @@ from visualization.generators.review.review_loader import (
 
 from visualization.generators.review.review_collector import (
 
-    collect_review,
+    collect_review_source,
+
+)
+
+
+# --------------------------------------------------
+# Analyzer
+# --------------------------------------------------
+
+from visualization.generators.review.review_analyzer import (
+
+    analyze_review,
 
 )
 
@@ -266,14 +277,24 @@ def main():
     #
     # Collect
     #
-
-    review = collect_review(
+    
+    review_source = collect_review_source(
 
         universe,
 
         entity,
 
         sources,
+
+    )
+    
+    #
+    # Analyze
+    #
+
+    review = analyze_review(
+
+        review_source,
 
     )
 
@@ -286,6 +307,7 @@ def main():
         review,
 
     )
+
 
     generate_proposal(
 

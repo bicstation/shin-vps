@@ -86,7 +86,7 @@ def build_score(
 # Collect Review
 # --------------------------------------------------
 
-def collect_review(
+def collect_review_source(
 
     universe,
     entity,

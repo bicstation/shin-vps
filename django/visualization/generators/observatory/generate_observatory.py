@@ -1,4 +1,4 @@
-# /home/maya/shin-dev/shin-vps/django/visualization/generators/observatory/generate_semantic_observatory.py
+# /home/maya/shin-vps/django/visualization/generators/observatory/generate_observatory.py
 
 #!/usr/bin/env python3
 

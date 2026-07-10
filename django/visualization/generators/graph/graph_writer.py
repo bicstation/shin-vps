@@ -1,7 +1,5 @@
 # /home/maya/shin-dev/shin-vps/django/visualization/generators/graph/graph_writer.py
 
-# /home/maya/shin-dev/shin-vps/django/visualization/generators/graph/graph_writer.py
-
 """
 ============================================================
 

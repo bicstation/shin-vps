@@ -1,6 +1,4 @@
-# /home/maya/shin-dev/shin-vps/django/visualization/generators/graph/graph_collector.py
-
-# /home/maya/shin-dev/shin-vps/django/visualization/generators/graph/graph_collector.py
+# /home/maya/shin-vps/django/visualization/generators/graph/graph_collector.py
 
 """
 ============================================================
@@ -71,7 +69,7 @@ def collect_graph(
             "id": group["group_slug"],
 
             "label": group.get(
-                "label",
+                "presentation_name",
                 group["group_slug"],
             ),
 
@@ -97,27 +95,27 @@ def collect_graph(
 
         nodes.append({
 
-            "id": attribute["attribute_slug"],
+            "id": attribute["slug"],
 
             "label": attribute.get(
-                "label",
-                attribute["attribute_slug"],
+                "name",
+                attribute["slug"],
             ),
 
             "type": "attribute",
 
         })
 
-        edges.append({
+        #
+        # semantic_attributes.tsv には
+        # group_slug が存在しないため、
+        # 現在は Attribute Edge を生成しない。
+        #
+        # Phase 2:
+        # Runtime の契約が決まったら追加する。
+        #
 
-            "from": attribute["group_slug"],
-
-            "to": attribute["attribute_slug"],
-
-            "type": "has_attribute",
-
-        })
-
+    
     # ------------------------------------------
     # Alias Nodes
     # ------------------------------------------
@@ -136,7 +134,7 @@ def collect_graph(
 
         edges.append({
 
-            "from": alias["group_slug"],
+            "from": alias["slug"],
 
             "to": alias["alias"],
 
@@ -144,6 +142,7 @@ def collect_graph(
 
         })
 
+    
     # ------------------------------------------
     # Workflow
     # ------------------------------------------
@@ -152,13 +151,14 @@ def collect_graph(
 
         edges.append({
 
-            "from": step["from_slug"],
+            "from": step["group_slug"],
 
-            "to": step["to_slug"],
+            "to": step["workflow_slug"],
 
             "type": "workflow",
 
         })
+    
 
     # ------------------------------------------
     # Graph Object

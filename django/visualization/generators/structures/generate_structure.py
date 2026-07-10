@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# /home/maya/shin-dev/shin-vps/django/visualization/generators/structures/generate_semantic_structure.py
+# /home/maya/shin-vps/django/visualization/generators/structures/generate_structure.py
 
 """
 ============================================================

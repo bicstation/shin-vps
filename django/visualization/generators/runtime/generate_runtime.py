@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# /home/maya/shin-dev/shin-vps/django/visualization/generators/runtime/generate_runtime_observation.py
+# /home/maya/shin-vps/django/visualization/generators/runtime/generate_runtime.py
 
 """
 ============================================================

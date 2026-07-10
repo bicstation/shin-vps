@@ -1,7 +1,5 @@
 # /home/maya/shin-dev/shin-vps/django/visualization/generators/review/review_builder.py
 
-# /home/maya/shin-dev/shin-vps/django/visualization/generators/review/review_builder.py
-
 """
 ============================================================
 
@@ -48,13 +46,6 @@ def build_review(
 
     lines = []
 
-    summary = review["summary"]
-    score = review["score"]
-
-    # ------------------------------------------
-    # Header
-    # ------------------------------------------
-
     heading(
 
         lines,
@@ -64,22 +55,14 @@ def build_review(
     )
 
     # ------------------------------------------
-    # Universe
+    # Status
     # ------------------------------------------
 
     section(
 
         lines,
 
-        "Universe",
-
-    )
-
-    item(
-
-        lines,
-
-        review["universe"],
+        "Status",
 
     )
 
@@ -87,37 +70,21 @@ def build_review(
 
         lines,
 
-        review["entity"],
+        review["status"],
 
     )
 
     blank(lines)
 
     # ------------------------------------------
-    # Observation Status
+    # Summary
     # ------------------------------------------
 
     section(
 
         lines,
 
-        "Observation",
-
-    )
-
-    item(
-
-        lines,
-
-        f"Evidence : {summary['evidence_ready']}",
-
-    )
-
-    item(
-
-        lines,
-
-        f"Runtime : {summary['runtime_ready']}",
+        "Summary",
 
     )
 
@@ -125,35 +92,102 @@ def build_review(
 
         lines,
 
-        f"Observatory : {summary['observatory_ready']}",
+        str(review["summary"]),
 
     )
 
     blank(lines)
 
     # ------------------------------------------
-    # Score
+    # Issues
     # ------------------------------------------
 
     section(
 
         lines,
 
-        "Score",
+        "Issues",
 
     )
 
-    last_item(
+    if review["issues"]:
+
+        for issue in review["issues"][:-1]:
+
+            item(
+
+                lines,
+
+                issue,
+
+            )
+
+        last_item(
+
+            lines,
+
+            review["issues"][-1],
+
+        )
+
+    else:
+
+        last_item(
+
+            lines,
+
+            "None",
+
+        )
+
+    blank(lines)
+
+    # ------------------------------------------
+    # Proposals
+    # ------------------------------------------
+
+    section(
 
         lines,
 
-        f"{score['score']} / {score['max_score']}",
+        "Proposals",
 
     )
+
+    if review["proposals"]:
+
+        for proposal in review["proposals"][:-1]:
+
+            item(
+
+                lines,
+
+                proposal,
+
+            )
+
+        last_item(
+
+            lines,
+
+            review["proposals"][-1],
+
+        )
+
+    else:
+
+        last_item(
+
+            lines,
+
+            "None",
+
+        )
 
     blank(lines)
 
     return "\n".join(lines)
+
 
 # --------------------------------------------------
 # Build Proposal

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# /home/maya/shin-vps/django/visualization/generators/evidence/generate_semantic_evidence_dataset.py
+# /home/maya/shin-vps/django/visualization/generators/evidence/generate_evidence.py
 
 """
 ============================================================
