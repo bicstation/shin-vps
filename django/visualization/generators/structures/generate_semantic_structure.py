@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# /home/maya/shin-dev/shin-vps/django/visualization/generators/runtime/generate_runtime_observation.py
+# /home/maya/shin-dev/shin-vps/django/visualization/generators/structures/generate_semantic_structure.py
 
 """
 ============================================================
@@ -9,11 +9,11 @@ SHIN CORE LINX
 
 Visualization Platform
 
-Runtime Observation Generator
+Semantic Structure Generator
 
 ============================================================
 
-Semantic Entity
+TSV Reality
         ↓
 Loader
         ↓
@@ -29,7 +29,7 @@ Markdown
 
 Reality is NOT modified.
 
-Generator orchestrates the Runtime Observation Layer.
+Generator orchestrates the Structure Layer.
 
 ============================================================
 """
@@ -67,14 +67,13 @@ django.setup()
 # Loader
 # --------------------------------------------------
 
-from visualization.generators.runtime.runtime_loader import (
+from visualization.generators.structures.structure_loader import (
 
-    load_group,
+    load_universes,
     load_groups,
-    load_runtime,
-    get_universe,
-    get_runtime_dir,
-    get_runtime_file,
+    load_group_mappings,
+    get_structure_dir,
+    get_structure_file,
 
 )
 
@@ -82,9 +81,9 @@ from visualization.generators.runtime.runtime_loader import (
 # Collector
 # --------------------------------------------------
 
-from visualization.generators.runtime.runtime_collector import (
+from visualization.generators.structures.structure_collector import (
 
-    collect_runtime_observation,
+    collect_structure,
 
 )
 
@@ -92,9 +91,11 @@ from visualization.generators.runtime.runtime_collector import (
 # Builder
 # --------------------------------------------------
 
-from visualization.generators.runtime.runtime_builder import (
+from visualization.generators.structures.structure_builder import (
 
-    build_runtime_observation,
+    build_structure,
+    build_tree,
+    build_master_view,
 
 )
 
@@ -102,59 +103,46 @@ from visualization.generators.runtime.runtime_builder import (
 # Writer
 # --------------------------------------------------
 
-from visualization.generators.runtime.runtime_writer import (
+from visualization.generators.structures.structure_writer import (
 
     write_markdown,
 
 )
 
 # --------------------------------------------------
-# Generate Entity
+# Generate Universe
 # --------------------------------------------------
 
-def generate_entity(
+def generate_universe(
 
-    group,
+    structure,
 
 ):
 
-    entity_slug = group["group_slug"]
+    universe = structure["universe"]
 
-    runtime = load_runtime(
+    universe_slug = universe["universe_slug"]
 
-        entity_slug,
+    structure_dir = get_structure_dir(
 
-    )
-
-    observation = collect_runtime_observation(
-
-        group,
-        runtime,
+        universe_slug,
 
     )
 
-    markdown = build_runtime_observation(
+    #
+    # Structure
+    #
 
-        observation,
+    markdown = build_structure(
 
-    )
-
-    universe = get_universe(
-
-        group,
+        structure,
 
     )
 
-    runtime_dir = get_runtime_dir(
+    output_file = get_structure_file(
 
-        universe,
-
-    )
-
-    output_file = get_runtime_file(
-
-        runtime_dir,
-        entity_slug,
+        structure_dir,
+        universe_slug,
 
     )
 
@@ -165,11 +153,48 @@ def generate_entity(
 
     )
 
+    #
+    # Tree
+    # （Phase 2）
+    #
+
+    # tree = build_tree(
+    #     structure,
+    # )
+
+    # write_markdown(
+    #     ...
+    # )
+
     print(
 
-        f"[OK] {entity_slug}"
+        f"[OK] {universe_slug}"
 
     )
+
+# --------------------------------------------------
+# Generate Master View
+# --------------------------------------------------
+
+def generate_master(
+
+    structures,
+
+):
+
+    #
+    # Phase 2
+    #
+
+    # markdown = build_master_view(
+    #     structures,
+    # )
+
+    # write_markdown(
+    #     ...
+    # )
+
+    return
 
 # --------------------------------------------------
 # Main
@@ -178,48 +203,48 @@ def generate_entity(
 def main():
 
     #
-    # Target Groups
+    # Load Reality
     #
 
-    if len(sys.argv) == 2:
+    universes = load_universes()
 
-        group = load_group(
+    groups = load_groups()
 
-            sys.argv[1],
+    mappings = load_group_mappings()
+
+    #
+    # Collect
+    #
+
+    structures = collect_structure(
+
+        universes,
+        groups,
+        mappings,
+
+    )
+
+    #
+    # Universe
+    #
+
+    for structure in structures:
+
+        generate_universe(
+
+            structure,
 
         )
 
-        if group is None:
-
-            print()
-            print(
-                f"Semantic Group not found : {sys.argv[1]}"
-            )
-            print()
-
-            return
-
-        groups = [
-
-            group,
-
-        ]
-
-    else:
-
-        groups = load_groups()
-
     #
-    # Generate
+    # Master View
     #
 
-    for group in groups:
+    generate_master(
 
-        generate_entity(
+        structures,
 
-            group,
-
-        )
+    )
 
     #
     # Console
@@ -228,25 +253,13 @@ def main():
     print()
     print("========================================")
     print(" SHIN CORE LINX")
-    print(" Runtime Observation")
+    print(" Semantic Structure")
     print("========================================")
     print()
-
-    print(
-
-        "Version :",
-        VERSION,
-
-    )
-
+    print("Version :", VERSION)
+    print("Universe:", len(structures))
     print()
-
-    print(
-
-        "Runtime Observation Ready."
-
-    )
-
+    print("Semantic Structure Ready.")
     print()
 
 # --------------------------------------------------

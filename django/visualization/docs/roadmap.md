@@ -308,3 +308,7 @@ Infrastructure は Reality を判断しない。
 Infrastructure は Reality を誰もが同じ視点で観察できる環境を提供する。
 
 本ロードマップは、SHIN CORE LINX における Visualization Infrastructure の長期的な指針とする。
+
+
+
+Generator は Loader → Collector → Builder → Writer → Orchestrator の構成を採用する
