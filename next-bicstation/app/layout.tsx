@@ -9,8 +9,6 @@ import {
   Inter,
 } from 'next/font/google'
 
-import Script from 'next/script'
-
 import {
   APPLICATION,
   SITE,
@@ -22,14 +20,22 @@ import {
   toNextMetadata,
 } from './publishing/next'
 
+import JsonLd
+  from './publishing/JsonLd'
+
 import '@shared/styles/globals.css'
 import '@shared/styles/markdown.css'
 
-import Header from '@/shared/components/organisms/common/Header'
-import Footer from '@/shared/components/organisms/common/Footer'
+import Header
+  from '@/shared/components/organisms/common/Header'
+
+import Footer
+  from '@/shared/components/organisms/common/Footer'
+
 // import ChatBotLoader from '@/shared/components/organisms/common/ChatBotLoader';
 
-import styles from './layout.module.css'
+import styles
+  from './layout.module.css'
 
 /**
  * =====================================================================
@@ -55,6 +61,7 @@ const inter = Inter({
  */
 
 const publishingMetadata =
+
   createMetadata({
 
     canonical:
@@ -69,6 +76,7 @@ const publishingMetadata =
  */
 
 const jsonLd =
+
   createDefaultJsonLd()
 
 /**
@@ -179,25 +187,11 @@ export default function RootLayout({
 
       >
 
-        <Script
+        <JsonLd
 
           id="jsonld-default"
 
-          type="application/ld+json"
-
-          strategy="beforeInteractive"
-
-          dangerouslySetInnerHTML={{
-
-            __html:
-
-              JSON.stringify(
-
-                jsonLd,
-
-              ),
-
-          }}
+          jsonLd={jsonLd}
 
         />
 

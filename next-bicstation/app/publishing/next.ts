@@ -26,6 +26,7 @@
  * ✗ Generate Meaning
  * ✗ Generate SEO
  * ✗ Generate Open Graph
+ * ✗ Generate JSON-LD
  * ✗ Fetch Runtime
  *
  * ============================================================================
@@ -76,6 +77,9 @@ export function toNextMetadata(
 
     robots:
       publishing.robots,
+
+    other:
+      publishing.other,
 
   }
 

@@ -5,46 +5,139 @@
 // All rights reserved.
 // ============================================================================
 
+/**
+ * ============================================================================
+ * SHIN CORE LINX
+ * Ranking Detail Page
+ * ============================================================================
+ *
+ * PURPOSE
+ *
+ * Platform Runtime Entry.
+ *
+ * This module SHALL:
+ *
+ * ✓ Fetch Ranking Runtime
+ * ✓ Generate Metadata
+ * ✓ Generate JSON-LD
+ * ✓ Compose Platform Runtime
+ * ✓ Pass Runtime to Frontend
+ *
+ * This module SHALL NOT:
+ *
+ * ✗ Render UI
+ * ✗ Manage State
+ * ✗ Generate Meaning
+ *
+ * ============================================================================
+ */
+
 import type {
 
-    Metadata,
+  Metadata,
 
 } from 'next'
 
-import {
-    getRankingRuntime,
-} from '@/shared/lib/api/django/pc/ranking'
-
-
-import {
-
-    RankingRuntime,
-
-    RankingDebug,
-
-    // RankingSchema,
-
-} from './components'
-
-import styles from './RankingSlugPage.module.css'
-
 /* ============================================================================
-🔥 Types
+🔥 Publishing
 ============================================================================ */
 
-type PageProps = {
+import {
 
-    params: Promise<{
+  buildRankingMetadata,
 
-        slug: string
+  buildRankingJsonLd,
 
-    }>
+} from '@/shared/publishing'
 
-    searchParams: Promise<{
+import {
 
-        debug?: string
+  toNextMetadata,
 
-    }>
+} from '@/app/publishing/next'
+
+/* ============================================================================
+🔥 Runtime
+============================================================================ */
+
+import {
+
+  getRankingRuntime,
+
+} from '@/shared/lib/api/django/pc/ranking'
+
+/* ============================================================================
+🔥 Frontend
+============================================================================ */
+
+import RankingDetailRuntimeOrchestrator
+  from './orchestration/RankingDetailRuntimeOrchestrator'
+
+/* ============================================================================
+Props
+============================================================================ */
+
+interface RankingPageProps {
+
+  params: Promise<{
+
+    slug: string
+
+  }>
+
+  searchParams: Promise<{
+
+    debug?: string
+
+  }>
+
+}
+
+/* ============================================================================
+🔥 JSON-LD
+============================================================================ */
+
+export async function generateJsonLd(
+
+  {
+
+    params,
+
+  }: RankingPageProps,
+
+) {
+
+  const {
+
+    slug,
+
+  } = await params
+
+  const ranking =
+
+    await getRankingRuntime(
+
+      slug,
+
+    )
+
+  const seo =
+
+    ranking.runtime.seo ?? {}
+
+  return buildRankingJsonLd(
+
+    slug,
+
+    seo.title ??
+
+      'PCランキング',
+
+    seo.description ??
+
+      'おすすめPCランキング',
+
+  )
 
 }
 
@@ -52,265 +145,174 @@ type PageProps = {
 🔥 Metadata
 ============================================================================ */
 
-export async function generateMetadata({
+export async function generateMetadata(
+
+  {
 
     params,
 
-}: {
+  }: RankingPageProps,
 
-    params: Promise<{
+): Promise<Metadata> {
 
-        slug: string
+  const {
 
-    }>
+    slug,
 
-}): Promise<Metadata> {
+  } = await params
 
-    const {
+  const ranking =
 
-        slug,
+    await getRankingRuntime(
 
-    } = await params
+      slug,
 
-    const ranking =
+    )
 
-        await getRankingRuntime(
-            slug,
-        )
+  const seo =
 
-    const seo =
+    ranking.runtime.seo ?? {}
 
-        ranking.runtime.seo ?? {}
+  return toNextMetadata(
 
-    return {
+    buildRankingMetadata(
+
+      slug,
+
+      {
 
         title:
 
-            seo.title
+          seo.title ??
 
-            ||
-
-            'PCランキング',
+          'PCランキング',
 
         description:
 
-            seo.description
+          seo.description ??
 
-            ||
-
-            'おすすめPCランキング',
-
-        alternates: {
-
-            canonical:
-
-                seo.canonical
-
-                ||
-
-                `/ranking/${slug}/`,
-
-        },
-
-        openGraph: {
-
-            title:
-
-                seo.openGraph?.title
-
-                ||
-
-                seo.title,
-
-            description:
-
-                seo.openGraph?.description
-
-                ||
-
-                seo.description,
-
-            url:
-
-                seo.canonical
-
-                ||
-
-                `/ranking/${slug}/`,
-
-            siteName:
-
-                'SHIN CORE LINX',
-
-            images:
-
-                Array.isArray(
-
-                    seo.openGraph?.images,
-
-                )
-
-                    ? seo.openGraph.images
-
-                    : [],
-
-            locale:
-
-                'ja_JP',
-
-            type:
-
-                'website',
-
-        },
-
-        twitter: {
-
-            card:
-
-                'summary_large_image',
-
-            title:
-
-                seo.twitter?.title
-
-                ||
-
-                seo.title,
-
-            description:
-
-                seo.twitter?.description
-
-                ||
-
-                seo.description,
-
-            images:
-
-                Array.isArray(
-
-                    seo.twitter?.images,
-
-                )
-
-                    ? seo.twitter.images
-
-                    : [],
-
-        },
+          'おすすめPCランキング',
 
         keywords:
 
-            Array.isArray(
+          Array.isArray(
 
-                seo.keywords,
+            seo.keywords,
 
-            )
+          )
 
-                ? seo.keywords
+            ? seo.keywords
 
-                : [],
+            : undefined,
 
-    }
+        ...(seo.canonical && {
+
+          canonical:
+
+            seo.canonical,
+
+        }),
+
+      },
+
+    ),
+
+  )
 
 }
 
 /* ============================================================================
-🔥 Ranking Slug Page
+🔥 Ranking Detail Page
 ============================================================================ */
 
-export default async function RankingSlugPage({
+export default async function Page(
+
+  {
 
     params,
 
     searchParams,
 
-}: PageProps) {
+  }: RankingPageProps,
 
-    const {
+) {
 
-        slug,
+  /* --------------------------------------------------------------------------
+  Route Parameter
+  -------------------------------------------------------------------------- */
 
-    } = await params
+  const {
 
-    const {
+    slug,
 
-        debug,
+  } = await params
 
-    } = await searchParams
+  const {
 
+    debug,
 
-    const ranking =
+  } = await searchParams
 
-        await getRankingRuntime(
-            slug,
-        )
+  /* --------------------------------------------------------------------------
+  Ranking Runtime
+  -------------------------------------------------------------------------- */
 
-    if (!ranking) {
+  const ranking =
 
-        return (
+    await getRankingRuntime(
 
-            <main
-                className={styles.page}
-            >
-
-                Ranking Runtime Not Found
-
-            </main>
-
-        )
-
-    }
-
-    return (
-
-        <main
-            className={
-                styles.page
-            }
-        >
-
-            {/* ==========================================================
-            Schema
-            ========================================================== */}
-
-            {/* <RankingSchema
-                schemas={
-                    runtime?.schemas
-                }
-            /> */}
-
-            {/* ==========================================================
-            Ranking Experience
-            ========================================================== */}
-
-            <RankingRuntime
-                runtime={
-                    ranking.runtime
-                }
-            />
-
-            {/* ==========================================================
-            Debug
-            ========================================================== */}
-
-            {
-
-                debug === '1' && (
-
-                    <RankingDebug
-                        runtime={
-                            ranking.runtime
-                        }
-                    />
-
-                )
-
-            }
-
-        </main>
+      slug,
 
     )
+
+  if (
+
+    !ranking
+
+  ) {
+
+    throw new Error(
+
+      'Ranking Runtime Not Found',
+
+    )
+
+  }
+
+  /* --------------------------------------------------------------------------
+  Platform Runtime
+  -------------------------------------------------------------------------- */
+
+  const runtime = {
+
+    ranking,
+
+    debug:
+
+      debug === '1',
+
+    semantic_runtime: true,
+
+    adaptive_runtime: true,
+
+  }
+
+  /* --------------------------------------------------------------------------
+  Render
+  -------------------------------------------------------------------------- */
+
+  return (
+
+    <RankingDetailRuntimeOrchestrator
+
+      runtime={
+
+        runtime
+
+      }
+
+    />
+
+  )
 
 }

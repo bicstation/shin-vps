@@ -31,6 +31,9 @@ def semantic_ranking_v2(
 
     group_slug,
 ):
+    
+    print("RANKING VIEW")
+    print(group_slug)
 
     limit = request.GET.get(
         "limit",

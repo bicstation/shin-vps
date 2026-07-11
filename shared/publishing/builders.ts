@@ -20,6 +20,7 @@
  *
  * ✓ Compose Publishing contracts
  * ✓ Apply platform defaults
+ * ✓ Synchronize SEO / OGP / Twitter
  * ✓ Remain framework independent
  *
  * This module SHALL NOT:
@@ -53,19 +54,18 @@ import {
 } from './canonical'
 
 import type {
-    TopRuntime,
+  TopRuntime,
 } from '../lib/api/django/pc/top'
 
+import {
+  createJsonLdGraph,
+} from './jsonld'
 
 /* ============================================================================
 🔥 Default
 ============================================================================ */
 
-export function buildPublishingMetadata():
-
-
-
-PublishingMetadata {
+export function buildPublishingMetadata(): PublishingMetadata {
 
   return {
 
@@ -87,8 +87,6 @@ PublishingMetadata {
 
 }
 
-
-
 /* ============================================================================
 🔥 Page
 ============================================================================ */
@@ -102,14 +100,67 @@ export function buildPageMetadata(
 
 ): PublishingMetadata {
 
+  const canonical =
+
+    overrides.canonical ??
+
+    createCanonical(path)
+
+  const title =
+
+    overrides.title ??
+
+    defaultMetadata.title
+
+  const description =
+
+    overrides.description ??
+
+    defaultMetadata.description
+
   return {
 
     ...buildPublishingMetadata(),
 
-    canonical:
-      createCanonical(path),
-
     ...overrides,
+
+    canonical,
+
+    title,
+
+    description,
+
+    openGraph: {
+
+      ...defaultOpenGraph,
+
+      ...overrides.openGraph,
+
+      title,
+
+      description,
+
+      url: canonical,
+
+    },
+
+    twitter: {
+
+      ...defaultTwitter,
+
+      ...overrides.twitter,
+
+      title,
+
+      description,
+
+    },
+
+    robots:
+
+      overrides.robots ??
+
+      defaultRobots,
 
   }
 
@@ -143,9 +194,12 @@ export function buildProductMetadata(
 ============================================================================ */
 
 export function buildDiscoverMetadata(
+
   slug?: string,
+
   overrides:
     Partial<PublishingMetadata> = {},
+
 ): PublishingMetadata {
 
   return buildPageMetadata(
@@ -153,15 +207,19 @@ export function buildDiscoverMetadata(
     slug
 
       ? `/discover/${slug}`
+
       : '/discover',
 
     {
 
       title:
         'Discover｜用途・性能・ブランドからPCを探す｜BIC STATION',
+
       description:
-       '用途・GPU・CPU・ブランド・価格帯など、さまざまな切り口から最適なPCを探せるDiscoverページです。',
+        '用途・GPU・CPU・ブランド・価格帯など、さまざまな切り口から最適なPCを探せるDiscoverページです。',
+
       keywords: [
+
         'おすすめPC',
         'PC検索',
         '用途別PC',
@@ -172,6 +230,7 @@ export function buildDiscoverMetadata(
         'GPU',
         'ブランド',
         'BIC STATION',
+
       ],
 
       ...overrides,
@@ -181,7 +240,6 @@ export function buildDiscoverMetadata(
   )
 
 }
-
 
 /* ============================================================================
 🔥 Ranking
@@ -217,8 +275,6 @@ export function buildFinderMetadata(
 
 ): PublishingMetadata {
 
-
-  
   return buildPageMetadata(
 
     '/finder',
@@ -226,41 +282,241 @@ export function buildFinderMetadata(
     overrides,
 
   )
-}
 
+}
 
 /* ============================================================================
 🔥 Top
 ============================================================================ */
+
 export function buildTopMetadata(
 
-    runtime: TopRuntime,
+  runtime: TopRuntime,
 
 ): PublishingMetadata {
 
-    return buildPageMetadata(
+  return buildPageMetadata(
 
-      '/',
+    '/',
 
-      {
+    {
 
-        title:
-          runtime.seo.title,
+      title:
+        runtime.seo.title,
 
-        description:
-          runtime.seo.description,
+      description:
+        runtime.seo.description,
 
-        keywords:
-          runtime.seo.keywords,
+      keywords:
+        runtime.seo.keywords,
 
-        canonical:
-          runtime.seo.canonical,
+      canonical:
+        runtime.seo.canonical,
 
-      },
+    },
 
-    )
+  )
 
 }
 
 
+/* ============================================================================
+🔥 Discover JSON-LD
+============================================================================ */
+
+export function buildDiscoverJsonLd(
+
+  slug?: string,
+
+  title?: string,
+
+  description?: string,
+
+) {
+
+  return createJsonLdGraph({
+
+    breadcrumb: [
+
+      {
+
+        name: 'ホーム',
+
+        path: '/',
+
+      },
+
+      {
+
+        name: 'Discover',
+
+        path: '/discover',
+
+      },
+
+      ...(slug
+        ? [
+
+            {
+
+              name:
+
+                title ?? slug,
+
+              path:
+
+                `/discover/${slug}`,
+
+            },
+
+          ]
+        : []),
+
+    ],
+
+    collectionPage: {
+
+      name:
+
+        title ?? 'Discover',
+
+      description,
+
+      url: slug
+
+        ? createCanonical(
+
+            `/discover/${slug}`,
+
+          )
+
+        : createCanonical(
+
+            '/discover',
+
+          ),
+
+    },
+
+  })
+
+}
+
+/* ============================================================================
+🔥 Ranking JSON-LD
+============================================================================ */
+
+export function buildRankingJsonLd(
+
+  slug: string,
+
+  title: string,
+
+  description: string,
+
+) {
+
+  return createJsonLdGraph({
+
+    breadcrumb: [
+
+      {
+
+        name: 'ホーム',
+
+        path: '/',
+
+      },
+
+      {
+
+        name: 'ランキング',
+
+        path: '/ranking',
+
+      },
+
+    ],
+
+    collectionPage: {
+
+      name:
+
+        title,
+
+      description,
+
+      url:
+
+        createCanonical(
+
+          `/ranking/${slug}`,
+
+        ),
+
+    },
+
+  })
+
+}
+
+/* ============================================================================
+🔥 Product JSON-LD
+============================================================================ */
+
+export function buildProductJsonLd(
+
+  uniqueId: string,
+
+  title: string,
+
+  description?: string,
+
+) {
+
+  return createJsonLdGraph({
+
+    breadcrumb: [
+
+      {
+
+        name: 'ホーム',
+
+        path: '/',
+
+      },
+
+      {
+
+        name: '製品',
+
+        path:
+
+          `/product/${uniqueId}`,
+
+      },
+
+    ],
+
+    product: {
+
+      name:
+
+        title,
+
+      description,
+
+      url:
+
+        createCanonical(
+
+          `/product/${uniqueId}`,
+
+        ),
+
+    },
+
+  })
+
+}
 

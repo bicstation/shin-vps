@@ -5,263 +5,215 @@
 // All rights reserved.
 // ============================================================================
 
-/* =========================================================================
-🔥 Experience
+/**
+ * ============================================================================
+ * SHIN CORE LINX
+ * Ranking Page
+ * ============================================================================
+ *
+ * PURPOSE
+ *
+ * Platform Runtime Entry.
+ *
+ * This module SHALL:
+ *
+ * ✓ Fetch Ranking Runtime
+ * ✓ Compose Platform Runtime
+ * ✓ Generate Metadata
+ * ✓ Pass Runtime to Frontend
+ *
+ * This module SHALL NOT:
+ *
+ * ✗ Render UI
+ * ✗ Manage State
+ * ✗ Generate Meaning
+ *
+ * ============================================================================
+ */
 
-This page orchestrates the Ranking Experience.
-
-Runtime acquisition belongs to the Canonical Adapter.
-
-This page is responsible only for:
-
-- Customer Journey
-- Experience Binding
-- Experience Presentation
-
-============================================================================ */
-
-'use client'
+import type {
+  Metadata,
+} from 'next'
 
 /* ============================================================================
-🔥 React
+🔥 Publishing
 ============================================================================ */
 
 import {
 
-    useState,
+  buildRankingMetadata,
 
-} from 'react'
+  createJsonLdGraph,
+
+} from '@/shared/publishing'
+
+import {
+
+  toNextMetadata,
+
+} from '@/app/publishing/next'
+
+
 
 /* ============================================================================
 🔥 Runtime
 ============================================================================ */
 
-import useRanking
-    from './hooks/useRanking'
+import {
+
+  fetchNavigationRuntime,
+
+} from '@/shared/lib/api/django/pc/navigation'
+
+import {
+
+  getRankingRuntime,
+
+} from '@/shared/lib/api/django/pc/ranking'
 
 /* ============================================================================
-🔥 Components
+🔥 Frontend
 ============================================================================ */
 
-import Breadcrumb
-    from './components/common/Breadcrumb'
+import RankingRuntimeOrchestrator
+  from './orchestration/RankingRuntimeOrchestrator'
 
-import EmptyRanking
-    from './components/common/EmptyRanking'
-
-import RankingHero
-    from './components/hero/RankingHero'
-
-import FeaturedOverall
-    from './components/featured/FeaturedOverall'
-
-import RankingNavigation
-    from './components/navigation/RankingNavigation'
-
-import RankingGroupSection
-    from './components/sections/RankingGroupSection'
 
 /* ============================================================================
-🔥 Styles
+🔥 JSON-LD
 ============================================================================ */
 
-import styles
-    from './styles/ranking.module.css'
+export async function generateJsonLd() {
+
+  return createJsonLdGraph({
+
+    breadcrumb: [
+
+      {
+
+        name: 'ホーム',
+
+        path: '/',
+
+      },
+
+      {
+
+        name: 'ランキング',
+
+        path: '/ranking',
+
+      },
+
+    ],
+
+    collectionPage: {
+
+      name:
+        'PCランキング一覧',
+
+      description:
+        '人気・用途別おすすめPCランキング',
+
+      url:
+        'https://bicstation.com/ranking',
+
+    },
+
+  })
+
+}
+
 
 /* ============================================================================
-🔥 Ranking Experience
+🔥 Metadata
 ============================================================================ */
 
-export default function RankingPage() {
+export const metadata: Metadata =
 
-    /* =========================================================================
-    🔥 Runtime
-    ========================================================================= */
+  toNextMetadata(
 
-    const {
+    buildRankingMetadata(
 
-        navigationRuntime,
+      'all',
 
-        rankingRuntime,
+      {
 
-        rankingCategories,
+        title:
+          'PCランキング一覧｜人気・用途別おすすめPC｜BIC STATION',
 
-        loading,
+        description:
+          'AI・ゲーム・動画編集・ビジネスなど用途別におすすめPCランキングを掲載しています。',
 
-        error,
+      },
 
-    } = useRanking()
+    ),
 
+  )
 
-    /* =========================================================================
-    🔥 Active Group
-    ========================================================================= */
+  /* ============================================================================
+🔥 Ranking Page
+============================================================================ */
 
-    const [
+export default async function Page() {
 
-        activeGroup,
+  /* --------------------------------------------------------------------------
+  Navigation Runtime
+  -------------------------------------------------------------------------- */
 
-        setActiveGroup,
+  const navigationRuntime =
 
-    ] = useState('all')
+    await fetchNavigationRuntime()
 
-    /* =========================================================================
-    🔥 Navigation
-    ========================================================================= */
+  /* --------------------------------------------------------------------------
+  Ranking Runtime
+  -------------------------------------------------------------------------- */
 
-    const items =
+  const rankingRuntime =
 
-        navigationRuntime?.intents ?? []
+    await getRankingRuntime(
 
-    const categories =
-
-        rankingCategories ?? []
-
-    /* =========================================================================
-    🔥 Active Items
-    ========================================================================= */
-
-    const filteredItems =
-
-        activeGroup === 'all'
-
-            ? items
-
-            : items.filter(
-
-                item =>
-
-                    item.parent_group === activeGroup
-
-            )
-
-    /* =========================================================================
-    🔥 Section Presentation
-    ※ Temporary
-    ※ Later supplied by Experience Dictionary
-    ========================================================================= */
-
-    const sectionTitle =
-
-        activeGroup === 'all'
-
-            ? 'すべてのランキング'
-
-            : 'ランキング'
-
-    const sectionDescription =
-
-        activeGroup === 'all'
-
-            ? '公開中のランキング一覧です。'
-
-            : '選択したカテゴリのランキングです。'
-
-    /* =========================================================================
-    🔥 Loading
-    ========================================================================= */
-
-    if (loading) {
-
-        return (
-
-            <main className={styles.ranking}>
-
-                Loading...
-
-            </main>
-
-        )
-
-    }
-
-    /* =========================================================================
-    🔥 Error
-    ========================================================================= */
-
-    if (
-
-        error ||
-
-        !navigationRuntime ||
-
-        !rankingRuntime
-
-    ) {
-
-        return (
-
-            <main className={styles.ranking}>
-
-                Ranking Runtime Error
-
-            </main>
-
-        )
-
-    }
-
-    /* =========================================================================
-    🔥 Render
-    ========================================================================= */
-
-    return (
-
-        <main className={styles.ranking}>
-
-            <Breadcrumb />
-
-            <RankingHero
-
-                runtime={navigationRuntime}
-
-            />
-
-            <FeaturedOverall
-
-                runtime={rankingRuntime.runtime}
-
-            />
-
-            <RankingNavigation
-
-                items={items}
-                categories={categories}
-                activeGroup={activeGroup}
-                onSelect={setActiveGroup}
-
-            />
-
-            {
-
-                filteredItems.length >= 0
-
-                    ? (
-
-
-                        <RankingGroupSection
-
-                            icon="🎮"
-                            title={sectionTitle}
-                            description={sectionDescription}
-                            items={filteredItems}
-                            actionLabel="ランキングを見る"
-
-                        />
-
-
-                    )
-
-                    : (
-
-                        <EmptyRanking />
-
-                    )
-
-            }
-
-        </main>
+      'all',
 
     )
 
+  /* --------------------------------------------------------------------------
+  Platform Runtime
+  -------------------------------------------------------------------------- */
+
+  const runtime = {
+
+    navigationRuntime,
+
+    rankingRuntime,
+
+    rankingCategories:
+
+      rankingRuntime.projection.categories,
+
+    semantic_runtime: true,
+
+    adaptive_runtime: true,
+
+  }
+
+    /* --------------------------------------------------------------------------
+  Render
+  -------------------------------------------------------------------------- */
+
+  return (
+
+    <RankingRuntimeOrchestrator
+
+      runtime={
+
+        runtime
+
+      }
+
+    />
+
+  )
+
 }
+

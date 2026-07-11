@@ -208,7 +208,7 @@ def build_discovery_seo(
                 title,
 
             "url":
-                f"/pc/discover/{group_slug}/",
+                f"/discover/{group_slug}/",
 
             "description":
                 description,
@@ -224,35 +224,70 @@ def build_ranking_seo(
 
     meaning,
 
-    group_name,
+    presentation,
+
+    group_slug,
 
     product_count,
 ):
+
+    title = (
+
+        presentation.get("title")
+
+        or
+
+        presentation.get("name")
+
+        or
+
+        group_slug
+    )
+
+    description = (
+
+        presentation.get(
+            "description"
+        )
+
+        or
+
+        ""
+    )
 
     return build_seo(
 
         title=(
 
-            f"{group_name}ランキング"
+            f"{title}おすすめランキング（{product_count}製品）｜BIC STATION"
         ),
 
         description=(
 
-            f"{group_name}に属する"
-            f"{product_count}製品を比較"
+            f"{description}。"
+
+            f"現在{product_count}製品を掲載しています。"
         ),
 
         keywords=[
 
-            group_name,
+            title,
 
-            "Ranking",
+            presentation.get(
+                "name"
+            ),
+
+            "ランキング",
 
             "PC",
+
+            "BIC STATION",
         ],
 
-        canonical=
-            "/ranking/",
+        canonical=(
+
+            f"/ranking/{group_slug}/"
+        ),
 
         schema_jsonld={
 
@@ -260,13 +295,17 @@ def build_ranking_seo(
                 "https://schema.org",
 
             "@type":
-                "ItemList",
+                "CollectionPage",
 
             "name":
+                title,
 
-                meaning.get(
-                    "identity"
-                ),
+            "url":
+
+                f"/ranking/{group_slug}/",
+
+            "description":
+                description,
         },
     )
 

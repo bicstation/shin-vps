@@ -188,6 +188,7 @@ def build_ranking_runtime(
         reverse=True,
     )[:limit]
 
+    
     # ------------------------------------------------------
     # SEO
     # ------------------------------------------------------
@@ -198,7 +199,9 @@ def build_ranking_runtime(
 
             meaning=meaning,
 
-            group_name=group_name,
+            presentation=presentation,
+
+            group_slug=group_slug,
 
             product_count=len(products),
         )

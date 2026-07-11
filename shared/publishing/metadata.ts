@@ -19,6 +19,19 @@
  * This module defines the canonical Publishing Metadata contract
  * consumed by Platform adapters (Next.js, future frameworks, etc.).
  *
+ * This module SHALL:
+ *
+ * ✓ Define Publishing metadata contracts
+ * ✓ Define default metadata
+ * ✓ Merge metadata safely
+ *
+ * This module SHALL NOT:
+ *
+ * ✗ Depend on Next.js
+ * ✗ Generate Runtime
+ * ✗ Generate SEO
+ * ✗ Generate JSON-LD
+ *
  * ============================================================================
  */
 
@@ -42,6 +55,13 @@ import {
 } from './robots'
 
 /* ============================================================================
+🔥 JSON-LD
+============================================================================ */
+
+export type PublishingJsonLd =
+  Record<string, unknown>
+
+/* ============================================================================
 🔥 Metadata
 ============================================================================ */
 
@@ -60,6 +80,14 @@ export interface PublishingMetadata {
   twitter?: PublishingTwitter
 
   robots?: PublishingRobots
+
+  /**
+   * Structured Data
+   *
+   * Framework adapters are responsible
+   * for rendering this object.
+   */
+  jsonLd?: PublishingJsonLd
 
 }
 
@@ -139,6 +167,9 @@ export function createMetadata(
       ...options.robots,
 
     },
+
+    jsonLd:
+      options.jsonLd,
 
   }
 

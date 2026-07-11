@@ -16,7 +16,7 @@
  *
  * Build Schema.org JSON-LD objects.
  *
- * This module is framework independent.
+ * Framework Independent.
  *
  * ============================================================================
  */
@@ -39,6 +39,9 @@ export interface BreadcrumbItem {
   path: string
 
 }
+
+export type JsonLdNode =
+  Record<string, unknown>
 
 /* ============================================================================
 🔥 Organization
@@ -67,7 +70,6 @@ export function createOrganizationJsonLd() {
 ============================================================================ */
 
 export function createWebsiteJsonLd() {
-
 
   return {
 
@@ -115,7 +117,7 @@ export function createWebsiteJsonLd() {
 
 export function createBreadcrumbJsonLd(
 
-  items: BreadcrumbItem[]
+  items: BreadcrumbItem[],
 
 ) {
 
@@ -130,22 +132,28 @@ export function createBreadcrumbJsonLd(
       items.map(
 
         (
+
           item,
+
           index,
+
         ) => ({
 
           '@type': 'ListItem',
 
           position:
+
             index + 1,
 
           name:
+
             item.name,
 
           item:
+
             `${SITE.URL}${item.path}`,
 
-        })
+        }),
 
       ),
 
@@ -154,8 +162,51 @@ export function createBreadcrumbJsonLd(
 }
 
 /* ============================================================================
+🔥 Collection Page
+============================================================================ */
+
+export interface CollectionPageJsonLdOptions {
+
+  name: string
+
+  description?: string
+
+  url: string
+
+}
+
+export function createCollectionPageJsonLd(
+
+  page: CollectionPageJsonLdOptions,
+
+) {
+
+  return {
+
+    '@context': 'https://schema.org',
+
+    '@type': 'CollectionPage',
+
+    name:
+
+      page.name,
+
+    description:
+
+      page.description,
+
+    url:
+
+      page.url,
+
+  }
+
+}
+
+/* ============================================================================
 🔥 Product
 ============================================================================ */
+
 export interface ProductJsonLdOptions {
 
   name: string
@@ -233,8 +284,8 @@ export function createProductJsonLd(
 
             availability:
 
-              product.availability
-              ?? 'https://schema.org/InStock',
+              product.availability ??
+              'https://schema.org/InStock',
 
             url:
               product.url,
@@ -251,14 +302,6 @@ export function createProductJsonLd(
 🔥 JSON-LD Graph
 ============================================================================ */
 
-export type JsonLdNode =
-  Record<string, any>
-
-
-/* ============================================================================
-🔥 JSON-LD Graph
-============================================================================ */
-
 export interface JsonLdGraphOptions {
 
   organization?: boolean
@@ -267,9 +310,15 @@ export interface JsonLdGraphOptions {
 
   breadcrumb?: BreadcrumbItem[]
 
+  collectionPage?: CollectionPageJsonLdOptions
+
   product?: ProductJsonLdOptions
 
 }
+
+/* ============================================================================
+🔥 Graph Builder
+============================================================================ */
 
 export function createJsonLdGraph(
 
@@ -279,7 +328,11 @@ export function createJsonLdGraph(
 
   const graph: JsonLdNode[] = []
 
-  if (options.organization) {
+  if (
+
+    options.organization
+
+  ) {
 
     graph.push(
 
@@ -289,7 +342,11 @@ export function createJsonLdGraph(
 
   }
 
-  if (options.website) {
+  if (
+
+    options.website
+
+  ) {
 
     graph.push(
 
@@ -311,6 +368,24 @@ export function createJsonLdGraph(
       createBreadcrumbJsonLd(
 
         options.breadcrumb,
+
+      ),
+
+    )
+
+  }
+
+  if (
+
+    options.collectionPage
+
+  ) {
+
+    graph.push(
+
+      createCollectionPageJsonLd(
+
+        options.collectionPage,
 
       ),
 
@@ -354,18 +429,13 @@ export function createJsonLdGraph(
 
 export function createDefaultJsonLd() {
 
-  return {
+  return createJsonLdGraph({
 
-    '@context': 'https://schema.org',
+    organization: true,
 
-    '@graph': [
+    website: true,
 
-      createOrganizationJsonLd(),
-
-      createWebsiteJsonLd(),
-
-    ],
-
-  }
+  })
 
 }
+

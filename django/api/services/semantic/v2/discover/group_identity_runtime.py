@@ -33,6 +33,11 @@ def build_group_identity_runtime(
     group_slug,
 ):
 
+    print("=" * 60)
+    print("GROUP:", group_slug)
+    print("=" * 60)
+
+
     authority = (
         build_authority_runtime()
     )
