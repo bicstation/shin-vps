@@ -138,13 +138,14 @@ export function buildProductMetadata(
 
 }
 
+
 /* ============================================================================
 🔥 Discover
 ============================================================================ */
 
 export function buildDiscoverMetadata(
 
-  slug: string,
+  slug?: string,
 
   overrides:
     Partial<PublishingMetadata> = {},
@@ -153,7 +154,11 @@ export function buildDiscoverMetadata(
 
   return buildPageMetadata(
 
-    `/discover/${slug}`,
+    slug
+
+      ? `/discover/${slug}`
+
+      : '/discover',
 
     overrides,
 

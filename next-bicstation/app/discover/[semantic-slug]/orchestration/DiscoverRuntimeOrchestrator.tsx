@@ -18,14 +18,14 @@ import {
 
   getExperienceDictionary,
 
-} from './services/dictionary'
+} from '../services/dictionary'
 
-import Hero from './components/Hero'
-import About from './components/About'
-import Elements from './components/Elements'
-import RepresentativeProducts from './components/RepresentativeProducts'
-import RelatedWorlds from './components/RelatedWorlds'
-import ContinueDiscovery from './components/ContinueDiscovery'
+import Hero from '../components/Hero'
+import About from '../components/About'
+import Elements from '../components/Elements'
+import RepresentativeProducts from '../components/RepresentativeProducts'
+import RelatedWorlds from '../components/RelatedWorlds'
+import ContinueDiscovery from '../components/ContinueDiscovery'
 
 /* ============================================================================
 Props
