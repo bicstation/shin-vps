@@ -138,18 +138,14 @@ export function buildProductMetadata(
 
 }
 
-
 /* ============================================================================
 🔥 Discover
 ============================================================================ */
 
 export function buildDiscoverMetadata(
-
   slug?: string,
-
   overrides:
     Partial<PublishingMetadata> = {},
-
 ): PublishingMetadata {
 
   return buildPageMetadata(
@@ -157,14 +153,35 @@ export function buildDiscoverMetadata(
     slug
 
       ? `/discover/${slug}`
-
       : '/discover',
 
-    overrides,
+    {
+
+      title:
+        'Discover｜用途・性能・ブランドからPCを探す｜BIC STATION',
+      description:
+       '用途・GPU・CPU・ブランド・価格帯など、さまざまな切り口から最適なPCを探せるDiscoverページです。',
+      keywords: [
+        'おすすめPC',
+        'PC検索',
+        '用途別PC',
+        'ゲーミングPC',
+        'AI画像生成PC',
+        '動画編集PC',
+        'CPU',
+        'GPU',
+        'ブランド',
+        'BIC STATION',
+      ],
+
+      ...overrides,
+
+    },
 
   )
 
 }
+
 
 /* ============================================================================
 🔥 Ranking

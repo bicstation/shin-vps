@@ -1,12 +1,65 @@
-
-// /home/maya/shin-dev/shin-vps/next-bicstation/app/discover/[semantic-slug]/page.tsx
 // ============================================================================
-// SHIN CORE LINX
-// Discover Experience V2
-// Discover Page Orchestrator
+// FILE:
+// /app/discover/[semantic-slug]/page.tsx
+// Copyright (c) 2024 Shin Corporation.
+// All rights reserved.
 // ============================================================================
 
-import { notFound } from 'next/navigation'
+/**
+ * ============================================================================
+ * SHIN CORE LINX
+ * Discover Detail Page
+ * ============================================================================
+ *
+ * PURPOSE
+ *
+ * Platform Runtime Entry.
+ *
+ * This module SHALL:
+ *
+ * ✓ Fetch Discover Detail Runtime
+ * ✓ Fetch Experience Dictionary
+ * ✓ Compose Platform Runtime
+ * ✓ Generate Metadata
+ * ✓ Pass Runtime to Frontend
+ *
+ * This module SHALL NOT:
+ *
+ * ✗ Render UI
+ * ✗ Manage State
+ * ✗ Generate Meaning
+ * ✗ Build Experience Components
+ *
+ * ============================================================================
+ */
+
+import type {
+  Metadata,
+} from 'next'
+
+import {
+  notFound,
+} from 'next/navigation'
+
+/* ============================================================================
+🔥 Publishing
+============================================================================ */
+
+import {
+
+  buildDiscoverMetadata,
+
+} from '@/shared/publishing'
+
+import {
+
+  toNextMetadata,
+
+} from '@/app/publishing/next'
+
+/* ============================================================================
+🔥 Runtime
+============================================================================ */
 
 import {
 
@@ -14,18 +67,22 @@ import {
 
 } from '@/shared/lib/api/django/pc/discover-detail'
 
+/* ============================================================================
+🔥 Dictionary
+============================================================================ */
+
 import {
 
   getExperienceDictionary,
 
 } from './services/dictionary'
 
-import Hero from './components/Hero'
-import About from './components/About'
-import Elements from './components/Elements'
-import RepresentativeProducts from './components/RepresentativeProducts'
-import RelatedWorlds from './components/RelatedWorlds'
-import ContinueDiscovery from './components/ContinueDiscovery'
+/* ============================================================================
+🔥 Frontend
+============================================================================ */
+
+import DiscoverDetailRuntimeOrchestrator
+  from './orchestration/DiscoverDetailRuntimeOrchestrator'
 
 /* ============================================================================
 Props
@@ -42,22 +99,110 @@ interface DiscoverPageProps {
 }
 
 /* ============================================================================
-Discover Page
+Metadata
 ============================================================================ */
 
-export default async function DiscoverPage(
+export async function generateMetadata(
 
   {
 
     params,
 
-  }: DiscoverPageProps
+  }: DiscoverPageProps,
+
+): Promise<Metadata> {
+
+  const {
+
+    'semantic-slug': groupSlug,
+
+  } = await params
+
+  const semantic =
+
+    await fetchDiscoverDetailRuntime(
+
+      groupSlug,
+
+    )
+
+  if (
+
+    !semantic ||
+
+    !semantic.found
+
+  ) {
+
+    return {}
+
+  }
+
+  return toNextMetadata(
+
+    buildDiscoverMetadata(
+
+      groupSlug,
+
+      {
+
+        title:
+
+          semantic.seo?.title ??
+
+          semantic.presentation?.seo_title ??
+
+          semantic.presentation?.title ??
+
+          semantic.data.presentation_name ??
+
+          semantic.data.group_name ??
+
+          'Discover | BIC STATION',
+
+        description:
+
+          semantic.seo?.description ??
+
+          semantic.presentation?.seo_description ??
+
+          semantic.presentation?.description ??
+
+          semantic.data.presentation_description,
+
+        keywords:
+
+          semantic.seo?.keywords,
+
+        ...(semantic.seo?.canonical && {
+
+          canonical:
+
+            semantic.seo.canonical,
+
+        }),
+
+      },
+
+    ),
+
+  )
+
+}
+
+/* ============================================================================
+Page
+============================================================================ */
+
+export default async function Page(
+
+  {
+
+    params,
+
+  }: DiscoverPageProps,
 
 ) {
-
-  /* --------------------------------------------------------------------------
-  Route Parameter
-  -------------------------------------------------------------------------- */
 
   const {
 
@@ -66,19 +211,22 @@ export default async function DiscoverPage(
   } = await params
 
   /* --------------------------------------------------------------------------
-  Runtime
+  Semantic Runtime
   -------------------------------------------------------------------------- */
 
-  const runtime = await fetchDiscoverDetailRuntime(
+  const semantic =
 
-    groupSlug
+    await fetchDiscoverDetailRuntime(
 
-  )
+      groupSlug,
+
+    )
 
   if (
 
-    !runtime ||
-    !runtime.found
+    !semantic ||
+
+    !semantic.found
 
   ) {
 
@@ -90,11 +238,29 @@ export default async function DiscoverPage(
   Experience Dictionary
   -------------------------------------------------------------------------- */
 
-  const dictionary = await getExperienceDictionary(
+  const dictionary =
 
-    runtime.data.group_slug
+    await getExperienceDictionary(
 
-  )
+      semantic.data.group_slug,
+
+    )
+
+  /* --------------------------------------------------------------------------
+  Platform Runtime
+  -------------------------------------------------------------------------- */
+
+  const runtime = {
+
+    semantic,
+
+    dictionary,
+
+    semantic_runtime: true,
+
+    adaptive_runtime: true,
+
+  }
 
   /* --------------------------------------------------------------------------
   Render
@@ -102,53 +268,11 @@ export default async function DiscoverPage(
 
   return (
 
-    <main>
+    <DiscoverDetailRuntimeOrchestrator
 
-      <Hero
+      runtime={runtime}
 
-        runtime={runtime}
-
-        dictionary={dictionary.hero}
-
-      />
-
-      <About
-
-        dictionary={dictionary.about}
-
-      />
-
-      <Elements
-
-        runtime={runtime}
-
-        dictionary={dictionary.elements}
-
-      />
-
-      <RepresentativeProducts
-
-        runtime={runtime}
-
-        dictionary={dictionary.products}
-
-      />
-
-      <RelatedWorlds
-
-        runtime={runtime}
-
-        dictionary={dictionary.related}
-
-      />
-
-      <ContinueDiscovery
-
-        dictionary={dictionary.continue}
-
-      />
-
-    </main>
+    />
 
   )
 

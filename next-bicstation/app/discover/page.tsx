@@ -5,31 +5,25 @@
 // All rights reserved.
 // ============================================================================
 
-/**
- * ============================================================================
- * SHIN CORE LINX
- * Discover Page
- * ============================================================================
- *
- * PURPOSE
- *
- * Platform Runtime Entry.
- *
- * This module SHALL:
- *
- * ✓ Fetch Discover Runtime
- * ✓ Compose Platform Runtime
- * ✓ Pass Runtime to Frontend
- *
- * This module SHALL NOT:
- *
- * ✗ Render UI
- * ✗ Manage State
- * ✗ Generate Meaning
- * ✗ Apply Presentation Logic
- *
- * ============================================================================
- */
+import type {
+  Metadata,
+} from 'next'
+
+/* ============================================================================
+🔥 Publishing
+============================================================================ */
+
+import {
+
+  buildDiscoverMetadata,
+
+} from '@/shared/publishing'
+
+import {
+
+  toNextMetadata,
+
+} from '@/app/publishing/next'
 
 /* ============================================================================
 🔥 Discover Runtime
@@ -47,6 +41,32 @@ import {
 
 import DiscoverRuntimeOrchestrator
   from './orchestration/DiscoverRuntimeOrchestrator'
+
+/* ============================================================================
+🔥 Metadata
+============================================================================ */
+
+export const metadata: Metadata =
+
+  toNextMetadata(
+
+    buildDiscoverMetadata(
+
+      undefined,
+
+      {
+
+        title:
+          'Discover｜用途・性能・ブランドからPCを探す｜BIC STATION',
+
+        description:
+          '用途・GPU・CPU・メーカーなど様々な切り口からPCを探せるDiscoverページです。',
+
+      },
+
+    ),
+
+  )
 
 /* ============================================================================
 🔥 Discover Page
@@ -70,11 +90,9 @@ export default async function Page() {
 
     semantic,
 
-    semantic_runtime:
-      true,
+    semantic_runtime: true,
 
-    adaptive_runtime:
-      true,
+    adaptive_runtime: true,
 
   }
 
@@ -86,11 +104,7 @@ export default async function Page() {
 
     <DiscoverRuntimeOrchestrator
 
-      runtime={
-
-        runtime
-
-      }
+      runtime={runtime}
 
     />
 

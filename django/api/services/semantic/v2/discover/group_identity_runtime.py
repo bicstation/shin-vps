@@ -52,30 +52,6 @@ def build_group_identity_runtime(
         build_traversal_runtime()
     )
 
-    # ------------------------------------------------------
-    # GROUP
-    # ------------------------------------------------------
-
-    # group = next(
-
-    #     (
-    #         g
-
-    #         for g in authority.get(
-    #             "groups",
-    #             []
-    #         )
-
-    #         if (
-    #             g.get(
-    #                 "group_slug"
-    #             )
-    #             == group_slug
-    #         )
-    #     ),
-
-    #     None,
-    # )
     
     topology = (
         build_topology_runtime()
@@ -305,15 +281,14 @@ def build_group_identity_runtime(
     # ------------------------------------------------------
     # SEO
     # ------------------------------------------------------
-
-    seo = (
-        build_discovery_seo(
-            meaning=meaning,
-            product_count=product_count,
-            group_count=1,
-            attribute_count=1,
-        )
+    
+    seo = build_discovery_seo(
+        meaning=meaning,
+        presentation=presentation,
+        group_slug=group_slug,
+        product_count=product_count,
     )
+
     
     # ------------------------------------------------------
     # PAYLOAD

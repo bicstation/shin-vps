@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 # api/services/semantic/v2/seo/seo_runtime.py
 
-
 # ==========================================================
 # BASE
 # ==========================================================
@@ -13,9 +12,18 @@ def build_seo(
     keywords,
     canonical,
     schema_jsonld,
+
+    og_image="/images/ogp/default.webp",
+
+    twitter_card="summary_large_image",
+
 ):
 
     return {
+
+        # --------------------------------------------------
+        # Standard SEO
+        # --------------------------------------------------
 
         "title":
             title,
@@ -31,8 +39,45 @@ def build_seo(
 
         "schema_jsonld":
             schema_jsonld,
-    }
 
+        # --------------------------------------------------
+        # Open Graph
+        # --------------------------------------------------
+
+        "open_graph": {
+
+            "title":
+                title,
+
+            "description":
+                description,
+
+            "url":
+                canonical,
+
+            "image":
+                og_image,
+        },
+
+        # --------------------------------------------------
+        # Twitter
+        # --------------------------------------------------
+
+        "twitter": {
+
+            "card":
+                twitter_card,
+
+            "title":
+                title,
+
+            "description":
+                description,
+
+            "image":
+                og_image,
+        },
+    }
 
 # ==========================================================
 # TOP
@@ -78,7 +123,7 @@ def build_top_seo(
         ],
 
         canonical=
-            "/pc/top/",
+            "/",
 
         schema_jsonld={
 
@@ -96,7 +141,6 @@ def build_top_seo(
         },
     )
 
-
 # ==========================================================
 # DISCOVERY
 # ==========================================================
@@ -105,39 +149,52 @@ def build_discovery_seo(
 
     meaning,
 
+    presentation,
+
+    group_slug,
+
     product_count,
-
-    group_count,
-
-    attribute_count,
 ):
+
+    title = (
+        presentation.get("title")
+        or
+        presentation.get("name")
+        or
+        group_slug
+    )
+
+    description = (
+        presentation.get("description")
+        or
+        ""
+    )
 
     return build_seo(
 
         title=(
-
-            f"{group_count}カテゴリ・"
-            f"{product_count}製品を探索"
+            f"{title}におすすめのPC一覧（{product_count}製品）｜BIC STATION"
         ),
 
         description=(
-
-            f"{group_count}カテゴリ、"
-            f"{attribute_count}属性から"
-            f"{product_count}製品を探索できる"
+            f"{description}。"
+            f"現在{product_count}製品を掲載しています。"
         ),
 
         keywords=[
 
-            "Discovery",
+            title,
 
-            "Semantic",
+            presentation.get("name"),
 
             "PC",
+
+            "BIC STATION",
         ],
 
-        canonical=
-            "/pc/discover/",
+        canonical=(
+            f"/discover/{group_slug}/"
+        ),
 
         schema_jsonld={
 
@@ -148,10 +205,13 @@ def build_discovery_seo(
                 "CollectionPage",
 
             "name":
+                title,
 
-                meaning.get(
-                    "identity"
-                ),
+            "url":
+                f"/pc/discover/{group_slug}/",
+
+            "description":
+                description,
         },
     )
 
@@ -192,7 +252,7 @@ def build_ranking_seo(
         ],
 
         canonical=
-            "/pc/ranking/",
+            "/ranking/",
 
         schema_jsonld={
 
@@ -243,7 +303,7 @@ def build_finder_seo(
         ],
 
         canonical=
-            "/pc/finder/",
+            "/pc-finder/",
 
         schema_jsonld={
 
@@ -293,7 +353,7 @@ def build_product_seo(
 
         canonical=(
 
-            "/pc/product/"
+            "/product/"
             f"{product.unique_id}/"
         ),
 
@@ -351,7 +411,7 @@ def build_related_seo(
         ],
 
         canonical=
-            "/pc/related/",
+            "/related/",
 
         schema_jsonld={
 
@@ -407,7 +467,7 @@ def build_inventory_seo(
         ],
 
         canonical=
-            "/pc/products/",
+            "/catalog/",
 
         schema_jsonld={
 
