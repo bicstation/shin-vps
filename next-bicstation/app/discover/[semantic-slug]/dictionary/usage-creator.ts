@@ -30,7 +30,7 @@ const usageCreator: ExperienceDictionary = {
       '動画編集、画像制作、3DCG、イラスト制作など、クリエイティブな作業を快適に行いたい方のためのセマンティックワールドです。用途に合わせた最適なクリエイターPCを比較・探索できます。',
 
     backgroundImage:
-      '/images/discover/usage-creator.png',
+      '/images/discover/usage-creator.webp',
 
     backgroundPosition:
       'center top',
@@ -52,7 +52,7 @@ const usageCreator: ExperienceDictionary = {
     icon: 'book-open',
 
     backgroundImage:
-      '/images/discover/usage-creator.png',
+      '/images/discover/usage-creator.webp',
 
     backgroundPosition:
       'center 30%',
@@ -73,7 +73,7 @@ const usageCreator: ExperienceDictionary = {
     icon: 'layers',
 
     backgroundImage:
-      '/images/discover/usage-creator.png',
+      '/images/discover/usage-creator.webp',
 
     backgroundPosition:
       'center',
@@ -108,7 +108,7 @@ const usageCreator: ExperienceDictionary = {
     icon: 'cpu',
 
     backgroundImage:
-      '/images/discover/usage-creator.png',
+      '/images/discover/usage-creator.webp',
 
     backgroundPosition:
       'center 70%',
@@ -129,7 +129,7 @@ const usageCreator: ExperienceDictionary = {
     icon: 'network',
 
     backgroundImage:
-      '/images/discover/usage-creator.png',
+      '/images/discover/usage-creator.webp',
 
     backgroundPosition:
       'center bottom',
@@ -150,7 +150,7 @@ const usageCreator: ExperienceDictionary = {
     icon: 'compass',
 
     backgroundImage:
-      '/images/discover/usage-creator.png',
+      '/images/discover/usage-creator.webp',
 
     backgroundPosition:
       'bottom',

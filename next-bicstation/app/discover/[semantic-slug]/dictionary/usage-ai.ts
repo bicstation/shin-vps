@@ -30,7 +30,7 @@ const usageAi: ExperienceDictionary = {
       '生成AI、機械学習、画像生成、文章作成など、AIを快適に活用したい方のためのセマンティックワールドです。用途や性能を比較しながら、自分に最適なAI PCを見つけられます。',
 
     backgroundImage:
-      '/images/discover/usage-ai.png',
+      '/images/discover/usage-ai.webp',
 
     backgroundPosition:
       'center top',
@@ -52,7 +52,7 @@ const usageAi: ExperienceDictionary = {
     icon: 'book-open',
 
     backgroundImage:
-      '/images/discover/usage-ai.png',
+      '/images/discover/usage-ai.webp',
 
     backgroundPosition:
       'center 30%',
@@ -73,7 +73,7 @@ const usageAi: ExperienceDictionary = {
     icon: 'layers',
 
     backgroundImage:
-      '/images/discover/usage-ai.png',
+      '/images/discover/usage-ai.webp',
 
     backgroundPosition:
       'center',
@@ -108,7 +108,7 @@ const usageAi: ExperienceDictionary = {
     icon: 'cpu',
 
     backgroundImage:
-      '/images/discover/usage-ai.png',
+      '/images/discover/usage-ai.webp',
 
     backgroundPosition:
       'center 70%',
@@ -129,7 +129,7 @@ const usageAi: ExperienceDictionary = {
     icon: 'network',
 
     backgroundImage:
-      '/images/discover/usage-ai.png',
+      '/images/discover/usage-ai.webp',
 
     backgroundPosition:
       'center bottom',
@@ -150,7 +150,7 @@ const usageAi: ExperienceDictionary = {
     icon: 'compass',
 
     backgroundImage:
-      '/images/discover/usage-ai.png',
+      '/images/discover/usage-ai.webp',
 
     backgroundPosition:
       'bottom',

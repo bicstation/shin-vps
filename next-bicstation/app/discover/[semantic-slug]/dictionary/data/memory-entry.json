@@ -4,7 +4,7 @@
   "theme": {
     "icon": "memory-stick",
     "accentColor": "#22C55E",
-    "backgroundImage": "/images/discover/memory-entry.png"
+    "backgroundImage": "/images/discover/memory-entry.webp"
   },
 
   "hero": {

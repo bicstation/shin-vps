@@ -4,7 +4,7 @@
   "theme": {
     "icon": "laptop",
     "accentColor": "#4A90E2",
-    "backgroundImage": "/images/discover/device-laptop.png"
+    "backgroundImage": "/images/discover/device-laptop.webp"
   },
 
   "hero": {

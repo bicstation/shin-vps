@@ -373,7 +373,7 @@ font-size: 1.3rem;
       rgba(2,6,23,.82),
       rgba(2,6,23,.92)
     ),
-    url('/images/universe/usage-universe.png');
+    url('/images/universe/usage-universe.webp');
 
   background-size: cover;
   background-position: center;
@@ -386,7 +386,7 @@ font-size: 1.3rem;
       rgba(2,6,23,.82),
       rgba(2,6,23,.92)
     ),
-    url('/images/universe/device-universe.png');
+    url('/images/universe/device-universe.webp');
 
   background-size: cover;
   background-position: center;

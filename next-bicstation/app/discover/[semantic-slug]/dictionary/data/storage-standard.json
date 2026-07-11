@@ -4,7 +4,7 @@
   "theme": {
     "icon": "hard-drive",
     "accentColor": "#3B82F6",
-    "backgroundImage": "/images/discover/storage-standard.png"
+    "backgroundImage": "/images/discover/storage-standard.webp"
   },
 
   "hero": {

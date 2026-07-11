@@ -112,11 +112,11 @@ export default function RankingHero({
 
     const heroBackground =
 
-        '/images/ranking/ranking_hero.png'
+        '/images/ranking/ranking_hero.webp'
 
     const heroCore =
 
-        '/images/ranking/ranking_ai_core.png'
+        '/images/ranking/ranking_ai_core.webp'
 
     /* =========================================================================
     🔥 Semantic Labels

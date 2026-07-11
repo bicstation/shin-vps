@@ -522,7 +522,7 @@ FinalCta({
               <img
                 src={
                   product.image_url
-                  || '/no-image.png'
+                  || '/no-image.webp'
                 }
 
                 alt={

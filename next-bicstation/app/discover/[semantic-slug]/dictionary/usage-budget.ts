@@ -30,7 +30,7 @@ const usageBudget: ExperienceDictionary = {
       '価格と性能のバランスを重視しながら、自分に最適なPCを探すためのセマンティックワールドです。初めての一台から買い替えまで、予算に合わせた賢い選択をサポートします。',
 
     backgroundImage:
-      '/images/discover/usage-budget.png',
+      '/images/discover/usage-budget.webp',
 
     backgroundPosition:
       'center top',
@@ -52,7 +52,7 @@ const usageBudget: ExperienceDictionary = {
     icon: 'book-open',
 
     backgroundImage:
-      '/images/discover/usage-budget.png',
+      '/images/discover/usage-budget.webp',
 
     backgroundPosition:
       'center 30%',
@@ -73,7 +73,7 @@ const usageBudget: ExperienceDictionary = {
     icon: 'layers',
 
     backgroundImage:
-      '/images/discover/usage-budget.png',
+      '/images/discover/usage-budget.webp',
 
     backgroundPosition:
       'center',
@@ -108,7 +108,7 @@ const usageBudget: ExperienceDictionary = {
     icon: 'cpu',
 
     backgroundImage:
-      '/images/discover/usage-budget.png',
+      '/images/discover/usage-budget.webp',
 
     backgroundPosition:
       'center 70%',
@@ -129,7 +129,7 @@ const usageBudget: ExperienceDictionary = {
     icon: 'network',
 
     backgroundImage:
-      '/images/discover/usage-budget.png',
+      '/images/discover/usage-budget.webp',
 
     backgroundPosition:
       'center bottom',
@@ -150,7 +150,7 @@ const usageBudget: ExperienceDictionary = {
     icon: 'compass',
 
     backgroundImage:
-      '/images/discover/usage-budget.png',
+      '/images/discover/usage-budget.webp',
 
     backgroundPosition:
       'bottom',

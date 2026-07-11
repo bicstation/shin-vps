@@ -4,7 +4,7 @@
   "theme": {
     "icon": "cpu",
     "accentColor": "#8B5CF6",
-    "backgroundImage": "/images/discover/gpu-professional.png"
+    "backgroundImage": "/images/discover/gpu-professional.webp"
   },
 
   "hero": {

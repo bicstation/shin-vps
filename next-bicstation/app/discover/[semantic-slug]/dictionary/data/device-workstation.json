@@ -4,7 +4,7 @@
   "theme": {
     "icon": "server",
     "accentColor": "#7C5CFF",
-    "backgroundImage": "/images/discover/device-workstation.png"
+    "backgroundImage": "/images/discover/device-workstation.webp"
   },
 
   "hero": {

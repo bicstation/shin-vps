@@ -4,7 +4,7 @@
   "theme": {
     "icon": "wallet",
     "accentColor": "#34C759",
-    "backgroundImage": "/images/discover/usage-budget.png"
+    "backgroundImage": "/images/discover/usage-budget.webp"
   },
 
   "hero": {

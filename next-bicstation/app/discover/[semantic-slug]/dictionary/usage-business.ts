@@ -30,7 +30,7 @@ const usageBusiness: ExperienceDictionary = {
       'オフィスワーク、テレワーク、資料作成、Web会議など、ビジネスシーンで快適に利用できるPCを探すためのセマンティックワールドです。用途や働き方に合わせた最適な一台を比較・探索できます。',
 
     backgroundImage:
-      '/images/discover/usage-business.png',
+      '/images/discover/usage-business.webp',
 
     backgroundPosition:
       'center top',
@@ -52,7 +52,7 @@ const usageBusiness: ExperienceDictionary = {
     icon: 'book-open',
 
     backgroundImage:
-      '/images/discover/usage-business.png',
+      '/images/discover/usage-business.webp',
 
     backgroundPosition:
       'center 30%',
@@ -73,7 +73,7 @@ const usageBusiness: ExperienceDictionary = {
     icon: 'layers',
 
     backgroundImage:
-      '/images/discover/usage-business.png',
+      '/images/discover/usage-business.webp',
 
     backgroundPosition:
       'center',
@@ -108,7 +108,7 @@ const usageBusiness: ExperienceDictionary = {
     icon: 'cpu',
 
     backgroundImage:
-      '/images/discover/usage-business.png',
+      '/images/discover/usage-business.webp',
 
     backgroundPosition:
       'center 70%',
@@ -129,7 +129,7 @@ const usageBusiness: ExperienceDictionary = {
     icon: 'network',
 
     backgroundImage:
-      '/images/discover/usage-business.png',
+      '/images/discover/usage-business.webp',
 
     backgroundPosition:
       'center bottom',
@@ -150,7 +150,7 @@ const usageBusiness: ExperienceDictionary = {
     icon: 'compass',
 
     backgroundImage:
-      '/images/discover/usage-business.png',
+      '/images/discover/usage-business.webp',
 
     backgroundPosition:
       'bottom',

@@ -17,10 +17,10 @@ export default function getRankingBadge(
 
     ) {
 
-        return `/images/ranking/ranking_core_${rank}.png`
+        return `/images/ranking/ranking_core_${rank}.webp`
 
     }
 
-    return '/images/ranking/ranking_core_10.png'
+    return '/images/ranking/ranking_core_10.webp'
 
 }

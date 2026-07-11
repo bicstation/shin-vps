@@ -30,7 +30,7 @@ const usageMobile: ExperienceDictionary = {
       '軽量で持ち運びやすく、外出先やカフェ、出張先でも快適に使えるPCを探すためのセマンティックワールドです。携帯性・バッテリー性能・使いやすさを比較しながら、自分に合った一台を見つけられます。',
 
     backgroundImage:
-      '/images/discover/usage-mobile.png',
+      '/images/discover/usage-mobile.webp',
 
     backgroundPosition:
       'center top',
@@ -52,7 +52,7 @@ const usageMobile: ExperienceDictionary = {
     icon: 'book-open',
 
     backgroundImage:
-      '/images/discover/usage-mobile.png',
+      '/images/discover/usage-mobile.webp',
 
     backgroundPosition:
       'center 30%',
@@ -73,7 +73,7 @@ const usageMobile: ExperienceDictionary = {
     icon: 'layers',
 
     backgroundImage:
-      '/images/discover/usage-mobile.png',
+      '/images/discover/usage-mobile.webp',
 
     backgroundPosition:
       'center',
@@ -108,7 +108,7 @@ const usageMobile: ExperienceDictionary = {
     icon: 'cpu',
 
     backgroundImage:
-      '/images/discover/usage-mobile.png',
+      '/images/discover/usage-mobile.webp',
 
     backgroundPosition:
       'center 70%',
@@ -129,7 +129,7 @@ const usageMobile: ExperienceDictionary = {
     icon: 'network',
 
     backgroundImage:
-      '/images/discover/usage-mobile.png',
+      '/images/discover/usage-mobile.webp',
 
     backgroundPosition:
       'center bottom',
@@ -150,7 +150,7 @@ const usageMobile: ExperienceDictionary = {
     icon: 'compass',
 
     backgroundImage:
-      '/images/discover/usage-mobile.png',
+      '/images/discover/usage-mobile.webp',
 
     backgroundPosition:
       'bottom',

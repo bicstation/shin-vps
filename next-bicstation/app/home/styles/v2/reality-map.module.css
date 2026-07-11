@@ -388,7 +388,7 @@
 .usageUniverse::before {
 
   background-image:
-    url('/images/universe/usage.png');
+    url('/images/universe/usage.webp');
 }
 
 /* Device Universe */
@@ -396,7 +396,7 @@
 .deviceUniverse::before {
 
   background-image:
-    url('/images/universe/device.png');
+    url('/images/universe/device.webp');
 }
 
 /* コンテンツを前面へ */

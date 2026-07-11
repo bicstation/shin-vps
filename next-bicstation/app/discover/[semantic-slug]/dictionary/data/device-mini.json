@@ -4,7 +4,7 @@
   "theme": {
     "icon": "box",
     "accentColor": "#14B8A6",
-    "backgroundImage": "/images/discover/device-mini.png"
+    "backgroundImage": "/images/discover/device-mini.webp"
   },
 
   "hero": {

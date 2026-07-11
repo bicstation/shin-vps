@@ -4,7 +4,7 @@
   "theme": {
     "icon": "monitor",
     "accentColor": "#A855F7",
-    "backgroundImage": "/images/discover/monitor-oled.png"
+    "backgroundImage": "/images/discover/monitor-oled.webp"
   },
 
   "hero": {

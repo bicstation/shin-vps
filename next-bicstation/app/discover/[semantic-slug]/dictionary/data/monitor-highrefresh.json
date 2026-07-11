@@ -4,7 +4,7 @@
   "theme": {
     "icon": "monitor",
     "accentColor": "#00AEEF",
-    "backgroundImage": "/images/discover/monitor-highrefresh.png"
+    "backgroundImage": "/images/discover/monitor-highrefresh.webp"
   },
 
   "hero": {

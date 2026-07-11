@@ -4,7 +4,7 @@
   "theme": {
     "icon": "globe",
     "accentColor": "#2563EB",
-    "backgroundImage": "/images/discover/maker-global.png"
+    "backgroundImage": "/images/discover/maker-global.webp"
   },
 
   "hero": {

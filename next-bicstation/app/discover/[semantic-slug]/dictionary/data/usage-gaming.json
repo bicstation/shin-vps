@@ -4,7 +4,7 @@
   "theme": {
     "icon": "gamepad",
     "accentColor": "#45B3FF",
-    "backgroundImage": "/images/discover/usage-gaming.png"
+    "backgroundImage": "/images/discover/usage-gaming.webp"
   },
 
   "hero": {

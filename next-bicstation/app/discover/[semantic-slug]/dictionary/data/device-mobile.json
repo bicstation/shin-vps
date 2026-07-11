@@ -4,7 +4,7 @@
   "theme": {
     "icon": "briefcase",
     "accentColor": "#00B8D9",
-    "backgroundImage": "/images/discover/device-mobile.png"
+    "backgroundImage": "/images/discover/device-mobile.webp"
   },
 
   "hero": {

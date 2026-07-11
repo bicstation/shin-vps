@@ -4,7 +4,7 @@
   "theme": {
     "icon": "database",
     "accentColor": "#5B6EFF",
-    "backgroundImage": "/images/discover/device-server.png"
+    "backgroundImage": "/images/discover/device-server.webp"
   },
 
   "hero": {
