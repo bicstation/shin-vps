@@ -3,6 +3,22 @@
 // /app/page.tsx
 // ============================================================================
 
+import type {
+    Metadata,
+} from 'next'
+
+/* ============================================================================
+🔥 Publishing
+============================================================================ */
+
+import {
+    createMetadata,
+} from '@/shared/publishing'
+
+import {
+    toNextMetadata,
+} from './publishing/next'
+
 /* ============================================================================
 🔥 Sidebar Runtime
 ============================================================================ */
@@ -49,6 +65,27 @@ import {
 
 import HomeRuntimeOrchestrator
     from './home/orchestration/HomeRuntimeOrchestrator'
+
+/* ============================================================================
+🔥 Metadata
+============================================================================ */
+
+export async function generateMetadata():
+
+Promise<Metadata> {
+
+    return toNextMetadata(
+
+        createMetadata({
+
+            canonical:
+                'https://bicstation.com',
+
+        })
+
+    )
+
+}
 
 /* ============================================================================
 🔥 Home Page
@@ -118,7 +155,7 @@ export default async function Page() {
 
         '🔥 NAVIGATION',
 
-        runtime.navigation
+        runtime.navigation,
 
     )
 

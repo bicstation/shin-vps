@@ -1,16 +1,35 @@
 /* eslint-disable @next/next/no-img-element */
 
-import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import type {
+  Metadata,
+  Viewport,
+} from 'next'
 
-import '@/shared/styles/globals.css';
-import '@/shared/styles/markdown.css';
+import {
+  Inter,
+} from 'next/font/google'
 
-import Header from '@/shared/components/organisms/common/Header';
-import Footer from '@/shared/components/organisms/common/Footer';
+import Script from 'next/script'
+
+import {
+  APPLICATION,
+  SITE,
+  createMetadata,
+  createDefaultJsonLd,
+} from '@/shared/publishing'
+
+import {
+  toNextMetadata,
+} from './publishing/next'
+
+import '@shared/styles/globals.css'
+import '@shared/styles/markdown.css'
+
+import Header from '@/shared/components/organisms/common/Header'
+import Footer from '@/shared/components/organisms/common/Footer'
 // import ChatBotLoader from '@/shared/components/organisms/common/ChatBotLoader';
 
-import styles from "./layout.module.css";
+import styles from './layout.module.css'
 
 /**
  * =====================================================================
@@ -19,9 +38,38 @@ import styles from "./layout.module.css";
  */
 
 const inter = Inter({
-  subsets: ["latin"],
-  display: 'swap',
-});
+
+  subsets: [
+    'latin',
+  ],
+
+  display:
+    'swap',
+
+})
+
+/**
+ * =====================================================================
+ * 🛰️ Publishing
+ * =====================================================================
+ */
+
+const publishingMetadata =
+  createMetadata({
+
+    canonical:
+      SITE.URL,
+
+  })
+
+/**
+ * ============================================================================
+ * JSON-LD
+ * ============================================================================
+ */
+
+const jsonLd =
+  createDefaultJsonLd()
 
 /**
  * =====================================================================
@@ -30,19 +78,39 @@ const inter = Inter({
  */
 
 export const metadata: Metadata = {
+
+  ...toNextMetadata(
+
+    publishingMetadata,
+
+  ),
+
   metadataBase:
+
     new URL(
-      'https://bicstation.com'
+
+      SITE.URL,
+
     ),
-  title:
-    '用途別にわかるおすすめPC比較 | BIC STATION',
-  description:
-    'AI画像生成・ゲーム・動画編集・普段使いまで。用途別におすすめPCをわかりやすく比較できるPC選びサポートサイト。',
+
+  applicationName:
+
+    APPLICATION.NAME,
+
+  category:
+
+    APPLICATION.CATEGORY,
+
   other: {
+
     'google-adsense-account':
+
       'ca-pub-9068876333048216',
+
   },
+
 }
+
 /**
  * =====================================================================
  * 📱 Viewport
@@ -50,61 +118,88 @@ export const metadata: Metadata = {
  */
 
 export const viewport: Viewport = {
-  width: "device-width",
-  initialScale: 1,
-};
+
+  width:
+    'device-width',
+
+  initialScale:
+    1,
+
+}
 
 /**
  * =====================================================================
  * 🚀 Root Layout
  * =====================================================================
- *
- * IMPORTANT:
- * - No headers()
- * - No async layout
- * - No force-dynamic
- * - No revalidate
- *
- * Keep root layout PURE for stable prerendering.
- * =====================================================================
  */
 
 export default function RootLayout({
+
   children,
+
 }: {
-  children: React.ReactNode;
+
+  children:
+    React.ReactNode
+
 }) {
 
-  /**
-   * =================================================================
-   * Temporary Static Context
-   * =================================================================
-   */
+  const isAdminPage =
+    false
 
-  const isAdminPage = false;
-  const isAdult = false;
+  const isAdult =
+    false
 
   return (
+
     <html
       lang="ja"
       suppressHydrationWarning
     >
+
       <head>
+
         <script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9068876333048216"
           crossOrigin="anonymous"
         />
+
       </head>
 
       <body
+
         className={`
           ${inter.className}
           ${styles.bodyWrapper}
           ${isAdult ? 'is-adult-theme' : 'is-general-theme'}
         `}
+
         suppressHydrationWarning
+
       >
+
+        <Script
+
+          id="jsonld-default"
+
+          type="application/ld+json"
+
+          strategy="beforeInteractive"
+
+          dangerouslySetInnerHTML={{
+
+            __html:
+
+              JSON.stringify(
+
+                jsonLd,
+
+              ),
+
+          }}
+
+        />
 
         {/* =========================================================
            🔹 Header
@@ -113,30 +208,51 @@ export default function RootLayout({
         <Header />
 
         {/* =========================================================
-           🔹 Main Content
+           🔹 Main
         ========================================================= */}
 
-        <main className={styles.main} >
+        <main
+
+          className={
+            styles.main
+          }
+
+        >
 
           {children}
 
         </main>
 
         {/* =========================================================
-           🔹 Affiliate Notice
+           🔹 Affiliate
         ========================================================= */}
 
         {!isAdminPage && (
+
           <div
+
             style={{
-              fontSize: '11px',
-              textAlign: 'center',
-              color: '#888',
-              marginTop: '24px',
+
+              fontSize:
+                '11px',
+
+              textAlign:
+                'center',
+
+              color:
+                '#888',
+
+              marginTop:
+                '24px',
+
             }}
+
           >
+
             ※本サイトはアフィリエイト広告を利用しています
+
           </div>
+
         )}
 
         {/* =========================================================
@@ -144,18 +260,19 @@ export default function RootLayout({
         ========================================================= */}
 
         {!isAdminPage && (
-          <Footer />
-        )}
 
-        {/* =========================================================
-           🔹 ChatBot
-        ========================================================= */}
+          <Footer />
+
+        )}
 
         {/*
         <ChatBotLoader />
         */}
 
       </body>
+
     </html>
-  );
+
+  )
+
 }
