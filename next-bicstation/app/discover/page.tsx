@@ -1,259 +1,98 @@
 // ============================================================================
 // FILE:
 // /app/discover/page.tsx
+// Copyright (c) 2024 Shin Corporation.
+// All rights reserved.
 // ============================================================================
 
-'use client'
+/**
+ * ============================================================================
+ * SHIN CORE LINX
+ * Discover Page
+ * ============================================================================
+ *
+ * PURPOSE
+ *
+ * Platform Runtime Entry.
+ *
+ * This module SHALL:
+ *
+ * ✓ Fetch Discover Runtime
+ * ✓ Compose Platform Runtime
+ * ✓ Pass Runtime to Frontend
+ *
+ * This module SHALL NOT:
+ *
+ * ✗ Render UI
+ * ✗ Manage State
+ * ✗ Generate Meaning
+ * ✗ Apply Presentation Logic
+ *
+ * ============================================================================
+ */
 
 /* ============================================================================
-🔥 React
+🔥 Discover Runtime
 ============================================================================ */
 
 import {
-  useEffect,
-  useMemo,
-  useState,
-} from 'react'
 
-/* ============================================================================
-🔥 Runtime
-============================================================================ */
-
-import {
   fetchSemanticRuntime,
-} from '@/shared/lib/api/django/pc/semantics'
 
-import type {
-  SemanticRuntime,
 } from '@/shared/lib/api/django/pc/semantics'
 
 /* ============================================================================
-🔥 Components
+🔥 Frontend Orchestrator
 ============================================================================ */
 
-import DiscoverHero
-  from './components/hero/DiscoverHero'
-
-import UniverseTabs
-  from './components/tabs/UniverseTabs'
-
-import UniverseGrid
-  from './components/cards/UniverseGrid'
-
-import EmptyState
-  from './components/common/EmptyState'
+import DiscoverRuntimeOrchestrator
+  from './orchestration/DiscoverRuntimeOrchestrator'
 
 /* ============================================================================
-🔥 Styles
+🔥 Discover Page
 ============================================================================ */
 
-import styles
-  from './styles/discover.module.css'
+export default async function Page() {
 
-/* ============================================================================
-🔥 Discover Universe Page
-============================================================================ */
+  // ==========================================================================
+  // Runtime Fetch
+  // ==========================================================================
 
-export default function DiscoverPage() {
+  const semantic =
 
-  /* ==========================================================================
-  🔥 Runtime
-  ========================================================================== */
+    await fetchSemanticRuntime()
 
-  const [
-    runtime,
-    setRuntime,
-  ] = useState<SemanticRuntime | null>(
-    null
-  )
+  // ==========================================================================
+  // Platform Runtime
+  // ==========================================================================
 
-  const [
-    loading,
-    setLoading,
-  ] = useState(true)
+  const runtime = {
 
-  const [
-    activeUniverse,
-    setActiveUniverse,
-  ] = useState('')
+    semantic,
 
-  /* ==========================================================================
-  🔥 Load Runtime
-  ========================================================================== */
+    semantic_runtime:
+      true,
 
-  useEffect(() => {
-
-    async function loadRuntime() {
-
-      try {
-
-        const data =
-          await fetchSemanticRuntime()
-
-        setRuntime(data)
-
-        if (
-          data?.universes?.length
-        ) {
-
-          setActiveUniverse(
-            data.universes[0]
-              .universe_slug
-          )
-
-        }
-
-      } catch (error) {
-
-        console.error(
-          'DISCOVER UNIVERSE ERROR',
-          error
-        )
-
-      } finally {
-
-        setLoading(false)
-
-      }
-
-    }
-
-    loadRuntime()
-
-  }, [])
-
-  /* ==========================================================================
-  🔥 Active Attributes
-  ========================================================================== */
-
-  const activeAttributes =
-    useMemo(() => {
-
-      if (
-        !runtime?.discover?.shelves
-      ) {
-
-        return []
-
-      }
-
-      return runtime.discover.shelves.filter(
-
-        (item) =>
-
-          item.parent_group ===
-          activeUniverse
-
-      )
-
-    }, [
-
-      runtime,
-      activeUniverse,
-
-    ])
-
-  /* ==========================================================================
-  🔥 Loading
-  ========================================================================== */
-
-  if (loading) {
-
-    return (
-
-      <main
-        className={
-          styles.discover
-        }
-      >
-
-        Loading...
-
-      </main>
-
-    )
+    adaptive_runtime:
+      true,
 
   }
 
-  /* ==========================================================================
-  🔥 Empty Runtime
-  ========================================================================== */
-
-  if (
-
-    !runtime ||
-
-    runtime.universes.length === 0
-
-  ) {
-
-    return (
-
-      <main
-        className={
-          styles.discover
-        }
-      >
-
-        <EmptyState />
-
-      </main>
-
-    )
-
-  }
-
-  /* ==========================================================================
-  🔥 Render
-  ========================================================================== */
+  // ==========================================================================
+  // Render
+  // ==========================================================================
 
   return (
 
-    <main
-      className={
-        styles.discover
+    <DiscoverRuntimeOrchestrator
+
+      runtime={
+
+        runtime
+
       }
-    >
 
-      {/* ==========================================================
-      Hero
-      ========================================================== */}
-
-      <DiscoverHero />
-
-      {/* ==========================================================
-      Universe Tabs
-      ========================================================== */}
-
-      <UniverseTabs
-
-        universes={
-          runtime.universes
-        }
-
-        activeUniverse={
-          activeUniverse
-        }
-
-        onChange={
-          setActiveUniverse
-        }
-
-      />
-
-      {/* ==========================================================
-      Attribute Cards
-      ========================================================== */}
-
-      <UniverseGrid
-
-        items={
-          activeAttributes
-        }
-
-      />
-
-    </main>
+    />
 
   )
 
