@@ -523,3 +523,68 @@ def build_inventory_seo(
                 ),
         },
     )
+
+# ==========================================================
+# DISCOVER INDEX
+# ==========================================================
+
+def build_discover_index_seo(
+
+    meaning,
+
+    product_count,
+
+    group_count,
+
+    attribute_count,
+
+):
+
+    return build_seo(
+
+        title=(
+            "用途から探せるおすすめPC一覧｜BIC STATION"
+        ),
+
+        description=(
+
+            f"{group_count}カテゴリ・"
+
+            f"{product_count}製品から"
+
+            "用途別におすすめPCを探せます。"
+
+        ),
+
+        keywords=[
+
+            "PC",
+
+            "Discovery",
+
+            "用途別",
+
+            "BIC STATION",
+
+        ],
+
+        canonical="/discover/",
+
+        schema_jsonld={
+
+            "@context":
+                "https://schema.org",
+
+            "@type":
+                "CollectionPage",
+
+            "name":
+                "Discover",
+
+            "url":
+                "/discover/",
+
+            "description":
+                "用途別PC一覧",
+        },
+    )

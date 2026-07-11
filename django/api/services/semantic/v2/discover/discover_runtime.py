@@ -27,6 +27,9 @@ from api.services.semantic.v2.presentation.presentation_runtime import (
     build_discovery_presentation,
 )
 
+from api.services.semantic.v2.seo.seo_runtime import (
+    build_discover_index_seo,
+)
 
 # ==========================================================
 # DISCOVERY
@@ -191,20 +194,18 @@ def build_discover_runtime(
     # ------------------------------------------------------
     # SEO
     # ------------------------------------------------------
-
+    
     seo = (
 
-        build_discovery_seo(
+        build_discover_index_seo(
 
             meaning=meaning,
-
             product_count=product_count,
-
             group_count=group_count,
-
             attribute_count=attribute_count,
         )
     )
+
 
     # ------------------------------------------------------
     # PAYLOAD
@@ -509,3 +510,4 @@ def build_discover_runtime(
         "ready":
             True,
     }
+    
