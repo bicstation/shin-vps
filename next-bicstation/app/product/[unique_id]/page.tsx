@@ -93,10 +93,11 @@ export async function generateMetadata({
   const runtime =
 
     await fetchProductDetail(
-      params.unique_id
+      params.unique_id,
     )
 
   const product =
+
     runtime?.product
 
   if (!product) {
@@ -131,13 +132,54 @@ export async function generateMetadata({
 
     `${product.name} の詳細情報`
 
+  const canonical =
+
+    `https://bicstation.com/product/${params.unique_id}`
+
   return {
 
     title,
 
     description,
 
+    alternates: {
+
+      canonical,
+
+    },
+
     openGraph: {
+
+      title,
+
+      description,
+
+      url:
+        canonical,
+
+      images:
+
+        product.image_url
+
+          ? [
+
+            {
+
+              url:
+                product.image_url,
+
+            },
+
+          ]
+
+          : [],
+
+    },
+
+    twitter: {
+
+      card:
+        'summary_large_image',
 
       title,
 
@@ -149,14 +191,9 @@ export async function generateMetadata({
 
           ? [
 
-              {
+            product.image_url,
 
-                url:
-                  product.image_url,
-
-              },
-
-            ]
+          ]
 
           : [],
 
@@ -165,6 +202,7 @@ export async function generateMetadata({
   }
 
 }
+
 
 /* ============================================================================
 🔥 Product Page

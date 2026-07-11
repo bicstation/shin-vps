@@ -5,260 +5,174 @@
 // All rights reserved.
 // ============================================================================
 
-'use client'
+/**
+ * ============================================================================
+ * SHIN CORE LINX
+ * Catalog Page
+ * ============================================================================
+ *
+ * PURPOSE
+ *
+ * Platform Runtime Entry.
+ *
+ * This module SHALL:
+ *
+ * ✓ Generate Metadata
+ * ✓ Generate JSON-LD
+ * ✓ Enter Platform Runtime
+ * ✓ Delegate Experience to Orchestrator
+ *
+ * This module SHALL NOT:
+ *
+ * ✗ Render UI
+ * ✗ Manage State
+ * ✗ Generate Meaning
+ * ✗ Fetch Runtime (Current Phase)
+ *
+ * ============================================================================
+ */
+
+import type {
+
+    Metadata,
+
+} from 'next'
 
 /* ============================================================================
-🔥 Next
+🔥 Publishing
 ============================================================================ */
 
 import {
 
-    useSearchParams,
+    buildPageMetadata,
 
-} from 'next/navigation'
+    createJsonLdGraph,
 
-/* ============================================================================
-🔥 Hook
-============================================================================ */
+} from '@/shared/publishing'
 
-import useCatalog
-    from './hooks/useCatalog'
+import {
 
-/* ============================================================================
-🔥 Components
-============================================================================ */
+    toNextMetadata,
 
-import Breadcrumb
-    from './components/Breadcrumb'
+} from '@/app/publishing/next'
 
-import CatalogHero
-    from './components/CatalogHero'
-
-import CatalogSummary
-    from './components/CatalogSummary'
-
-import ProductGrid
-    from './components/ProductGrid'
-
-import Pagination
-    from './components/Pagination'
-
-import EmptyProducts
-    from './components/EmptyProducts'
+import JsonLd
+    from '@/app/publishing/JsonLd'
 
 /* ============================================================================
-🔥 Styles
+🔥 Frontend
 ============================================================================ */
 
-import styles
-    from './styles/catalog.module.css'
+import CatalogRuntimeOrchestrator
+    from './orchestration/CatalogRuntimeOrchestrator'
 
 /* ============================================================================
-🔥 Catalog Experience
+🔥 JSON-LD
 ============================================================================ */
 
-export default function CatalogPage() {
+export async function generateJsonLd() {
 
-    /* ==========================================================================
-    🔥 URL State
-    ========================================================================== */
+    return createJsonLdGraph({
 
-    const searchParams =
-        useSearchParams()
-
-    const page = Number(
-
-        searchParams.get('page')
-
-        ?? 1
-
-    )
-
-    const pageSize = 20
-
-    /* ==========================================================================
-    🔥 Runtime
-    ========================================================================== */
-
-    const {
-
-        runtime,
-
-        loading,
-
-        error,
-
-    } = useCatalog(
-
-        page,
-
-        pageSize,
-
-    )
-
-
-    /* ==========================================================================
-    🔥 Loading
-    ========================================================================== */
-
-    if (
-
-        loading
-
-    ) {
-
-        return (
-
-            <main
-                className={
-                    styles.catalog
-                }
-            >
-
-                Loading...
-
-            </main>
-
-        )
-
-    }
-
-    /* ==========================================================================
-    🔥 Error
-    ========================================================================== */
-
-    if (
-
-        error ||
-
-        !runtime
-
-    ) {
-
-        return (
-
-            <main
-                className={
-                    styles.catalog
-                }
-            >
-
-                Runtime Error
-
-            </main>
-
-        )
-
-    }
-
-    /* ==========================================================================
-    🔥 Products
-    ========================================================================== */
-
-    const hasProducts =
-
-        runtime.products.length > 0
-
-
-    /* ==========================================================================
-    🔥 Render
-    ========================================================================== */
-
-    return (
-
-        <main
-            className={
-                styles.catalog
-            }
-        >
-
-            {/* ==========================================================
-      Breadcrumb
-      ========================================================== */}
-
-            <Breadcrumb />
-
-            {/* ==========================================================
-      Hero
-      ========================================================== */}
-
-            <CatalogHero
-
-                runtime={
-                    runtime
-                }
-
-            />
-
-            {/* ==========================================================
-      Summary
-      ========================================================== */}
-
-            {/* <CatalogSummary
-
-                count={
-                    runtime.count
-                }
-
-                page={
-                    runtime.page
-                }
-
-                page_size={
-                    runtime.page_size
-                }
-
-            /> */}
-
-            {/* ==========================================================
-      Products
-      ========================================================== */}
+        breadcrumb: [
 
             {
 
-                hasProducts
+                name: 'ホーム',
 
-                    ? (
+                path: '/',
 
-                        <ProductGrid
+            },
 
-                            products={
-                                runtime.products
-                            }
+            {
 
-                        />
+                name: '商品一覧',
 
-                    )
+                path: '/catalog',
 
-                    : (
+            },
 
-                        <EmptyProducts />
+        ],
 
-                    )
+        collectionPage: {
 
-            }
+            name:
+                'PC商品一覧',
 
-            {/* ==========================================================
-      Pagination
-      ========================================================== */}
+            description:
+                '掲載中のPC商品を一覧で比較できます。',
 
-            <Pagination
+            url:
+                'https://bicstation.com/catalog',
 
-                page={
-                    runtime.page
-                }
+        },
 
-                page_size={
-                    runtime.page_size
-                }
+    })
 
-                has_next={
-                    runtime.has_next
-                }
+}
 
+/* ============================================================================
+🔥 Metadata
+============================================================================ */
+
+export const metadata: Metadata =
+
+    toNextMetadata(
+
+        buildPageMetadata(
+
+            '/catalog',
+
+            {
+
+                title:
+                    'PC商品一覧｜BIC STATION',
+
+                description:
+                    '掲載中のPC商品を一覧で比較・検索できます。',
+
+                keywords: [
+
+                    'PC',
+
+                    'ノートパソコン',
+
+                    'デスクトップ',
+
+                    '商品一覧',
+
+                    'BIC STATION',
+
+                ],
+
+            },
+
+        ),
+
+    )
+
+/* ============================================================================
+🔥 Catalog Page
+============================================================================ */
+
+export default async function Page() {
+
+    const jsonLd =
+
+        await generateJsonLd()
+
+    return (
+
+        <>
+
+            <JsonLd
+                id="jsonld-page"
+                jsonLd={jsonLd}
             />
 
-        </main>
+            <CatalogRuntimeOrchestrator />
+
+        </>
 
     )
 
