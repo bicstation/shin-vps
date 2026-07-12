@@ -1,348 +1,190 @@
-/* ============================================================================
-React
-============================================================================ */
-'use client'
+// ============================================================================
+// FILE:
+// /app/pc-finder/page.tsx
+// Copyright (c) 2024 Shin Corporation.
+// All rights reserved.
+// ============================================================================
 
-
-import {
-
-    useState,
-
-} from 'react'
-
-/* ============================================================================
-Runtime
-============================================================================ */
-
-import {
-
-    executeFinder,
-
-} from './lib/finderActions'
-
-/* ============================================================================
-Contracts
-============================================================================ */
+/**
+ * ============================================================================
+ * SHIN CORE LINX
+ * Finder Page
+ * ============================================================================
+ *
+ * PURPOSE
+ *
+ * Platform Runtime Entry.
+ *
+ * This module SHALL:
+ *
+ * ✓ Generate Metadata
+ * ✓ Generate JSON-LD
+ * ✓ Enter Platform Runtime
+ * ✓ Delegate Experience to Orchestrator
+ *
+ * This module SHALL NOT:
+ *
+ * ✗ Render UI
+ * ✗ Manage State
+ * ✗ Generate Meaning
+ * ✗ Execute Finder Runtime
+ *
+ * ============================================================================
+ */
 
 import type {
 
-    FinderRuntimeContract,
+    Metadata,
 
-} from '@/shared/lib/api/django/pc/finder/contracts'
+} from 'next'
 
 /* ============================================================================
-Data
+🔥 Publishing
 ============================================================================ */
 
 import {
 
-    intents,
+    buildFinderMetadata,
 
-} from './data/intents'
+    createJsonLdGraph,
+
+} from '@/shared/publishing'
 
 import {
 
-    budgets,
+    toNextMetadata,
 
-} from './data/budgets'
+} from '@/app/publishing/next'
 
-/* ============================================================================
-Sections
-============================================================================ */
-
-import HeroSection
-    from './sections/hero/HeroSection'
-
-import IntentSection
-    from './sections/intent/IntentSection'
-
-import BudgetSection
-    from './sections/budget/BudgetSection'
-
-import DiscoverySummarySection
-    from './sections/summary/DiscoverySummarySection'
-
-import SearchSection
-    from './sections/search/SearchSection'
-
-import RecommendationSection
-    from './sections/recommendation/RecommendationSection'
-
-import ResultsSection
-    from './sections/results/ResultsSection'
-
-import RankingSection
-    from './sections/ranking/RankingSection'
+import JsonLd
+    from '@/app/publishing/JsonLd'
 
 /* ============================================================================
-Styles
+🔥 Frontend
 ============================================================================ */
 
-import styles
-    from './styles/pcFinder.module.css'
+import FinderRuntimeOrchestrator
+    from './orchestration/FinderRuntimeOrchestrator'
 
 /* ============================================================================
-Experience Orchestrator
-
-Responsibilities
-
-- Manage Discovery Journey
-- Execute Finder Runtime
-- Render Experience
-
-This page does NOT
-
-- Generate Semantic Meaning
-- Modify Runtime
-- Generate Recommendation Logic
-
+🔥 JSON-LD
 ============================================================================ */
 
-export default function PCFinderPage() {
+export async function generateJsonLd() {
 
-    /* ========================================================================
-    Journey State
-    ======================================================================== */
+    return createJsonLdGraph({
 
-    const [
+        breadcrumb: [
 
-        selectedIntent,
+            {
 
-        setSelectedIntent,
+                name: 'ホーム',
+                path: '/',
 
-    ] = useState('')
+            },
 
-    const [
+            {
 
-        selectedBudget,
+                name: 'PC Finder',
+                path: '/pc-finder',
 
-        setSelectedBudget,
+            },
 
-    ] = useState<number | null>(null)
+        ],
 
-    const [
+        collectionPage: {
 
-        finder,
+            name:
+                'PC Finder',
+            description:
+                '用途・予算から最適なPCを見つけるPC Finderです。',
+            url:
+                'https://bicstation.com/pc-finder',
 
-        setFinder,
+        },
 
-    ] = useState<{
+    })
 
-        raw: any
+}
 
-        runtime: FinderRuntimeContract
+/* ============================================================================
+🔥 Metadata
+============================================================================ */
 
-        view: any
+export const metadata: Metadata =
 
-    } | null>(null)
+    toNextMetadata(
 
-    const [
+        buildFinderMetadata(
 
-        loading,
+            {
 
-        setLoading,
+                title:
+                    'PC Finder｜用途・予算からおすすめPCを探す｜BIC STATION',
 
-    ] = useState(false)
+                description:
+                    'AI・ゲーム・動画編集・ビジネスなど用途と予算から最適なPCを見つけられるPC Finderです。',
 
-    /* ========================================================================
-    Discovery Action
-    ======================================================================== */
+                keywords: [
 
-    const handleSearch = async () => {
+                    'PC Finder',
 
-        setLoading(true)
+                    'おすすめPC',
 
-        try {
+                    'PC診断',
 
-            const result = await executeFinder({
+                    'AI PC',
 
-                groups:
+                    'ゲーミングPC',
 
-                    selectedIntent
-                        ? [selectedIntent]
-                        : [],
+                    '動画編集PC',
 
-                max_price:
+                    'BIC STATION',
 
-                    selectedBudget,
+                ],
 
-            })
+            },
 
-            setFinder(result)
+        ),
 
-        }
+    )
+/* ============================================================================
+🔥 Finder Page
+============================================================================ */
 
-        catch (error) {
+export default async function Page() {
 
-            console.error(
+    /* --------------------------------------------------------------------------
+    JSON-LD
+    -------------------------------------------------------------------------- */
 
-                'Finder Runtime Error',
+    const jsonLd =
 
-                error,
+        await generateJsonLd()
 
-            )
-
-            setFinder(null)
-
-        }
-
-        finally {
-
-            setLoading(false)
-
-        }
-
-    }
-
-    /* ========================================================================
-    Experience Projection
-    ======================================================================== */
-
-    const recommendationReasons =
-
-        finder
-
-            ? Array.from(
-
-                new Set(
-
-                    finder.runtime.data.products.flatMap(
-
-                        product =>
-
-                            product.semantic_labels ?? []
-
-                    )
-
-                )
-
-            ).slice(0, 4)
-
-            : []
-    
-        /* ========================================================================
-    Journey
-    ======================================================================== */
+    /* --------------------------------------------------------------------------
+    Render
+    -------------------------------------------------------------------------- */
 
     return (
 
-        <main className={styles.page}>
+        <>
 
-            {/* ====================================================================
-                Hero
-            ==================================================================== */}
+            <JsonLd
 
-            <HeroSection />
+                id="jsonld-page"
 
-            {/* ====================================================================
-                STEP 1
-                Intent Selection
-            ==================================================================== */}
+                jsonLd={
 
-            <IntentSection
+                    jsonLd
 
-                intents={intents}
-
-                selected={selectedIntent}
-
-                onSelect={setSelectedIntent}
+                }
 
             />
 
-            {/* ====================================================================
-                STEP 2
-                Budget Selection
-            ==================================================================== */}
+            <FinderRuntimeOrchestrator />
 
-            <BudgetSection
-
-                budgets={budgets}
-
-                selected={selectedBudget}
-
-                onSelect={setSelectedBudget}
-
-            />
-
-            {/* ====================================================================
-                STEP 3
-                Discovery Summary
-            ==================================================================== */}
-
-            <DiscoverySummarySection
-
-                intent={selectedIntent}
-
-                budget={selectedBudget}
-
-            />
-
-            {/* ====================================================================
-                STEP 4
-                Begin Discovery
-            ==================================================================== */}
-
-            <SearchSection
-
-                loading={loading}
-
-                disabled={!selectedIntent}
-
-                onSearch={handleSearch}
-
-            />
-
-            {/* ====================================================================
-                Discovery Result
-            ==================================================================== */}
-
-            {finder && (
-
-                <RecommendationSection
-
-                    title={
-                        finder.view.header.title
-                    }
-
-                    description={
-                        finder.view.header.description
-                    }
-
-                    reasons={
-                        recommendationReasons
-                    }
-
-                />
-
-            )}
-
-            {/* ====================================================================
-                Discovery Evidence
-            ==================================================================== */}
-
-            {finder && (
-
-                <ResultsSection
-
-                    products={
-                        finder.runtime.data.products
-                    }
-
-                />
-
-            )}
-
-            {/* ====================================================================
-                Continue Discovery
-            ==================================================================== */}
-
-            {finder && (
-
-                <RankingSection />
-
-            )}
-
-        </main>
+        </>
 
     )
 

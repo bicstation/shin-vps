@@ -11,11 +11,11 @@
 🔥 Types
 ============================================================================ */
 
-import type {
+// import type {
 
-    RankingRuntime,
+//     RankingRuntime,
 
-} from '../../types/ranking'
+// } from '../../types/ranking'
 
 /* ============================================================================
 🔥 Styles

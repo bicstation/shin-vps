@@ -286,13 +286,9 @@ export default async function Page(
   const runtime = {
 
     ranking,
-
     debug:
-
       debug === '1',
-
     semantic_runtime: true,
-
     adaptive_runtime: true,
 
   }
@@ -306,9 +302,7 @@ export default async function Page(
     <RankingDetailRuntimeOrchestrator
 
       runtime={
-
         runtime
-
       }
 
     />

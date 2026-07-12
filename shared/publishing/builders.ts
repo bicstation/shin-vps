@@ -265,8 +265,47 @@ export function buildRankingMetadata(
 }
 
 /* ============================================================================
-🔥 Finder
+🔥 Finder JSON-LD
 ============================================================================ */
+
+export function buildFinderJsonLd() {
+
+  return createJsonLdGraph({
+
+    breadcrumb: [
+
+      {
+        name: 'ホーム',
+        path: '/',
+      },
+
+      {
+        name: 'PC Finder',
+        path: '/pc-finder',
+      },
+
+    ],
+
+    collectionPage: {
+
+      name:
+        'PC Finder',
+
+      description:
+        '用途・予算から最適なPCを見つけるPC Finderです。',
+
+      url:
+        createCanonical('/pc-finder'),
+
+    },
+
+  })
+
+}
+
+// /* ============================================================================
+// 🔥 Finder
+// ============================================================================ */
 
 export function buildFinderMetadata(
 
@@ -277,7 +316,7 @@ export function buildFinderMetadata(
 
   return buildPageMetadata(
 
-    '/finder',
+    '/pc-finder',
 
     overrides,
 
