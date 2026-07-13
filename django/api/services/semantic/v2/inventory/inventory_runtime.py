@@ -21,6 +21,10 @@ from api.services.semantic.v2.seo.seo_runtime import (
     build_inventory_seo,
 )
 
+from api.services.semantic.v2.inventory.inventory_sort import (
+    apply_inventory_sort,
+)
+
 
 # ==========================================================
 # INVENTORY
@@ -31,6 +35,8 @@ def build_inventory_runtime(
     page=1,
 
     page_size=100,
+
+    sort="new",
 ):
 
     authority = (
@@ -64,16 +70,27 @@ def build_inventory_runtime(
     if page_size > 10000:
         page_size = 10000
 
+    # ------------------------------------------------------
+    # QUERYSET
+    # ------------------------------------------------------
+
     queryset = (
-
         PCProduct.objects
-
-        .all()
-
-        .order_by(
-            "-updated_at"
+        .filter(
+            is_active=True,
         )
     )
+
+    queryset = apply_inventory_sort(
+
+        queryset=queryset,
+
+        sort=sort,
+    )
+
+    # ------------------------------------------------------
+    # PAGINATION
+    # ------------------------------------------------------
 
     total_count = (
         queryset.count()
@@ -88,6 +105,10 @@ def build_inventory_runtime(
         start
         + page_size
     )
+
+    # ------------------------------------------------------
+    # PRODUCTS
+    # ------------------------------------------------------
 
     products = []
 
@@ -114,6 +135,10 @@ def build_inventory_runtime(
                 product.updated_at,
         })
 
+    # ------------------------------------------------------
+    # SEO
+    # ------------------------------------------------------
+
     seo = (
 
         build_inventory_seo(
@@ -125,6 +150,10 @@ def build_inventory_runtime(
                 total_count,
         )
     )
+
+    # ------------------------------------------------------
+    # PAYLOAD
+    # ------------------------------------------------------
 
     return {
 
@@ -163,6 +192,9 @@ def build_inventory_runtime(
 
             "page_size":
                 page_size,
+
+            "sort":
+                sort,
 
             "has_next":
                 end < total_count,

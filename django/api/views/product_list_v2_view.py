@@ -19,6 +19,7 @@ from api.services.semantic.v2.inventory.inventory_runtime import (
 )
 
 
+
 # ==========================================================
 # PRODUCT LIST V2
 # ==========================================================
@@ -45,6 +46,15 @@ def semantic_product_list_v2(
         100,
     )
 
+    sort = request.GET.get(
+        "sort",
+        "new",
+    )
+    
+    print("=" * 60)
+    print("REQUEST.GET =", request.GET)
+    print("SORT =", sort)
+    print("=" * 60)
 
     payload = (
 
@@ -55,6 +65,9 @@ def semantic_product_list_v2(
 
             page_size=
                 page_size,
+
+            sort=
+                sort,
         )
     )
 
