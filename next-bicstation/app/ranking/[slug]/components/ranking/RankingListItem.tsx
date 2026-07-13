@@ -127,13 +127,9 @@ export default function RankingListItem({
                     <Image
 
                         src={badgeImage}
-
                         alt={`Ranking Core ${rank}`}
-
                         width={26}
-
                         height={26}
-
                         className={styles.badgeIcon}
 
                     />
