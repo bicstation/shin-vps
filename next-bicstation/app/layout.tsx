@@ -26,7 +26,7 @@ import JsonLd
 import '@shared/styles/globals.css'
 import '@shared/styles/markdown.css'
 
-import { GoogleAnalytics } from '@next/third-parties/google'
+import Script from 'next/script'
 
 import Header
   from '@/shared/components/organisms/common/Header'
@@ -265,7 +265,22 @@ export default function RootLayout({
         <ChatBotLoader />
         */}
 
-        <GoogleAnalytics gaId="G-MF6X0SE2Q5" />
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-MF6X0SE2Q5"
+          strategy="afterInteractive"
+        />
+
+        <Script
+          id="google-analytics"
+          strategy="afterInteractive"
+        >
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-MF6X0SE2Q5');
+          `}
+        </Script>
 
       </body>
 
