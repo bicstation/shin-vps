@@ -26,6 +26,8 @@ import JsonLd
 import '@shared/styles/globals.css'
 import '@shared/styles/markdown.css'
 
+import { GoogleAnalytics } from '@next/third-parties/google'
+
 import Header
   from '@/shared/components/organisms/common/Header'
 
@@ -148,7 +150,7 @@ export default function RootLayout({
 }: {
 
   children:
-    React.ReactNode
+  React.ReactNode
 
 }) {
 
@@ -262,6 +264,8 @@ export default function RootLayout({
         {/*
         <ChatBotLoader />
         */}
+
+        <GoogleAnalytics gaId="G-MF6X0SE2Q5" />
 
       </body>
 

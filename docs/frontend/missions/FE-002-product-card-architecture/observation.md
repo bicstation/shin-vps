@@ -258,3 +258,16 @@ Mission FE-002
 Observation
 
 Completed
+
+
+Observation does not exist
+to improve the current experience.
+
+Observation exists
+to understand the current experience.
+
+Improvement begins only
+after Observation,
+Evidence,
+and Analysis
+have been completed.
