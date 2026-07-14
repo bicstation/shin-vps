@@ -1,93 +1,85 @@
 // ============================================================================
 // FILE:
-// /shared/lib/api/django/pc/ranking/composition.ts
+// /shared/lib/api/django/pc/products/runtime.ts
 // Copyright (c) 2026 Shin Corporation.
+// All rights reserved.
 // ============================================================================
 
 /**
  * ============================================================================
  * SHIN CORE LINX
- * Ranking Runtime Composition
+ * Products Runtime Facade
  * ============================================================================
  *
- * Responsibilities
+ * PURPOSE
  *
- * - Runtime Composition
+ * Temporary compatibility facade.
  *
- * NOT
+ * Products does not require Runtime Composition.
  *
- * - Runtime Fetch
- * - Runtime Normalize
- * - Runtime Projection
- * - Semantic Authority
+ * This facade simply connects:
+ *
+ * Gateway
+ *      ↓
+ * Normalize
+ *      ↓
+ * Projection
  *
  * Backend remains:
  *
- * Semantic Authority
+ * Reality Authority
  *
  * Adapter remains:
  *
- * Runtime Composition Authority
+ * Translation Authority
  *
  * ============================================================================
  */
 
-import type {
+import {
 
-    NavigationRuntime,
+    fetchProducts,
 
-} from '../navigation/contracts'
+} from './products'
 
-import type {
+import {
 
-    SemanticRankingRuntime,
+    projectProducts,
 
-} from './contracts'
+    type ProjectedProductsRuntime,
+
+} from './projection'
 
 /* ============================================================================
-🔥 Experience Runtime
+🔥 Runtime Facade
 ============================================================================ */
 
-export interface RankingExperienceRuntime {
+export async function getProductsRuntime(
 
-    navigation: NavigationRuntime
+): Promise<ProjectedProductsRuntime> {
 
-    ranking: SemanticRankingRuntime
+    const runtime =
+
+        await fetchProducts()
+
+    return projectProducts(
+
+        runtime
+
+    )
 
 }
 
 /* ============================================================================
-🔥 Runtime Composition
+🔥 Legacy Compatibility
 ============================================================================ */
 
-export function composeRankingRuntime(
+export const fetchProjectedProductsRuntime =
 
-    navigation: NavigationRuntime,
-
-    ranking: SemanticRankingRuntime,
-
-): RankingExperienceRuntime {
-
-    return {
-
-        navigation,
-
-        ranking,
-
-    }
-
-}
-
-/* ============================================================================
-🔥 Alias
-============================================================================ */
-
-export const composeRankingExperienceRuntime =
-
-    composeRankingRuntime
+    getProductsRuntime
 
 /* ============================================================================
 🔥 Default Export
 ============================================================================ */
 
-export default composeRankingRuntime
+export default getProductsRuntime

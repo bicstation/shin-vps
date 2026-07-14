@@ -1,189 +1,137 @@
 // ============================================================================
 // FILE:
 // /shared/lib/api/django/pc/product-detail/contracts.ts
-// Copyright (c) 2024 Shin Corporation.
+// Copyright (c) 2026 Shin Corporation.
 // All rights reserved.
 // ============================================================================
 
+/**
+ * ============================================================================
+ * SHIN CORE LINX
+ * Product Detail Backend Contract
+ * ============================================================================
+ *
+ * PURPOSE
+ *
+ * Defines the canonical TypeScript contract that represents the
+ * Backend Product Detail JSON.
+ *
+ * This file mirrors Backend Reality.
+ *
+ * It does NOT define:
+ *
+ * ✗ Frontend UI
+ * ✗ Projection Models
+ * ✗ Runtime Helpers
+ * ✗ Future Architecture
+ *
+ * Backend remains:
+ *
+ * Reality Authority
+ *
+ * Adapter remains:
+ *
+ * Translation Authority
+ *
+ * ============================================================================
+ */
+
 /* ============================================================================
-🔥 Product Meaning
+🔥 Meaning
 ============================================================================ */
 
-export interface ProductMeaning {
+export interface ProductDetailMeaning {
 
-  identity?: string
+    identity?: string
 
-  mission?: string
+    mission?: string
 
-  user_intent?: string
+    user_intent?: string
 
-  meaning_statement?: string
+    meaning_statement?: string
 
-  existence_reason?: string
+    existence_reason?: string
+
 }
 
 /* ============================================================================
-🔥 Product SEO
+🔥 SEO
 ============================================================================ */
 
-export interface ProductSEO {
+export interface ProductDetailSEO {
 
-  title?: string
+    title?: string
 
-  description?: string
+    description?: string
 
-  keywords?: string[]
+    keywords?: string[]
 
-  canonical?: string
+    canonical?: string
 
-  schema_jsonld?: any
+    schema_jsonld?: any
+
+    open_graph?: any
+
+    twitter?: any
+
 }
 
 /* ============================================================================
-🔥 Product Reality
+🔥 Product
 ============================================================================ */
 
-export interface ProductReality {
+export interface ProductDetail {
 
-  /* ========================================================================
-  Identity
-  ======================================================================== */
+    id?: number
 
-  id?: number
+    unique_id: string
 
-  unique_id: string
+    site_prefix?: string
 
-  site_prefix?: string
+    maker?: string
 
-  /* ========================================================================
-  Basic
-  ======================================================================== */
+    raw_genre?: string
 
-  name: string
+    unified_genre?: string
 
-  maker?: string
+    name: string
 
-  description?: string
+    description?: string
 
-  /* ========================================================================
-  Media
-  ======================================================================== */
+    image_url?: string
 
-  image_url?: string
+    url?: string
 
-  /* ========================================================================
-  URLs
-  ======================================================================== */
+    affiliate_url?: string
 
-  url?: string
+    affiliate_updated_at?: string
 
-  affiliate_url?: string
+    price?: number
 
-  /* ========================================================================
-  Pricing
-  ======================================================================== */
+    stock_status?: string
 
-  price?: number
+    is_posted?: boolean
 
-  /* ========================================================================
-  Product Status
-  ======================================================================== */
+    is_active?: boolean
 
-  stock_status?: string
+    created_at?: string
 
-  is_active?: boolean
+    updated_at?: string
 
-  is_posted?: boolean
+    cpu_model?: string
 
-  /* ========================================================================
-  Hardware
-  ======================================================================== */
+    gpu_model?: string
 
-  cpu_model?: string
+    memory_gb?: number
 
-  gpu_model?: string
+    storage_gb?: number
 
-  memory_gb?: number
+    semantic_schema_version?: string
 
-  storage_gb?: number
+    product_type?: string
 
-  weight_kg?: number | null
+    semantic_score?: number
 
-  /* ========================================================================
-  Semantic Product Fields
-  ======================================================================== */
-
-  semantic_schema_version?: string
-
-  product_type?: string
-
-  semantic_score?: number
-
-  ai_summary?: string | null
-
-  target_user?: string | null
-
-  strengths?: string[]
-
-  weaknesses?: string[]
-
-  usage_tags?: string[]
-
-  /* ========================================================================
-  Timestamps
-  ======================================================================== */
-
-  created_at?: string
-
-  updated_at?: string
-}
-
-/* ============================================================================
-🔥 Related Intent
-============================================================================ */
-
-export interface RelatedIntent {
-
-  slug: string
-
-  title: string
-
-  description?: string | null
-}
-
-/* ============================================================================
-🔥 Product Semantic Runtime
-============================================================================ */
-
-// export interface ProductSemanticRuntime {
-
-//   semantic_summary: string
-
-//   semantic_reasons: string[]
-
-//   workflow_tags: string[]
-
-//   grouped_attributes:
-//     // Record<string, any>
-//     Record<string, string[]>
-
-//   related_intents:
-//     RelatedIntent[]
-// }
-
-export interface ProductSemanticRuntime {
-
-  semantic_summary: string
-
-  semantic_reasons: string[]
-
-  workflow_tags: string[]
-
-  grouped_attributes:
-  Record<string, string[]>
-
-  related_intents:
-  RelatedIntent[]
 }
 
 /* ============================================================================
@@ -192,101 +140,120 @@ export interface ProductSemanticRuntime {
 
 export interface CompiledRuntime {
 
-  is_ai_pc?: boolean
+    specs?: any
 
-  product_type?: string
+    base_type?: string
 
-  workflow_tags?: string[]
+    cpu_model?: string
 
-  target_segment?: string
+    gpu_model?: string
 
-  semantic_labels?: string[]
+    memory_gb?: string
 
-  runtime_profiles?: string[]
+    storage_gb?: string
 
-  [key: string]: any
+    display_type?: string | null
+
+    refresh_rate?: string | null
+
+    product_type?: string
+
+    runtime_mode?: string
+
+    runtime_valid?: boolean
+
+    workflows?: any[]
+
+    workflow_tags?: string[]
+
+    primary_workflow?: string
+
+    workflow_score?: number
+
+    reality_labels?: string[]
+
+    reality_scores?: Record<string, number>
+
+    semantic_groups?: string[]
+
+    semantic_labels?: string[]
+
+    semantic_attributes?: string[]
+
+    adaptive_runtime?: any
+
+    semantic_version?: string
+
+    semantic_authority?: string
+
+}
+
+/* ============================================================================
+🔥 Product Semantic Runtime
+============================================================================ */
+
+export interface ProductSemanticRuntime {
+
+    presentation?: any
+
+    grouped_attributes?: Record<string, any[]>
+
+    semantic_summary?: string
+
+    semantic_labels?: string[]
+
+    semantic_reasons?: any[]
+
+    workflow_tags?: string[]
+
+    related_intents?: any[]
+
+}
+
+/* ============================================================================
+🔥 Product Detail Data
+============================================================================ */
+
+export interface ProductDetailData {
+
+    found: boolean
+
+    product: ProductDetail
+
+    compiled_runtime?: CompiledRuntime
+
+    product_semantic_runtime?: ProductSemanticRuntime
+
 }
 
 /* ============================================================================
 🔥 Product Detail Runtime
 ============================================================================ */
-export interface ProductDetailRuntime {
 
-  meaning?: ProductMeaning
+export interface ProductDetailRuntimeContract {
 
-  seo?: ProductSEO
+    meaning?: ProductDetailMeaning
 
-  product: ProductReality
+    seo?: ProductDetailSEO
 
-  compiled_runtime?:
-  CompiledRuntime
+    data: ProductDetailData
 
-  product_semantic_runtime:
-  ProductSemanticRuntime
+    semantic_schema_version?: number
 
-  semantic_schema_version?:
-  string
+    authority_version?: string
 
-  authority_version?:
-  string
+    semantic_authority?: string
 
-  semantic_authority?:
-  string
+    ready?: boolean
 
-  ready?:
-  boolean
-
-  raw?:
-  any
 }
 
+/* ============================================================================
+🔥 Legacy Compatibility
+============================================================================ */
 
+export type ProductDetailRuntime =
+    ProductDetailRuntimeContract
 
-// export interface ProductDetailRuntime {
-
-//   /* ========================================================================
-//   Meaning Layer
-//   ======================================================================== */
-
-//   meaning?: ProductMeaning
-
-//   seo?: ProductSEO
-
-//   /* ========================================================================
-//   Product Reality
-//   ======================================================================== */
-
-//   product: ProductReality
-
-//   /* ========================================================================
-//   Compiled Runtime
-//   ======================================================================== */
-
-//   compiled_runtime?:
-//     CompiledRuntime
-
-//   /* ========================================================================
-//   Semantic Runtime V2
-//   ======================================================================== */
-
-//   product_semantic_runtime:
-//     ProductSemanticRuntime
-
-//   /* ========================================================================
-//   Runtime Metadata
-//   ======================================================================== */
-
-//   semantic_schema_version?: string
-
-//   authority_version?: string
-
-//   semantic_authority?: string
-
-//   ready?: boolean
-
-//   /* ========================================================================
-//   Raw Backup
-//   ======================================================================== */
-
-//   raw?: any
-// }
+export type ProductDetailRuntimeResponse =
+    ProductDetailRuntimeContract

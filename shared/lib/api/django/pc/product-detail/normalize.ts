@@ -1,370 +1,259 @@
 // ============================================================================
 // FILE:
 // /shared/lib/api/django/pc/product-detail/normalize.ts
-// Copyright (c) 2024 Shin Corporation.
+// Copyright (c) 2026 Shin Corporation.
 // All rights reserved.
 // ============================================================================
 
-/* ============================================================================
-🔥 Contracts
-============================================================================ */
+/**
+ * ============================================================================
+ * SHIN CORE LINX
+ * Product Detail Normalize
+ * ============================================================================
+ *
+ * PURPOSE
+ *
+ * Convert Backend Product Detail JSON into the
+ * Canonical Product Detail Backend Contract.
+ *
+ * Backend Product Detail Runtime
+ *      ↓
+ * Contract Guarantee
+ *      ↓
+ * Product Detail Backend Contract
+ *
+ * Normalize Responsibilities
+ *
+ * ✓ Preserve Backend Reality
+ * ✓ Guarantee Contract Safety
+ * ✓ Null Safety
+ * ✓ Object Safety
+ *
+ * Normalize SHALL NOT
+ *
+ * ✗ Generate Meaning
+ * ✗ Generate Presentation
+ * ✗ Generate Authority
+ * ✗ Generate UI
+ * ✗ Generate Runtime
+ *
+ * Backend remains:
+ *
+ * Reality Authority
+ *
+ * ============================================================================
+ */
 
 import type {
 
-  ProductDetailRuntime,
-
-  ProductSemanticRuntime,
-
-  ProductReality,
-
-  CompiledRuntime,
+    ProductDetailRuntimeContract,
+    ProductDetailData,
+    ProductDetail,
+    CompiledRuntime,
+    ProductSemanticRuntime,
 
 } from './contracts'
 
 /* ============================================================================
-🔥 Normalize Product Detail Runtime
+🔥 Normalize Product Detail
 ============================================================================ */
 
-export function normalizeProductDetailRuntime(
+export function normalizeProductDetail(
 
-  payload?: any
+    runtime?: Partial<ProductDetailRuntimeContract>
 
-): ProductDetailRuntime {
+): ProductDetailRuntimeContract {
 
-  const source =
+    return {
 
-    payload?.data
+        /* --------------------------------------------------------------------
+        Meaning
+        -------------------------------------------------------------------- */
 
-    ??
+        meaning:
 
-    {}
-  
-  console.log(
-    "🔥 NORMALIZE SOURCE",
-    JSON.stringify(source, null, 2)
-    )
+            runtime?.meaning,
 
-  /* ==========================================================================
-  Product Reality
-  ========================================================================== */
+        /* --------------------------------------------------------------------
+        SEO
+        -------------------------------------------------------------------- */
 
-  const product: ProductReality = {
+        seo:
 
-    id:
-      source?.product?.id,
+            runtime?.seo,
 
-    unique_id:
-      source?.product?.unique_id || '',
+        /* --------------------------------------------------------------------
+        Data
+        -------------------------------------------------------------------- */
 
-    site_prefix:
-      source?.product?.site_prefix,
+        data:
 
-    maker:
-      source?.product?.maker,
+            normalizeData(
 
-    name:
-      source?.product?.name || '',
+                runtime?.data
 
-    description:
-      source?.product?.description,
+            ),
 
-    image_url:
-      source?.product?.image_url,
+        /* --------------------------------------------------------------------
+        Authority
+        -------------------------------------------------------------------- */
 
-    url:
-      source?.product?.url,
+        semantic_schema_version:
 
-    affiliate_url:
-      source?.product?.affiliate_url,
+            runtime?.semantic_schema_version,
 
-    price:
-      source?.product?.price,
+        authority_version:
 
-    stock_status:
-      source?.product?.stock_status,
+            runtime?.authority_version,
 
-    is_active:
-      source?.product?.is_active,
+        semantic_authority:
 
-    is_posted:
-      source?.product?.is_posted,
+            runtime?.semantic_authority,
 
-    cpu_model:
-      source?.product?.cpu_model,
+        ready:
 
-    gpu_model:
-      source?.product?.gpu_model,
+            runtime?.ready ?? false,
 
-    memory_gb:
-      source?.product?.memory_gb,
-
-    storage_gb:
-      source?.product?.storage_gb,
-
-    weight_kg:
-      source?.product?.weight_kg,
-
-    semantic_schema_version:
-      source?.product?.semantic_schema_version,
-
-    product_type:
-      source?.product?.product_type,
-
-    semantic_score:
-      source?.product?.semantic_score,
-
-    ai_summary:
-      source?.product?.ai_summary,
-
-    target_user:
-      source?.product?.target_user,
-
-    strengths:
-
-      Array.isArray(
-        source?.product?.strengths
-      )
-
-        ? source.product.strengths
-
-        : [],
-
-    weaknesses:
-
-      Array.isArray(
-        source?.product?.weaknesses
-      )
-
-        ? source.product.weaknesses
-
-        : [],
-
-    usage_tags:
-
-      Array.isArray(
-        source?.product?.usage_tags
-      )
-
-        ? source.product.usage_tags
-
-        : [],
-
-    created_at:
-      source?.product?.created_at,
-
-    updated_at:
-      source?.product?.updated_at,
-  }
-
-  /* ==========================================================================
-  Compiled Runtime
-  ========================================================================== */
-
-  const compiledRuntime: CompiledRuntime = {
-
-    is_ai_pc:
-      source?.compiled_runtime?.is_ai_pc,
-
-    product_type:
-      source?.compiled_runtime?.product_type,
-
-    workflow_tags:
-
-      Array.isArray(
-        source?.compiled_runtime?.workflow_tags
-      )
-
-        ? source.compiled_runtime.workflow_tags
-
-        : [],
-
-    target_segment:
-      source?.compiled_runtime?.target_segment,
-
-    semantic_labels:
-
-      Array.isArray(
-        source?.compiled_runtime?.semantic_labels
-      )
-
-        ? source.compiled_runtime.semantic_labels
-
-        : [],
-
-    runtime_profiles:
-
-      Array.isArray(
-        source?.compiled_runtime?.runtime_profiles
-      )
-
-        ? source.compiled_runtime.runtime_profiles
-
-        : [],
-  }
-
-  /* ==========================================================================
-  Semantic Runtime
-  ========================================================================== */
-
-  const semanticRuntime: ProductSemanticRuntime = {
-
-    semantic_summary:
-
-      source?.product_semantic_runtime
-        ?.semantic_summary
-
-      ||
-
-      '',
-
-    semantic_reasons:
-
-      Array.isArray(
-
-        source?.product_semantic_runtime
-          ?.semantic_reasons
-
-      )
-
-        ? source.product_semantic_runtime
-            .semantic_reasons
-
-        : [],
-
-    workflow_tags:
-
-      Array.isArray(
-
-        source?.product_semantic_runtime
-          ?.workflow_tags
-
-      )
-
-        ? source.product_semantic_runtime
-            .workflow_tags
-
-        : [],
-
-    grouped_attributes:
-
-      source?.product_semantic_runtime
-        ?.grouped_attributes
-
-      ||
-
-      {},
-
-    related_intents:
-
-      Array.isArray(
-
-        source?.product_semantic_runtime
-          ?.related_intents
-
-      )
-
-        ? source.product_semantic_runtime
-            .related_intents
-
-        : [],
-  }
-
-  console.log(
-  "🔥 SEMANTIC RUNTIME CHECK",
-  {
-    semantic_runtime:
-      source?.product?.semantic_runtime,
-
-    product_semantic_runtime:
-      source?.product_semantic_runtime,
-
-    compiled_runtime:
-      source?.compiled_runtime,
-  }
-)
-
-  const runtime: ProductDetailRuntime = {
-
-    meaning:
-      payload?.meaning || {},
-
-    seo:
-      payload?.seo || {},
-
-    product,
-
-    compiled_runtime:
-      compiledRuntime,
-
-    product_semantic_runtime:
-      semanticRuntime,
-
-    semantic_schema_version:
-      payload?.semantic_schema_version,
-
-    authority_version:
-      payload?.authority_version,
-
-    semantic_authority:
-      payload?.semantic_authority,
-
-    ready:
-      payload?.ready,
-
-    raw:
-      payload,
-
-  }
-
-  console.log(
-    "🔥 NORMALIZED OUTPUT",
-    JSON.stringify(
-      {
-        product:
-          runtime.product?.unique_id,
-
-        semantic_summary:
-          runtime.product_semantic_runtime
-            ?.semantic_summary,
-
-        semantic_reasons:
-          runtime.product_semantic_runtime
-            ?.semantic_reasons
-            ?.length,
-
-        workflow_tags:
-          runtime.product_semantic_runtime
-            ?.workflow_tags
-            ?.length,
-
-        related_intents:
-          runtime.product_semantic_runtime
-            ?.related_intents
-            ?.length,
-
-        grouped_attributes:
-          Object.keys(
-            runtime.product_semantic_runtime
-              ?.grouped_attributes
-              || {}
-          ).length,
-
-        semantic_labels:
-          runtime.compiled_runtime
-            ?.semantic_labels
-            ?.length,
-
-        runtime_profiles:
-          runtime.compiled_runtime
-            ?.runtime_profiles
-            ?.length,
-
-      },
-      null,
-      2
-    )
-  )
-
-  return runtime
+    }
 
 }
+
+/* ============================================================================
+🔥 Normalize Data
+============================================================================ */
+
+function normalizeData(
+
+    data?: Partial<ProductDetailData>
+
+): ProductDetailData {
+
+    return {
+
+        found:
+
+            data?.found ?? false,
+
+        product:
+
+            normalizeProduct(
+
+                data?.product
+
+            ),
+
+        compiled_runtime:
+
+            normalizeCompiledRuntime(
+
+                data?.compiled_runtime
+
+            ),
+
+        product_semantic_runtime:
+
+            normalizeProductSemanticRuntime(
+
+                data?.product_semantic_runtime
+
+            ),
+
+    }
+
+}
+
+/* ============================================================================
+🔥 Normalize Product
+============================================================================ */
+
+function normalizeProduct(
+
+    product?: Partial<ProductDetail>
+
+): ProductDetail {
+
+    return {
+
+        unique_id:
+
+            product?.unique_id ?? '',
+
+        name:
+
+            product?.name ?? '',
+
+        ...product,
+
+    }
+
+}
+
+/* ============================================================================
+🔥 Normalize Compiled Runtime
+============================================================================ */
+
+function normalizeCompiledRuntime(
+
+    runtime?: Partial<CompiledRuntime>
+
+): CompiledRuntime {
+
+    return {
+
+        ...runtime,
+
+    }
+
+}
+
+/* ============================================================================
+🔥 Normalize Product Semantic Runtime
+============================================================================ */
+
+function normalizeProductSemanticRuntime(
+
+    runtime?: Partial<ProductSemanticRuntime>
+
+): ProductSemanticRuntime {
+
+    return {
+
+        ...runtime,
+
+        grouped_attributes:
+
+            runtime?.grouped_attributes ?? {},
+
+        workflow_tags:
+
+            runtime?.workflow_tags ?? [],
+
+        semantic_labels:
+
+            runtime?.semantic_labels ?? [],
+
+        semantic_reasons:
+
+            runtime?.semantic_reasons ?? [],
+
+        related_intents:
+
+            runtime?.related_intents ?? [],
+
+    }
+
+}
+
+/* ============================================================================
+🔥 Legacy Compatibility
+============================================================================ */
+
+export const normalizeProductDetailRuntime =
+
+    normalizeProductDetail
+
+/* ============================================================================
+🔥 Default Export
+============================================================================ */
+
+export default normalizeProductDetail

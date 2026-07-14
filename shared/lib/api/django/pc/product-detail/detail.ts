@@ -1,222 +1,240 @@
 // ============================================================================
 // FILE:
 // /shared/lib/api/django/pc/product-detail/detail.ts
-// Copyright (c) 2024 Shin Corporation.
+// Copyright (c) 2026 Shin Corporation.
 // All rights reserved.
 // ============================================================================
 
-import {
-
-  buildEndpoint,
-
-} from '../utils/buildEndpoint'
-
-import {
-
-  safeFetch,
-
-} from '../utils/safeFetch'
+/**
+ * ============================================================================
+ * SHIN CORE LINX
+ * Product Detail Gateway
+ * ============================================================================
+ *
+ * PURPOSE
+ *
+ * Transport the Backend Product Detail Runtime into the
+ * Canonical Product Detail Contract.
+ *
+ * Backend Product Detail Runtime
+ *      ↓
+ * Transport
+ *      ↓
+ * Normalize
+ *      ↓
+ * Product Detail Contract
+ *
+ * Backend remains:
+ *
+ * Reality Authority
+ *
+ * Gateway Responsibilities
+ *
+ * ✓ Resolve Endpoint
+ * ✓ Transport Runtime
+ * ✓ Invoke Normalize
+ * ✓ Observe Runtime
+ *
+ * Gateway SHALL NOT
+ *
+ * ✗ Generate Meaning
+ * ✗ Generate Runtime
+ * ✗ Generate Projection
+ * ✗ Generate UI
+ *
+ * ============================================================================
+ */
 
 import type {
 
-  ProductDetailRuntime,
+    ProductDetailRuntimeContract,
 
 } from './contracts'
 
 import {
 
-  normalizeProductDetailRuntime,
+    buildEndpoint,
+
+} from '../utils/buildEndpoint'
+
+import {
+
+    safeFetch,
+
+} from '../utils/safeFetch'
+
+import {
+
+    normalizeProductDetail,
 
 } from './normalize'
 
+/* ============================================================================
+🔥 Endpoint
+============================================================================ */
+
 const PRODUCT_DETAIL_ENDPOINT =
 
-  '/pc/products'
+    '/pc/products'
+
+/* ============================================================================
+🔥 Fetch Product Detail Runtime
+============================================================================ */
 
 export async function fetchProductDetail(
 
-  uniqueId: string
+    uniqueId: string,
 
-): Promise<ProductDetailRuntime> {
+): Promise<ProductDetailRuntimeContract> {
 
-  if (!uniqueId) {
+    /* ------------------------------------------------------------------------
+    Endpoint
+    ------------------------------------------------------------------------ */
 
-    console.warn(
-      '⚠️ PRODUCT DETAIL EMPTY ID'
+    const endpoint =
+
+        buildEndpoint(
+
+            `${PRODUCT_DETAIL_ENDPOINT}/${encodeURIComponent(uniqueId)}/`
+
+        )
+
+    console.log(
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
     )
 
-    return normalizeProductDetailRuntime()
-
-  }
-
-  const endpoint =
-
-    buildEndpoint(
-      `${PRODUCT_DETAIL_ENDPOINT}/${uniqueId}/`
+    console.log(
+        '🔥 FETCH PRODUCT DETAIL'
     )
 
-  console.log(
-    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
-  )
+    console.log({
 
-  console.log(
-    '🔥 PRODUCT DETAIL FETCH'
-  )
+        uniqueId,
 
-  console.log({
+        endpoint,
 
-    uniqueId,
+    })
 
-    endpoint,
-
-    runtime:
-      'product-detail-runtime',
-
-  })
-
-  console.log(
-    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
-  )
-
-  const payload =
-
-    await safeFetch(
-      endpoint
+    console.log(
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
     )
 
-  /* ==========================================================================
-  Raw Reality Capture
-  ========================================================================== */
+    /* ------------------------------------------------------------------------
+    Transport
+    ------------------------------------------------------------------------ */
 
-  console.log(
-    '🔥 PRODUCT DETAIL RAW PAYLOAD',
-    JSON.stringify(
-      payload,
-      null,
-      2
+    const payload =
+
+        await safeFetch<ProductDetailRuntimeContract>(
+
+            endpoint
+
+        )
+
+    /* ------------------------------------------------------------------------
+    Raw Runtime
+    ------------------------------------------------------------------------ */
+
+    console.log(
+
+        '🔥 PRODUCT DETAIL RAW',
+
+        payload
+
     )
-  )
 
-  console.log(
-    '🔥 PRODUCT DETAIL RAW SUMMARY',
-    {
+    /* ------------------------------------------------------------------------
+    Empty Runtime
+    ------------------------------------------------------------------------ */
 
-      unique_id:
+    if (!payload) {
 
-        payload?.data?.product
-          ?.unique_id,
+        console.warn(
 
-      name:
+            '⚠️ PRODUCT DETAIL EMPTY'
 
-        payload?.data?.product
-          ?.name,
+        )
 
-      semantic_authority:
-
-        payload?.semantic_authority,
-
-      authority_version:
-
-        payload?.authority_version,
-
-      ready:
-
-        payload?.ready,
-
-      has_compiled_runtime:
-
-        !!payload?.data
-          ?.compiled_runtime,
-
-      has_product_semantic_runtime:
-
-        !!payload?.data
-          ?.product_semantic_runtime,
+        return normalizeProductDetail()
 
     }
-  )
 
-  /* ==========================================================================
-  Normalize
-  ========================================================================== */
+    /* ------------------------------------------------------------------------
+    Normalize
+    ------------------------------------------------------------------------ */
 
-  const runtime =
+    const runtime =
 
-    normalizeProductDetailRuntime(
-      payload
+        normalizeProductDetail(
+
+            payload
+
+        )
+
+    /* ------------------------------------------------------------------------
+    Observatory
+    ------------------------------------------------------------------------ */
+
+    console.log(
+
+        '🔥 PRODUCT DETAIL CONTRACT',
+
+        {
+
+            found:
+
+                runtime.data.found,
+
+            unique_id:
+
+                runtime.data.product.unique_id,
+
+            name:
+
+                runtime.data.product.name,
+
+            semantic_schema_version:
+
+                runtime.semantic_schema_version,
+
+            authority_version:
+
+                runtime.authority_version,
+
+            semantic_authority:
+
+                runtime.semantic_authority,
+
+            ready:
+
+                runtime.ready,
+
+        }
+
     )
 
-  /* ==========================================================================
-  Runtime Reality Capture
-  ========================================================================== */
+    console.log(
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+    )
 
-  console.log(
-    '🔥 PRODUCT DETAIL RUNTIME',
-    {
+    /* ------------------------------------------------------------------------
+    Return
+    ------------------------------------------------------------------------ */
 
-      product:
-
-        runtime?.product
-          ?.unique_id,
-
-      semantic_summary:
-
-        !!runtime
-          ?.product_semantic_runtime
-          ?.semantic_summary,
-
-      semantic_reasons:
-
-        runtime
-          ?.product_semantic_runtime
-          ?.semantic_reasons
-          ?.length,
-
-      workflow_tags:
-
-        runtime
-          ?.product_semantic_runtime
-          ?.workflow_tags
-          ?.length,
-
-      related_intents:
-
-        runtime
-          ?.product_semantic_runtime
-          ?.related_intents
-          ?.length,
-
-      grouped_attributes:
-
-        Object.keys(
-
-          runtime
-            ?.product_semantic_runtime
-            ?.grouped_attributes
-
-          || {}
-
-        ).length,
-
-      semantic_labels:
-
-        runtime
-          ?.compiled_runtime
-          ?.semantic_labels
-          ?.length,
-
-      runtime_profiles:
-
-        runtime
-          ?.compiled_runtime
-          ?.runtime_profiles
-          ?.length,
-
-    }
-  )
-
-  return runtime
+    return runtime
 
 }
+
+/* ============================================================================
+🔥 Legacy Compatibility
+============================================================================ */
+
+export const fetchProduct =
+
+    fetchProductDetail
+
+/* ============================================================================
+🔥 Default Export
+============================================================================ */
 
 export default fetchProductDetail

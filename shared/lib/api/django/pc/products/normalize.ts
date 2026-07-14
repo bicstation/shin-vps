@@ -1,345 +1,205 @@
 // ============================================================================
 // FILE:
 // /shared/lib/api/django/pc/products/normalize.ts
-// Copyright (c) 2024 Shin Corporation.
+// Copyright (c) 2026 Shin Corporation.
 // All rights reserved.
 // ============================================================================
 
-/* ============================================================================
-🔥 Contracts
-============================================================================ */
+/**
+ * ============================================================================
+ * SHIN CORE LINX
+ * Products Normalize
+ * ============================================================================
+ *
+ * PURPOSE
+ *
+ * Convert Backend Products JSON into the
+ * Canonical Products Backend Contract.
+ *
+ * Backend Products Runtime
+ *      ↓
+ * Contract Guarantee
+ *      ↓
+ * Products Backend Contract
+ *
+ * Normalize Responsibilities
+ *
+ * ✓ Preserve Backend Reality
+ * ✓ Guarantee Contract Safety
+ * ✓ Null Safety
+ * ✓ Array Safety
+ *
+ * Normalize SHALL NOT
+ *
+ * ✗ Generate Meaning
+ * ✗ Generate Presentation
+ * ✗ Generate Authority
+ * ✗ Generate UI
+ * ✗ Generate Runtime
+ *
+ * Backend remains:
+ *
+ * Reality Authority
+ *
+ * ============================================================================
+ */
 
 import type {
 
-  ProductsRuntime,
-
-  PCProductItem,
-
-  PresentationRuntime,
+    ProductsRuntimeContract,
+    ProductsData,
+    PCProductItem,
 
 } from './contracts'
 
 /* ============================================================================
-🔥 Normalize Products Runtime
+🔥 Normalize Products
 ============================================================================ */
 
-export function normalizeProductsRuntime(
+export function normalizeProducts(
 
-  payload?: any
+    runtime?: Partial<ProductsRuntimeContract>
 
-): ProductsRuntime {
+): ProductsRuntimeContract {
 
-  const source =
+    return {
 
-    payload?.data
+        /* --------------------------------------------------------------------
+        Meaning
+        -------------------------------------------------------------------- */
 
-    ??
+        meaning:
 
-    {}
+            runtime?.meaning,
 
-  /* ========================================================================
-  Presentation Runtime
-  ======================================================================== */
+        /* --------------------------------------------------------------------
+        Presentation
+        -------------------------------------------------------------------- */
 
-  const presentation: PresentationRuntime = {
+        presentation:
 
-    title:
+            runtime?.presentation,
 
-      payload?.presentation?.title
+        /* --------------------------------------------------------------------
+        SEO
+        -------------------------------------------------------------------- */
 
-      ||
+        seo:
 
-      '',
+            runtime?.seo,
 
-    subtitle:
+        /* --------------------------------------------------------------------
+        Data
+        -------------------------------------------------------------------- */
 
-      payload?.presentation?.subtitle
+        data:
 
-      ||
+            normalizeData(
 
-      '',
+                runtime?.data
 
-    description:
+            ),
 
-      payload?.presentation?.description
+        /* --------------------------------------------------------------------
+        Authority
+        -------------------------------------------------------------------- */
 
-      ||
+        semantic_schema_version:
 
-      '',
-  }
+            runtime?.semantic_schema_version,
 
-  /* ========================================================================
-  Products
-  ======================================================================== */
+        authority_version:
 
-  const products: PCProductItem[] =
+            runtime?.authority_version,
 
-    Array.isArray(
-      source?.products
-    )
+        semantic_authority:
 
-      ? source.products.map(
-          (
-            item: any
-          ): PCProductItem => ({
+            runtime?.semantic_authority,
 
-            /* ====================================
-            Identity
-            ==================================== */
+        ready:
 
-            id:
-              item?.id,
+            runtime?.ready ?? false,
 
-            unique_id:
-              item?.unique_id || '',
-
-            site_prefix:
-              item?.site_prefix,
-
-            /* ====================================
-            Basic
-            ==================================== */
-
-            name:
-              item?.name || '',
-
-            maker:
-              item?.maker,
-
-            description:
-              item?.description,
-
-            /* ====================================
-            Media
-            ==================================== */
-
-            image_url:
-              item?.image_url,
-
-            /* ====================================
-            URLs
-            ==================================== */
-
-            url:
-              item?.url,
-
-            affiliate_url:
-              item?.affiliate_url,
-
-            /* ====================================
-            Pricing
-            ==================================== */
-
-            price:
-              item?.price,
-
-            /* ====================================
-            Hardware
-            ==================================== */
-
-            cpu_model:
-              item?.cpu_model,
-
-            gpu_model:
-              item?.gpu_model,
-
-            memory_gb:
-              item?.memory_gb,
-
-            storage_gb:
-              item?.storage_gb,
-
-            /* ====================================
-            Semantic
-            ==================================== */
-
-            semantic_score:
-              item?.semantic_score,
-
-            semantic_role:
-              item?.semantic_role,
-
-            semantic_weight:
-              item?.semantic_weight,
-
-            recommendation_reason:
-              item?.recommendation_reason,
-
-            confidence:
-              item?.confidence,
-
-            /* ====================================
-            Discovery
-            ==================================== */
-
-            grouped_attributes:
-
-              item?.grouped_attributes
-
-              ||
-
-              {},
-
-            semantic_schema_version:
-
-              item?.semantic_schema_version,
-
-            /* ====================================
-            Metadata
-            ==================================== */
-
-            created_at:
-              item?.created_at,
-
-            updated_at:
-              item?.updated_at,
-
-            /* ====================================
-            Raw Backup
-            ==================================== */
-
-            raw:
-              item,
-          })
-        )
-
-      : []
-
-  /* ========================================================================
-  Observability
-  ======================================================================== */
-
-  console.log(
-    '🔥 PRODUCTS NORMALIZE',
-    {
-
-      products:
-        products.length,
-
-      count:
-        source?.count,
-
-      page:
-        source?.page,
-
-      page_size:
-        source?.page_size,
-
-      has_next:
-        source?.has_next,
-
-      presentation,
-
-      semantic_schema_version:
-        payload?.semantic_schema_version,
-
-      authority_version:
-        payload?.authority_version,
-
-      semantic_authority:
-        payload?.semantic_authority,
-
-      ready:
-        payload?.ready,
     }
-  )
 
-  /* ========================================================================
-  Runtime Projection
-  ======================================================================== */
-
-  return {
-
-    /* ====================================
-    Meaning
-    ==================================== */
-
-    meaning:
-
-      payload?.meaning
-
-      ||
-
-      {},
-
-    /* ====================================
-    Presentation
-    ==================================== */
-
-    presentation,
-
-    /* ====================================
-    SEO
-    ==================================== */
-
-    seo:
-
-      payload?.seo
-
-      ||
-
-      {},
-
-    /* ====================================
-    Inventory Reality
-    ==================================== */
-
-    count:
-
-      source?.count ?? 0,
-
-    page:
-
-      source?.page ?? 1,
-
-    page_size:
-
-      source?.page_size ?? 0,
-
-    has_next:
-
-      Boolean(
-        source?.has_next
-      ),
-
-    /* ====================================
-    Products
-    ==================================== */
-
-    products,
-
-    /* ====================================
-    Runtime Authority
-    ==================================== */
-
-    semantic_schema_version:
-
-      payload?.semantic_schema_version,
-
-    authority_version:
-
-      payload?.authority_version,
-
-    semantic_authority:
-
-      payload?.semantic_authority,
-
-    ready:
-
-      payload?.ready,
-
-    /* ====================================
-    Raw Backup
-    ==================================== */
-
-    raw:
-
-      payload,
-  }
 }
+
+/* ============================================================================
+🔥 Normalize Data
+============================================================================ */
+
+function normalizeData(
+
+    data?: Partial<ProductsData>
+
+): ProductsData {
+
+    return {
+
+        count:
+
+            data?.count ?? 0,
+
+        page:
+
+            data?.page ?? 1,
+
+        page_size:
+
+            data?.page_size ?? 20,
+
+        sort:
+
+            data?.sort ?? 'new',
+
+        has_next:
+
+            data?.has_next ?? false,
+
+        products:
+
+            (data?.products ?? []).map(
+
+                normalizeProduct
+
+            ),
+
+    }
+
+}
+
+/* ============================================================================
+🔥 Normalize Product
+============================================================================ */
+
+function normalizeProduct(
+
+    product: PCProductItem
+
+): PCProductItem {
+
+    return {
+
+        ...product,
+
+        grouped_attributes:
+
+            product.grouped_attributes ?? {},
+
+    }
+
+}
+
+/* ============================================================================
+🔥 Legacy Compatibility
+============================================================================ */
+
+export const normalizeProductsRuntime =
+
+    normalizeProducts
 
 /* ============================================================================
 🔥 Default Export
 ============================================================================ */
 
-export default normalizeProductsRuntime
+export default normalizeProducts

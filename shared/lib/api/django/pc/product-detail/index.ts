@@ -1,12 +1,57 @@
 // ============================================================================
 // FILE:
 // /shared/lib/api/django/pc/product-detail/index.ts
-// Copyright (c) 2024 Shin Corporation.
+// Copyright (c) 2026 Shin Corporation.
 // All rights reserved.
 // ============================================================================
 
+/**
+ * ============================================================================
+ * SHIN CORE LINX
+ * Product Detail Adapter Layer
+ * ============================================================================
+ *
+ * PURPOSE
+ *
+ * Canonical Product Detail Adapter
+ *
+ * Backend
+ *      ↓
+ * Gateway
+ *      ↓
+ * Normalize
+ *      ↓
+ * Projection
+ *      ↓
+ * Frontend Experience
+ *
+ * Backend remains:
+ *
+ * Reality Authority
+ *
+ * Adapter remains:
+ *
+ * Translation Authority
+ *
+ * Frontend remains:
+ *
+ * Experience Authority
+ *
+ * IMPORTANT
+ *
+ * Product Detail does NOT require Runtime Composition.
+ *
+ * ============================================================================
+ */
+
 /* ============================================================================
-🔥 Runtime Gateway
+🔥 Contracts
+============================================================================ */
+
+export * from './contracts'
+
+/* ============================================================================
+🔥 Gateway
 ============================================================================ */
 
 export * from './detail'
@@ -18,24 +63,63 @@ export * from './detail'
 export * from './normalize'
 
 /* ============================================================================
-🔥 Contracts
+🔥 Projection
 ============================================================================ */
 
-export * from './contracts'
+export * from './projection'
 
 /* ============================================================================
-🛡️ Legacy Compatibility
+🔥 Runtime Facade (Migration Compatibility)
+============================================================================ */
+
+export * from './runtime'
+
+/* ============================================================================
+🔥 Legacy Compatibility
 ============================================================================ */
 
 import {
 
-  fetchProductDetail,
+    fetchProductDetail,
 
 } from './detail'
 
+export const fetchProduct =
+
+    fetchProductDetail
+
 /* ============================================================================
-🛡️ Legacy Export
+🔥 Observatory
 ============================================================================ */
 
-export const fetchProductRuntime =
-  fetchProductDetail
+console.log(
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+)
+
+console.log(
+    '🔥 PRODUCT DETAIL ADAPTER INITIALIZED'
+)
+
+console.log({
+
+    runtime: 'product-detail',
+
+    authority: 'backend',
+
+    transport: true,
+
+    normalize: true,
+
+    projection: true,
+
+    composition: false,
+
+    observability: true,
+
+    continuity: 'healthy',
+
+})
+
+console.log(
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+)

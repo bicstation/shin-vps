@@ -1,17 +1,29 @@
 // ============================================================================
 // FILE:
 // /shared/lib/api/django/pc/products/contracts.ts
-// Copyright (c) 2024 Shin Corporation.
+// Copyright (c) 2026 Shin Corporation.
 // All rights reserved.
 // ============================================================================
 
 /**
  * ============================================================================
  * SHIN CORE LINX
- * Reality Inventory Runtime Contracts
+ * Products Backend Contract
  * ============================================================================
  *
- * IMPORTANT
+ * PURPOSE
+ *
+ * Defines the canonical TypeScript contract that represents the
+ * Backend Products JSON.
+ *
+ * This file mirrors Backend Reality.
+ *
+ * It does NOT define:
+ *
+ * ✗ Frontend UI
+ * ✗ Projection Models
+ * ✗ Runtime Helpers
+ * ✗ Future Architecture
  *
  * Backend remains:
  *
@@ -19,23 +31,7 @@
  *
  * Adapter remains:
  *
- * Projection Authority
- *
- * This contract represents:
- *
- * Reality Inventory Runtime
- *
- * NOT:
- *
- * UI Model
- *
- * Adapter SHALL:
- *
- * Transport
- * Normalize
- * Project
- *
- * ONLY
+ * Translation Authority
  *
  * ============================================================================
  */
@@ -46,13 +42,14 @@
 
 export interface SemanticAttribute {
 
-  name: string
+    name: string
 
-  slug: string
+    slug: string
 
-  icon?: string
+    icon?: string
 
-  color?: string
+    color?: string
+
 }
 
 /* ============================================================================
@@ -61,199 +58,209 @@ export interface SemanticAttribute {
 
 export interface PCProductItem {
 
-  /* ========================================================================
-  Identity
-  ======================================================================== */
+    /* ------------------------------------------------------------------------
+    Identity
+    ------------------------------------------------------------------------ */
 
-  id?: number
+    id?: number
 
-  unique_id: string
+    unique_id: string
 
-  site_prefix?: string
+    site_prefix?: string
 
-  /* ========================================================================
-  Basic
-  ======================================================================== */
+    /* ------------------------------------------------------------------------
+    Basic
+    ------------------------------------------------------------------------ */
 
-  name: string
+    name: string
 
-  maker?: string
+    maker?: string
 
-  description?: string
+    description?: string
 
-  /* ========================================================================
-  Media
-  ======================================================================== */
+    /* ------------------------------------------------------------------------
+    Media
+    ------------------------------------------------------------------------ */
 
-  image_url?: string
+    image_url?: string
 
-  /* ========================================================================
-  URLs
-  ======================================================================== */
+    /* ------------------------------------------------------------------------
+    URLs
+    ------------------------------------------------------------------------ */
 
-  url?: string
+    url?: string
 
-  affiliate_url?: string
+    affiliate_url?: string
 
-  /* ========================================================================
-  Pricing
-  ======================================================================== */
+    /* ------------------------------------------------------------------------
+    Pricing
+    ------------------------------------------------------------------------ */
 
-  price?: number
+    price?: number
 
-  /* ========================================================================
-  Hardware
-  ======================================================================== */
+    /* ------------------------------------------------------------------------
+    Hardware
+    ------------------------------------------------------------------------ */
 
-  cpu_model?: string
+    cpu_model?: string
 
-  gpu_model?: string
+    gpu_model?: string
 
-  memory_gb?: number
+    memory_gb?: number
 
-  storage_gb?: number
+    storage_gb?: number
 
-  /* ========================================================================
-  Semantic
-  ======================================================================== */
+    /* ------------------------------------------------------------------------
+    Semantic
+    ------------------------------------------------------------------------ */
 
-  semantic_score?: number
+    semantic_score?: number
 
-  semantic_role?: string
+    semantic_role?: string
 
-  semantic_weight?: number
+    semantic_weight?: number
 
-  recommendation_reason?: string
+    recommendation_reason?: string
 
-  confidence?: number
+    confidence?: number
 
-  /* ========================================================================
-  Discovery
-  ======================================================================== */
+    grouped_attributes?:
+        Record<string, SemanticAttribute[]>
 
-  grouped_attributes?:
-    Record<string, SemanticAttribute[]>
+    /* ------------------------------------------------------------------------
+    Metadata
+    ------------------------------------------------------------------------ */
 
-  semantic_schema_version?: number
+    created_at?: string
 
-  /* ========================================================================
-  Metadata
-  ======================================================================== */
+    updated_at?: string
 
-  created_at?: string
-
-  updated_at?: string
-
-  /* ========================================================================
-  Raw Backup
-  ======================================================================== */
-
-  raw?: any
 }
 
 /* ============================================================================
-🔥 Inventory Meaning
+🔥 Meaning
 ============================================================================ */
 
-export interface InventoryMeaning {
+export interface ProductsMeaning {
 
-  identity?: string
+    identity?: string
 
-  mission?: string
+    mission?: string
 
-  user_intent?: string
+    user_intent?: string
 
-  meaning_statement?: string
+    meaning_statement?: string
 
-  existence_reason?: string
+    existence_reason?: string
+
 }
 
 /* ============================================================================
-🔥 Presentation Runtime
+🔥 Presentation
 ============================================================================ */
 
-export interface PresentationRuntime {
+export interface ProductsPresentation {
 
-  title?: string
+    title?: string
 
-  subtitle?: string
+    subtitle?: string
 
-  description?: string
+    description?: string
+
 }
 
 /* ============================================================================
-🔥 Inventory SEO
+🔥 SEO
 ============================================================================ */
 
-export interface InventorySEO {
+export interface ProductsSEO {
 
-  title?: string
+    title?: string
 
-  description?: string
+    description?: string
 
-  keywords?: string[]
+    keywords?: string[]
 
-  canonical?: string
+    canonical?: string
 
-  schema_jsonld?: any
+    schema_jsonld?: any
+
+    open_graph?: any
+
+    twitter?: any
+
+}
+
+/* ============================================================================
+🔥 Products Data
+============================================================================ */
+
+export interface ProductsData {
+
+    count: number
+
+    page: number
+
+    page_size: number
+
+    sort: string
+
+    has_next: boolean
+
+    products: PCProductItem[]
+
 }
 
 /* ============================================================================
 🔥 Products Runtime
 ============================================================================ */
 
-export interface ProductsRuntime {
+export interface ProductsRuntimeContract {
 
-  /* ========================================================================
-  Meaning Layer
-  ======================================================================== */
+    /* ------------------------------------------------------------------------
+    Backend Meaning
+    ------------------------------------------------------------------------ */
 
-  meaning?: InventoryMeaning
+    meaning?: ProductsMeaning
 
-  presentation?: PresentationRuntime
+    /* ------------------------------------------------------------------------
+    Backend Presentation
+    ------------------------------------------------------------------------ */
 
-  seo?: InventorySEO
+    presentation?: ProductsPresentation
 
-  /* ========================================================================
-  Inventory Reality
-  ======================================================================== */
+    /* ------------------------------------------------------------------------
+    Backend SEO
+    ------------------------------------------------------------------------ */
 
-  count: number
+    seo?: ProductsSEO
 
-  page: number
+    /* ------------------------------------------------------------------------
+    Backend Data
+    ------------------------------------------------------------------------ */
 
-  page_size: number
+    data: ProductsData
 
-  has_next: boolean
+    /* ------------------------------------------------------------------------
+    Backend Authority
+    ------------------------------------------------------------------------ */
 
-  /* ========================================================================
-  Products
-  ======================================================================== */
+    semantic_schema_version?: number
 
-  products: PCProductItem[]
+    authority_version?: string
 
-  /* ========================================================================
-  Runtime Authority
-  ======================================================================== */
+    semantic_authority?: string
 
-  semantic_schema_version?: number
+    ready?: boolean
 
-  authority_version?: string
-
-  semantic_authority?: string
-
-  ready?: boolean
-
-  /* ========================================================================
-  Raw Backup
-  ======================================================================== */
-
-  raw?: any
 }
 
 /* ============================================================================
 🔥 Legacy Compatibility
 ============================================================================ */
 
-export type PCProductsResponse =
-  ProductsRuntime
+export type ProductsRuntime =
+    ProductsRuntimeContract
+
+export type ProductsRuntimeResponse =
+    ProductsRuntimeContract

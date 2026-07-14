@@ -1,79 +1,71 @@
 // ============================================================================
 // FILE:
 // /shared/lib/api/django/pc/products/products.ts
-// Copyright (c) 2024 Shin Corporation.
+// Copyright (c) 2026 Shin Corporation.
 // All rights reserved.
 // ============================================================================
 
 /**
  * ============================================================================
  * SHIN CORE LINX
- * Reality Inventory Runtime Gateway
+ * Products Gateway
  * ============================================================================
  *
  * PURPOSE
  *
- * GET /api/pc/products/
+ * Transport the Backend Products Runtime into the
+ * Canonical Products Contract.
  *
- * ↓
- *
- * Reality Inventory Runtime
- *
- * IMPORTANT
- *
- * This layer MUST NOT:
- *
- * ❌ generate meaning
- * ❌ generate presentation
- * ❌ generate seo
- * ❌ generate inventory
- * ❌ generate products
- * ❌ mutate backend authority
- *
- * RESPONSIBILITY
- *
+ * Backend Products Runtime
+ *      ↓
  * Transport
- * ↓
+ *      ↓
  * Normalize
- * ↓
- * Runtime
+ *      ↓
+ * Products Contract
+ *
+ * Backend remains:
+ *
+ * Reality Authority
+ *
+ * Gateway Responsibilities
+ *
+ * ✓ Resolve Endpoint
+ * ✓ Transport Runtime
+ * ✓ Invoke Normalize
+ * ✓ Observe Runtime
+ *
+ * Gateway SHALL NOT
+ *
+ * ✗ Generate Meaning
+ * ✗ Generate Runtime
+ * ✗ Generate Projection
+ * ✗ Generate UI
  *
  * ============================================================================
  */
 
-/* ============================================================================
-🔥 Utils
-============================================================================ */
+import type {
+
+    ProductsRuntimeContract,
+
+} from './contracts'
 
 import {
 
-  buildEndpoint,
+    buildEndpoint,
 
 } from '../utils/buildEndpoint'
 
 import {
 
-  safeFetch,
+    safeFetch,
 
 } from '../utils/safeFetch'
 
-/* ============================================================================
-🔥 Contracts
-============================================================================ */
-
-import type {
-
-  ProductsRuntime,
-
-} from './contracts'
-
-/* ============================================================================
-🔥 Normalize
-============================================================================ */
-
 import {
 
-  normalizeProductsRuntime,
+    normalizeProducts,
 
 } from './normalize'
 
@@ -83,19 +75,7 @@ import {
 
 const PRODUCTS_ENDPOINT =
 
-  '/pc/products/'
-
-/* ============================================================================
-🔥 Fetch Options
-============================================================================ */
-
-export interface FetchProductsOptions {
-
-  page?: number
-
-  pageSize?: number
-
-}
+    '/pc/products/'
 
 /* ============================================================================
 🔥 Fetch Products Runtime
@@ -103,208 +83,163 @@ export interface FetchProductsOptions {
 
 export async function fetchProducts(
 
-  options?: FetchProductsOptions
+): Promise<ProductsRuntimeContract> {
 
-): Promise<ProductsRuntime> {
+    /* ------------------------------------------------------------------------
+    Endpoint
+    ------------------------------------------------------------------------ */
 
-  console.log(
-    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
-  )
+    const endpoint =
 
-  console.log(
-    '🔥 FETCH PRODUCTS RUNTIME'
-  )
+        buildEndpoint(
 
-  /* ========================================================================
-  Query
-  ======================================================================== */
+            PRODUCTS_ENDPOINT
 
-  const query =
+        )
 
-    new URLSearchParams()
+    console.log(
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+    )
 
-  if (
+    console.log(
+        '🔥 FETCH PRODUCTS'
+    )
 
-    options?.page !== undefined
+    console.log({
 
-  ) {
+        endpoint,
 
-    query.set(
+    })
 
-      'page',
+    console.log(
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+    )
 
-      String(options.page)
+    /* ------------------------------------------------------------------------
+    Transport
+    ------------------------------------------------------------------------ */
+
+    const payload =
+
+        await safeFetch<ProductsRuntimeContract>(
+
+            endpoint
+
+        )
+
+    /* ------------------------------------------------------------------------
+    Raw Runtime
+    ------------------------------------------------------------------------ */
+
+    console.log(
+
+        '🔥 PRODUCTS RAW',
+
+        payload
 
     )
 
-  }
+    /* ------------------------------------------------------------------------
+    Empty Runtime
+    ------------------------------------------------------------------------ */
 
-  if (
+    if (!payload) {
 
-    options?.pageSize !== undefined
+        console.warn(
 
-  ) {
+            '⚠️ PRODUCTS EMPTY'
 
-    query.set(
+        )
 
-      'page_size',
+        return normalizeProducts()
 
-      String(options.pageSize)
-
-    )
-
-  }
-
-  /* ========================================================================
-  Endpoint
-  ======================================================================== */
-
-  const endpoint =
-
-    buildEndpoint(
-
-      query.toString()
-
-        ? `${PRODUCTS_ENDPOINT}?${query.toString()}`
-
-        : PRODUCTS_ENDPOINT
-
-    )
-
-  console.log(
-    '🔥 PRODUCTS ENDPOINT',
-    endpoint
-  )
-
-  console.log(
-    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
-  )
-
-  const payload =
-
-    await safeFetch(
-      endpoint
-    )
-
-  console.log(
-    '🔥 PRODUCTS RAW PAYLOAD',
-    {
-
-      presentation:
-
-        payload?.presentation,
-
-      count:
-
-        payload?.data?.count,
-
-      page:
-
-        payload?.data?.page,
-
-      page_size:
-
-        payload?.data?.page_size,
-
-      has_next:
-
-        payload?.data?.has_next,
-
-      products:
-
-        payload?.data?.products?.length,
-
-      semantic_schema_version:
-
-        payload?.semantic_schema_version,
-
-      authority_version:
-
-        payload?.authority_version,
-
-      semantic_authority:
-
-        payload?.semantic_authority,
-
-      ready:
-
-        payload?.ready,
     }
-  )
 
-  const runtime =
+    /* ------------------------------------------------------------------------
+    Normalize
+    ------------------------------------------------------------------------ */
 
-    normalizeProductsRuntime(
-      payload
+    const products =
+
+        normalizeProducts(
+
+            payload
+
+        )
+
+    /* ------------------------------------------------------------------------
+    Observatory
+    ------------------------------------------------------------------------ */
+
+    console.log(
+
+        '🔥 PRODUCTS CONTRACT',
+
+        {
+
+            count:
+
+                products.data.count,
+
+            page:
+
+                products.data.page,
+
+            page_size:
+
+                products.data.page_size,
+
+            sort:
+
+                products.data.sort,
+
+            has_next:
+
+                products.data.has_next,
+
+            semantic_schema_version:
+
+                products.semantic_schema_version,
+
+            authority_version:
+
+                products.authority_version,
+
+            semantic_authority:
+
+                products.semantic_authority,
+
+            ready:
+
+                products.ready,
+
+            sample:
+
+                products.data.products.at(0) ?? null,
+
+        }
+
     )
 
-  console.log(
-    '🔥 PRODUCTS RUNTIME',
-    {
+    console.log(
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+    )
 
-      presentation:
+    /* ------------------------------------------------------------------------
+    Return
+    ------------------------------------------------------------------------ */
 
-        runtime?.presentation,
-
-      count:
-
-        runtime?.count,
-
-      page:
-
-        runtime?.page,
-
-      page_size:
-
-        runtime?.page_size,
-
-      has_next:
-
-        runtime?.has_next,
-
-      products:
-
-        runtime?.products?.length,
-
-      semantic_schema_version:
-
-        runtime?.semantic_schema_version,
-
-      authority_version:
-
-        runtime?.authority_version,
-
-      semantic_authority:
-
-        runtime?.semantic_authority,
-
-      ready:
-
-        runtime?.ready,
-    }
-  )
-
-  console.log(
-    '🔥 PRESENTATION RUNTIME',
-    {
-
-      title:
-
-        runtime?.presentation?.title,
-
-      subtitle:
-
-        runtime?.presentation?.subtitle,
-
-      description:
-
-        runtime?.presentation?.description,
-    }
-  )
-
-  return runtime
+    return products
 
 }
+
+/* ============================================================================
+🔥 Legacy Compatibility
+============================================================================ */
+
+export const fetchProductsRuntime =
+
+    fetchProducts
 
 /* ============================================================================
 🔥 Default Export
