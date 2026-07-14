@@ -7,16 +7,22 @@ import styles
   from './styles/ProductAISummary.module.css'
 
 /* ============================================================================
+🔥 Projection
+============================================================================ */
+
+import type {
+
+  ProjectedSemanticRuntime,
+
+} from '@/shared/lib/api/django/pc/product-detail'
+
+/* ============================================================================
 🔥 Props
 ============================================================================ */
 
 type Props = {
 
-  semanticRuntime?: {
-
-    semantic_summary?: string
-
-  }
+  semanticRuntime?: ProjectedSemanticRuntime
 
 }
 
@@ -33,7 +39,7 @@ export default function ProductAISummary({
   const summary =
 
     semanticRuntime
-      ?.semantic_summary
+      ?.semanticSummary
 
     ||
 

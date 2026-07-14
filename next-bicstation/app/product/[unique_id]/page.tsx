@@ -8,7 +8,7 @@
 ============================================================================ */
 
 import {
-  fetchProductDetail,
+  getProductDetailRuntime,
 } from '@/shared/lib/api/django/pc/product-detail'
 
 import {
@@ -30,14 +30,14 @@ import type {
 import ProductHeroSection
   from './section/ProductHeroSection'
 
-import ProductSemanticSection
-  from './section/ProductSemanticSection'
+// import ProductSemanticSection
+//   from './section/ProductSemanticSection'
 
-import ProductSpecSection
-  from './section/ProductSpecSection'
+// import ProductSpecSection
+//   from './section/ProductSpecSection'
 
-import ProductComparisonSection
-  from './section/ProductComparisonSection'
+// import ProductComparisonSection
+//   from './section/ProductComparisonSection'
 
 import ProductRelatedSection
   from './section/ProductRelatedSection'
@@ -92,15 +92,13 @@ export async function generateMetadata({
 
   const runtime =
 
-    await fetchProductDetail(
+    await getProductDetailRuntime(
+
       params.unique_id,
+
     )
 
-  const product =
-
-    runtime?.product
-
-  if (!product) {
+  if (!runtime.found) {
 
     return {
 
@@ -114,19 +112,25 @@ export async function generateMetadata({
 
   }
 
+  const product =
+
+    runtime.product
+
+  const semanticRuntime =
+
+    runtime.semanticRuntime
+
   const title =
 
     `${product.name} | SHIN CORE LINX`
 
   const description =
 
-    runtime
-      ?.product_semantic_runtime
-      ?.semantic_summary
+    semanticRuntime?.semanticSummary
 
     ||
 
-    product.ai_summary
+    product.description
 
     ||
 
@@ -159,14 +163,14 @@ export async function generateMetadata({
 
       images:
 
-        product.image_url
+        product.imageUrl
 
           ? [
 
             {
 
               url:
-                product.image_url,
+                product.imageUrl,
 
             },
 
@@ -187,11 +191,11 @@ export async function generateMetadata({
 
       images:
 
-        product.image_url
+        product.imageUrl
 
           ? [
 
-            product.image_url,
+            product.imageUrl,
 
           ]
 
@@ -202,7 +206,6 @@ export async function generateMetadata({
   }
 
 }
-
 
 /* ============================================================================
 🔥 Product Page
@@ -215,29 +218,18 @@ export default async function ProductPage({
 }: Props) {
 
   const uniqueId =
+
     params.unique_id
 
   const runtime =
 
-    await fetchProductDetail(
+    await getProductDetailRuntime(
+
       uniqueId
+
     )
 
-  const product =
-    runtime?.product
-
-  const semanticRuntime =
-
-    runtime
-      ?.product_semantic_runtime
-
-  const related =
-
-    await fetchRelatedPC(
-      uniqueId
-    )
-
-  if (!product) {
+  if (!runtime.found) {
 
     return (
 
@@ -246,6 +238,26 @@ export default async function ProductPage({
     )
 
   }
+
+  const product =
+
+    runtime.product
+
+  const semanticRuntime =
+
+    runtime.semanticRuntime
+
+  const compiledRuntime =
+
+    runtime.compiledRuntime
+
+  const related =
+
+    await fetchRelatedPC(
+
+      uniqueId
+
+    )
 
   const productSchema = {
 
@@ -259,31 +271,25 @@ export default async function ProductPage({
       product.name,
 
     image:
-      product.image_url,
+      product.imageUrl,
 
     description:
 
-      semanticRuntime
-        ?.semantic_summary
+      semanticRuntime?.semanticSummary
 
       ||
 
-      product.ai_summary
+      product.description
 
       ||
 
       '',
-
     brand: {
 
       '@type':
         'Brand',
 
       name:
-
-        product.maker_name
-
-        ||
 
         product.maker,
 
@@ -316,13 +322,21 @@ export default async function ProductPage({
       ========================================================== */}
 
       <script
+
         type="application/ld+json"
+
         dangerouslySetInnerHTML={{
+
           __html:
+
             JSON.stringify(
+
               productSchema
+
             ),
+
         }}
+
       />
 
       {/* ==========================================================
@@ -336,7 +350,9 @@ export default async function ProductPage({
         ====================================================== */}
 
         <ProductBreadcrumb
-          product={product}
+          breadcrumbs={
+            (product as any)?.breadcrumbs
+          }
         />
 
         {/* ======================================================
@@ -344,49 +360,111 @@ export default async function ProductPage({
         ====================================================== */}
 
         <ProductHeroSection
-          product={product}
-          semanticRuntime={
-            semanticRuntime
+
+          product={
+
+            product
+
           }
+
+          semanticRuntime={
+
+            semanticRuntime
+
+          }
+
+          compiledRuntime={
+
+            compiledRuntime
+
+          }
+
         />
 
         {/* ======================================================
         Semantic
         ====================================================== */}
 
-        <ProductSemanticSection
-          product={product}
-          semanticRuntime={
-            semanticRuntime
+        {/* <ProductSemanticSection
+
+          product={
+
+            product
+
           }
-        />
+
+          semanticRuntime={
+
+            semanticRuntime
+
+          }
+
+        /> */}
 
         {/* ======================================================
         Specs
         ====================================================== */}
 
-        <ProductSpecSection
-          product={product}
-        />
+        {/* <ProductSpecSection
+
+          product={
+
+            product
+
+          }
+
+          compiledRuntime={
+
+            compiledRuntime
+
+          }
+
+        /> */}
 
         {/* ======================================================
         Comparison
         ====================================================== */}
 
-        <ProductComparisonSection
-          product={product}
-        />
+        {/* <ProductComparisonSection
+
+          product={
+
+            product
+
+          }
+
+          compiledRuntime={
+
+            compiledRuntime
+
+          }
+
+        /> */}
 
         {/* ======================================================
         Related
         ====================================================== */}
 
         <ProductRelatedSection
-          product={product}
-          related={related}
-          semanticRuntime={
-            semanticRuntime
+
+          product={
+
+            product
+
           }
+
+          related={
+
+            related
+
+          }
+
+          semanticRuntime={
+
+            semanticRuntime
+
+          }
+
         />
 
         {/* ======================================================
@@ -394,7 +472,13 @@ export default async function ProductPage({
         ====================================================== */}
 
         <ProductFaq
-          product={product}
+
+          product={
+
+            product
+
+          }
+
         />
 
         {/* ======================================================
@@ -402,10 +486,19 @@ export default async function ProductPage({
         ====================================================== */}
 
         <ProductCTASection
-          product={product}
-          semanticRuntime={
-            semanticRuntime
+
+          product={
+
+            product
+
           }
+
+          semanticRuntime={
+
+            semanticRuntime
+
+          }
+
         />
 
       </main>

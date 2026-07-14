@@ -7,6 +7,17 @@ import styles
   from './styles/ProductHeroCapability.module.css'
 
 /* ============================================================================
+🔥 Projection
+============================================================================ */
+
+import type {
+
+  ProjectedSemanticRuntime,
+  ProjectedCompiledRuntime,
+
+} from '@/shared/lib/api/django/pc/product-detail'
+
+/* ============================================================================
 🔥 Types
 ============================================================================ */
 
@@ -22,15 +33,15 @@ type SemanticReason = {
 
 }
 
+/* ============================================================================
+🔥 Props
+============================================================================ */
+
 type Props = {
 
-  semanticRuntime?: {
+  semanticRuntime?: ProjectedSemanticRuntime
 
-    workflow_tags?: string[]
-
-    semantic_reasons?: SemanticReason[]
-
-  }
+  compiledRuntime?: ProjectedCompiledRuntime
 
 }
 
@@ -45,22 +56,22 @@ function getWorkflowLabel(
   const labels:
     Record<string, string> = {
 
-      'usage-ai':
-        'AI開発・生成AI',
+    'usage-ai':
+      'AI開発・生成AI',
 
-      'usage-gaming':
-        'FPS・ゲームプレイ',
+    'usage-gaming':
+      'FPS・ゲームプレイ',
 
-      'usage-creator':
-        '動画編集・制作',
+    'usage-creator':
+      '動画編集・制作',
 
-      'usage-business':
-        'ビジネス用途',
+    'usage-business':
+      'ビジネス用途',
 
-      'usage-mobile':
-        'モバイル利用',
+    'usage-mobile':
+      'モバイル利用',
 
-    }
+  }
 
   return (
     labels[tag]
@@ -77,12 +88,17 @@ export default function ProductHeroCapability({
 
   semanticRuntime,
 
+  compiledRuntime,
+
 }: Props) {
+
+  // 将来利用予定
+  void compiledRuntime
 
   const workflowTags =
 
     semanticRuntime
-      ?.workflow_tags
+      ?.workflowTags
 
     ||
 
@@ -90,8 +106,8 @@ export default function ProductHeroCapability({
 
   const semanticReasons =
 
-    semanticRuntime
-      ?.semantic_reasons
+    (semanticRuntime
+      ?.semanticReasons as SemanticReason[])
 
     ||
 
@@ -259,7 +275,9 @@ export default function ProductHeroCapability({
               {
 
                 semanticReasons
+
                   .slice(0, 6)
+
                   .map(
 
                     (

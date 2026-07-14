@@ -1,7 +1,7 @@
 // ============================================================================
 // FILE:
 // app/product/[unique_id]/components/hero/ProductHeroSection.tsx
-// Product Runtime Hero Orchestrator V4
+// Product Runtime Hero Orchestrator V5
 // ============================================================================
 
 import ProductBreadcrumb
@@ -17,27 +17,28 @@ import ProductHeroCapability
   from './ProductHeroCapability'
 
 /* ============================================================================
+🔥 Projection
+============================================================================ */
+
+import type {
+
+  ProjectedProduct,
+  ProjectedSemanticRuntime,
+  ProjectedCompiledRuntime,
+
+} from '@/shared/lib/api/django/pc/product-detail'
+
+/* ============================================================================
 🔥 Props
 ============================================================================ */
 
 type Props = {
 
-  product: any
+  product: ProjectedProduct
 
-  semanticRuntime?: {
+  semanticRuntime?: ProjectedSemanticRuntime
 
-    semantic_summary?: string
-
-    workflow_tags?: any[]
-
-    semantic_labels?: any[]
-
-    grouped_attributes?: Record<
-      string,
-      any[]
-    >
-
-  }
+  compiledRuntime?: ProjectedCompiledRuntime
 
 }
 
@@ -48,7 +49,10 @@ type Props = {
 export default function ProductHeroSection({
 
   product,
+
   semanticRuntime,
+
+  compiledRuntime,
 
 }: Props) {
 
@@ -61,51 +65,46 @@ export default function ProductHeroSection({
       ========================================================== */}
 
       <ProductBreadcrumb
+
         breadcrumbs={
-          product?.breadcrumbs
+
+          (product as any)?.breadcrumbs
+
         }
+
       />
 
       {/* ==========================================================
       HERO
-      世界観
       ========================================================== */}
 
       <ProductHero
-        product={
-          product
-        }
-        semanticRuntime={
-          semanticRuntime
-        }
+
+        product={product}
+        semanticRuntime={semanticRuntime}
+        compiledRuntime={compiledRuntime}
+
       />
 
       {/* ==========================================================
       AI SUMMARY
-      意味
       ========================================================== */}
 
       <ProductAISummary
-        product={
-          product
-        }
-        semanticRuntime={
-          semanticRuntime
-        }
+
+        semanticRuntime={semanticRuntime}
+
       />
 
       {/* ==========================================================
       CAPABILITY
-      できること
       ========================================================== */}
 
       <ProductHeroCapability
-        product={
-          product
-        }
-        semanticRuntime={
-          semanticRuntime
-        }
+
+        semanticRuntime={semanticRuntime}
+        compiledRuntime={compiledRuntime}
+
       />
 
     </>

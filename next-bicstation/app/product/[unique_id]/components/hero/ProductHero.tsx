@@ -12,35 +12,16 @@ import styles
   from './styles/ProductHero.module.css'
 
 /* ============================================================================
-🔥 Types
+🔥 Projection Types
 ============================================================================ */
 
-type SemanticReason = {
+import type {
 
-  slug?: string
+  ProjectedProduct,
+  ProjectedSemanticRuntime,
+  ProjectedCompiledRuntime,
 
-  title?: string
-
-  description?: string
-
-}
-
-type Props = {
-
-  product: any
-
-  semanticRuntime?: {
-
-    semantic_summary?: string
-
-    workflow_tags?: string[]
-
-    semantic_reasons?: SemanticReason[]
-
-  }
-
-}
-
+} from '@/shared/lib/api/django/pc/product-detail'
 
 /* ============================================================================
 🔥 Workflow Label
@@ -53,27 +34,41 @@ function getWorkflowLabel(
   const labels:
     Record<string, string> = {
 
-      'usage-ai':
-        'AI',
+    'usage-ai':
+      'AI',
 
-      'usage-gaming':
-        'Gaming',
+    'usage-gaming':
+      'Gaming',
 
-      'usage-creator':
-        'Creator',
+    'usage-creator':
+      'Creator',
 
-      'usage-business':
-        'Business',
+    'usage-business':
+      'Business',
 
-      'usage-mobile':
-        'Mobile',
+    'usage-mobile':
+      'Mobile',
 
-    }
+  }
 
   return (
     labels[tag]
     || tag
   )
+
+}
+
+/* ============================================================================
+🔥 Props
+============================================================================ */
+
+type Props = {
+
+  product: ProjectedProduct
+
+  semanticRuntime?: ProjectedSemanticRuntime
+
+  compiledRuntime?: ProjectedCompiledRuntime
 
 }
 
@@ -87,15 +82,33 @@ export default function ProductHero({
 
   semanticRuntime,
 
+  compiledRuntime,
+
 }: Props) {
 
-  const title = product?.name || 'PRODUCT'
-  const image = product?.image_url 
-  const maker = product?.maker || 'UNKNOWN'
-  const price = product?.price 
-  const semanticSummary = semanticRuntime?.semantic_summary || ''
-  const workflowTags = semanticRuntime?.workflow_tags || []
-  const targetUser = product?.target_user
+  const title =
+    product.name || 'PRODUCT'
+
+  const image =
+    product.imageUrl
+
+  const maker =
+    product.maker || 'UNKNOWN'
+
+  const price =
+    product.price
+
+  const semanticSummary =
+    semanticRuntime?.semanticSummary || ''
+
+  const workflowTags =
+    semanticRuntime?.workflowTags || []
+
+  // 将来利用予定
+  void compiledRuntime
+
+  const targetUser =
+    (product as any)?.target_user
 
   return (
 
@@ -228,6 +241,7 @@ export default function ProductHero({
           ====================================================== */}
 
           {
+
             targetUser && (
 
               <div
@@ -255,6 +269,7 @@ export default function ProductHero({
               </div>
 
             )
+
           }
 
           {
@@ -282,11 +297,15 @@ export default function ProductHero({
                           styles.productHeroCapability
                         }
                       >
+
                         {
+
                           getWorkflowLabel(
                             tag
                           )
+
                         }
+
                       </div>
 
                     )

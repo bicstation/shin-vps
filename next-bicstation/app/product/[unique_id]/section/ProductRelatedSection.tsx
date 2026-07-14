@@ -23,30 +23,27 @@ import ProductRelatedIntents
   from '../components/intent/ProductRelatedIntents'
 
 /* ============================================================================
+🔥 Projection
+============================================================================ */
+
+import type {
+
+  ProjectedProduct,
+  ProjectedSemanticRuntime,
+
+} from '@/shared/lib/api/django/pc/product-detail'
+
+/* ============================================================================
 🔥 Types
 ============================================================================ */
 
-type RelatedIntent = {
-
-  slug: string
-
-  title: string
-
-  description?: string | null
-
-}
-
 type Props = {
 
-  product: any
+  product: ProjectedProduct
 
   related: any[]
 
-  semanticRuntime?: {
-
-    related_intents?: RelatedIntent[]
-
-  }
+  semanticRuntime?: ProjectedSemanticRuntime
 
 }
 
@@ -87,9 +84,13 @@ export default function ProductRelatedSection({
       ========================================================== */}
 
       <ProductRelatedIntents
+
         semanticRuntime={
+
           semanticRuntime
+
         }
+
       />
 
       {/* ==========================================================
@@ -97,8 +98,19 @@ export default function ProductRelatedSection({
       ========================================================== */}
 
       <ProductRelated
-        product={product}
-        related={related}
+
+        product={
+
+          product
+
+        }
+
+        related={
+
+          related
+
+        }
+
       />
 
       {/* ==========================================================
@@ -106,8 +118,19 @@ export default function ProductRelatedSection({
       ========================================================== */}
 
       <ProductSimilarUsage
-        product={product}
-        related={related}
+
+        product={
+
+          product
+
+        }
+
+        related={
+
+          related
+
+        }
+
       />
 
       {/* ==========================================================
@@ -115,8 +138,19 @@ export default function ProductRelatedSection({
       ========================================================== */}
 
       <ProductNextIntent
-        product={product}
-        related={related}
+
+        product={
+
+          product
+
+        }
+
+        related={
+
+          related
+
+        }
+
       />
 
       {/* ==========================================================
@@ -124,7 +158,13 @@ export default function ProductRelatedSection({
       ========================================================== */}
 
       <RelatedProducts
-        related={related}
+
+        related={
+
+          related
+
+        }
+
       />
 
     </section>
