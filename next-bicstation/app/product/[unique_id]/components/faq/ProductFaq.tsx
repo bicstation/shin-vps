@@ -5,22 +5,90 @@
 
 'use client'
 
-import { useState }
-  from 'react'
+import {
+
+  useState,
+
+} from 'react'
 
 import styles
   from './faq.module.css'
+
+/* ============================================================================
+🔥 Projection
+============================================================================ */
+
+import type {
+
+  ProjectedProduct,
+
+} from '@/shared/lib/api/django/pc/product-detail'
+
+/* ============================================================================
+🔥 Types
+============================================================================ */
 
 type FAQItem = {
 
   question: string
 
   answer: string
+
 }
 
 type Props = {
 
-  faqs?: FAQItem[]
+  product: ProjectedProduct
+
+}
+
+/* ============================================================================
+🔥 FAQ Builder
+============================================================================ */
+
+function buildFaqs(
+
+  product: ProjectedProduct
+
+): FAQItem[] {
+
+  return [
+
+    {
+
+      question:
+        'このPCはどんな用途に向いていますか？',
+
+      answer:
+
+        `${product.name} は用途に応じた構成を備えたモデルです。`
+
+    },
+
+    {
+
+      question:
+        'ゲーム用途にも使えますか？',
+
+      answer:
+
+        'GPU構成やCPU性能によって快適に利用できます。'
+
+    },
+
+    {
+
+      question:
+        '生成AIや動画編集にも対応できますか？',
+
+      answer:
+
+        '用途に応じてAI・動画編集・クリエイティブ用途にも利用できます。'
+
+    },
+
+  ]
+
 }
 
 /* ============================================================================
@@ -28,36 +96,36 @@ type Props = {
 ============================================================================ */
 
 export default function ProductFaq({
-  faqs = [],
+
+  product,
+
 }: Props) {
 
-  // ==========================================================================
-  // STATE
-  // ==========================================================================
+  const faqs =
+
+    buildFaqs(
+
+      product
+
+    )
 
   const [
-    openIndex,
-    setOpenIndex,
-  ] = useState<number | null>(
-    0
-  )
 
-  // ==========================================================================
-  // EMPTY
-  // ==========================================================================
+    openIndex,
+
+    setOpenIndex,
+
+  ] = useState<number | null>(0)
 
   if (
-    !Array.isArray(faqs)
-    || faqs.length === 0
+
+    faqs.length === 0
+
   ) {
 
     return null
 
   }
-
-  // ==========================================================================
-  // RENDER
-  // ==========================================================================
 
   return (
 
@@ -66,10 +134,6 @@ export default function ProductFaq({
         styles.faqSection
       }
     >
-
-      {/* ================================================================
-      HEADER
-      ================================================================ */}
 
       <div
         className={
@@ -111,10 +175,6 @@ export default function ProductFaq({
 
       </div>
 
-      {/* ================================================================
-      FAQ LIST
-      ================================================================ */}
-
       <div
         className={
           styles.faqList
@@ -122,45 +182,55 @@ export default function ProductFaq({
       >
 
         {
+
           faqs.map(
+
             (
+
               faq,
+
               index
+
             ) => {
 
               const isOpen =
+
                 openIndex === index
 
               return (
 
                 <div
+
                   key={index}
 
                   className={
                     styles.faqItem
                   }
+
                 >
 
-                  {/* ====================================================
-                  QUESTION
-                  ==================================================== */}
-
                   <button
+
                     type="button"
 
-                    onClick={() => {
+                    onClick={() =>
 
                       setOpenIndex(
+
                         isOpen
+
                           ? null
+
                           : index
+
                       )
 
-                    }}
+                    }
 
                     className={
                       styles.faqQuestion
                     }
+
                   >
 
                     <span>
@@ -176,20 +246,21 @@ export default function ProductFaq({
                     >
 
                       {
+
                         isOpen
+
                           ? '−'
+
                           : '+'
+
                       }
 
                     </span>
 
                   </button>
 
-                  {/* ====================================================
-                  ANSWER
-                  ==================================================== */}
-
                   {
+
                     isOpen && (
 
                       <div
@@ -203,6 +274,7 @@ export default function ProductFaq({
                       </div>
 
                     )
+
                   }
 
                 </div>
@@ -210,7 +282,9 @@ export default function ProductFaq({
               )
 
             }
+
           )
+
         }
 
       </div>
@@ -218,4 +292,5 @@ export default function ProductFaq({
     </section>
 
   )
+
 }

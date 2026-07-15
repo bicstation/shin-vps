@@ -10,7 +10,17 @@
 ============================================================================ */
 
 import styles
-from './recommendation.module.css'
+  from './recommendation.module.css'
+
+/* ============================================================================
+🔥 Projection
+============================================================================ */
+
+import type {
+
+  ProjectedProduct,
+
+} from '@/shared/lib/api/django/pc/product-detail'
 
 /* ============================================================================
 🔥 Props
@@ -18,9 +28,10 @@ from './recommendation.module.css'
 
 type Props = {
 
-product: any
+  product: ProjectedProduct
 
-related: any[]
+  related: any[]
+
 }
 
 /* ============================================================================
@@ -28,185 +39,246 @@ related: any[]
 ============================================================================ */
 
 function buildNextIntent(
-product: any,
-related: any[]
+
+  product: ProjectedProduct,
+
+  related: any[]
+
 ) {
 
-const intents: string[] = []
+  const intents: string[] = []
 
-// ==========================================================================
-// RELATED RUNTIME
-// ==========================================================================
+  // ==========================================================================
+  // RELATED RUNTIME
+  // ==========================================================================
 
-if (
-Array.isArray(
-related
-)
-) {
+  if (
 
+    Array.isArray(
 
-related.forEach(
-  (
-    item: any
-  ) => {
+      related
+
+    )
+
+  ) {
+
+    related.forEach(
+
+      (
+
+        item: any
+
+      ) => {
+
+        const text =
+
+          JSON.stringify(item)
+
+            .toLowerCase()
+
+        // ================================================================
+        // AI
+        // ================================================================
+
+        if (
+
+          text.includes('ai')
+
+          || text.includes('llm')
+
+          || text.includes('stable diffusion')
+
+        ) {
+
+          intents.push(
+
+            'AI画像生成・ローカルLLM用途への探索を広げられます'
+
+          )
+
+        }
+
+        // ================================================================
+        // CREATOR
+        // ================================================================
+
+        if (
+
+          text.includes('creator')
+
+          || text.includes('premiere')
+
+          || text.includes('davinci')
+
+        ) {
+
+          intents.push(
+
+            '動画編集やクリエイティブ workflow へ拡張できます'
+
+          )
+
+        }
+
+        // ================================================================
+        // GAMING
+        // ================================================================
+
+        if (
+
+          text.includes('gaming')
+
+          || text.includes('geforce')
+
+          || text.includes('rtx')
+
+        ) {
+
+          intents.push(
+
+            '高fps gaming や配信用途へ探索を広げられます'
+
+          )
+
+        }
+
+        // ================================================================
+        // BUSINESS
+        // ================================================================
+
+        if (
+
+          text.includes('business')
+
+          || text.includes('office')
+
+        ) {
+
+          intents.push(
+
+            'ビジネス用途や日常workflow向け構成も探索できます'
+
+          )
+
+        }
+
+      }
+
+    )
+
+  }
+
+  // ==========================================================================
+  // PRODUCT FALLBACK
+  // ==========================================================================
+
+  if (
+
+    intents.length === 0
+
+  ) {
 
     const text =
-      JSON.stringify(item)
+
+      JSON.stringify(product)
+
         .toLowerCase()
 
-    // ================================================================
-    // AI
-    // ================================================================
-
     if (
-      text.includes('ai')
-      || text.includes('llm')
-      || text.includes('stable diffusion')
-    ) {
 
-      intents.push(
-        'AI画像生成・ローカルLLM用途への探索を広げられます'
-      )
-
-    }
-
-    // ================================================================
-    // CREATOR
-    // ================================================================
-
-    if (
-      text.includes('creator')
-      || text.includes('premiere')
-      || text.includes('davinci')
-    ) {
-
-      intents.push(
-        '動画編集やクリエイティブ workflow へ拡張できます'
-      )
-
-    }
-
-    // ================================================================
-    // GAMING
-    // ================================================================
-
-    if (
-      text.includes('gaming')
-      || text.includes('geforce')
-      || text.includes('rtx')
-    ) {
-
-      intents.push(
-        '高fps gaming や配信用途へ探索を広げられます'
-      )
-
-    }
-
-    // ================================================================
-    // BUSINESS
-    // ================================================================
-
-    if (
       text.includes('business')
-      || text.includes('office')
+
     ) {
 
       intents.push(
-        'ビジネス用途や日常workflow向け構成も探索できます'
+
+        '次は動画編集・制作向けPCもおすすめです'
+
+      )
+
+    }
+
+    if (
+
+      text.includes('creator')
+
+      || text.includes('premiere')
+
+      || text.includes('davinci')
+
+    ) {
+
+      intents.push(
+
+        '生成AI・ローカルAI用途への拡張も可能です'
+
+      )
+
+    }
+
+    if (
+
+      text.includes('gaming')
+
+      || text.includes('geforce')
+
+      || text.includes('rtx')
+
+    ) {
+
+      intents.push(
+
+        '高性能GPUを活かした配信・動画編集にも向いています'
+
+      )
+
+    }
+
+    if (
+
+      text.includes('ai')
+
+      || text.includes('rtx')
+
+    ) {
+
+      intents.push(
+
+        'AI画像生成やLLM用途の探索にも繋がります'
+
       )
 
     }
 
   }
-)
 
+  // ==========================================================================
+  // FINAL FALLBACK
+  // ==========================================================================
 
-}
+  if (
 
-// ==========================================================================
-// PRODUCT FALLBACK
-// ==========================================================================
+    intents.length === 0
 
-if (
-intents.length === 0
-) {
+  ) {
 
+    intents.push(
 
-const text =
-  JSON.stringify(product)
-    .toLowerCase()
+      '用途を広げながら次のPC探索へ進めます'
 
-if (
-  text.includes('business')
-) {
+    )
 
-  intents.push(
-    '次は動画編集・制作向けPCもおすすめです'
-  )
+  }
 
-}
+  // ==========================================================================
+  // UNIQUE
+  // ==========================================================================
 
-if (
-  text.includes('creator')
-  || text.includes('premiere')
-  || text.includes('davinci')
-) {
+  return Array.from(
 
-  intents.push(
-    '生成AI・ローカルAI用途への拡張も可能です'
-  )
+    new Set(intents)
 
-}
-
-if (
-  text.includes('gaming')
-  || text.includes('geforce')
-  || text.includes('rtx')
-) {
-
-  intents.push(
-    '高性能GPUを活かした配信・動画編集にも向いています'
-  )
-
-}
-
-if (
-  text.includes('ai')
-  || text.includes('rtx')
-) {
-
-  intents.push(
-    'AI画像生成やLLM用途の探索にも繋がります'
-  )
-
-}
-
-
-}
-
-// ==========================================================================
-// FINAL FALLBACK
-// ==========================================================================
-
-if (
-intents.length === 0
-) {
-
-
-intents.push(
-  '用途を広げながら次のPC探索へ進めます'
-)
-
-
-}
-
-// ==========================================================================
-// UNIQUE
-// ==========================================================================
-
-return Array.from(
-new Set(intents)
-).slice(0, 4)
+  ).slice(0, 4)
 
 }
 
@@ -216,133 +288,160 @@ new Set(intents)
 
 export default function ProductNextIntent({
 
-product,
+  product,
 
-related,
+  related,
 
 }: Props) {
 
-// ==========================================================================
-// Intent Runtime
-// ==========================================================================
+  // ==========================================================================
+  // Intent Runtime
+  // ==========================================================================
 
-const intents =
+  const intents =
 
+    buildNextIntent(
 
-buildNextIntent(
-  product,
-  related
-)
+      product,
 
+      related
 
-// ==========================================================================
-// EMPTY
-// ==========================================================================
+    )
 
-if (
-intents.length === 0
-) {
+  // ==========================================================================
+  // EMPTY
+  // ==========================================================================
 
+  if (
 
-return null
+    intents.length === 0
 
+  ) {
 
-}
+    return null
 
-// ==========================================================================
-// RENDER
-// ==========================================================================
-
-return (
-
-
-<section
-  className={
-    styles.nextIntentSection
   }
->
 
-  {/* ================================================================
-  HEADER
-  ================================================================ */}
+  // ==========================================================================
+  // RENDER
+  // ==========================================================================
 
-  <div
-    className={
-      styles.nextIntentHeader
-    }
-  >
+  return (
 
-    <div
+    <section
+
       className={
-        styles.nextIntentLabel
+
+        styles.nextIntentSection
+
       }
+
     >
 
-      NEXT EXPLORATION
+      <div
 
-    </div>
+        className={
 
-    <h2
-      className={
-        styles.nextIntentTitle
-      }
-    >
+          styles.nextIntentHeader
 
-      次に探索したい用途
+        }
 
-    </h2>
+      >
 
-    <p
-      className={
-        styles.nextIntentDescription
-      }
-    >
+        <div
 
-      semantic runtime をもとに、
-      workflow・用途・GPU構成の近い
-      次の探索方向を整理しています。
+          className={
 
-    </p>
+            styles.nextIntentLabel
 
-  </div>
+          }
 
-  {/* ================================================================
-  GRID
-  ================================================================ */}
+        >
 
-  <div
-    className={
-      styles.nextIntentGrid
-    }
-  >
+          NEXT EXPLORATION
 
-    {
-      intents.map(
-        (
-          intent,
-          index
-        ) => (
+        </div>
 
-          <div
-            key={index}
+        <h2
 
-            className={
-              styles.nextIntentCard
-            }
-          >
+          className={
 
-            {intent}
+            styles.nextIntentTitle
 
-          </div>
+          }
 
-        )
-      )
-    }
+        >
 
-  </div>
+          次に探索したい用途
 
-</section>
+        </h2>
 
+        <p
 
-)
+          className={
+
+            styles.nextIntentDescription
+
+          }
+
+        >
+
+          semantic runtime をもとに、
+          workflow・用途・GPU構成の近い
+          次の探索方向を整理しています。
+
+        </p>
+
+      </div>
+
+      <div
+
+        className={
+
+          styles.nextIntentGrid
+
+        }
+
+      >
+
+        {
+
+          intents.map(
+
+            (
+
+              intent,
+
+              index
+
+            ) => (
+
+              <div
+
+                key={index}
+
+                className={
+
+                  styles.nextIntentCard
+
+                }
+
+              >
+
+                {intent}
+
+              </div>
+
+            )
+
+          )
+
+        }
+
+      </div>
+
+    </section>
+
+  )
+
 }

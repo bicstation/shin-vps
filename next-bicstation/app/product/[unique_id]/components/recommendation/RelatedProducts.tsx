@@ -53,12 +53,17 @@ export default function RelatedProducts({
 
 const relatedProducts =
 
-
 Array.isArray(
   related
 )
   ? related
   : []
+
+
+
+const edgeCount =
+     traversalEdges?.length ?? 0
+
 
 
 // ==========================================================================
@@ -121,16 +126,18 @@ return (
 
       </div>
 
-      {
 
-        traversalEdges?.length > 0 && (
+      {
+        edgeCount > 0 && (
 
           <div>
 
-            {traversalEdges.length}
+            {edgeCount}
+            {' '}
             semantic edges active
 
           </div>
+
         )
       }
 

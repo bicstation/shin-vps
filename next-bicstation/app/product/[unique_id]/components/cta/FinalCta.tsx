@@ -3,12 +3,21 @@
 
 'use client'
 
-import React, {
-  useMemo,
-} from 'react'
+import { useMemo } from 'react'
 
 import styles
   from './FinalCta.module.css'
+
+/* =========================================
+🔥 Projection
+========================================= */
+
+import type {
+
+  ProjectedProduct,
+  ProjectedSemanticRuntime,
+
+} from '@/shared/lib/api/django/pc/product-detail'
 
 /* =========================================
 🔥 Types
@@ -16,28 +25,24 @@ import styles
 
 interface FinalCtaProps {
 
-  product: {
-    maker?: string
-    name?: string
-    image_url?: string
+  product: ProjectedProduct
 
-    grouped_attributes?: Record<
-      string,
-      any[]
-    >
-
-    semantic_confidence?: number
-  }
+  semanticRuntime?: ProjectedSemanticRuntime
 
   summary?: {
+
     p1?: string
+
     p2?: string
+
     p3?: string
+
   } | null
 
   finalUrl?: string
 
   isSoftware?: boolean
+
 }
 
 /* =========================================
@@ -45,16 +50,24 @@ interface FinalCtaProps {
 ========================================= */
 
 function buildCTA(
-  product: any
+
+  product: ProjectedProduct,
+
+  finalUrl?: string,
+
 ) {
 
   return (
 
-    product?.affiliate_url
+    finalUrl
 
     ||
 
-    product?.url
+    product.affiliateUrl
+
+    ||
+
+    product.url
 
     ||
 
@@ -64,34 +77,37 @@ function buildCTA(
 
 }
 
-
 /* =========================================
 🔥 Semantic Groups
 ========================================= */
 
 function SemanticGroups({
+
   grouped,
+
 }: {
+
   grouped?: Record<
     string,
     any[]
   >
+
 }) {
 
   if (!grouped) {
 
     return null
+
   }
 
   const entries =
 
-    Object.entries(
-      grouped
-    )
+    Object.entries(grouped)
 
   if (!entries.length) {
 
     return null
+
   }
 
   return (
@@ -102,89 +118,98 @@ function SemanticGroups({
       }
     >
 
-      {entries
-        .slice(0, 3)
-        .map(([
+      {
 
-          group,
+        entries
 
-          attrs,
+          .slice(0, 3)
 
-        ]) => (
+          .map(([
 
-          <div
-            key={group}
+            group,
 
-            className={
-              styles.semanticGroup
-            }
-          >
+            attrs,
 
-            {/* ===================== */}
-            {/* Group */}
-            {/* ===================== */}
+          ]) => (
 
             <div
+
+              key={group}
+
               className={
-                styles.semanticGroupTitle
+                styles.semanticGroup
               }
+
             >
 
-              {group}
+              <div
+                className={
+                  styles.semanticGroupTitle
+                }
+              >
+
+                {group}
+
+              </div>
+
+              <div
+                className={
+                  styles.semanticChipList
+                }
+              >
+
+                {
+
+                  (attrs || [])
+
+                    .slice(0, 3)
+
+                    .map((attr: any) => (
+
+                      <div
+
+                        key={attr.slug}
+
+                        className={
+                          styles.semanticChip
+                        }
+
+                      >
+
+                        {attr.name}
+
+                      </div>
+
+                    ))
+
+                }
+
+              </div>
 
             </div>
 
-            {/* ===================== */}
-            {/* Chips */}
-            {/* ===================== */}
+          ))
 
-            <div
-              className={
-                styles.semanticChipList
-              }
-            >
-
-              {(attrs || [])
-                .slice(0, 3)
-                .map(attr => (
-
-                  <div
-                    key={
-                      attr.slug
-                    }
-
-                    className={
-                      styles.semanticChip
-                    }
-                  >
-
-                    {attr.name}
-
-                  </div>
-
-                ))}
-
-            </div>
-
-          </div>
-
-        ))}
+      }
 
     </div>
 
   )
-}
 
+}
 /* =========================================
 🔥 Component
 ========================================= */
 
-export default function
-FinalCta({
+export default function FinalCta({
 
   product,
 
+  semanticRuntime,
+
   summary,
+
+  finalUrl,
 
   isSoftware = false,
 
@@ -195,16 +220,29 @@ FinalCta({
   // ======================================
 
   const features =
+
     useMemo(() => {
 
       if (
+
         summary
+
         &&
+
         (
+
           summary.p1
-          || summary.p2
-          || summary.p3
+
+          ||
+
+          summary.p2
+
+          ||
+
+          summary.p3
+
         )
+
       ) {
 
         return [
@@ -216,29 +254,30 @@ FinalCta({
           summary.p3,
 
         ].filter(Boolean)
+
       }
 
       return isSoftware
 
         ? [
 
-          'すぐに導入しやすいシンプル構成',
+            'すぐに導入しやすいシンプル構成',
 
-          '初心者でも扱いやすい設計',
+            '初心者でも扱いやすい設計',
 
-          '導入直後から使いやすい環境',
+            '導入直後から使いやすい環境',
 
-        ]
+          ]
 
         : [
 
-          'ゲームと制作の両方に対応しやすい高バランス構成',
+            'ゲームと制作の両方に対応しやすい高バランス構成',
 
-          '長期利用を想定した安定した性能設計',
+            '長期利用を想定した安定した性能設計',
 
-          '初心者でも選びやすいおすすめ構成',
+            '初心者でも選びやすいおすすめ構成',
 
-        ]
+          ]
 
     }, [
 
@@ -249,27 +288,44 @@ FinalCta({
     ])
 
   // ======================================
-  // Semantic
+  // Semantic Runtime
   // ======================================
 
   const grouped =
 
-    product
-      ?.grouped_attributes
-      || {}
+    semanticRuntime
+
+      ?.groupedAttributes
+
+    ??
+
+    {}
+
+  // ======================================
+  // Recommendation Score
+  // ======================================
+
+  // Recovery Mission:
+  // Runtime未対応のため固定値
 
   const confidence =
 
-    product
-      ?.semantic_confidence
-      || 92
+    92
+
+  // ======================================
+  // CTA
+  // ======================================
 
   const href =
 
     buildCTA(
-      product
+
+      product,
+
+      finalUrl,
+
     )
-  
+
   // ======================================
   // Render
   // ======================================
@@ -314,7 +370,7 @@ FinalCta({
             }
           >
 
-            Semantic Recommendation
+            Product Recommendation
 
           </div>
 
@@ -324,7 +380,7 @@ FinalCta({
             }
           >
 
-            最終おすすめ分析
+            最終おすすめPC
 
           </h2>
 
@@ -334,9 +390,8 @@ FinalCta({
             }
           >
 
-            用途・性能バランス・
-            recommendation semantic
-            を総合分析しています。
+            用途・性能バランスを
+            総合的に評価したおすすめモデルです。
 
           </p>
 
@@ -352,7 +407,7 @@ FinalCta({
           }
         >
 
-          {/* ==================================
+                    {/* ==================================
           LEFT
           ================================== */}
 
@@ -362,9 +417,9 @@ FinalCta({
             }
           >
 
-            {/* ============================= */}
-            {/* Brand */}
-            {/* ============================= */}
+            {/* =============================
+            Brand
+            ============================= */}
 
             <div
               className={
@@ -378,14 +433,24 @@ FinalCta({
                 }
               />
 
-              {product.maker}
+              {
+
+                product.maker
+
+                ??
+
+                'メーカー'
+
+              }
+
+              {' '}
               正規ストア
 
             </div>
 
-            {/* ============================= */}
-            {/* Product Name */}
-            {/* ============================= */}
+            {/* =============================
+            Product Name
+            ============================= */}
 
             <div
               className={
@@ -393,13 +458,17 @@ FinalCta({
               }
             >
 
-              {product.name}
+              {
+
+                product.name
+
+              }
 
             </div>
 
-            {/* ============================= */}
-            {/* Confidence */}
-            {/* ============================= */}
+            {/* =============================
+            Confidence
+            ============================= */}
 
             <div
               className={
@@ -413,7 +482,13 @@ FinalCta({
                 }
               >
 
-                {confidence}%
+                {
+
+                  confidence
+
+                }
+
+                %
 
               </div>
 
@@ -424,22 +499,25 @@ FinalCta({
               >
 
                 <strong>
+
                   おすすめ一致度
+
                 </strong>
 
                 <span>
-                  用途・性能・
-                  recommendation semantic
-                  を総合評価
+
+                  用途・性能バランスを
+                  総合的に評価しています。
+
                 </span>
 
               </div>
 
             </div>
 
-            {/* ============================= */}
-            {/* Features */}
-            {/* ============================= */}
+            {/* =============================
+            Features
+            ============================= */}
 
             <div
               className={
@@ -447,59 +525,79 @@ FinalCta({
               }
             >
 
-              {features.map((
+              {
 
-                feature,
+                features.map(
 
-                index
+                  (
 
-              ) => (
+                    feature,
 
-                <div
-                  key={index}
+                    index,
 
-                  className={
-                    styles.featureItem
-                  }
-                >
+                  ) => (
 
-                  <div
-                    className={
-                      styles.featureIcon
-                    }
-                  >
+                    <div
 
-                    ✓
+                      key={index}
 
-                  </div>
+                      className={
+                        styles.featureItem
+                      }
 
-                  <div
-                    className={
-                      styles.featureText
-                    }
-                  >
+                    >
 
-                    {feature}
+                      <div
+                        className={
+                          styles.featureIcon
+                        }
+                      >
 
-                  </div>
+                        ✓
 
-                </div>
+                      </div>
 
-              ))}
+                      <div
+                        className={
+                          styles.featureText
+                        }
+                      >
+
+                        {
+
+                          feature
+
+                        }
+
+                      </div>
+
+                    </div>
+
+                  )
+
+                )
+
+              }
 
             </div>
 
-            {/* ============================= */}
-            {/* Semantic Groups */}
-            {/* ============================= */}
+            {/* =============================
+            Semantic Groups
+            ============================= */}
 
             <SemanticGroups
-              grouped={grouped}
+
+              grouped={
+
+                grouped
+
+              }
+
             />
 
           </div>
-          
-          {/* ==================================
+
+                    {/* ==================================
           RIGHT
           ================================== */}
 
@@ -509,9 +607,9 @@ FinalCta({
             }
           >
 
-            {/* ============================= */}
-            {/* Image */}
-            {/* ============================= */}
+            {/* =============================
+            Image
+            ============================= */}
 
             <div
               className={
@@ -520,9 +618,15 @@ FinalCta({
             >
 
               <img
+
                 src={
-                  product.image_url
-                  || '/no-image.webp'
+
+                  product.imageUrl
+
+                  ||
+
+                  '/no-image.webp'
+
                 }
 
                 alt={
@@ -532,13 +636,14 @@ FinalCta({
                 className={
                   styles.image
                 }
+
               />
 
             </div>
 
-            {/* ============================= */}
-            {/* CTA */}
-            {/* ============================= */}
+            {/* =============================
+            CTA
+            ============================= */}
 
             <div
               className={
@@ -551,6 +656,7 @@ FinalCta({
                 href ? (
 
                   <a
+
                     id="buy"
 
                     href={
@@ -559,15 +665,12 @@ FinalCta({
 
                     target="_blank"
 
-                    rel="
-                      nofollow
-                      noopener
-                      noreferrer
-                    "
+                    rel="nofollow noopener noreferrer"
 
                     className={
                       styles.ctaButton
                     }
+
                   >
 
                     <span
@@ -601,6 +704,7 @@ FinalCta({
                     className={
                       styles.ctaButtonDisabled
                     }
+
                   >
 
                     <span
@@ -629,9 +733,9 @@ FinalCta({
 
               }
 
-              {/* ========================= */}
-              {/* Trust */}
-              {/* ========================= */}
+              {/* =========================
+              Trust
+              ========================= */}
 
               <div
                 className={
@@ -643,9 +747,9 @@ FinalCta({
 
               </div>
 
-              {/* ========================= */}
-              {/* Urgency */}
-              {/* ========================= */}
+              {/* =========================
+              Urgency
+              ========================= */}
 
               <div
                 className={
@@ -660,7 +764,7 @@ FinalCta({
             </div>
 
           </div>
-  
+
         </div>
 
       </div>
@@ -668,4 +772,5 @@ FinalCta({
     </section>
 
   )
+
 }
