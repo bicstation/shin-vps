@@ -252,7 +252,7 @@ export default function ProductHeroCapability({
                   styles.heroCapabilityTitle
                 }
               >
-                この製品が選ばれる理由
+                このPCが選ばれる理由
               </h2>
 
               <p

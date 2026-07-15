@@ -12,7 +12,7 @@ Adapter Runtime
 
 import {
 
-    getFinder,
+     getFinderRuntime,
 
 } from '@/shared/lib/api/django/pc/finder'
 
@@ -36,6 +36,6 @@ export async function executeFinder(
 
 ) {
 
-    return await getFinder(request)
+    return await  getFinderRuntime(request)
 
 }

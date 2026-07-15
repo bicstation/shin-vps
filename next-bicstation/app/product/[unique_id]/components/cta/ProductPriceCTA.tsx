@@ -177,7 +177,7 @@ export default function ProductPriceCTA({
             styles.priceCTATitle
           }
         >
-          この製品を詳しく確認する
+          このPCを詳しく確認する
         </h2>
 
         {/* ======================================================

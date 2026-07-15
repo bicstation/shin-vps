@@ -177,7 +177,7 @@ export default function ProductFinalCTA({
             styles.finalCTATitle
           }
         >
-          この製品を最終候補として確認する
+          このPCを最終候補として確認する
         </h2>
 
         {/* ======================================================

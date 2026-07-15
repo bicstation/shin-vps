@@ -82,7 +82,7 @@ export default function ProductAISummary({
             styles.aiSummaryTitle
           }
         >
-          この製品はどんなPC？
+          これはどんなPC？
         </h2>
 
       </div>
