@@ -28,14 +28,14 @@ import {
 } from '../lib/finderActions'
 
 /* ============================================================================
-🔥 Contracts
+🔥 Projection
 ============================================================================ */
 
 import type {
 
-    FinderRuntimeContract,
+    ProjectedFinderRuntime,
 
-} from '@/shared/lib/api/django/pc/finder/contracts'
+} from '@/shared/lib/api/django/pc/finder'
 
 /* ============================================================================
 🔥 Data
@@ -90,19 +90,6 @@ import styles
 
 /* ============================================================================
 🔥 Experience Orchestrator
-
-Responsibilities
-
-✓ Manage Discovery Journey
-✓ Execute Finder Runtime
-✓ Render Experience
-
-This module SHALL NOT
-
-✗ Generate Semantic Meaning
-✗ Modify Runtime
-✗ Generate Recommendation Logic
-
 ============================================================================ */
 
 export default function FinderRuntimeOrchestrator() {
@@ -133,15 +120,7 @@ export default function FinderRuntimeOrchestrator() {
 
         setFinder,
 
-    ] = useState<{
-
-        raw: any
-
-        runtime: FinderRuntimeContract
-
-        view: any
-
-    } | null>(null)
+    ] = useState<ProjectedFinderRuntime | null>(null)
 
     const [
 
@@ -150,9 +129,10 @@ export default function FinderRuntimeOrchestrator() {
         setLoading,
 
     ] = useState(false)
-        /* ========================================================================
-    🔥 Discovery Action
-    ======================================================================== */
+
+    /* ========================================================================
+🔥 Discovery Action
+======================================================================== */
 
     const handleSearch = async () => {
 
@@ -224,11 +204,11 @@ export default function FinderRuntimeOrchestrator() {
 
                 new Set(
 
-                    finder.runtime.data.products.flatMap(
+                    finder.products.flatMap(
 
                         product =>
 
-                            product.semantic_labels ?? []
+                            product.tags ?? []
 
                     )
 
@@ -259,8 +239,8 @@ export default function FinderRuntimeOrchestrator() {
             }
 
         >
-    
-                {/* ====================================================================
+
+            {/* ====================================================================
                 Hero
             ==================================================================== */}
 
@@ -380,13 +360,13 @@ export default function FinderRuntimeOrchestrator() {
 
                         title={
 
-                            finder.view.header.title
+                            finder.header.title
 
                         }
 
                         description={
 
-                            finder.view.header.description
+                            finder.header.description
 
                         }
 
@@ -401,6 +381,7 @@ export default function FinderRuntimeOrchestrator() {
                 )
 
             }
+
             {/* ====================================================================
                 Discovery Evidence
             ==================================================================== */}
@@ -413,7 +394,7 @@ export default function FinderRuntimeOrchestrator() {
 
                         products={
 
-                            finder.runtime.data.products
+                            finder.products
 
                         }
 

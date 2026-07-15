@@ -4,6 +4,9 @@
 // Representative Products
 // ============================================================================
 
+import Link
+  from 'next/link'
+
 import type {
 
   DiscoverDetailRuntime,
@@ -115,66 +118,75 @@ export default function RepresentativeProducts(
                       className={styles.item}
 
                     >
+                      <Link
 
-                      <article className={styles.card}>
+                        href={`/product/${product.unique_id}`}
 
-                        {
+                        className={styles.cardLink}
 
-                          product.image_url && (
+                      >
 
-                            <img
-
-                              className={styles.image}
-
-                              src={product.image_url}
-
-                              alt={product.name}
-
-                            />
-
-                          )
-
-                        }
-
-                        <div className={styles.content}>
-
-                          <h3 className={styles.productName}>
-
-                            {product.name}
-
-                          </h3>
+                        <article className={styles.card}>
 
                           {
 
-                            product.maker && (
+                            product.image_url && (
 
-                              <p className={styles.maker}>
+                              <img
 
-                                {product.maker}
+                                className={styles.image}
 
-                              </p>
+                                src={product.image_url}
+
+                                alt={product.name}
+
+                              />
 
                             )
 
                           }
 
-                          {
+                          <div className={styles.content}>
 
-                            product.price !== undefined && (
+                            <h3 className={styles.productName}>
 
-                              <p className={styles.price}>
+                              {product.name}
 
-                                ¥{product.price.toLocaleString()}
+                            </h3>
 
-                              </p>
+                            {
 
-                            )
+                              product.maker && (
 
-                          }
+                                <p className={styles.maker}>
 
-                        </div>
+                                  {product.maker}
 
-                      </article>
+                                </p>
+
+                              )
+
+                            }
+
+                            {
+
+                              product.price !== undefined && (
+
+                                <p className={styles.price}>
+
+                                  ¥{product.price.toLocaleString()}
+
+                                </p>
+
+                              )
+
+                            }
+
+                          </div>
+
+                        </article>
+
+                      </Link>
 
                     </li>
 

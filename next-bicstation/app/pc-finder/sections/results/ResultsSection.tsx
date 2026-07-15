@@ -25,9 +25,9 @@ Contracts
 
 import type {
 
-    FinderProductContract,
+    ProjectedProduct,
 
-} from '@/shared/lib/api/django/pc/finder/contracts'
+} from '@/shared/lib/api/django/pc/finder'
 
 /* ============================================================================
 Props
@@ -35,7 +35,7 @@ Props
 
 type Props = {
 
-    products: FinderProductContract[]
+    products: ProjectedProduct[]
 
 }
 
@@ -125,11 +125,7 @@ export default function ResultsSection({
                     {items.map(product => (
 
                         <ProductCard
-
-                            key={product.unique_id}
-
                             product={product}
-
                         />
 
                     ))}

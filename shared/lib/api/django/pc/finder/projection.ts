@@ -87,6 +87,8 @@ export interface ProjectedProduct {
 
     id: number
 
+    unique_id: string
+
     name: string
 
     maker: string
@@ -118,6 +120,7 @@ export interface ProjectedProduct {
     }
 
 }
+
 
 /* ============================================================================
 🔥 Projection
@@ -361,6 +364,10 @@ function projectProduct(
 
             product.product_id,
 
+        unique_id:
+
+            product.unique_id,
+
         name:
 
             product.name,
@@ -406,6 +413,7 @@ function projectProduct(
         },
 
     }
+
 
 }
 

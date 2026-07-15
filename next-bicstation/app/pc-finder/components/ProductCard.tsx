@@ -7,69 +7,68 @@
 'use client'
 
 /* ============================================================================
-Next
+🔥 Next
 ============================================================================ */
 
 import Link
     from 'next/link'
 
 /* ============================================================================
-Experience Components
+🔥 Experience Components
 ============================================================================ */
 
 import ProductImage
     from '@/app/experience/components/product/ProductImage'
+
 import ProductTitle
     from '@/app/experience/components/product/ProductTitle'
-// import ProductMaker
-//   from '@/app/experience/components/product/ProductMaker'
+
 import ProductPrice
     from '@/app/experience/components/product/ProductPrice'
 
-
 /* ============================================================================
-Styles
+🔥 Styles
 ============================================================================ */
 
 import styles
     from '../styles/pcFinder.module.css'
 
 /* ============================================================================
-Contracts
+🔥 Projection
 ============================================================================ */
 
 import type {
 
-    FinderProductContract,
+    ProjectedProduct,
 
-} from '@/shared/lib/api/django/pc/finder/contracts'
+} from '@/shared/lib/api/django/pc/finder'
 
 /* ============================================================================
-Props
+🔥 Props
 ============================================================================ */
 
 type Props = {
 
-    product: FinderProductContract
+    product: ProjectedProduct
 
 }
 
 /* ============================================================================
-Discovery Evidence Unit
+🔥 Discovery Evidence Unit
 
 Represents one Runtime product.
 
 Responsibilities
 
-- Present one Runtime product
-- Present Runtime Reality
-- Support product comparison
+✓ Present Runtime product
+✓ Present Runtime Reality
+✓ Support product comparison
 
-This component does NOT
+This component SHALL NOT
 
-- Execute Runtime
-- Generate Semantic Meaning
-- Rank Products
+✗ Execute Runtime
+✗ Generate Semantic Meaning
+✗ Rank Products
 
 ============================================================================ */
 
@@ -95,7 +94,7 @@ export default function ProductCard({
 
                 <ProductImage
 
-                    src={product.image_url}
+                    src={product.image}
 
                     alt={product.name}
 
@@ -117,6 +116,10 @@ export default function ProductCard({
                 className={styles.productContent}
             >
 
+                {/* ======================================================
+                    Maker
+                ====================================================== */}
+
                 <div
                     className={styles.productMaker}
                 >
@@ -125,49 +128,71 @@ export default function ProductCard({
 
                 </div>
 
+                {/* ======================================================
+                    Title
+                ====================================================== */}
+
                 <ProductTitle
+
                     title={product.name}
+
                     className={styles.productTitle}
+
                 />
+
+                {/* ======================================================
+                    Price
+                ====================================================== */}
 
                 <ProductPrice
+
                     price={product.price}
+
                     className={styles.productPrice}
+
                 />
 
-                {/* ==========================================================
-                    Runtime Reality
-                ========================================================== */}
+                {/* ======================================================
+                    Semantic Tags
+                ====================================================== */}
 
-                {product.semantic_labels?.length ? (
+                {
 
-                    <div
-                        className={styles.labelArea}
-                    >
+                    product.tags.length > 0 && (
 
-                        {product.semantic_labels.map(label => (
+                        <div
+                            className={styles.labelArea}
+                        >
 
-                            <span
+                            {
 
-                                key={label}
+                                product.tags.map(tag => (
 
-                                className={styles.label}
+                                    <span
 
-                            >
+                                        key={tag}
 
-                                {label}
+                                        className={styles.label}
 
-                            </span>
+                                    >
 
-                        ))}
+                                        {tag}
 
-                    </div>
+                                    </span>
 
-                ) : null}
+                                ))
 
-                {/* ==========================================================
+                            }
+
+                        </div>
+
+                    )
+
+                }
+
+                {/* ======================================================
                     Product Detail
-                ========================================================== */}
+                ====================================================== */}
 
                 <Link
 

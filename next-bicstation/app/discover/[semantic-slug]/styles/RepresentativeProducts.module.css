@@ -209,3 +209,30 @@
     color: rgba(255, 255, 255, .70);
 
 }
+
+
+.cardLink {
+
+    display: block;
+
+    color: inherit;
+
+    text-decoration: none;
+
+}
+
+.cardLink:hover .card {
+
+    transform: translateY(-4px);
+
+    transition: 0.25s ease;
+
+}
+
+.cardLink:focus-visible {
+
+    outline: 2px solid var(--color-primary);
+
+    outline-offset: 4px;
+
+}
