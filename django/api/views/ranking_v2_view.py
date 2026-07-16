@@ -31,19 +31,19 @@ def semantic_ranking_v2(
 
     group_slug,
 ):
-    
+
     print("RANKING VIEW")
     print(group_slug)
 
     limit = request.GET.get(
         "limit",
-        100
+        100,
     )
 
     try:
 
         limit = int(
-            limit
+            limit,
         )
 
     except Exception:
@@ -61,46 +61,61 @@ def semantic_ranking_v2(
                 limit,
         )
     )
-    
-    payload["_debug"] = {
-        "unique_id":
-            payload["data"]["products"][0]["unique_id"],
 
-        "image_url":
-            payload["data"]["products"][0]["image_url"],
+    # ======================================================
+    # DEBUG
+    # ======================================================
+
+    products = payload["data"]["products"]
+
+    payload["_debug"] = {
+
+        "group_slug":
+            group_slug,
+
+        "product_count":
+            len(products),
     }
-  
-    
+
+    if products:
+
+        payload["_debug"].update({
+
+            "unique_id":
+                products[0]["unique_id"],
+
+            "image_url":
+                products[0]["image_url"],
+        })
+
+    # ======================================================
+    # CONSOLE DEBUG
+    # ======================================================
+
     print()
     print("=" * 80)
     print("RANKING DEBUG")
-    print(
-        payload["data"]["products"][0]["unique_id"]
-    )
-    print(
-        repr(
-            payload["data"]["products"][0]["image_url"]
+    print(f"group_slug   : {group_slug}")
+    print(f"product_count: {len(products)}")
+
+    if products:
+
+        print(
+            products[0]["unique_id"]
         )
-    )
+
+        print(
+            repr(
+                products[0]["image_url"]
+            )
+        )
+
+    else:
+
+        print("NO PRODUCTS")
+
     print("=" * 80)
     print()
-    
-    
-    print()
-    print("=" * 60)
-    print("DEBUG RANKING IMAGE")
-    print(
-        payload["data"]["products"][0]["unique_id"]
-    )
-    print(
-        repr(
-            payload["data"]["products"][0]["image_url"]
-        )
-    )
-    print("=" * 60)
-    print()
-    
-    
 
     return Response(
         payload

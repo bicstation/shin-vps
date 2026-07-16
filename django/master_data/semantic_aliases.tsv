@@ -325,17 +325,47 @@ usage-gaming	gaming pc	category	0	0.92
 usage-gaming	rgb	feature	0	0.6
 usage-gaming	dlss	hardware_feature	0	0.68
 usage-gaming	ray tracing	hardware_feature	0	0.72
+usage-gaming	ゲーミング	canonical	0	1
+usage-gaming	ゲーム	canonical	0	0.94
+usage-gaming	g-tune	series	0	0.92
+usage-gaming	rog	series	0	0.92
+usage-gaming	tuf	series	0	0.90
+usage-gaming	alienware	series	0	0.92
+usage-gaming	legion	series	0	0.92
+usage-gaming	loq	series	0	0.90
+usage-gaming	omen	series	0	0.92
+usage-gaming	victus	series	0	0.88
+usage-gaming	predator	series	0	0.92
+usage-gaming	nitro	series	0	0.90
+usage-gaming	raider	series	0	0.92
+usage-gaming	stealth	series	0	0.90
+usage-gaming	vector	series	0	0.90
+usage-gaming	aorus	series	0	0.92
+usage-creator	cad	category	0	0.76
 usage-creator	クリエイター	canonical	0	1
 usage-creator	動画編集	category	0	0.94
 usage-creator	raw現像	category	0	0.88
 usage-creator	adobe	software	0	0.82
 usage-creator	daiv	series	0	0.92
+usage-creator	proart	series	0	0.96
+usage-creator	zbook	series	0	0.92
+usage-creator	precision	series	0	0.92
+usage-creator	thinkstation	series	0	0.90
+usage-creator	creator	series	0	0.90
 usage-creator	blender	software	0	0.84
 usage-creator	davinci resolve	software	0	0.84
 usage-creator	premiere pro	software	0	0.88
 usage-creator	after effects	software	0	0.82
-usage-creator	creator pc	category	0	0.9
-usage-creator	cad	category	0	0.76
+usage-business	expertbook	series	0	0.99
+usage-business	expertcenter	series	0	0.98
+usage-business	thinkpad	series	0	0.99
+usage-business	thinkbook	series	0	0.97
+usage-business	elitebook	series	0	0.99
+usage-business	probook	series	0	0.98
+usage-business	latitude	series	0	0.98
+usage-business	vostro	series	0	0.97
+usage-business	optiplex	series	0	0.97
+usage-business	fmv	series	0	0.96
 usage-business	ビジネス	canonical	0	1
 usage-business	事務	category	0	0.84
 usage-business	法人	category	0	0.88
@@ -348,6 +378,31 @@ usage-business	probook	series	0	0.82
 usage-business	vpro	feature	0	0.74
 usage-business	office pc	category	0	0.88
 usage-business	business laptop	category	0	0.86
+usage-ai	proart	series	0	0.99
+usage-ai	core ultra	cpu	0	0.99
+usage-ai	core ultra 9	cpu	0	0.99
+usage-ai	core ultra 7	cpu	0	0.98
+usage-ai	core ultra 5	cpu	0	0.97
+usage-ai	ryzen ai	cpu	0	0.99
+usage-ai	ryzen ai max	cpu	0	0.99
+usage-ai	ryzen ai 9	cpu	0	0.98
+usage-ai	ryzen ai 7	cpu	0	0.97
+usage-ai	threadripper	cpu	0	0.97
+usage-ai	threadripper pro	cpu	0	0.98
+usage-ai	xeon	cpu	0	0.96
+usage-ai	copilot+	cpu	0	0.98
+usage-ai	copilot+ pc	category	0	0.98
+usage-ai	npu	hardware	0	0.95
+usage-ai	neural processing unit	hardware	0	0.95
+usage-ai	zbook	        series	0	0.98
+usage-ai	precision	    series	0	0.98
+usage-ai	thinkstation	series	0	0.97
+usage-ai	thinkpad p	    series	0	0.97
+usage-ai	expertbook	    series	0	0.95
+usage-ai	expertcenter	series	0	0.95
+usage-ai	elitebook	    series	0	0.94
+usage-ai	workstation	    category	0	0.94
+usage-ai	core ultra 	cpu	0	0.99
 usage-ai	proart	canonical	0	0.99
 usage-ai	ai生成	category	0	0.96
 usage-ai	ローカルai	category	0	0.96
@@ -386,15 +441,21 @@ usage-ai	flux	model	0	0.94
 usage-ai	fooocus	software	0	0.94
 usage-ai	windsurf	software	0	0.92
 usage-ai	cline	software	0	0.92
-usage-mobile	軽量ノート	category	0	0.94
-usage-mobile	持ち運び	category	0	0.88
-usage-mobile	1kg以下	spec	0	0.98
-usage-mobile	モバイルpc	category	0	0.92
-usage-mobile	薄型	spec	0	0.82
-usage-mobile	ultrabook	category	0	0.9
-usage-mobile	thin and light	category	0	0.88
-usage-mobile	compact laptop	category	0	0.84
-usage-mobile	travel laptop	category	0	0.82
+usage-mobile	expertbook	series	0	0.92
+usage-mobile	zenbook	series	0	0.94
+usage-mobile	elitebook	series	0	0.92
+usage-mobile	omnibook	series	0	0.92
+usage-mobile	lifebook	series	0	0.90
+usage-mobile	letsnote	series	0	0.98
+usage-mobile	xps	series	0	0.90
+usage-mobile	latitude	series	0	0.88
+usage-mobile	thinkpad x	series	0	0.94
+usage-mobile	travelmate	series	0	0.88
+usage-budget	vivobook	series	0	0.82
+usage-budget	inspiron	series	0	0.86
+usage-budget	ideapad	series	0	0.88
+usage-budget	aspire	series	0	0.88
+usage-budget	chromebook	series	0	0.92
 usage-budget	安い	category	0	0.92
 usage-budget	コスパ	category	0	0.96
 usage-budget	格安	category	0	0.9

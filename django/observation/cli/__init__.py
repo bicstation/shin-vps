@@ -4,15 +4,11 @@
 ============================================================
 
 SHIN CORE LINX
-
 Observation Platform
-
 CLI Package
 
 ============================================================
-
 Command Line Interface
-
 ============================================================
 """
 
@@ -47,9 +43,7 @@ from .run_all import (
 __all__ = [
 
     "show_menu",
-
     "execute_command",
-
     "run_all",
 
 ]

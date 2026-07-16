@@ -5,17 +5,134 @@ Series Count : 30
 
 ============================================================
 Maker : asus
-Products : 218
+Products : 285
 ============================================================
 
 ■ Unknown
 ----------------------------------------
-Products : 79
+Products : 106
 
 CPU Models
-  • Core 7 240H
-  • Core Ultra 7 240H
-  • Ryzen 9 8000X
+  • Core Ultra 9
+  • Core i5-13420H
+  • Core i7
+  • Ryzen 5
+  • Ryzen 9
+  • Ryzen 9 800X
+
+GPU Models
+  • RTX 5050
+  • RTX 5060
+  • RTX 5070
+  • RTX 5080
+
+Memory
+  • 0
+  • 16
+
+Storage
+  • 0
+  • 1024
+  • 2048
+
+Display
+  • 16 inch
+
+NPU
+  None
+
+Price
+  Min : 3480
+  Max : 1498800
+
+Examples
+  ✓ ROG Ally Premium Hard Case(ROG_ALLY_PREMIUM_CASE)
+  ✓ ASUS V400 AiO (V440VAK) (V440VAK-BPC199W)
+  ✓ ASUS V500 SFF (V501SV) (V501SV-05210H16512)
+  ✓ ROG Flow Z13 GZ302EA (GZ302EA-AI916C); Copilot+ PC
+  ✓ ASUS TUF Gaming T500 T500MV (T500MV-13620H448W)
+
+■ Vivobook
+----------------------------------------
+Products : 63
+
+CPU Models
+  • Ryzen 5
+  • Ryzen 7
+  • Ryzen 7 170
+
+GPU Models
+  None
+
+Memory
+  • 0
+  • 16
+  • 32
+
+Storage
+  • 0
+  • 512
+
+Display
+  • 14 inch
+  • 16 inch
+  • 18.0 inch
+
+NPU
+  None
+
+Price
+  Min : 94800
+  Max : 269800
+
+Examples
+  ✓ ASUS Vivobook Go 15 (E1504F) (E1504FA-AR38512SIWP)
+  ✓ ASUS Vivobook 16 (M1607) (M1607GA-AI7321BU); Copilot+ PC
+  ✓ ASUS Vivobook Go 14 (E1404FA) (E1404FA-R585FW)
+  ✓ ASUS Vivobook 16 (M1607) (M1607KA-AI5165W3); Copilot+ PC
+  ✓ ASUS Vivobook S16 (M3607) (M3607KA-AI5165GRS); Copilot+ PC
+
+■ Zenbook
+----------------------------------------
+Products : 51
+
+CPU Models
+  None
+
+GPU Models
+  None
+
+Memory
+  • 0
+
+Storage
+  • 0
+
+Display
+  • 14 OLED
+  • 14 inch
+
+NPU
+  None
+
+Price
+  Min : 199800
+  Max : 389800
+
+Examples
+  ✓ ASUS Zenbook 14 (UM3406) (UM3406GA-AI7321BLS); Copilot+ PC
+  ✓ ASUS Zenbook 14 OLED UX3405CA (UX3405CA-TU9321SIW)
+  ✓ ASUS Zenbook SORA (UX3407) (UX3407QA-PU32148BE); Copilot+ PC
+  ✓ ASUS Zenbook S 14 UX5406SA (UX5406SA-U7321WH); Copilot+ PC
+  ✓ ASUS Zenbook SORA UX3407 (UX3407RA-HA32570BES); Copilot+ PC
+
+■ ExpertBook
+----------------------------------------
+Products : 31
+
+CPU Models
+  • Core Ultra
+  • Core Ultra 5 325
 
 GPU Models
   None
@@ -26,111 +143,9 @@ Memory
 
 Storage
   • 0
-  • 1024
 
 Display
-  • 27 inch
-
-NPU
-  None
-
-Price
-  Min : 5980
-  Max : 1498800
-
-Examples
-  ✓ ASUS V600 AiO (VM640GA) (VM640GA-WPC006WS)
-  ✓ ROG Strix G18 (G814FP) (G814FP-R9R5070G300)
-  ✓ ROG Zephyrus G14 (GU405AP) (GU405AP-U9R5070G)
-  ✓ ASUS V500 Mini Tower (VM501MH) (VM501MH-0R5220161TBO)
-  ✓ ASUS V400 AiO (V440VAK) (V440VAK-WPC125W)
-
-■ Vivobook
-----------------------------------------
-Products : 52
-
-CPU Models
-  • Ryzen 5
-  • Ryzen AI 7
-
-GPU Models
-  None
-
-Memory
-  • 0
-  • 16
-
-Storage
-  • 0
-
-Display
-  • 14 inch
-
-NPU
-  None
-
-Price
-  Min : 119800
-  Max : 314800
-
-Examples
-  ✓ ASUS Vivobook 16 (M1607) (M1607GA-AI7321BU); Copilot+ PC
-  ✓ ASUS Vivobook 14 (M1407) (M1407KA-AI5165W3)
-  ✓ ASUS Vivobook 14 (M1407) (M1407KA-AI5165WS3)
-  ✓ ASUS Vivobook 16 X1607CA (X1607CA-U5165BUS)
-  ✓ ASUS Vivobook Go 15 (E1504F) (E1504FA-AR38512SIWP)
-
-■ Zenbook
-----------------------------------------
-Products : 36
-
-CPU Models
-  None
-
-GPU Models
-  None
-
-Memory
-  • 0
-
-Storage
-  • 0
-
-Display
-  None
-
-NPU
-  None
-
-Price
-  Min : 199800
-  Max : 499800
-
-Examples
-  ✓ ASUS Zenbook SORA 14 (UX3407NA) (UX3407NA-GL16570GR); Copilot+ PC
-  ✓ ASUS Zenbook 14 OLED UX3405CA (UX3405CA-TU7165BLW)
-  ✓ ASUS Zenbook SORA (UX3407) (UX3407NA-GL32170GRS); Copilot+ PC
-  ✓ ASUS Zenbook 14 OLED UX3405CA (UX3405CA-TU9321SIW)
-  ✓ ASUS Zenbook SORA 16(UX3607OA) (UX3607OA-GL481BE);Copilot+PC​
-
-■ ExpertBook
-----------------------------------------
-Products : 23
-
-CPU Models
-  None
-
-GPU Models
-  None
-
-Memory
-  • 0
-
-Storage
-  • 0
-
-Display
-  None
+  • OLED
 
 NPU
   None
@@ -140,15 +155,15 @@ Price
   Max : 499800
 
 Examples
-  ✓ ASUS ExpertBook Ultra (B9406CAA) (B9406CAA-TH1079X); Copilot+ PC
-  ✓ ASUS ExpertBook Ultra (B9406CAA) (B9406CAA-TG1028X); Copilot+ PC
+  ✓ ASUS ExpertBook P5 G2 (PM5406CGA) (PM5406CGA-SF0066X); Copilot+ PC
   ✓ ASUS ExpertBook Ultra (B9406CAA) (B9406CAA-TH1027X); Copilot+ PC
-  ✓ ExpertBook B5 (B5404CVA) (B5404CVA-Q50486X)【リファービッシュ品】
-  ✓ ASUS ExpertBook P3 (PM3406CKA) (PM3406CKA-LY0326X)
+  ✓ ExpertBook P3 (P3605CVA) (P3605CVA-I516512WS)
+  ✓ ASUS ExpertBook P1 (PM1503) (PM1503CDA-S70511X)
+  ✓ ASUS ExpertBook P5 G2(PM5606CGA) (PM5606CGA-SH0052X); Copilot+ PC
 
 ■ Chromebook
 ----------------------------------------
-Products : 22
+Products : 25
 
 CPU Models
   None
@@ -157,10 +172,10 @@ GPU Models
   None
 
 Memory
-  • 8
+  • 0
 
 Storage
-  • 128
+  • 0
 
 Display
   None
@@ -173,27 +188,29 @@ Price
   Max : 119800
 
 Examples
-  ✓ ASUS Chromebook CX14 (CX1405) (CX1405CTA-S60592)
+  ✓ ASUS Chromebook CX1 (CX1102CKA-N00010)
+  ✓ ASUS Chromebook CM14 Flip (CM1402FM2A-EC0046)
   ✓ ASUS Chromebook CM32 Detachable (CM3206) (CM3206DM4A-TR0103)
-  ✓ ASUS Chromebook Flip CX5 (CX5601FBA-MC0042)
-  ✓ ASUS Chromebook CM15 (CM1505) (CM1505CM4A-464PK)
-  ✓ ASUS Chromebook CM15 (CM1505) (CM1505CM4A-864BU)
+  ✓ ASUS Chromebook CX14 (CX1405)
+  ✓ ASUS Chromebook CX1 (CX1400CKA-EB0153CEU)
 
 ■ ProArt
 ----------------------------------------
-Products : 6
+Products : 9
 
 CPU Models
-  None
+  • Ryzen AI 9
+  • Ryzen AI 9 HX 370
 
 GPU Models
-  None
+  • RTX 5070
 
 Memory
-  None
+  • 0
+  • 64
 
 Storage
-  None
+  • 0
 
 Display
   None
@@ -206,11 +223,11 @@ Price
   Max : 998000
 
 Examples
-  ✓ ProArt P16 (H7606) (H7606WW-AI9642R5080W); Copilot+ PC
-  ✓ ProArt P16 (H7606) (H7606WR-AI9642R5070TIW); Copilot+ PC
-  ✓ ASUS ProArt PZ13 HT5306QA (HT5306QA-PU161W); Copilot+ PC
   ✓ ProArt PZ14 (HT7407) (HT7407NA-GL321W); Copilot+ PC
-  ✓ ProArt P16 (H7606) (H7606WX-AI9644R5090W); Copilot+ PC
+  ✓ ASUS ProArt PZ13 HT5306QA (HT5306QA-PU161W); Copilot+ PC
+  ✓ ProArt P16 (H7606) (H7606WW-AI9642R5080W); Copilot+ PC
+  ✓ ProArt P16 (H7606) (H7606WM-LPAI9321R5060W); Copilot+ PC
+  ✓ ProArt GoPro Edition (PX13 HN7306) (HN7306EAC-AI91281W); Copilot+ PC
 
 
 ============================================================
@@ -245,9 +262,9 @@ Price
   Max : 4073523
 
 Examples
+  ✓ 【Dell】Dellスリム デスクトップ cds1265cto01monojp
   ✓ 【Dell】Dell タワー デスクトップ sect125000301monojp
   ✓ 【Dell】Dell 24 オールインワン デスクトップ cec24260cto01monojp
-  ✓ 【Dell】Dell 27 Plus QHD USB-Cモニター - S2725DC ag-mons2725dc
   ✓ 【Dell】PowerEdge R770 Smart Selection promo_r770_2
   ✓ 【Dell】Dell 16 Plus ノートパソコン sdb1625550302monojp
 
@@ -278,11 +295,11 @@ Price
   Max : 399144
 
 Examples
+  ✓ 【Dell】Dell Pro 7シリーズ13ノートパソコン xcto_p713260_cs_apac
   ✓ 【Dell】Dell Pro 14ノートパソコン bts009_pc14250_jp
   ✓ 【Dell】Dell Pro 24調整可能スタンド モニター - E2425HSM ag-mone2425hsm
   ✓ 【Dell】Dell Pro 13 Plusノートパソコンまたは2-in-1 bts105_pb13250_jp
-  ✓ 【Dell】Dell Pro 24モニター - E2425HM ag-mone2425hm
-  ✓ 【Dell】Dell Pro スリム デスクトップ bts009_qcs1250_jp
+  ✓ 【Dell】Dell Pro 16 Plusノートパソコン bto109_pb16250_jp
 
 ■ Alienware
 ----------------------------------------
@@ -414,11 +431,11 @@ Price
   Max : 380600
 
 Examples
-  ✓ dynabook GZ/HY Webオリジナル 型番：W6GZHY5BAW
-  ✓ dynabook GZ/HY Webオリジナル 型番：W6GZHY5CAW
-  ✓ dynabook BZ/MX Webオリジナル 型番：W6BZMX5RBB
   ✓ dynabook PZ/MY Webオリジナル 型番：W6PZMY5PBB
   ✓ dynabook MZ/MY Webオリジナル 型番：W6MZMY5PBL
+  ✓ dynabook MZ/MY Webオリジナル 型番：W6MZMY5EBL
+  ✓ dynabook RZ/MY Webオリジナル 型番：W6RZMY7PBL
+  ✓ dynabook GZ/HY Webオリジナル 型番：W6GZHY5CAW
 
 ■ XZ
 ----------------------------------------
@@ -447,11 +464,11 @@ Price
   Max : 355300
 
 Examples
-  ✓ dynabook XZ/HA Webオリジナル 型番：W6XZHA5CAL
-  ✓ dynabook XZ/HY Webオリジナル 型番：W6XZHY5PCL
   ✓ dynabook XZ/HY Webオリジナル 型番：W6XZHY5BBL
+  ✓ dynabook XZ/HY Webオリジナル 型番：W6XZHY5PCL
   ✓ dynabook XZ/HW Webオリジナル 型番：W6XZHW5PAS
   ✓ dynabook XZ/HY Webオリジナル 型番：W6XZHY5RCL
+  ✓ dynabook XZ/HW Webオリジナル 型番：W6XZHW5RAS
 
 ■ AZ
 ----------------------------------------
@@ -480,11 +497,11 @@ Price
   Max : 281380
 
 Examples
-  ✓ dynabook AZ/MA Webオリジナル 型番：W6AZMA7CAG
-  ✓ dynabook AZ/MA Webオリジナル 型番：W6AZMA7BAG
   ✓ dynabook AZ/HW Webオリジナル 型番：W6AZHW5CAG
   ✓ dynabook AZ/HW Webオリジナル 型番：W6AZHW5BAG
   ✓ dynabook AZ/MY Webオリジナル 型番：W6AZMY7CDG
+  ✓ dynabook AZ/MY Webオリジナル 型番：W6AZMY7BDG
+  ✓ dynabook AZ/LY Webオリジナル 型番：W6AZLY5RDL
 
 ■ SZ
 ----------------------------------------
@@ -515,9 +532,9 @@ Price
 Examples
   ✓ dynabook SZ/MX Webオリジナル 型番：W6SZMX5RAL
   ✓ dynabook SZ/MX Webオリジナル 型番：W6SZMX5PAL
-  ✓ dynabook SZ/MA Webオリジナル 型番：W6SZMA5EAL
-  ✓ dynabook SZ/MA Webオリジナル 型番：W6SZMA5FAL
-  ✓ dynabook SZ/MA Webオリジナル 型番：W6SZMA5RAL
+  ✓ dynabook SZ/MX Webオリジナル 型番：W6SZMX5FBL
+  ✓ dynabook SZ/MY Webオリジナル 型番：W6SZMY7RBL
+  ✓ dynabook SZ/MY Webオリジナル 型番：W6SZMY7PBL
 
 ■ RA
 ----------------------------------------
@@ -546,11 +563,11 @@ Price
   Max : 267300
 
 Examples
-  ✓ dynabook RA/ZA Webオリジナル 型番：W6RAZA7PAH
-  ✓ dynabook RA/ZA Webオリジナル 型番：W6RAZA7RAH
   ✓ dynabook RA/ZY Webオリジナル 型番：W6RAZY7CAH
   ✓ dynabook RA/ZY Webオリジナル 型番：W6RAZY7BAH
-  ✓ dynabook RA/ZA Webオリジナル 型番：W6RAZA7CAH
+  ✓ dynabook RA/ZY Webオリジナル 型番：W6RAZY5RAM
+  ✓ dynabook RA/ZY Webオリジナル 型番：W6RAZY5PAM
+  ✓ dynabook RA/ZY Webオリジナル 型番：W6RAZY5CAM
 
 ■ XA
 ----------------------------------------
@@ -580,9 +597,9 @@ Price
 
 Examples
   ✓ dynabook XA/ZY Webオリジナル 型番：W6XAZY5PAM
+  ✓ dynabook XA/ZY Webオリジナル 型番：W6XAZY5RAM
   ✓ dynabook XA/ZY Webオリジナル 型番：W6XAZY5BAM
   ✓ dynabook XA/ZY Webオリジナル 型番：W6XAZY5CAM
-  ✓ dynabook XA/ZY Webオリジナル 型番：W6XAZY5RAM
   ✓ dynabook XA/ZY Webオリジナル 型番：W6XAZY7PAH
 
 ■ CZ
@@ -645,8 +662,8 @@ Price
   Max : 293480
 
 Examples
-  ✓ dynabook XP/ZA Webオリジナル 型番：W6XPZA7BAH
   ✓ dynabook XP/ZA Webオリジナル 型番：W6XPZA7CAH
+  ✓ dynabook XP/ZA Webオリジナル 型番：W6XPZA7BAH
   ✓ dynabook XP/ZY Webオリジナル 型番：W6XPZY7BAL
   ✓ dynabook XP/ZY Webオリジナル 型番：W6XPZY7CAL
   ✓ dynabook XP/ZA Webオリジナル 型番：W6XPZA5CAH
@@ -654,12 +671,12 @@ Examples
 
 ============================================================
 Maker : fujitsu
-Products : 34
+Products : 36
 ============================================================
 
 ■ FMV
 ----------------------------------------
-Products : 33
+Products : 35
 
 CPU Models
   None
@@ -680,7 +697,7 @@ NPU
   None
 
 Price
-  Min : 119900
+  Min : 129800
   Max : 324280
 
 Examples
@@ -722,12 +739,12 @@ Examples
 
 ============================================================
 Maker : hp
-Products : 173
+Products : 143
 ============================================================
 
 ■ Unknown
 ----------------------------------------
-Products : 62
+Products : 60
 
 CPU Models
   None
@@ -752,15 +769,15 @@ Price
   Max : 523600
 
 Examples
-  ✓ HP 14-ep0014TU エントリーモデル
+  ✓ HP 14-ep0016TU スタンダードモデル
   ✓ HP Elite Mini 800 G9/CT NEW#14 スタンダードモデル
-  ✓ HP Desktop M01-F4000jp スタンダードモデル
   ✓ HP Elite x360 830 G11 Notebook PC（9W2B3AW・Ultra 7/vPro/16GB/512S）スタンダードモデル
   ✓ HP 245 G10 Notebook PC （B9NN4AT・Ryzen 5/16GB/512S/Pro） スタンダードモデル
+  ✓ HP All-in-One 27-cr2001jp パフォーマンスモデルG2
 
 ■ OMEN
 ----------------------------------------
-Products : 36
+Products : 37
 
 CPU Models
   None
@@ -781,19 +798,19 @@ NPU
   None
 
 Price
-  Min : 184800
+  Min : 189800
   Max : 748000
 
 Examples
-  ✓ OMEN MAX by HP 16-ah0059TX スプリームモデル
   ✓ OMEN 35L Stealth Edition オニキスプラスモデル
   ✓ OMEN by HP 16L Gaming Desktop TG03-0011jp アドバンスモデル
+  ✓ OMEN MAX by HP 16-ah0059TX スプリームモデル
   ✓ OMEN MAX 16（インテル）ハイパフォーマンス コアモデル
   ✓ OMEN by HP 35L Gaming Desktop GT16-0030jp ハイパフォーマンスモデルv2 (ブラック/グラス)
 
 ■ EliteBook
 ----------------------------------------
-Products : 33
+Products : 15
 
 CPU Models
   None
@@ -818,11 +835,11 @@ Price
   Max : 579150
 
 Examples
-  ✓ HP EliteBook 6 G2i 16/CT Notebook PC 【C4】
-  ✓ HP EliteBook X G2i 14 AI PC （D8ED7PA・Ultra7/32GB/512S）
-  ✓ HP EliteBook X G2a 14 AI PC （D8CS0PA・Ryzen7Pro/32GB/512S）
-  ✓ HP EliteBook 6 G2i 16/CT Notebook PC 【C1】
   ✓ HP EliteBook 1040 G11 Notebook PC（B3CB0AT・Ultra 5/16GB/256S）スタンダードモデル
+  ✓ HP EliteBook X G1a 14 AI Notebook PC （B6NJ7PT・AI9Pro/64GB/512S）スタンダードモデル
+  ✓ HP EliteBook 660 G11/CT Notebook PC スタンダードモデル
+  ✓ HP EliteBook 635 Aero G11/CT Notebook PC スタンダードモデル
+  ✓ HP EliteBook 630 G10 Notebook PC (B1TM9PA・Core i5/8GB/256S) スタンダードモデル
 
 ■ OmniBook
 ----------------------------------------
@@ -856,39 +873,6 @@ Examples
   ✓ HP OmniBook Ultra 14-kg0006QU プログレッシブモデル【S2】
   ✓ HP OmniBook X Flip 14-kc0007AU スタンダードモデル
   ✓ HP OmniBook Ultra Flip 14-fh0001TU パフォーマンスモデル
-
-■ ProBook
-----------------------------------------
-Products : 14
-
-CPU Models
-  None
-
-GPU Models
-  None
-
-Memory
-  None
-
-Storage
-  None
-
-Display
-  None
-
-NPU
-  None
-
-Price
-  Min : 214610
-  Max : 342980
-
-Examples
-  ✓ HP ProBook 4 G1a 16(BT6L7PA・Ryzen5 / 16GB / 512GB SSD)
-  ✓ HP ProBook 4 G1a 14(CU8R1PA・Ryzen5 / 32GB / 512GB SSD) スタンダードモデル
-  ✓ HP ProBook 4 G1a 14(BT6H6PT・Ryzen5 / 16GB / 512GB SSD)
-  ✓ HP ProBook 4 G2i 14 AI (DJ9H9PA・Ultra5 / 16GB / 512GB SSD)
-  ✓ HP ProBook 4 G1a 14(BT6H5PT・Ryzen5 / 8GB / 256GB SSD)
 
 ■ Pavilion
 ----------------------------------------
@@ -955,6 +939,37 @@ Examples
   ✓ Victus by HP 15-fa2708TX スタンダードエクストラモデルG2
   ✓ Victus by HP 15-fb2013AX モデレートモデルG3
   ✓ Victus by HP 15L Gaming Desktop TG02-0000jp コンベンショナルモデル
+
+■ ProBook
+----------------------------------------
+Products : 3
+
+CPU Models
+  None
+
+GPU Models
+  None
+
+Memory
+  None
+
+Storage
+  None
+
+Display
+  None
+
+NPU
+  None
+
+Price
+  Min : 219780
+  Max : 318780
+
+Examples
+  ✓ HP ProBook 4 G1a 14(CU8R1PA・Ryzen5 / 32GB / 512GB SSD) スタンダードモデル
+  ✓ HP ProBook 465 G11 Notebook PC（A43A4PA・Ryzen 7/16GB/512S）スタンダードモデル
+  ✓ HP ProBook 445 G11 Notebook PC（Ryzen 5/8GB/256S）スタンダードモデル
 
 ■ Chromebook
 ----------------------------------------

@@ -201,7 +201,6 @@ def build_traversal_runtime():
     traversals = []
 
     products = (
-
         PCProduct.objects.filter(
             is_active=True
         )
@@ -213,6 +212,26 @@ def build_traversal_runtime():
             product.semantic_runtime
             or {}
         )
+
+        # ==========================================================
+        # DEBUG
+        # ==========================================================
+
+        if product.id == 1:
+
+            from pprint import pprint
+
+            print()
+            print("=" * 80)
+            print("SEMANTIC RUNTIME")
+            print("=" * 80)
+
+            pprint(runtime)
+
+            print("=" * 80)
+            print()
+
+        # ==========================================================
 
         if not runtime:
             continue

@@ -82,7 +82,8 @@ def build_ranking_runtime(
     )
 
     products = []
-
+    
+    
     # ------------------------------------------------------
     # ALL
     # ------------------------------------------------------
@@ -126,6 +127,69 @@ def build_ranking_runtime(
                     []
                 )
             )
+
+            # ==================================================
+            # DEBUG
+            # ==================================================
+
+            if product.get("primary_workflow") == "usage-creator":
+
+                print()
+                print("=" * 80)
+                print("CREATOR DEBUG")
+                print("=" * 80)
+
+                print(
+                    "unique_id       :",
+                    product.get("unique_id")
+                )
+
+                print(
+                    "name            :",
+                    product.get("name")
+                )
+
+                print(
+                    "primary_workflow:",
+                    product.get("primary_workflow")
+                )
+
+                print(
+                    "matched_groups  :",
+                    product.get("matched_groups")
+                )
+
+                print(
+                    "workflow_tags   :",
+                    product.get("workflow_tags")
+                )
+
+                print(
+                    "workflows       :",
+                    product.get("workflows")
+                )
+
+                print(
+                    "semantic_labels :",
+                    product.get("semantic_labels")
+                )
+
+                print(
+                    "semantic_attrs  :",
+                    product.get("semantic_attributes")
+                )
+
+                print(
+                    "score           :",
+                    product.get("semantic_score")
+                )
+
+                print("=" * 80)
+                print()
+
+            # ==================================================
+            # GROUP MATCH
+            # ==================================================
 
             if group_slug in groups:
 

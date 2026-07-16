@@ -404,6 +404,7 @@ run_django audit_slug_metadata
 log "🔗 (06-1/12) Complile Sematic Runtime"
 run_django compile_semantic_authority
 
+run_django rebuild_unified_runtime
 
 
 log "🔗 (06-2/12) Auto Map Semantic Attributes"
