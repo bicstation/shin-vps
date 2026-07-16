@@ -1,0 +1,14 @@
+# Credentials
+.env
+*.csv
+
+# Python
+__pycache__/
+*.pyc
+
+# Output
+output/raw/*
+output/observation/*
+
+# macOS
+.DS_Store
