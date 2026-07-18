@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 # api/services/semantic/v2/inventory/inventory_runtime.py
 
-from api.models import (
-    PCProduct,
-)
-
 from api.services.semantic.v2.authority.authority_runtime import (
     build_authority_runtime,
 )
@@ -19,6 +15,18 @@ from api.services.semantic.v2.presentation.presentation_runtime import (
 
 from api.services.semantic.v2.seo.seo_runtime import (
     build_inventory_seo,
+)
+
+from api.services.semantic.v2.inventory.inventory_query import (
+    build_inventory_queryset,
+)
+
+from api.services.semantic.v2.inventory.inventory_search import (
+    apply_inventory_search,
+)
+
+from api.services.semantic.v2.inventory.inventory_filter import (
+    apply_inventory_filter,
 )
 
 from api.services.semantic.v2.inventory.inventory_sort import (
@@ -37,19 +45,39 @@ def build_inventory_runtime(
     page_size=100,
 
     sort="new",
+
+    search=None,
+
+    filters=None,
 ):
+
+    # ------------------------------------------------------
+    # AUTHORITY
+    # ------------------------------------------------------
 
     authority = (
         build_authority_runtime()
     )
 
+    # ------------------------------------------------------
+    # MEANING
+    # ------------------------------------------------------
+
     meaning = (
         build_inventory_meaning()
     )
 
+    # ------------------------------------------------------
+    # PRESENTATION
+    # ------------------------------------------------------
+
     presentation = (
         build_inventory_presentation()
     )
+
+    # ------------------------------------------------------
+    # PARAMETER
+    # ------------------------------------------------------
 
     try:
         page = int(page)
@@ -71,15 +99,38 @@ def build_inventory_runtime(
         page_size = 10000
 
     # ------------------------------------------------------
-    # QUERYSET
+    # QUERY
     # ------------------------------------------------------
 
     queryset = (
-        PCProduct.objects
-        .filter(
-            is_active=True,
-        )
+        build_inventory_queryset()
     )
+
+    # ------------------------------------------------------
+    # SEARCH
+    # ------------------------------------------------------
+
+    queryset = apply_inventory_search(
+
+        queryset=queryset,
+
+        search=search,
+    )
+
+    # ------------------------------------------------------
+    # FILTER
+    # ------------------------------------------------------
+
+    queryset = apply_inventory_filter(
+
+        queryset=queryset,
+
+        filters=filters,
+    )
+
+    # ------------------------------------------------------
+    # SORT
+    # ------------------------------------------------------
 
     queryset = apply_inventory_sort(
 
@@ -92,9 +143,7 @@ def build_inventory_runtime(
     # PAGINATION
     # ------------------------------------------------------
 
-    total_count = (
-        queryset.count()
-    )
+    total_count = queryset.count()
 
     start = (
         (page - 1)
@@ -195,6 +244,9 @@ def build_inventory_runtime(
 
             "sort":
                 sort,
+
+            "search":
+                search,
 
             "has_next":
                 end < total_count,

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# /home/maya/shin-dev/shin-vps/django/api/views/product_list_v2_view.py
+# api/views/product_list_v2_view.py
 
 from rest_framework.decorators import (
     api_view,
@@ -19,7 +19,6 @@ from api.services.semantic.v2.inventory.inventory_runtime import (
 )
 
 
-
 # ==========================================================
 # PRODUCT LIST V2
 # ==========================================================
@@ -29,32 +28,124 @@ from api.services.semantic.v2.inventory.inventory_runtime import (
 def semantic_product_list_v2(
     request,
 ):
-    page = int(
-        request.GET.get(
-            "page",
-            1,
-        )
+
+    # ------------------------------------------------------
+    # PARAMETER
+    # ------------------------------------------------------
+
+    page = request.GET.get(
+        "page",
+        1,
     )
 
-    page_size = min(
-        int(
-            request.GET.get(
-                "page_size",
-                20,
-            )
-        ),
-        100,
+    page_size = request.GET.get(
+        "page_size",
+        20,
     )
 
     sort = request.GET.get(
         "sort",
         "new",
     )
-    
-    print("=" * 60)
-    print("REQUEST.GET =", request.GET)
-    print("SORT =", sort)
-    print("=" * 60)
+
+    search = request.GET.get(
+        "search",
+    )
+
+    # ------------------------------------------------------
+    # FILTERS
+    # ------------------------------------------------------
+
+    filters = {
+
+        "site_prefix":
+            request.GET.get("site_prefix"),
+
+        "maker":
+            request.GET.get("maker"),
+
+        "category":
+            request.GET.get("category"),
+
+        "series":
+            request.GET.get("series"),
+
+        "cpu":
+            request.GET.get("cpu"),
+
+        "gpu":
+            request.GET.get("gpu"),
+
+        "memory":
+            request.GET.get("memory"),
+
+        "storage":
+            request.GET.get("storage"),
+
+        "storage_type":
+            request.GET.get("storage_type"),
+
+        "display_size":
+            request.GET.get("display_size"),
+
+        "resolution":
+            request.GET.get("resolution"),
+
+        "panel":
+            request.GET.get("panel"),
+
+        "refresh_rate":
+            request.GET.get("refresh_rate"),
+
+        "touch":
+            request.GET.get("touch"),
+
+        "weight":
+            request.GET.get("weight"),
+
+        "battery":
+            request.GET.get("battery"),
+
+        "os":
+            request.GET.get("os"),
+
+        "wifi":
+            request.GET.get("wifi"),
+
+        "bluetooth":
+            request.GET.get("bluetooth"),
+
+        "camera":
+            request.GET.get("camera"),
+
+        "fingerprint":
+            request.GET.get("fingerprint"),
+
+        "face_id":
+            request.GET.get("face_id"),
+
+        "color":
+            request.GET.get("color"),
+
+        "keyboard":
+            request.GET.get("keyboard"),
+
+        "tenkey":
+            request.GET.get("tenkey"),
+
+        "npu":
+            request.GET.get("npu"),
+
+        "min_price":
+            request.GET.get("min_price"),
+
+        "max_price":
+            request.GET.get("max_price"),
+    }
+
+    # ------------------------------------------------------
+    # RUNTIME
+    # ------------------------------------------------------
 
     payload = (
 
@@ -68,6 +159,12 @@ def semantic_product_list_v2(
 
             sort=
                 sort,
+
+            search=
+                search,
+
+            filters=
+                filters,
         )
     )
 
