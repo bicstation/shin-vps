@@ -46,6 +46,16 @@ AI_SUMMARY_LIMIT=0
 AI_SEMANTIC_LIMIT=0
 IMAGE_CACHE_LIMIT=0
 
+# ==========================================================
+# Rakuten Research
+# ==========================================================
+
+RAKUTEN_ENABLED=1
+RAKUTEN_FETCH_ALL=1
+
+RAKUTEN_SHOPS=(
+  "lenovopc"
+)
 
 # ==========================================================
 # Project Root Topology
@@ -289,6 +299,35 @@ run_django import_linkshare_data --mid 2543
 run_django import_linkshare_data --mid 2557
 run_django import_linkshare_data --mid 35909
 run_django import_linkshare_data --mid 36508
+
+
+if [ "$RAKUTEN_ENABLED" -eq 1 ]; then
+
+    log "🛒 (00/13) Rakuten Reality Research"
+
+    for SHOP in "${RAKUTEN_SHOPS[@]}"
+    do
+
+        log "📦 Shop : $SHOP"
+
+        CMD=(
+            python
+            research/rakuten_reality/scripts/fetch_rakuten.py
+            --shop "$SHOP"
+        )
+
+        if [ "$RAKUTEN_FETCH_ALL" -eq 1 ]; then
+            CMD+=(--all)
+        fi
+
+        run_django_raw "${CMD[@]}"
+
+        log "✅ Shop Completed : $SHOP"
+
+    done
+
+fi
+
 
 # ==========================================================
 # ② 02 Reset Stock

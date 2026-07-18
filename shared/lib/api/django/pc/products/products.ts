@@ -5,241 +5,69 @@
 // All rights reserved.
 // ============================================================================
 
-/**
- * ============================================================================
- * SHIN CORE LINX
- * Products Gateway
- * ============================================================================
- *
- * PURPOSE
- *
- * Transport the Backend Products Runtime into the
- * Canonical Products Contract.
- *
- * Backend Products Runtime
- *      ↓
- * Transport
- *      ↓
- * Normalize
- *      ↓
- * Products Contract
- *
- * Backend remains:
- *
- * Reality Authority
- *
- * Gateway Responsibilities
- *
- * ✓ Resolve Endpoint
- * ✓ Transport Runtime
- * ✓ Invoke Normalize
- * ✓ Observe Runtime
- *
- * Gateway SHALL NOT
- *
- * ✗ Generate Meaning
- * ✗ Generate Runtime
- * ✗ Generate Projection
- * ✗ Generate UI
- *
- * ============================================================================
- */
-
-import type {
-
-    ProductsRuntimeContract,
-
-} from './contracts'
-
-import {
-
-    buildEndpoint,
-
-} from '../utils/buildEndpoint'
-
-import {
-
-    safeFetch,
-
-} from '../utils/safeFetch'
-
-import {
-
-    normalizeProducts,
-
-} from './normalize'
+import type { ProductsRuntimeContract } from './contracts'
+import { buildEndpoint } from '../utils/buildEndpoint'
+import { safeFetch } from '../utils/safeFetch'
+import { normalizeProducts } from './normalize'
 
 /* ============================================================================
 🔥 Endpoint
 ============================================================================ */
 
-const PRODUCTS_ENDPOINT =
-
-    '/pc/products/'
+const PRODUCTS_ENDPOINT = '/pc/products/'
 
 /* ============================================================================
 🔥 Fetch Products Runtime
 ============================================================================ */
 
 export async function fetchProducts(
-
+    page = 1,
+    pageSize = 20,
 ): Promise<ProductsRuntimeContract> {
 
-    /* ------------------------------------------------------------------------
-    Endpoint
-    ------------------------------------------------------------------------ */
-
-    const endpoint =
-
-        buildEndpoint(
-
-            PRODUCTS_ENDPOINT
-
-        )
-
-    console.log(
-        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+    const endpoint = buildEndpoint(
+        `${PRODUCTS_ENDPOINT}?page=${page}&page_size=${pageSize}`
     )
 
-    console.log(
-        '🔥 FETCH PRODUCTS'
-    )
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+    console.log('🔥 FETCH PRODUCTS')
+    console.log({ endpoint, page, pageSize })
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
 
-    console.log({
+    const payload = await safeFetch<ProductsRuntimeContract>(endpoint)
 
-        endpoint,
-
-    })
-
-    console.log(
-        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
-    )
-
-    /* ------------------------------------------------------------------------
-    Transport
-    ------------------------------------------------------------------------ */
-
-    const payload =
-
-        await safeFetch<ProductsRuntimeContract>(
-
-            endpoint
-
-        )
-
-    /* ------------------------------------------------------------------------
-    Raw Runtime
-    ------------------------------------------------------------------------ */
-
-    console.log(
-
-        '🔥 PRODUCTS RAW',
-
-        payload
-
-    )
-
-    /* ------------------------------------------------------------------------
-    Empty Runtime
-    ------------------------------------------------------------------------ */
+    console.log('🔥 PRODUCTS RAW', payload)
 
     if (!payload) {
-
-        console.warn(
-
-            '⚠️ PRODUCTS EMPTY'
-
-        )
-
+        console.warn('⚠️ PRODUCTS EMPTY')
         return normalizeProducts()
-
     }
 
-    /* ------------------------------------------------------------------------
-    Normalize
-    ------------------------------------------------------------------------ */
+    const products = normalizeProducts(payload)
 
-    const products =
+    console.log('🔥 PRODUCTS CONTRACT', {
+        count: products.data.count,
+        page: products.data.page,
+        page_size: products.data.page_size,
+        sort: products.data.sort,
+        has_next: products.data.has_next,
+        semantic_schema_version: products.semantic_schema_version,
+        authority_version: products.authority_version,
+        semantic_authority: products.semantic_authority,
+        ready: products.ready,
+        sample: products.data.products.at(0) ?? null,
+    })
 
-        normalizeProducts(
-
-            payload
-
-        )
-
-    /* ------------------------------------------------------------------------
-    Observatory
-    ------------------------------------------------------------------------ */
-
-    console.log(
-
-        '🔥 PRODUCTS CONTRACT',
-
-        {
-
-            count:
-
-                products.data.count,
-
-            page:
-
-                products.data.page,
-
-            page_size:
-
-                products.data.page_size,
-
-            sort:
-
-                products.data.sort,
-
-            has_next:
-
-                products.data.has_next,
-
-            semantic_schema_version:
-
-                products.semantic_schema_version,
-
-            authority_version:
-
-                products.authority_version,
-
-            semantic_authority:
-
-                products.semantic_authority,
-
-            ready:
-
-                products.ready,
-
-            sample:
-
-                products.data.products.at(0) ?? null,
-
-        }
-
-    )
-
-    console.log(
-        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
-    )
-
-    /* ------------------------------------------------------------------------
-    Return
-    ------------------------------------------------------------------------ */
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
 
     return products
-
 }
 
 /* ============================================================================
 🔥 Legacy Compatibility
 ============================================================================ */
 
-export const fetchProductsRuntime =
-
-    fetchProducts
+export const fetchProductsRuntime = fetchProducts
 
 /* ============================================================================
 🔥 Default Export

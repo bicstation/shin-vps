@@ -46,6 +46,16 @@ def print_summary(
     print("Summary")
     print("-" * 60)
     print(f"Products : {len(items)}")
+
+    if "count" in raw_json:
+        print(f"Count    : {raw_json['count']}")
+
+    if "page" in raw_json:
+        print(f"Page     : {raw_json['page']}")
+
+    if "pageCount" in raw_json:
+        print(f"Pages    : {raw_json['pageCount']}")
+
     print()
 
 

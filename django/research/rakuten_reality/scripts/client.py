@@ -27,6 +27,7 @@ This module MUST NOT:
 
 from __future__ import annotations
 
+import time
 from typing import Any
 
 import requests
@@ -37,7 +38,9 @@ from config import (
     BASE_URL,
     DEFAULT_HITS,
     DEFAULT_TIMEOUT,
+    REQUEST_INTERVAL,
 )
+
 
 def build_params(
     *,
@@ -74,7 +77,8 @@ def build_params(
 
     return params
 
-def fetch_items(
+
+def fetch_page(
     *,
     keyword: str | None = None,
     shop_code: str | None = None,
@@ -84,7 +88,7 @@ def fetch_items(
     hits: int = DEFAULT_HITS,
 ) -> dict[str, Any]:
     """
-    Fetch items from the Rakuten Ichiba Item Search API.
+    Fetch a single page from the Rakuten Ichiba Item Search API.
     """
 
     response = requests.get(
@@ -100,20 +104,86 @@ def fetch_items(
         timeout=DEFAULT_TIMEOUT,
     )
 
-    print("=" * 80)
-    print("Request URL:")
-    print(response.url)
-    print()
-
-    print("Status:")
-    print(response.status_code)
-    print()
-
-    print("Response:")
-    print(response.text)
-    print("=" * 80)
-
     response.raise_for_status()
-    
 
     return response.json()
+
+
+def fetch_all_pages(
+    *,
+    keyword: str | None = None,
+    shop_code: str | None = None,
+    item_code: str | None = None,
+    genre_id: str | None = None,
+    hits: int = DEFAULT_HITS,
+) -> dict[str, Any]:
+    """
+    Fetch all pages from the Rakuten Ichiba Item Search API.
+    """
+
+    result = fetch_page(
+        keyword=keyword,
+        shop_code=shop_code,
+        item_code=item_code,
+        genre_id=genre_id,
+        page=1,
+        hits=hits,
+    )
+
+    page_count = result.get("pageCount", 1)
+
+    items = list(result.get("Items", []))
+
+    for page in range(2, page_count + 1):
+
+        print(f"Fetching page {page} / {page_count}...")
+
+        time.sleep(REQUEST_INTERVAL)
+
+        response = fetch_page(
+            keyword=keyword,
+            shop_code=shop_code,
+            item_code=item_code,
+            genre_id=genre_id,
+            page=page,
+            hits=hits,
+        )
+
+        items.extend(response.get("Items", []))
+
+    result["Items"] = items
+
+    return result
+
+
+def fetch_items(
+    *,
+    keyword: str | None = None,
+    shop_code: str | None = None,
+    item_code: str | None = None,
+    genre_id: str | None = None,
+    page: int = 1,
+    hits: int = DEFAULT_HITS,
+    fetch_all: bool = False,
+) -> dict[str, Any]:
+    """
+    Fetch items from the Rakuten Ichiba Item Search API.
+    """
+
+    if fetch_all:
+        return fetch_all_pages(
+            keyword=keyword,
+            shop_code=shop_code,
+            item_code=item_code,
+            genre_id=genre_id,
+            hits=hits,
+        )
+
+    return fetch_page(
+        keyword=keyword,
+        shop_code=shop_code,
+        item_code=item_code,
+        genre_id=genre_id,
+        page=page,
+        hits=hits,
+    )

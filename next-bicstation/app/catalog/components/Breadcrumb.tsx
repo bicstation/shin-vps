@@ -1,58 +1,45 @@
 // ============================================================================
 // FILE:
 // /app/catalog/components/Breadcrumb.tsx
-// Copyright (c) 2024 Shin Corporation.
-// All rights reserved.
 // ============================================================================
 
 'use client'
 
-/* ============================================================================
-🔥 Next
-============================================================================ */
+import Link from 'next/link'
 
-import Link
-    from 'next/link'
-
-/* ============================================================================
-🔥 Styles
-============================================================================ */
-
-import styles
-    from '../styles/catalog.module.css'
-
-/* ============================================================================
-🔥 Breadcrumb
-============================================================================ */
+import styles from '../styles/catalog.module.css'
 
 export default function Breadcrumb() {
 
     return (
 
         <nav
-            className={
-                styles.breadcrumb
-            }
+
+            className={styles.breadcrumb}
 
             aria-label="Breadcrumb"
 
         >
 
             <Link
+
                 href="/"
+
+                className={styles.breadcrumbLink}
+
             >
 
                 ホーム
 
             </Link>
 
-            <span>
+            <span className={styles.breadcrumbSeparator}>
 
-                &gt;
+                /
 
             </span>
 
-            <span>
+            <span className={styles.breadcrumbCurrent}>
 
                 商品一覧
 

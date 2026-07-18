@@ -5,80 +5,54 @@
 
 'use client'
 
-/* ============================================================================
-Next
-============================================================================ */
+import { useRouter, useSearchParams } from 'next/navigation'
 
-import {
-
-    useRouter,
-
-    useSearchParams,
-
-} from 'next/navigation'
-
-/* ============================================================================
-Styles
-============================================================================ */
-
-import styles
-    from '../styles/catalog.module.css'
-
-/* ============================================================================
-Props
-============================================================================ */
+import styles from '../styles/catalog.module.css'
 
 type Props = {
 
     page: number
-
     page_size: number
-
+    count: number
     has_next: boolean
 
 }
 
-/* ============================================================================
-Experience
-
-Pagination Navigation
-
-Supports product browsing by navigating
-between Runtime pages.
-
-Responsibilities
-
-- Navigate between pages
-- Preserve search parameters
-- Present current page information
-
-This component does NOT
-
-- Generate Runtime
-- Generate Semantic Meaning
-- Interpret Semantic Reality
-
-============================================================================ */
-
 export default function Pagination({
 
     page,
-
     page_size,
-
+    count,
     has_next,
 
 }: Props) {
 
     const router = useRouter()
-
     const searchParams = useSearchParams()
 
-    function moveTo(
+    const totalPages = Math.max(
 
-        nextPage: number,
+        1,
 
-    ) {
+        Math.ceil(count / page_size),
+
+    )
+
+    function moveTo(nextPage: number) {
+
+        if (
+
+            nextPage < 1 ||
+
+            nextPage > totalPages ||
+
+            nextPage === page
+
+        ) {
+
+            return
+
+        }
 
         const params = new URLSearchParams(
 
@@ -102,6 +76,44 @@ export default function Pagination({
 
     }
 
+    const startPage = Math.max(
+
+        1,
+
+        Math.min(
+
+            page - 2,
+
+            totalPages - 4,
+
+        ),
+
+    )
+
+    const endPage = Math.min(
+
+        totalPages,
+
+        startPage + 4,
+
+    )
+
+    const pages = []
+
+    for (
+
+        let p = startPage;
+
+        p <= endPage;
+
+        p++
+
+    ) {
+
+        pages.push(p)
+
+    }
+
     return (
 
         <nav className={styles.pagination}>
@@ -110,27 +122,61 @@ export default function Pagination({
 
                 className={styles.paginationButton}
 
-                disabled={page <= 1}
+                disabled={page === 1}
+
+                onClick={() => moveTo(1)}
+
+            >
+
+                «
+
+            </button>
+
+            <button
+
+                className={styles.paginationButton}
+
+                disabled={page === 1}
 
                 onClick={() => moveTo(page - 1)}
 
             >
 
-                ← 前へ
+                ←
 
             </button>
 
-            <div className={styles.paginationInfo}>
+            <div className={styles.paginationNumbers}>
 
-                Page {page}
+                {
 
-                <span>
+                    pages.map((p) => (
 
-                    {' '}·{' '}
+                        <button
 
-                    {page_size}件表示
+                            key={p}
 
-                </span>
+                            onClick={() => moveTo(p)}
+
+                            className={
+
+                                p === page
+
+                                    ? styles.paginationNumberActive
+
+                                    : styles.paginationNumber
+
+                            }
+
+                        >
+
+                            {p}
+
+                        </button>
+
+                    ))
+
+                }
 
             </div>
 
@@ -144,7 +190,21 @@ export default function Pagination({
 
             >
 
-                次へ →
+                →
+
+            </button>
+
+            <button
+
+                className={styles.paginationButton}
+
+                disabled={page >= totalPages}
+
+                onClick={() => moveTo(totalPages)}
+
+            >
+
+                »
 
             </button>
 

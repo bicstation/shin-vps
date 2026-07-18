@@ -5,141 +5,49 @@
 
 'use client'
 
-/* ============================================================================
-React
-============================================================================ */
-
-import {
-
-    useEffect,
-    useState,
-
-} from 'react'
-
-/* ============================================================================
-Runtime
-============================================================================ */
-
-import {
-
-    fetchProducts,
-
-} from '@/shared/lib/api/django/pc/products'
-
-/* ============================================================================
-Contracts
-============================================================================ */
-
-import type {
-
-    ProductsRuntime,
-
-} from '@/shared/lib/api/django/pc/products/contracts'
-
-/* ============================================================================
-Hook
-
-Responsibilities
-
-- Fetch Products Runtime
-- Manage Experience State
-- Expose Runtime to Experience
-
-This hook does NOT
-
-- Generate Semantic Meaning
-- Generate Runtime
-- Redefine Runtime Contracts
-
-============================================================================ */
+import { useEffect, useState } from 'react'
+import { fetchProducts } from '@/shared/lib/api/django/pc/products'
+import type { ProductsRuntime } from '@/shared/lib/api/django/pc/products/contracts'
 
 export default function useCatalog(
-
     page: number,
-
     pageSize = 20,
-
 ) {
 
-    /* ========================================================================
-    Runtime State
-    ======================================================================== */
-
-    const [
-
-        runtime,
-
-        setRuntime,
-
-    ] = useState<ProductsRuntime | null>(
-
-        null
-
-    )
-
-    const [
-
-        loading,
-
-        setLoading,
-
-    ] = useState(true)
-
-    const [
-
-        error,
-
-        setError,
-
-    ] = useState<Error | null>(
-
-        null
-
-    )
-
-    /* ========================================================================
-    Load Runtime
-    ======================================================================== */
+    const [runtime, setRuntime] = useState<ProductsRuntime | null>(null)
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<Error | null>(null)
 
     useEffect(() => {
+
+        let mounted = true
 
         async function loadRuntime() {
 
             setLoading(true)
-
             setError(null)
 
             try {
 
-                const runtime = await fetchProducts({
+                const result = await fetchProducts(page, pageSize)
 
-                    page,
+                if (mounted) {
+                    setRuntime(result)
+                }
 
-                    pageSize,
+            } catch (err) {
 
-                })
+                console.error('CATALOG RUNTIME ERROR', err)
 
-                setRuntime(runtime)
+                if (mounted) {
+                    setError(err as Error)
+                }
 
-            }
+            } finally {
 
-            catch (err) {
-
-                console.error(
-
-                    'CATALOG RUNTIME ERROR',
-
-                    err,
-
-                )
-
-                setError(err as Error)
-
-            }
-
-            finally {
-
-                setLoading(false)
+                if (mounted) {
+                    setLoading(false)
+                }
 
             }
 
@@ -147,26 +55,16 @@ export default function useCatalog(
 
         loadRuntime()
 
-    }, [
+        return () => {
+            mounted = false
+        }
 
-        page,
-
-        pageSize,
-
-    ])
-
-    /* ========================================================================
-    Return
-    ======================================================================== */
+    }, [page, pageSize])
 
     return {
-
         runtime,
-
         loading,
-
         error,
-
     }
 
 }

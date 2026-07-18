@@ -5,179 +5,103 @@
 
 'use client'
 
-/* ============================================================================
-Contracts
-============================================================================ */
+import type { ProductsRuntime } from '@/shared/lib/api/django/pc/products/contracts'
 
-import type {
-
-  ProductsRuntime,
-
-} from '@/shared/lib/api/django/pc/products/contracts'
-
-/* ============================================================================
-Styles
-============================================================================ */
-
-import styles
-  from '../styles/catalog.module.css'
-
-/* ============================================================================
-Props
-============================================================================ */
+import styles from '../styles/catalog.module.css'
 
 type Props = {
 
-  runtime: ProductsRuntime
+    runtime: ProductsRuntime
 
 }
 
-/* ============================================================================
-Experience
-
-Catalog Introduction
-
-Communicates the current Runtime Reality
-before the user begins browsing products.
-
-Responsibilities
-
-- Present Catalog identity
-- Present Runtime summary
-- Build discovery confidence
-
-This component does NOT
-
-- Generate Runtime
-- Generate Semantic Meaning
-- Interpret Semantic Reality
-
-============================================================================ */
-
 export default function CatalogHero({
 
-  runtime,
+    runtime,
 
 }: Props) {
 
-  return (
+    const {
 
-    <section className={styles.catalogHero}>
+        count,
+        page,
+        page_size,
 
-      <div className={styles.catalogHeroContent}>
+    } = runtime.data
 
-        <div className={styles.catalogHeroLabel}>
+    return (
 
-          PRODUCT CATALOG
+        <section className={styles.catalogHero}>
 
-        </div>
+            <div className={styles.catalogHeroContent}>
 
-        <h1 className={styles.catalogHeroTitle}>
+                <div className={styles.catalogHeroLabel}>
+                    PRODUCT CATALOG
+                </div>
 
-          {
+                <h1 className={styles.catalogHeroTitle}>
+                    {
+                        runtime.presentation?.title
+                        || runtime.seo?.title
+                        || runtime.meaning?.identity
+                        || 'PC商品一覧'
+                    }
+                </h1>
 
-            runtime.presentation?.title
-            ||
+                {
+                    runtime.presentation?.subtitle && (
+                        <h2 className={styles.catalogHeroSubtitle}>
+                            {runtime.presentation.subtitle}
+                        </h2>
+                    )
+                }
 
-            runtime.seo?.title
-            ||
+                <p className={styles.catalogHeroDescription}>
+                    {
+                        runtime.presentation?.description
+                        || runtime.seo?.description
+                        || runtime.meaning?.mission
+                        || '用途・メーカー・価格を問わず、登録されているすべてのPCを一覧で比較できます。'
+                    }
+                </p>
 
-            runtime.meaning?.identity
-            ||
+                <div className={styles.catalogHeroStats}>
 
-            'PC商品一覧'
+                    <div className={styles.catalogHeroStat}>
+                        <span className={styles.catalogHeroStatLabel}>
+                            総商品数
+                        </span>
+                        <strong className={styles.catalogHeroStatValue}>
+                            {count.toLocaleString()}
+                        </strong>
+                    </div>
 
-          }
+                    <div className={styles.catalogHeroStat}>
+                        <span className={styles.catalogHeroStatLabel}>
+                            現在のページ
+                        </span>
+                        <strong className={styles.catalogHeroStatValue}>
+                            {page}
+                        </strong>
+                    </div>
 
-        </h1>
+                    <div className={styles.catalogHeroStat}>
+                        <span className={styles.catalogHeroStatLabel}>
+                            表示件数
+                        </span>
+                        <strong className={styles.catalogHeroStatValue}>
+                            {page_size}
+                        </strong>
+                    </div>
 
-        {runtime.presentation?.subtitle && (
+                </div>
 
-          <h2 className={styles.catalogHeroSubtitle}>
+            </div>
 
-            {runtime.presentation.subtitle}
+            <div className={styles.catalogHeroVisual} />
 
-          </h2>
+        </section>
 
-        )}
-
-        <p className={styles.catalogHeroDescription}>
-
-          {
-
-            runtime.presentation?.description
-            ||
-
-            runtime.seo?.description
-            ||
-
-            runtime.meaning?.mission
-            ||
-
-            '用途・メーカー・価格を問わず、登録されているすべてのPCを一覧で比較できます。'
-
-          }
-
-        </p>
-
-        <div className={styles.catalogHeroStats}>
-
-          <div className={styles.catalogHeroStat}>
-
-            <span className={styles.catalogHeroStatLabel}>
-
-              総商品数
-
-            </span>
-
-            <strong className={styles.catalogHeroStatValue}>
-
-              {runtime.count.toLocaleString()}
-
-            </strong>
-
-          </div>
-
-          <div className={styles.catalogHeroStat}>
-
-            <span className={styles.catalogHeroStatLabel}>
-
-              現在のページ
-
-            </span>
-
-            <strong className={styles.catalogHeroStatValue}>
-
-              {runtime.page}
-
-            </strong>
-
-          </div>
-
-          <div className={styles.catalogHeroStat}>
-
-            <span className={styles.catalogHeroStatLabel}>
-
-              表示件数
-
-            </span>
-
-            <strong className={styles.catalogHeroStatValue}>
-
-              {runtime.page_size}
-
-            </strong>
-
-          </div>
-
-        </div>
-
-      </div>
-
-      <div className={styles.catalogHeroVisual} />
-
-    </section>
-
-  )
+    )
 
 }

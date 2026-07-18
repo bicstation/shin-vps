@@ -5,45 +5,16 @@
 
 'use client'
 
-/* ============================================================================
-Next
-============================================================================ */
+import Link from 'next/link'
 
-import Link
-    from 'next/link'
+import ProductImage from '@/app/experience/components/product/ProductImage'
+import ProductTitle from '@/app/experience/components/product/ProductTitle'
+import ProductMaker from '@/app/experience/components/product/ProductMaker'
+import ProductPrice from '@/app/experience/components/product/ProductPrice'
 
-/* ============================================================================
-Experience Components
-============================================================================ */
+import type { PCProductItem } from '@/shared/lib/api/django/pc/products/contracts'
 
-import ProductImage
-    from '@/app/experience/components/product/ProductImage'
-import ProductTitle
-    from '@/app/experience/components/product/ProductTitle'
-import ProductMaker
-    from '@/app/experience/components/product/ProductMaker'
-import ProductPrice
-    from '@/app/experience/components/product/ProductPrice'
-/* ============================================================================
-Contracts
-============================================================================ */
-
-import type {
-
-    PCProductItem,
-
-} from '@/shared/lib/api/django/pc/products/contracts'
-
-/* ============================================================================
-Styles
-============================================================================ */
-
-import styles
-    from '../styles/catalog.module.css'
-
-/* ============================================================================
-Props
-============================================================================ */
+import styles from '../styles/catalog.module.css'
 
 type Props = {
 
@@ -51,36 +22,27 @@ type Props = {
 
 }
 
-/* ============================================================================
-Experience
-
-Product Presentation
-
-Responsibilities
-
-- Present one product
-- Display Backend Runtime
-- Navigate to Product Detail
-
-This component does NOT
-
-- Generate Runtime
-- Generate Semantic Meaning
-- Interpret Semantic Reality
-
-============================================================================ */
-
 export default function ProductCard({
 
     product,
 
 }: Props) {
 
+    const {
+
+        unique_id,
+        image_url,
+        name,
+        maker,
+        price,
+
+    } = product
+
     return (
 
         <Link
 
-            href={`/product/${product.unique_id}`}
+            href={`/product/${unique_id}`}
 
             className={styles.productCard}
 
@@ -88,9 +50,9 @@ export default function ProductCard({
 
             <ProductImage
 
-                src={product.image_url}
+                src={image_url}
 
-                alt={product.name}
+                alt={name}
 
                 className={styles.productImage}
 
@@ -100,7 +62,7 @@ export default function ProductCard({
 
                 <ProductTitle
 
-                    title={product.name}
+                    title={name}
 
                     className={styles.productName}
 
@@ -108,7 +70,7 @@ export default function ProductCard({
 
                 <ProductMaker
 
-                    maker={product.maker}
+                    maker={maker}
 
                     className={styles.productMaker}
 
@@ -116,7 +78,7 @@ export default function ProductCard({
 
                 <ProductPrice
 
-                    price={product.price}
+                    price={price}
 
                     className={styles.productPrice}
 

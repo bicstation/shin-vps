@@ -28,7 +28,6 @@ BASE_DIR = Path(__file__).resolve().parent
 
 PROJECT_DIR = BASE_DIR.parent
 
-# Load .env
 load_dotenv(PROJECT_DIR / ".env")
 
 OUTPUT_DIR = PROJECT_DIR / "output"
@@ -61,6 +60,8 @@ ACCESS_KEY = os.getenv("RAKUTEN_ACCESS_KEY", "")
 DEFAULT_TIMEOUT = 30
 
 DEFAULT_HITS = 30
+
+REQUEST_INTERVAL = 2.0
 
 
 # ==========================================================

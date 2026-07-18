@@ -1,6 +1,3 @@
-# /home/maya/shin-vps/django/api/services/feed/services/rakuten_import_service.py
-
-
 # =========================================================
 # FILE:
 # api/services/feed/services/rakuten_import_service.py
@@ -9,10 +6,6 @@
 from django.utils import timezone
 
 from api.models.pc_products import PCProduct
-
-from api.services.feed.parsers.rakuten_feed_parser import (
-    RakutenFeedParser,
-)
 
 from api.services.feed.normalizers.pc_feed_normalizer import (
     PCFeedNormalizer,
@@ -39,8 +32,6 @@ class RakutenImportService:
 
     def __init__(self):
 
-        self.parser = RakutenFeedParser()
-
         self.normalizer = PCFeedNormalizer()
 
         self.builder = PCProductBuilder()
@@ -50,89 +41,109 @@ class RakutenImportService:
         self.runtime_builder = SemanticRuntimeBuilder()
 
     # =====================================================
-    # IMPORT
+    # IMPORT CONTRACT
     # =====================================================
 
-    def import_product(
+    def import_contract(
 
         self,
-        source,
-        maker,
-        prefix,
+
+        contract,
 
     ):
 
-        parsed = self.parser.parse(
-            source
-        )
+        source = contract["source"]
+
+        data = contract["data"]
+
+        options = contract["import_options"]
 
         normalized = self.normalizer.normalize(
+
             source,
-            parsed,
+
+            data,
+
         )
 
         payload = self.builder.build(
 
             normalized=normalized,
 
-            maker=maker,
+            maker=options["maker"],
 
-            prefix=prefix,
+            prefix=options["prefix"],
 
         )
 
         semantic_payload = self.semantic_builder.build(
 
             type(
+
                 "SemanticObject",
+
                 (),
+
                 payload,
+
             )()
 
         )
 
         payload.update(
-            semantic_payload
+
+            semantic_payload,
+
         )
 
         runtime_payload = self.runtime_builder.build(
-            semantic_payload
+
+            semantic_payload,
+
         )
 
         payload.update(
-            runtime_payload
+
+            runtime_payload,
+
         )
 
         payload["semantic_runtime"] = {
 
             "product_type":
+
                 semantic_payload.get(
                     "product_type"
                 ),
 
             "target_segment":
+
                 semantic_payload.get(
                     "target_segment"
                 ),
 
             "is_ai_pc":
+
                 semantic_payload.get(
                     "is_ai_pc"
                 ),
 
             "semantic_labels":
+
                 runtime_payload.get(
                     "semantic_labels",
                     [],
                 ),
 
             "workflow_tags":
+
                 runtime_payload.get(
                     "workflow_tags",
                     [],
                 ),
 
             "runtime_profiles":
+
                 runtime_payload.get(
                     "runtime_profiles",
                     [],
@@ -143,13 +154,17 @@ class RakutenImportService:
         payload["semantic_schema_version"] = 1
 
         payload["semantic_updated_at"] = (
+
             timezone.now()
+
         )
 
         payload["semantic_runtime_compiled"] = True
 
         payload["affiliate_updated_at"] = (
+
             timezone.now()
+
         )
 
         obj, created = (
@@ -169,12 +184,15 @@ class RakutenImportService:
         return {
 
             "created":
+
                 created,
 
             "product":
+
                 obj,
 
             "payload":
+
                 payload,
 
         }

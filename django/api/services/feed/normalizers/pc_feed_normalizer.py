@@ -18,11 +18,18 @@ class PCFeedNormalizer:
 
     ):
 
+        sku = (
+
+            source.sku
+            .replace(":", "-")
+
+        )
+
         return {
 
             "sku":
 
-                source.sku,
+                sku,
 
             "name":
 
