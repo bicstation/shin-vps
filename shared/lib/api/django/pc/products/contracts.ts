@@ -14,7 +14,7 @@
  * PURPOSE
  *
  * Defines the canonical TypeScript contract that represents the
- * Backend Products JSON.
+ * Backend Products Runtime JSON.
  *
  * This file mirrors Backend Reality.
  *
@@ -124,8 +124,7 @@ export interface PCProductItem {
 
     confidence?: number
 
-    grouped_attributes?:
-        Record<string, SemanticAttribute[]>
+    grouped_attributes?: Record<string, SemanticAttribute[]>
 
     /* ------------------------------------------------------------------------
     Metadata
@@ -204,6 +203,8 @@ export interface ProductsData {
     page_size: number
 
     sort: string
+
+    search: string | null
 
     has_next: boolean
 

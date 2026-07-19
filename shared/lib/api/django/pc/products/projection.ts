@@ -51,11 +51,9 @@
  */
 
 import type {
-
     ProductsRuntimeContract,
     ProductsData,
     PCProductItem,
-
 } from './contracts'
 
 /* ============================================================================
@@ -81,6 +79,8 @@ export interface ProjectedProductsData {
     pageSize: number
 
     sort: string
+
+    search: string | null
 
     hasNext: boolean
 
@@ -132,8 +132,7 @@ export interface ProjectedProduct {
 
     confidence?: number
 
-    groupedAttributes?:
-        PCProductItem['grouped_attributes']
+    groupedAttributes?: PCProductItem['grouped_attributes']
 
     createdAt?: string
 
@@ -146,20 +145,12 @@ export interface ProjectedProduct {
 ============================================================================ */
 
 export function projectProducts(
-
-    contract: ProductsRuntimeContract
-
+    contract: ProductsRuntimeContract,
 ): ProjectedProductsRuntime {
 
     return {
 
-        data:
-
-            projectData(
-
-                contract.data
-
-            ),
+        data: projectData(contract.data),
 
     }
 
@@ -170,40 +161,24 @@ export function projectProducts(
 ============================================================================ */
 
 function projectData(
-
-    data: ProductsData
-
+    data: ProductsData,
 ): ProjectedProductsData {
 
     return {
 
-        count:
+        count: data.count,
 
-            data.count,
+        page: data.page,
 
-        page:
+        pageSize: data.page_size,
 
-            data.page,
+        sort: data.sort,
 
-        pageSize:
+        search: data.search,
 
-            data.page_size,
+        hasNext: data.has_next,
 
-        sort:
-
-            data.sort,
-
-        hasNext:
-
-            data.has_next,
-
-        products:
-
-            data.products.map(
-
-                projectProduct
-
-            ),
+        products: data.products.map(projectProduct),
 
     }
 
@@ -214,100 +189,54 @@ function projectData(
 ============================================================================ */
 
 function projectProduct(
-
-    product: PCProductItem
-
+    product: PCProductItem,
 ): ProjectedProduct {
 
     return {
 
-        id:
+        id: product.id,
 
-            product.id,
+        uniqueId: product.unique_id,
 
-        uniqueId:
+        sitePrefix: product.site_prefix,
 
-            product.unique_id,
+        name: product.name,
 
-        sitePrefix:
+        maker: product.maker,
 
-            product.site_prefix,
+        description: product.description,
 
-        name:
+        imageUrl: product.image_url,
 
-            product.name,
+        url: product.url,
 
-        maker:
+        affiliateUrl: product.affiliate_url,
 
-            product.maker,
+        price: product.price,
 
-        description:
+        cpuModel: product.cpu_model,
 
-            product.description,
+        gpuModel: product.gpu_model,
 
-        imageUrl:
+        memoryGb: product.memory_gb,
 
-            product.image_url,
+        storageGb: product.storage_gb,
 
-        url:
+        semanticScore: product.semantic_score,
 
-            product.url,
+        semanticRole: product.semantic_role,
 
-        affiliateUrl:
+        semanticWeight: product.semantic_weight,
 
-            product.affiliate_url,
+        recommendationReason: product.recommendation_reason,
 
-        price:
+        confidence: product.confidence,
 
-            product.price,
+        groupedAttributes: product.grouped_attributes,
 
-        cpuModel:
+        createdAt: product.created_at,
 
-            product.cpu_model,
-
-        gpuModel:
-
-            product.gpu_model,
-
-        memoryGb:
-
-            product.memory_gb,
-
-        storageGb:
-
-            product.storage_gb,
-
-        semanticScore:
-
-            product.semantic_score,
-
-        semanticRole:
-
-            product.semantic_role,
-
-        semanticWeight:
-
-            product.semantic_weight,
-
-        recommendationReason:
-
-            product.recommendation_reason,
-
-        confidence:
-
-            product.confidence,
-
-        groupedAttributes:
-
-            product.grouped_attributes,
-
-        createdAt:
-
-            product.created_at,
-
-        updatedAt:
-
-            product.updated_at,
+        updatedAt: product.updated_at,
 
     }
 
@@ -317,9 +246,7 @@ function projectProduct(
 🔥 Legacy Compatibility
 ============================================================================ */
 
-export const projectProductsRuntime =
-
-    projectProducts
+export const projectProductsRuntime = projectProducts
 
 /* ============================================================================
 🔥 Default Export

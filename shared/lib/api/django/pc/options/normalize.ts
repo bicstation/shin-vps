@@ -1,6 +1,6 @@
 // ============================================================================
 // FILE:
-// /shared/lib/api/django/pc/products/normalize.ts
+// /shared/lib/api/django/pc/options/normalize.ts
 // Copyright (c) 2026 Shin Corporation.
 // All rights reserved.
 // ============================================================================
@@ -8,19 +8,19 @@
 /**
  * ============================================================================
  * SHIN CORE LINX
- * Products Normalize
+ * Catalog Options Normalize
  * ============================================================================
  *
  * PURPOSE
  *
- * Convert Backend Products Runtime JSON into the
- * Canonical Products Backend Contract.
+ * Convert Backend Catalog Options Runtime JSON into the
+ * Canonical Catalog Options Backend Contract.
  *
- * Backend Products Runtime
+ * Backend Catalog Options Runtime
  *      ↓
  * Contract Guarantee
  *      ↓
- * Products Backend Contract
+ * Catalog Options Backend Contract
  *
  * Normalize Responsibilities
  *
@@ -32,7 +32,7 @@
  * Normalize SHALL NOT
  *
  * ✗ Generate Meaning
- * ✗ Generate Presentation
+ * ✗ Generate Options
  * ✗ Generate Authority
  * ✗ Generate UI
  * ✗ Generate Runtime
@@ -45,18 +45,18 @@
  */
 
 import type {
-    ProductsRuntimeContract,
-    ProductsData,
-    PCProductItem,
+    CatalogOptionsRuntimeContract,
+    CatalogOptionsData,
+    CatalogOptionItem,
 } from './contracts'
 
 /* ============================================================================
-🔥 Normalize Products
+🔥 Normalize Catalog Options
 ============================================================================ */
 
-export function normalizeProducts(
-    runtime?: Partial<ProductsRuntimeContract>,
-): ProductsRuntimeContract {
+export function normalizeCatalogOptions(
+    runtime?: Partial<CatalogOptionsRuntimeContract>,
+): CatalogOptionsRuntimeContract {
 
     return {
 
@@ -67,22 +67,10 @@ export function normalizeProducts(
         meaning: runtime?.meaning,
 
         /* --------------------------------------------------------------------
-        Presentation
+        Options
         -------------------------------------------------------------------- */
 
-        presentation: runtime?.presentation,
-
-        /* --------------------------------------------------------------------
-        SEO
-        -------------------------------------------------------------------- */
-
-        seo: runtime?.seo,
-
-        /* --------------------------------------------------------------------
-        Data
-        -------------------------------------------------------------------- */
-
-        data: normalizeData(runtime?.data),
+        options: normalizeOptions(runtime?.options),
 
         /* --------------------------------------------------------------------
         Authority
@@ -101,46 +89,44 @@ export function normalizeProducts(
 }
 
 /* ============================================================================
-🔥 Normalize Data
+🔥 Normalize Options
 ============================================================================ */
 
-function normalizeData(
-    data?: Partial<ProductsData>,
-): ProductsData {
+function normalizeOptions(
+    options?: Partial<CatalogOptionsData>,
+): CatalogOptionsData {
 
     return {
 
-        count: data?.count ?? 0,
+        maker: (options?.maker ?? []).map(normalizeOption),
 
-        page: data?.page ?? 1,
+        cpu: (options?.cpu ?? []).map(normalizeOption),
 
-        page_size: data?.page_size ?? 20,
+        gpu: (options?.gpu ?? []).map(normalizeOption),
 
-        sort: data?.sort ?? 'new',
+        memory: (options?.memory ?? []).map(normalizeOption),
 
-        search: data?.search ?? null,
-
-        has_next: data?.has_next ?? false,
-
-        products: (data?.products ?? []).map(normalizeProduct),
+        storage: (options?.storage ?? []).map(normalizeOption),
 
     }
 
 }
 
 /* ============================================================================
-🔥 Normalize Product
+🔥 Normalize Option
 ============================================================================ */
 
-function normalizeProduct(
-    product: PCProductItem,
-): PCProductItem {
+function normalizeOption(
+    option: CatalogOptionItem,
+): CatalogOptionItem {
 
     return {
 
-        ...product,
+        value: option.value,
 
-        grouped_attributes: product.grouped_attributes ?? {},
+        label: option.label,
+
+        count: option.count,
 
     }
 
@@ -150,10 +136,11 @@ function normalizeProduct(
 🔥 Legacy Compatibility
 ============================================================================ */
 
-export const normalizeProductsRuntime = normalizeProducts
+export const normalizeCatalogOptionsRuntime =
+    normalizeCatalogOptions
 
 /* ============================================================================
 🔥 Default Export
 ============================================================================ */
 
-export default normalizeProducts
+export default normalizeCatalogOptions

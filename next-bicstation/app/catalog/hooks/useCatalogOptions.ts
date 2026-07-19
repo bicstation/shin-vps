@@ -1,29 +1,21 @@
+// /home/maya/shin-dev/shin-vps/next-bicstation/app/catalog/hooks/useCatalogOptions.ts
+
 // ============================================================================
 // FILE:
-// /app/catalog/hooks/useCatalog.ts
+// /app/catalog/hooks/useCatalogOptions.ts
 // ============================================================================
 
 'use client'
 
 import { useEffect, useState } from 'react'
 
-import {
-    fetchProducts,
-    type ProductFilters,
-} from '@/shared/lib/api/django/pc/products'
+import { fetchCatalogOptions } from '@/shared/lib/api/django/pc/options'
+import type { CatalogOptionsRuntimeContract } from '@/shared/lib/api/django/pc/options/contracts'
 
-import type {
-    ProductsRuntime,
-} from '@/shared/lib/api/django/pc/products/contracts'
-
-export default function useCatalog(
-    page: number,
-    pageSize = 20,
-    filters: ProductFilters = {},
-) {
+export default function useCatalogOptions() {
 
     const [runtime, setRuntime] =
-        useState<ProductsRuntime | null>(null)
+        useState<CatalogOptionsRuntimeContract | null>(null)
 
     const [loading, setLoading] =
         useState(true)
@@ -43,11 +35,7 @@ export default function useCatalog(
             try {
 
                 const runtime =
-                    await fetchProducts(
-                        page,
-                        pageSize,
-                        filters,
-                    )
+                    await fetchCatalogOptions()
 
                 if (mounted) {
                     setRuntime(runtime)
@@ -56,14 +44,12 @@ export default function useCatalog(
             } catch (err) {
 
                 console.error(
-                    'CATALOG RUNTIME ERROR',
+                    'CATALOG OPTIONS RUNTIME ERROR',
                     err,
                 )
 
                 if (mounted) {
-                    setError(
-                        err as Error,
-                    )
+                    setError(err as Error)
                 }
 
             } finally {
@@ -82,16 +68,7 @@ export default function useCatalog(
             mounted = false
         }
 
-    }, [
-        page,
-        pageSize,
-        filters.sort,
-        filters.maker,
-        filters.cpu,
-        filters.gpu,
-        filters.memory,
-        filters.storage,
-    ])
+    }, [])
 
     return {
         runtime,

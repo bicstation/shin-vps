@@ -8,9 +8,11 @@
 import { useSearchParams } from 'next/navigation'
 
 import useCatalog from '../hooks/useCatalog'
+import useCatalogOptions from '../hooks/useCatalogOptions'
 
 import Breadcrumb from '../components/Breadcrumb'
 import CatalogHero from '../components/CatalogHero'
+import CatalogToolbar from '../components/CatalogToolbar'
 import ProductGrid from '../components/ProductGrid'
 import Pagination from '../components/Pagination'
 import EmptyProducts from '../components/EmptyProducts'
@@ -21,14 +23,42 @@ export default function CatalogRuntimeOrchestrator() {
 
     const searchParams = useSearchParams()
 
-    const page = Number(searchParams.get('page') ?? 1)
-
-    console.log('🔥 SEARCH PARAMS', {
-        url: window.location.href,
-        pageFromSearchParams: page,
-    })
+    const page =
+        Number(searchParams.get('page') ?? 1)
 
     const pageSize = 20
+
+    const sort =
+        searchParams.get('sort') ?? 'maker'
+
+    const maker =
+        searchParams.get('maker') ?? undefined
+
+    const cpu =
+        searchParams.get('cpu') ?? undefined
+
+    const gpu =
+        searchParams.get('gpu') ?? undefined
+
+    const memory =
+        searchParams.get('memory') ?? undefined
+
+    const storage =
+        searchParams.get('storage') ?? undefined
+
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+    console.log('🎼 CATALOG ORCHESTRATOR START')
+    console.log('🔍 Search Params')
+    console.log({
+        page,
+        pageSize,
+        sort,
+        maker,
+        cpu,
+        gpu,
+        memory,
+        storage,
+    })
 
     const {
         runtime,
@@ -37,7 +67,70 @@ export default function CatalogRuntimeOrchestrator() {
     } = useCatalog(
         page,
         pageSize,
+        {
+            sort,
+            maker,
+            cpu,
+            gpu,
+            memory,
+            storage,
+        },
     )
+
+    console.log('📦 Products Runtime')
+    console.log(runtime)
+
+    console.log('📦 Products Data')
+    console.log(runtime?.data)
+
+    const {
+        runtime: optionsRuntime,
+        loading: optionsLoading,
+        error: optionsError,
+    } = useCatalogOptions()
+
+    console.log('🧩 Options Loading')
+    console.log(optionsLoading)
+
+    console.log('🧩 Options Error')
+    console.log(optionsError)
+
+    console.log('🧩 Options Runtime')
+    console.log(optionsRuntime)
+
+    console.log('🧩 Options')
+    console.log(optionsRuntime?.options)
+
+    console.log('🧩 Maker')
+    console.log(optionsRuntime?.options?.maker)
+
+    console.log('🧩 CPU')
+    console.log(optionsRuntime?.options?.cpu)
+
+    console.log('🧩 GPU')
+    console.log(optionsRuntime?.options?.gpu)
+
+    console.log('🧩 Memory')
+    console.log(optionsRuntime?.options?.memory)
+
+    console.log('🧩 Storage')
+    console.log(optionsRuntime?.options?.storage)
+
+    console.log('🎯 Render Summary')
+    console.log({
+        loading,
+        error,
+        optionsLoading,
+        optionsError,
+        productCount:
+            runtime?.data?.products?.length,
+        totalCount:
+            runtime?.data?.count,
+        options:
+            optionsRuntime?.options,
+    })
+
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
 
     if (loading) {
         return (
@@ -69,19 +162,27 @@ export default function CatalogRuntimeOrchestrator() {
 
             <Breadcrumb />
 
-            <CatalogHero runtime={runtime} />
+            <CatalogHero
+                runtime={runtime}
+            />
 
-            {
-                products.length > 0
-                    ? (
-                        <ProductGrid
-                            products={products}
-                        />
-                    )
-                    : (
-                        <EmptyProducts />
-                    )
-            }
+            <CatalogToolbar
+                count={count}
+                sort={sort}
+                options={optionsRuntime?.options}
+            />
+
+            {products.length > 0 ? (
+
+                <ProductGrid
+                    products={products}
+                />
+
+            ) : (
+
+                <EmptyProducts />
+
+            )}
 
             <Pagination
                 page={currentPage}

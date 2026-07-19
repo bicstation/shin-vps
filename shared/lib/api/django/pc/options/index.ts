@@ -1,6 +1,6 @@
 // ============================================================================
 // FILE:
-// /shared/lib/api/django/pc/products/runtime.ts
+// /shared/lib/api/django/pc/options/index.ts
 // Copyright (c) 2026 Shin Corporation.
 // All rights reserved.
 // ============================================================================
@@ -8,22 +8,14 @@
 /**
  * ============================================================================
  * SHIN CORE LINX
- * Products Runtime Facade
+ * Catalog Options Public API
  * ============================================================================
  *
  * PURPOSE
  *
- * Temporary compatibility facade.
+ * Public entry point for the Catalog Options Adapter.
  *
- * Products does not require Runtime Composition.
- *
- * This facade simply connects:
- *
- * Gateway
- *      ↓
- * Normalize
- *      ↓
- * Projection
+ * Frontend SHALL import only from this module.
  *
  * Backend remains:
  *
@@ -36,42 +28,32 @@
  * ============================================================================
  */
 
-import { fetchProducts } from './products'
-
-import {
-    projectProducts,
-    type ProjectedProductsRuntime,
-} from './projection'
-
 /* ============================================================================
-🔥 Runtime Facade
+🔥 Contracts
 ============================================================================ */
 
-export async function getProductsRuntime(
-    page = 1,
-    pageSize = 20,
-    sort = 'new',
-): Promise<ProjectedProductsRuntime> {
-
-    const runtime = await fetchProducts(
-        page,
-        pageSize,
-        sort,
-    )
-
-    return projectProducts(runtime)
-
-}
+export * from './contracts'
 
 /* ============================================================================
-🔥 Legacy Compatibility
+🔥 Normalize
 ============================================================================ */
 
-export const fetchProjectedProductsRuntime =
-    getProductsRuntime
+export * from './normalize'
 
 /* ============================================================================
-🔥 Default Export
+🔥 Projection
 ============================================================================ */
 
-export default getProductsRuntime
+export * from './projection'
+
+/* ============================================================================
+🔥 Runtime
+============================================================================ */
+
+export * from './runtime'
+
+/* ============================================================================
+🔥 Gateway
+============================================================================ */
+
+export * from './options'

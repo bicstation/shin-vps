@@ -10,24 +10,26 @@ import type { ProductsRuntime } from '@/shared/lib/api/django/pc/products/contra
 import styles from '../styles/catalog.module.css'
 
 type Props = {
-
     runtime: ProductsRuntime
-
 }
 
-export default function CatalogHero({
+export default function CatalogHero({ runtime }: Props) {
 
-    runtime,
+    const { count, page, page_size } = runtime.data
 
-}: Props) {
+    const title =
+        runtime.presentation?.title
+        || runtime.seo?.title
+        || runtime.meaning?.identity
+        || 'PC商品一覧'
 
-    const {
+    const subtitle = runtime.presentation?.subtitle
 
-        count,
-        page,
-        page_size,
-
-    } = runtime.data
+    const description =
+        runtime.presentation?.description
+        || runtime.seo?.description
+        || runtime.meaning?.mission
+        || '用途・メーカー・価格を問わず、登録されているすべてのPCを一覧で比較できます。'
 
     return (
 
@@ -40,29 +42,17 @@ export default function CatalogHero({
                 </div>
 
                 <h1 className={styles.catalogHeroTitle}>
-                    {
-                        runtime.presentation?.title
-                        || runtime.seo?.title
-                        || runtime.meaning?.identity
-                        || 'PC商品一覧'
-                    }
+                    {title}
                 </h1>
 
-                {
-                    runtime.presentation?.subtitle && (
-                        <h2 className={styles.catalogHeroSubtitle}>
-                            {runtime.presentation.subtitle}
-                        </h2>
-                    )
-                }
+                {subtitle && (
+                    <h2 className={styles.catalogHeroSubtitle}>
+                        {subtitle}
+                    </h2>
+                )}
 
                 <p className={styles.catalogHeroDescription}>
-                    {
-                        runtime.presentation?.description
-                        || runtime.seo?.description
-                        || runtime.meaning?.mission
-                        || '用途・メーカー・価格を問わず、登録されているすべてのPCを一覧で比較できます。'
-                    }
+                    {description}
                 </p>
 
                 <div className={styles.catalogHeroStats}>

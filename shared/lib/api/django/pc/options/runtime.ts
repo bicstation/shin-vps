@@ -1,6 +1,8 @@
+// /home/maya/shin-dev/shin-vps/shared/lib/api/django/pc/options/runtime.ts
+
 // ============================================================================
 // FILE:
-// /shared/lib/api/django/pc/products/runtime.ts
+// /shared/lib/api/django/pc/options/runtime.ts
 // Copyright (c) 2026 Shin Corporation.
 // All rights reserved.
 // ============================================================================
@@ -8,14 +10,14 @@
 /**
  * ============================================================================
  * SHIN CORE LINX
- * Products Runtime Facade
+ * Catalog Options Runtime Facade
  * ============================================================================
  *
  * PURPOSE
  *
  * Temporary compatibility facade.
  *
- * Products does not require Runtime Composition.
+ * Catalog Options does not require Runtime Composition.
  *
  * This facade simply connects:
  *
@@ -36,30 +38,26 @@
  * ============================================================================
  */
 
-import { fetchProducts } from './products'
+import { fetchCatalogOptions } from './options'
 
 import {
-    projectProducts,
-    type ProjectedProductsRuntime,
+    projectCatalogOptions,
+    type ProjectedCatalogOptionsRuntime,
 } from './projection'
 
 /* ============================================================================
 🔥 Runtime Facade
 ============================================================================ */
 
-export async function getProductsRuntime(
-    page = 1,
-    pageSize = 20,
-    sort = 'new',
-): Promise<ProjectedProductsRuntime> {
+export async function getCatalogOptionsRuntime(
+): Promise<ProjectedCatalogOptionsRuntime> {
 
-    const runtime = await fetchProducts(
-        page,
-        pageSize,
-        sort,
+    const runtime =
+        await fetchCatalogOptions()
+
+    return projectCatalogOptions(
+        runtime
     )
-
-    return projectProducts(runtime)
 
 }
 
@@ -67,11 +65,11 @@ export async function getProductsRuntime(
 🔥 Legacy Compatibility
 ============================================================================ */
 
-export const fetchProjectedProductsRuntime =
-    getProductsRuntime
+export const fetchProjectedCatalogOptionsRuntime =
+    getCatalogOptionsRuntime
 
 /* ============================================================================
 🔥 Default Export
 ============================================================================ */
 
-export default getProductsRuntime
+export default getCatalogOptionsRuntime

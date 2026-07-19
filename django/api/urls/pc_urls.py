@@ -19,6 +19,7 @@ from api.views.navigation_v2_view import ( navigation_v2, )
 from api.views.sidebar_v2_view import ( sidebar_v2, )
 from api.views.discover_universe_v2_view import ( discover_universe_v2,)
 from api.views.intent_v1_view import (semantic_intent_v1,)
+from api.views.catalog_options_view import ( CatalogOptionsView, )
 
 # =====================================================
 # LEGACY COMPATIBILITY TEST
@@ -232,6 +233,16 @@ urlpatterns = [
         "ranking/<slug:group_slug>/",
         semantic_ranking_v2,
         name="ranking",
+    ),
+    
+    # =====================================================
+    # OPTIONS
+    # =====================================================
+
+    path(
+        "options/",
+        CatalogOptionsView.as_view(),
+        name="catalog_options",
     ),
    
     # =====================================================
