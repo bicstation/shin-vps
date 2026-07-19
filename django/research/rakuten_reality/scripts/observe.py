@@ -60,7 +60,7 @@ def create_observation(
         source_product_id=item.get("itemCode", ""),
         shop_code=item.get("shopCode", ""),
         shop_name=item.get("shopName", ""),
-        maker=item.get("makerName", ""),
+        maker=item.get("shopCode", ""),
         name=item.get("itemName", ""),
 
         price=item.get("itemPrice"),

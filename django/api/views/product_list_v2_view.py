@@ -1,22 +1,10 @@
 # -*- coding: utf-8 -*-
 # api/views/product_list_v2_view.py
 
-from rest_framework.decorators import (
-    api_view,
-    permission_classes,
-)
-
-from rest_framework.permissions import (
-    AllowAny,
-)
-
-from rest_framework.response import (
-    Response,
-)
-
-from api.services.semantic.v2.inventory.inventory_runtime import (
-    build_inventory_runtime,
-)
+from rest_framework.decorators import (    api_view,    permission_classes,)
+from rest_framework.permissions import (     AllowAny,)
+from rest_framework.response import (     Response,)
+from api.services.semantic.v2.inventory.inventory_runtime import (     build_inventory_runtime,)
 
 
 # ==========================================================

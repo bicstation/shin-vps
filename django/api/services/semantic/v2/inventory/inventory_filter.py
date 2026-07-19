@@ -98,17 +98,6 @@ def apply_inventory_filter(
     queryset: QuerySet,
     filters: dict | None = None,
 ) -> QuerySet:
-    """
-    Apply Reality filters.
-
-    Attribute Logic
-
-        Different attributes:
-            AND
-
-        Same attribute:
-            OR
-    """
 
     if not filters:
         return queryset
@@ -123,6 +112,9 @@ def apply_inventory_filter(
         if not values:
             continue
 
+        print(f"[FILTER] {key} = {values}")
+        print(f"[COUNT] before = {queryset.count()}")
+
         if len(values) == 1:
             queryset = queryset.filter(
                 **{field: values[0]}
@@ -131,6 +123,8 @@ def apply_inventory_filter(
             queryset = queryset.filter(
                 **{f"{field}__in": values}
             )
+
+        print(f"[COUNT] after  = {queryset.count()}")
 
     #
     # Range
@@ -142,8 +136,14 @@ def apply_inventory_filter(
         if value in (None, ""):
             continue
 
+        print(f"[FILTER] {key} = {value}")
+        print(f"[COUNT] before = {queryset.count()}")
+
         queryset = queryset.filter(
             **{f"{field}__{operator}": value}
         )
 
+        print(f"[COUNT] after  = {queryset.count()}")
+
     return queryset
+
