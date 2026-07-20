@@ -69,6 +69,13 @@ RAKUTEN_SHOPS=(
   "minisforum"
   "geekom"
 )
+LINKSHARE_SHOPS=(
+  "fujitsu"
+  "dell"
+  "hp"
+  "dynabook"
+  "asus"
+)
 
 # ==========================================================
 # Project Root Topology
@@ -362,10 +369,34 @@ run_django import_linkshare_pc --all
 # ④ 04-1 AI SPEC COMPLETION
 # ==========================================================
 
+# log "🤖 (04-1/12) AI Spec Completion"
+
+# run_django compile_spec_runtime \
+#   --limit $AI_SPEC_LIMIT
+
+
 log "🤖 (04-1/12) AI Spec Completion"
 
-run_django compile_spec_runtime \
-  --limit $AI_SPEC_LIMIT
+for SHOP in "${LINKSHARE_SHOPS[@]}"
+do
+    log "🤖 AI Spec : $SHOP"
+
+    run_django compile_spec_runtime \
+        --shop "$SHOP" \
+        --limit "$AI_SPEC_LIMIT"
+
+done
+
+for SHOP in "${RAKUTEN_SHOPS[@]}"
+do
+    log "🤖 AI Spec : $SHOP"
+
+    run_django compile_spec_runtime \
+        --shop "$SHOP" \
+        --limit "$AI_SPEC_LIMIT"
+
+done
+
 
 # ==========================================================
 # ④ 04-2 AI SUMMARY
