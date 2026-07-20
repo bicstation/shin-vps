@@ -4,13 +4,15 @@
 # =========================================================
 
 import os
+
 from api.services.ai.constants.models import (
     GEMINI_FLASH,
     GEMMA_41B,
 )
 
+
 class AIRuntime:
-    
+
     # =====================================================
     # GEMINI API KEY数
     # =====================================================
@@ -24,10 +26,10 @@ class AIRuntime:
     MAX_WORKERS = 5
 
     # =====================================================
-    # リトライ回数
+    # 最大待機時間（秒）
     # =====================================================
 
-    MAX_RETRIES = 3
+    MAX_WAIT_SECONDS = 300
 
     # =====================================================
     # API通信タイムアウト（秒）
@@ -42,27 +44,19 @@ class AIRuntime:
     RPM_PER_KEY = 10
 
     # =====================================================
-    # 429発生後のクールダウン時間（秒）
+    # Retry情報が取得できない場合の待機時間（秒）
     # =====================================================
 
-    COOLDOWN_SECONDS = 129
-    
-    
+    COOLDOWN_SECONDS = 60
+
     # =====================================================
     # DEFAULT MODELS
     # =====================================================
 
-    DEFAULT_SPEC_MODEL = (
-        GEMINI_FLASH
-    )
-
-    DEFAULT_SUMMARY_MODEL = (
-        GEMMA_41B
-    )
-
-    DEFAULT_COMPARISON_MODEL = (
-        GEMMA_41B
-    )
+    # DEFAULT_SPEC_MODEL = GEMINI_FLASH
+    DEFAULT_SPEC_MODEL = GEMMA_41B
+    DEFAULT_SUMMARY_MODEL = GEMMA_41B
+    DEFAULT_COMPARISON_MODEL = GEMMA_41B
 
     # =====================================================
     # API KEYS
@@ -72,20 +66,12 @@ class AIRuntime:
     def api_keys(cls):
 
         return [
-
-            os.getenv(
-                f"GEMINI_API_KEY_{i}"
-            )
-
+            os.getenv(f"GEMINI_API_KEY_{i}")
             for i in range(
                 1,
                 cls.GEMINI_KEY_COUNT + 1
             )
-
-            if os.getenv(
-                f"GEMINI_API_KEY_{i}"
-            )
-
+            if os.getenv(f"GEMINI_API_KEY_{i}")
         ]
 
     # =====================================================
@@ -94,10 +80,7 @@ class AIRuntime:
 
     @classmethod
     def active_key_count(cls):
-
-        return len(
-            cls.api_keys()
-        )
+        return len(cls.api_keys())
 
     # =====================================================
     # MAX WORKERS
@@ -105,20 +88,18 @@ class AIRuntime:
 
     @classmethod
     def max_workers(cls):
-
         return min(
             cls.MAX_WORKERS,
             cls.active_key_count(),
         )
 
     # =====================================================
-    # MAX RETRIES
+    # MAX WAIT
     # =====================================================
 
     @classmethod
-    def max_retries(cls):
-
-        return cls.MAX_RETRIES
+    def max_wait_seconds(cls):
+        return cls.MAX_WAIT_SECONDS
 
     # =====================================================
     # TIMEOUT
@@ -126,7 +107,6 @@ class AIRuntime:
 
     @classmethod
     def timeout(cls):
-
         return cls.TIMEOUT
 
     # =====================================================
@@ -135,7 +115,6 @@ class AIRuntime:
 
     @classmethod
     def rpm_per_key(cls):
-
         return cls.RPM_PER_KEY
 
     # =====================================================
@@ -144,7 +123,6 @@ class AIRuntime:
 
     @classmethod
     def cooldown_seconds(cls):
-
         return cls.COOLDOWN_SECONDS
 
     # =====================================================
@@ -155,23 +133,10 @@ class AIRuntime:
     def status(cls):
 
         return {
-
-            "active_keys":
-                cls.active_key_count(),
-
-            "max_workers":
-                cls.max_workers(),
-
-            "max_retries":
-                cls.max_retries(),
-
-            "timeout":
-                cls.timeout(),
-
-            "rpm_per_key":
-                cls.rpm_per_key(),
-
-            "cooldown_seconds":
-                cls.cooldown_seconds(),
-
+            "active_keys": cls.active_key_count(),
+            "max_workers": cls.max_workers(),
+            "max_wait_seconds": cls.max_wait_seconds(),
+            "timeout": cls.timeout(),
+            "rpm_per_key": cls.rpm_per_key(),
+            "cooldown_seconds": cls.cooldown_seconds(),
         }

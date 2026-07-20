@@ -55,6 +55,19 @@ RAKUTEN_FETCH_ALL=1
 
 RAKUTEN_SHOPS=(
   "lenovopc"
+  "asus-store"
+  "microsoft-store"
+  "nec-direct"
+  "msistore"
+  "fujitsu-fmv"
+  "pckoubou"
+  "dospara-r"
+  "mousecomputer"
+  "dynabook"
+  "pcshop-best"
+  "gmktecdirect"
+  "minisforum"
+  "geekom"
 )
 
 # ==========================================================
@@ -566,3 +579,17 @@ log "✅ コンシェルジェ未登録語一覧"
 run_django audit_unknown_intents
 
 log "✅ SHIN CORE LINX SEMANTIC PIPELINE COMPLETE 終了"
+log "✅ maya@Marya:~/shin-dev/shin-vps$ djmanage cleanup_reality --shop applied2 🔥 PC URLS LOADED"
+
+
+
+# =====================================================
+# Maintenance
+# =====================================================
+#
+# Reality をメーカー単位でクリーンアップする
+# djmanage cleanup_reality --shop applied2
+#
+# Semantic Runtime を再コンパイルする前に
+# コンパイル済みフラグをリセットする
+# djmanage reset_semantic_runtime --all

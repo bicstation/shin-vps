@@ -135,7 +135,8 @@ class PCImportService:
             timezone.now()
         )
         
-        payload["semantic_runtime_compiled"] = True
+        # Semantic Runtime は compile_semantic_runtime が正式生成する
+        # payload["semantic_runtime_compiled"] = True
         
         payload["affiliate_updated_at"] = timezone.now()
 

@@ -40,6 +40,16 @@ class Command(BaseCommand):
             nargs="?",
             type=str,
         )
+        
+        parser.add_argument(
+            "--maker",
+            type=str,
+        )
+
+        parser.add_argument(
+            "--all",
+            action="store_true",
+        )
 
         parser.add_argument(
             "--limit",
@@ -56,21 +66,18 @@ class Command(BaseCommand):
     # HANDLE
     # =====================================================
 
-    def handle(
-
-        self,
-
-        *args,
-
-        **options,
-
-    ):
-
+    def handle( self, *args,  **options, ):
+        
         products = (
             self.get_products(
                 options
             )
         )
+
+        total = len(
+            products
+        )
+
 
         if not products.exists():
 
@@ -84,17 +91,9 @@ class Command(BaseCommand):
 
             return
 
-        self.stdout.write(
-
-            self.style.SUCCESS(
-
-                f"🚀 Spec Runtime "
-                f"{len(products)} Products "
-                f"/ Workers="
-                f"{AIRuntime.max_workers()}"
-
-            )
-
+        self.print_runtime_header(
+            total,
+            options,
         )
 
         with ThreadPoolExecutor(
@@ -110,12 +109,9 @@ class Command(BaseCommand):
                 executor.submit(
 
                     self.process_product,
-
                     product,
-
                     index + 1,
-
-                    len(products),
+                    total,
 
                 ): product
 
@@ -144,79 +140,151 @@ class Command(BaseCommand):
 
                             f"❌ "
                             f"{product.unique_id} "
-                            # f"{str(e)}"
 
                         )
 
                     )
+        
+        self.print_runtime_footer()
+
+    # =====================================================
+    # TARGET QUERY
+    # =====================================================
+
+    def build_target_query(
+        self,
+        options,
+    ):
+
+        if options["unique_id"]:
+
+            return PCProduct.objects.filter(
+                unique_id=options["unique_id"]
+            )
+
+        if options["maker"]:
+
+            return PCProduct.objects.filter(
+                maker=options["maker"]
+            )
+
+        if options["all"]:
+
+            return PCProduct.objects.all()
+
+        return PCProduct.objects.all()
+    
+    # =====================================================
+    # UNCOMPILED FILTER
+    # =====================================================
+
+    def build_uncompiled_filter(
+        self,
+    ):
+
+        return (
+
+            Q(cpu_model__isnull=True)
+
+            |
+
+            Q(cpu_model="")
+
+            |
+
+            Q(memory_gb=0)
+
+            |
+
+            Q(storage_gb=0)
+
+            |
+
+            Q(display_info__isnull=True)
+
+            |
+
+            Q(display_info="")
+
+        )
 
     # =====================================================
     # PRODUCTS
     # =====================================================
 
     def get_products(
-
         self,
-
         options,
-
     ):
 
-        unique_id = (
-            options["unique_id"]
+        query = self.build_target_query(
+            options
         )
 
-        force = (
-            options["force"]
-        )
-
-        limit = (
-            options["limit"]
-        )
-
-        if unique_id:
-
-            return (
-
-                PCProduct.objects.filter(
-                    unique_id=unique_id
-                )
-
-            )
-
-        query = (
-            PCProduct.objects.all()
-        )
-
-        if not force:
+        if not options["force"]:
 
             query = query.filter(
+                self.build_uncompiled_filter()
+            )
 
-                Q(cpu_model__isnull=True)
+        if not (
+            options["unique_id"]
+            or options["maker"]
+            or options["all"]
+        ):
 
-                |
+            query = query[
+                :options["limit"]
+            ]
 
-                Q(cpu_model="")
+        return query
 
-                |
+    # =====================================================
+    # RUNTIME HEADER
+    # =====================================================
 
-                Q(memory_gb=0)
+    def print_runtime_header(
+        self,
+        total,
+        options,
+    ):
 
-                |
+        if options["unique_id"]:
 
-                Q(storage_gb=0)
+            target = "Single Product"
 
-                |
+        elif options["maker"]:
 
-                Q(display_info__isnull=True)
+            target = (
+                f"Maker : "
+                f"{options['maker']}"
+            )
 
-                |
+        elif options["all"]:
 
-                Q(display_info="")
+            target = "All Products"
+
+        else:
+
+            target = "Uncompiled Products"
+
+        self.stdout.write(
+
+            self.style.SUCCESS(
+
+                "\n"
+                "==================================================\n"
+                "🚀 SPEC RUNTIME\n"
+                "==================================================\n"
+                f"TARGET  : {target}\n"
+                f"PRODUCT : {total}\n"
+                f"WORKERS : {AIRuntime.max_workers()}\n"
+                f"FORCE   : {options['force']}\n"
+                "=================================================="
 
             )
 
-        return query[:limit]
+        )
 
     # =====================================================
     # PROCESS
@@ -324,3 +392,24 @@ class Command(BaseCommand):
         finally:
 
             close_old_connections()
+    
+        # =====================================================
+    # RUNTIME FOOTER
+    # =====================================================
+
+    def print_runtime_footer(
+        self,
+    ):
+
+        self.stdout.write(
+
+            self.style.SUCCESS(
+
+                "\n"
+                "==================================================\n"
+                "✅ SPEC RUNTIME FINISHED\n"
+                "=================================================="
+
+            )
+
+        )

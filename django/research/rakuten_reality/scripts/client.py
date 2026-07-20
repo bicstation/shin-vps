@@ -18,7 +18,6 @@ Output
 Raw JSON response
 
 This module MUST NOT:
-
 - Generate Observations
 - Validate Data
 - Map Payloads
@@ -40,6 +39,9 @@ from config import (
     DEFAULT_TIMEOUT,
     REQUEST_INTERVAL,
 )
+
+MAX_RETRIES = 5
+BACKOFF_FACTOR = 2
 
 
 def build_params(
@@ -91,22 +93,44 @@ def fetch_page(
     Fetch a single page from the Rakuten Ichiba Item Search API.
     """
 
-    response = requests.get(
-        BASE_URL,
-        params=build_params(
-            keyword=keyword,
-            shop_code=shop_code,
-            item_code=item_code,
-            genre_id=genre_id,
-            page=page,
-            hits=hits,
-        ),
-        timeout=DEFAULT_TIMEOUT,
+    params = build_params(
+        keyword=keyword,
+        shop_code=shop_code,
+        item_code=item_code,
+        genre_id=genre_id,
+        page=page,
+        hits=hits,
     )
 
-    response.raise_for_status()
+    for retry in range(MAX_RETRIES):
 
-    return response.json()
+        response = requests.get(
+            BASE_URL,
+            params=params,
+            timeout=DEFAULT_TIMEOUT,
+        )
+
+        if response.status_code == 200:
+            return response.json()
+
+        if response.status_code == 429:
+
+            wait = REQUEST_INTERVAL * (BACKOFF_FACTOR ** retry)
+
+            print(
+                f"⚠️ Rate limit reached "
+                f"(retry {retry + 1}/{MAX_RETRIES}) "
+                f"waiting {wait:.1f}s..."
+            )
+
+            time.sleep(wait)
+            continue
+
+        response.raise_for_status()
+
+    raise RuntimeError(
+        f"Rakuten API rate limit exceeded after {MAX_RETRIES} retries."
+    )
 
 
 def fetch_all_pages(

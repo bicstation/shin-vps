@@ -141,11 +141,13 @@ class KeyRotator:
 
         cls,
         key_no,
+        seconds,
 
     ):
 
         with cls._lock:
-
+            
+            
             cls._usage[
                 key_no
             ][
@@ -153,7 +155,10 @@ class KeyRotator:
             ] = (
 
                 time.time()
+
                 +
-                AIRuntime.cooldown_seconds()
+
+                seconds
 
             )
+

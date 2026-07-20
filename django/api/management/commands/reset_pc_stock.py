@@ -7,7 +7,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         updated = PCProduct.objects.update(
-            is_active=False,
+            is_active=True,
             stock_status="在庫なし"
         )
 
