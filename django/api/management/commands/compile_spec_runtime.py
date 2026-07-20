@@ -8,11 +8,11 @@ import time
 from concurrent.futures import ( ThreadPoolExecutor, as_completed, )
 from django.core.management.base import ( BaseCommand, )
 from django.db import ( close_old_connections, )
-from django.db.models import ( Q, )
 from api.models.pc_products import ( PCProduct, )
 from api.services.ai.runtime.ai_runtime import ( AIRuntime, )
 from api.services.ai.services.pc_spec_service import ( PCSpecService, )
 from api.services.ai.services.spec_runtime_persist_service import ( SpecRuntimePersistService, )
+
 
 class Command(BaseCommand):
 
@@ -40,7 +40,7 @@ class Command(BaseCommand):
             nargs="?",
             type=str,
         )
-        
+
         parser.add_argument(
             "--maker",
             type=str,
@@ -66,18 +66,15 @@ class Command(BaseCommand):
     # HANDLE
     # =====================================================
 
-    def handle( self, *args,  **options, ):
-        
-        products = (
-            self.get_products(
-                options
-            )
+    def handle( self, *args, **options, ):
+
+        products = self.get_products(
+            options
         )
 
         total = len(
             products
         )
-
 
         if not products.exists():
 
@@ -107,12 +104,10 @@ class Command(BaseCommand):
             futures = {
 
                 executor.submit(
-
                     self.process_product,
                     product,
                     index + 1,
                     total,
-
                 ): product
 
                 for index, product
@@ -130,21 +125,23 @@ class Command(BaseCommand):
 
                 except Exception as e:
 
-                    product = (
-                        futures[future]
-                    )
+                    product = futures[
+                        future
+                    ]
 
                     self.stdout.write(
 
                         self.style.ERROR(
 
-                            f"❌ "
-                            f"{product.unique_id} "
+                            f"❌ {product.unique_id}\n"
+                            f"{type(e).__name__}: {e}"
 
                         )
 
                     )
-        
+
+                    raise
+
         self.print_runtime_footer()
 
     # =====================================================
@@ -175,40 +172,6 @@ class Command(BaseCommand):
         return PCProduct.objects.all()
     
     # =====================================================
-    # UNCOMPILED FILTER
-    # =====================================================
-
-    def build_uncompiled_filter(
-        self,
-    ):
-
-        return (
-
-            Q(cpu_model__isnull=True)
-
-            |
-
-            Q(cpu_model="")
-
-            |
-
-            Q(memory_gb=0)
-
-            |
-
-            Q(storage_gb=0)
-
-            |
-
-            Q(display_info__isnull=True)
-
-            |
-
-            Q(display_info="")
-
-        )
-
-    # =====================================================
     # PRODUCTS
     # =====================================================
 
@@ -224,7 +187,7 @@ class Command(BaseCommand):
         if not options["force"]:
 
             query = query.filter(
-                self.build_uncompiled_filter()
+                spec_processed=False
             )
 
         if not (
@@ -316,12 +279,8 @@ class Command(BaseCommand):
 
             )
 
-            bundle = (
-
-                self.spec_service.generate(
-                    product
-                )
-
+            bundle = self.spec_service.generate(
+                product
             )
 
             if not bundle:
@@ -339,9 +298,9 @@ class Command(BaseCommand):
 
                 return
 
-            spec_result = (
-                bundle["spec_result"]
-            )
+            spec_result = bundle[
+                "spec_result"
+            ]
 
             self.persist_service.save(
 
@@ -368,21 +327,17 @@ class Command(BaseCommand):
                     "==================================================\n"
                     "✅ SPEC COMPLETED\n"
                     "==================================================\n"
-
                     f"PRODUCT : {product.unique_id}\n"
                     f"MODEL   : {bundle['model']}\n"
                     f"KEY     : {bundle['api_key_index']}\n"
                     f"TIME    : {elapsed} sec\n"
-
                     "\n"
-
                     f"CPU     : {spec_result.cpu_model}\n"
                     f"GPU     : {spec_result.gpu_model}\n"
                     f"MEMORY  : {spec_result.memory_gb} GB\n"
                     f"STORAGE : {spec_result.storage_gb} GB\n"
                     f"DISPLAY : {spec_result.display_info}\n"
                     f"AI PC   : {spec_result.is_ai_pc}\n"
-
                     "=================================================="
 
                 )
@@ -392,8 +347,8 @@ class Command(BaseCommand):
         finally:
 
             close_old_connections()
-    
-        # =====================================================
+
+    # =====================================================
     # RUNTIME FOOTER
     # =====================================================
 

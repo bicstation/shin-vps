@@ -278,13 +278,6 @@ class PCProduct(models.Model):
     # Semantic Runtime
     # =====================================================
 
-    semantic_runtime = models.JSONField(
-
-        default=dict,
-        blank=True,
-        verbose_name="Semantic Runtime Payload"
-    )
-
     semantic_schema_version = models.CharField(
 
         max_length=20,
@@ -355,9 +348,29 @@ class PCProduct(models.Model):
     strengths = models.JSONField( default=list, blank=True, verbose_name="AI判定強みポイント")
     weaknesses = models.JSONField( default=list, blank=True, verbose_name="AI判定弱みポイント")
     usage_tags = models.JSONField( default=list, blank=True, verbose_name="AI判定使用タグ")
-    
-    last_spec_parsed_at = models.DateTimeField(null=True, blank=True, verbose_name="スペック解析実行日")
+       
+    # ==========================================================
+    # Specification Runtime
+    # ==========================================================
 
+    spec_processed = models.BooleanField(
+        default=False,
+        db_index=True,
+        verbose_name="Specification Processed"
+    )
+
+    spec_complete = models.BooleanField(
+        default=False,
+        db_index=True,
+        verbose_name="Specification Complete"
+    )
+
+    last_spec_parsed_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="スペック解析実行日"
+    )
+    
     class Meta:
         verbose_name = "PC製品"
         verbose_name_plural = "PC製品一覧"
