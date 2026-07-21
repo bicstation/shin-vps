@@ -382,7 +382,7 @@ do
     log "🤖 AI Spec : $SHOP"
 
     run_django compile_spec_runtime \
-        --shop "$SHOP" \
+        --maker "$SHOP" \
         --limit "$AI_SPEC_LIMIT"
 
 done
@@ -392,7 +392,7 @@ do
     log "🤖 AI Spec : $SHOP"
 
     run_django compile_spec_runtime \
-        --shop "$SHOP" \
+        --maker "$SHOP" \
         --limit "$AI_SPEC_LIMIT"
 
 done
