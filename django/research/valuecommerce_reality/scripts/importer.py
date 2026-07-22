@@ -1,6 +1,6 @@
 # =========================================================
 # FILE:
-/home/maya/shin-vps/django/research/valuecommerce_reality/scripts/importer.py
+# /home/maya/shin-vps/django/research/valuecommerce_reality/scripts/importer.py
 # =========================================================
 
 from __future__ import annotations
