@@ -7,8 +7,8 @@ from types import SimpleNamespace
 from django.utils import timezone
 
 from api.models.pc_products import PCProduct
-from api.services.feed.normalizers.pc_feed_normalizer import PCFeedNormalizer
 from api.services.feed.builders.pc_product_builder import PCProductBuilder
+from api.services.feed.normalizers.pc_feed_normalizer import PCFeedNormalizer
 from api.services.feed.semantic.builders.semantic_builder import AsusSemanticBuilder
 from api.services.feed.semantic.builders.semantic_runtime_builder import SemanticRuntimeBuilder
 
@@ -21,6 +21,10 @@ class ValueCommerceImportService:
         self.semantic_builder = AsusSemanticBuilder()
         self.runtime_builder = SemanticRuntimeBuilder()
 
+    # =====================================================
+    # IMPORT CONTRACT
+    # =====================================================
+
     def import_contract(self, contract):
 
         data = contract["data"]
@@ -31,7 +35,6 @@ class ValueCommerceImportService:
         raw = data.get("raw", {})
 
         source = SimpleNamespace(
-
             sku=identity.get("sku") or raw.get("productCode") or raw.get("modelCode") or "",
             jan=identity.get("jan") or raw.get("janCode") or "",
             maker=identity.get("maker") or raw.get("brand_name") or "",
@@ -66,7 +69,10 @@ class ValueCommerceImportService:
 
         payload.update(semantic_payload)
 
-        runtime_payload = self.runtime_builder.build(semantic_payload)
+        runtime_payload = self.runtime_builder.build(
+            semantic_payload
+        )
+
         payload.update(runtime_payload)
 
         payload["semantic_runtime"] = {
@@ -78,9 +84,13 @@ class ValueCommerceImportService:
             "runtime_profiles": runtime_payload.get("runtime_profiles", []),
         }
 
-        payload["semantic_schema_version"] = 1
-        payload["semantic_updated_at"] = timezone.now()
-        payload["affiliate_updated_at"] = timezone.now()
+        now = timezone.now()
+
+        payload.update({
+            "semantic_schema_version": 1,
+            "semantic_updated_at": now,
+            "affiliate_updated_at": now,
+        })
 
         obj, created = PCProduct.objects.update_or_create(
             unique_id=payload["unique_id"],

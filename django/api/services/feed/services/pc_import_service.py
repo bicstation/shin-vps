@@ -8,7 +8,7 @@ from api.models.pc_products import PCProduct
 from api.services.feed.parsers.linkshare_feed_parser import ( LinkshareFeedParser,)
 from api.services.feed.normalizers.pc_feed_normalizer import ( PCFeedNormalizer, )
 from api.services.feed.builders.pc_product_builder import ( PCProductBuilder, )
-from api.services.feed.semantic.builders.semantic_builder import ( AsusSemanticBuilder,)
+from api.services.feed.semantic.builders.semantic_builder import ( SemanticBuilder,)
 from api.services.feed.semantic.builders.semantic_runtime_builder import ( SemanticRuntimeBuilder,)
 
 
@@ -24,7 +24,7 @@ class PCImportService:
         self.parser = ( LinkshareFeedParser()  )
         self.normalizer = ( PCFeedNormalizer() )
         self.builder = ( PCProductBuilder() )
-        self.semantic_builder = ( AsusSemanticBuilder() )
+        self.semantic_builder = ( SemanticBuilder() )
         self.runtime_builder = ( SemanticRuntimeBuilder() )
 
     # =====================================================

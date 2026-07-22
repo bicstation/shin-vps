@@ -16,7 +16,7 @@ from api.services.feed.builders.pc_product_builder import (
 )
 
 from api.services.feed.semantic.builders.semantic_builder import (
-    AsusSemanticBuilder,
+    SemanticBuilder,
 )
 
 from api.services.feed.semantic.builders.semantic_runtime_builder import (
@@ -36,7 +36,7 @@ class RakutenImportService:
 
         self.builder = PCProductBuilder()
 
-        self.semantic_builder = AsusSemanticBuilder()
+        self.semantic_builder = SemanticBuilder()
 
         self.runtime_builder = SemanticRuntimeBuilder()
 

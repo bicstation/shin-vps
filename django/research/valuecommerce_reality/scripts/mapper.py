@@ -21,22 +21,26 @@ def map_product(
 
     return {
         "source": "valuecommerce",
+
         "data": {
             "identity": {
                 "title": product.get("title"),
                 "brand": product.get("brand_name"),
-                "manufacturer": product.get("merchantName"),
                 "model": product.get("modelCode"),
                 "jan": product.get("janCode"),
                 "product_code": product.get("productCode"),
                 "guid": product.get("guid"),
             },
+
             "commerce": {
+                "merchant": product.get("merchantName"),
                 "price": product.get("price"),
                 "affiliate_url": product.get("link"),
             },
+
             "raw": product,
         },
+
         "import_options": {
             "maker": maker,
             "prefix": prefix,

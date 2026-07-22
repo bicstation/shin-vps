@@ -1,75 +1,30 @@
 # =========================================================
 # FILE:
-# api/services/feed/semantic/builders/asus_semantic_builder.py
+# api/services/feed/semantic/builders/semantic_builder.py
 # =========================================================
 
-from api.services.feed.semantic.rules.semantic_rules import (
-    SEMANTIC_RULES,
-)
+from api.services.feed.semantic.rules.semantic_rules import SEMANTIC_RULES
 
 
-class AsusSemanticBuilder:
+class SemanticBuilder:
 
-    # =====================================================
-    # BUILD
-    # =====================================================
-
-    def build(
-
-        self,
-
-        product,
-
-    ):
-
-        name = str(
-            product.name or ""
-        ).lower()
-
-        description = str(
-            product.description or ""
-        ).lower()
+    def build(self, product):
 
         search_text = (
-            f"{name}\n{description}"
-        )
+            f"{product.name or ''}\n{product.description or ''}"
+        ).lower()
 
         payload = {
-
-            "product_type":
-                None,
-
-            "target_segment":
-                None,
-
-            "usage_tags":
-                [],
-
-            "is_ai_pc":
-                False,
-
+            "product_type": None,
+            "target_segment": None,
+            "usage_tags": [],
+            "is_ai_pc": False,
         }
 
         for rule in SEMANTIC_RULES:
 
-            if not self.match_rule(
-
-                rule=rule,
-
-                maker=product.maker,
-
-                text=search_text,
-
-            ):
-                continue
-
-            self.apply_rule(
-
-                payload=payload,
-
-                rule=rule,
-
-            )
+            if self.match_rule(rule, product.maker, search_text):
+                self.apply_rule(payload, rule)
 
         return payload
 
@@ -77,108 +32,33 @@ class AsusSemanticBuilder:
     # MATCH RULE
     # =====================================================
 
-    def match_rule(
+    def match_rule(self, rule, maker, text):
 
-        self,
+        rule_maker = rule.get("maker", "*")
 
-        rule,
-
-        maker,
-
-        text,
-
-    ):
-
-        rule_maker = (
-            rule.get(
-                "maker"
-            )
-        )
-
-        if (
-
-            rule_maker != "*"
-
-            and
-
-            rule_maker != maker
-
-        ):
-
+        if rule_maker not in ("*", maker):
             return False
 
-        for keyword in (
-
-            rule.get(
-                "match",
-                [],
-            )
-
-        ):
-
-            if keyword.lower() in text:
-
-                return True
-
-        return False
+        return any(
+            keyword.lower() in text
+            for keyword in rule.get("match", [])
+        )
 
     # =====================================================
     # APPLY RULE
     # =====================================================
 
-    def apply_rule(
+    def apply_rule(self, payload, rule):
 
-        self,
+        if rule.get("product_type"):
+            payload["product_type"] = rule["product_type"]
 
-        payload,
+        if rule.get("target_segment"):
+            payload["target_segment"] = rule["target_segment"]
 
-        rule,
+        payload["is_ai_pc"] |= rule.get("is_ai_pc", False)
 
-    ):
+        for tag in rule.get("usage_tags", []):
 
-        if rule.get(
-            "product_type"
-        ):
-
-            payload[
-                "product_type"
-            ] = rule[
-                "product_type"
-            ]
-
-        if rule.get(
-            "target_segment"
-        ):
-
-            payload[
-                "target_segment"
-            ] = rule[
-                "target_segment"
-            ]
-
-        if rule.get(
-            "is_ai_pc"
-        ):
-
-            payload[
-                "is_ai_pc"
-            ] = True
-
-        for tag in (
-
-            rule.get(
-                "usage_tags",
-                [],
-            )
-
-        ):
-
-            if tag not in payload[
-                "usage_tags"
-            ]:
-
-                payload[
-                    "usage_tags"
-                ].append(
-                    tag
-                )
+            if tag not in payload["usage_tags"]:
+                payload["usage_tags"].append(tag)
