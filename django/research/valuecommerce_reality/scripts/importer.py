@@ -12,6 +12,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 OUTPUT_DIR = BASE_DIR / "output"
 
 
+# =====================================================
+# JSON Loader
+# =====================================================
+
 def load_json(path: Path) -> Any:
     """
     Load JSON file.
@@ -24,7 +28,13 @@ def load_json(path: Path) -> Any:
         return json.load(fp)
 
 
-def import_raw(filename: str) -> dict[str, Any]:
+# =====================================================
+# Import Raw Reality
+# =====================================================
+
+def import_raw(
+    filename: str,
+) -> dict[str, Any]:
     """
     Load raw API response.
     """
@@ -33,6 +43,10 @@ def import_raw(filename: str) -> dict[str, Any]:
         OUTPUT_DIR / "raw" / filename,
     )
 
+
+# =====================================================
+# Import Observation
+# =====================================================
 
 def import_observation(
     filename: str,
@@ -46,6 +60,10 @@ def import_observation(
     )
 
 
+# =====================================================
+# Import Mapping
+# =====================================================
+
 def import_mapping(
     filename: str,
 ) -> list[dict[str, Any]]:
@@ -58,10 +76,14 @@ def import_mapping(
     )
 
 
+# =====================================================
+# Main
+# =====================================================
+
 if __name__ == "__main__":
 
-    observation = import_observation(
-        "thinkpad_observation.json",
+    mapping = import_mapping(
+        "thinkpad_mapping.json",
     )
 
-    print(observation)
+    print(mapping)
