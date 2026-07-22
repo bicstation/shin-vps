@@ -1,1362 +1,1502 @@
 [
   {
-    "identity": {
-      "title": "ThinkPad L580 - ブラック",
-      "brand": "Lenovo",
-      "manufacturer": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "model": "20LWS03900",
-      "jan": "",
-      "product_code": "20LWS03900",
-      "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/l-series/ThinkPad-L580/p/20LWS03900"
+    "source": "valuecommerce",
+    "data": {
+      "identity": {
+        "title": "ThinkPad L13 Yoga：プレミアム",
+        "brand": "Lenovo",
+        "manufacturer": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "model": "20R5CTO1WWJAJP4",
+        "jan": "",
+        "product_code": "20R5CTO1WWJAJP4",
+        "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/yoga-series/ThinkPad-L13-Yoga/p/20R5CTO1WWJAJP4"
+      },
+      "commerce": {
+        "price": 175120,
+        "affiliate_url": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fyoga-series%2FThinkPad-L13-Yoga%2Fp%2F20R5CTO1WWJAJP4"
+      },
+      "raw": {
+        "title": "ThinkPad L13 Yoga：プレミアム",
+        "link": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fyoga-series%2FThinkPad-L13-Yoga%2Fp%2F20R5CTO1WWJAJP4",
+        "description": "薄いボディの13.3型マルチモードモバイル 、第10世代インテル(R) Core(TM) プロセッサー 、高速なSSD (PCIe NVMe OPAL 2.0対応) 、本体に収納可能なThinkPad Pen Pro",
+        "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/yoga-series/ThinkPad-L13-Yoga/p/20R5CTO1WWJAJP4",
+        "pvImg": "<img src=\"//ad.jp.ap.valuecommerce.com/servlet/gifbanner?vs=3697471&vp=889450904\" height=\"1\" width=\"1\" border=\"0\">",
+        "merchantName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "ecCode": "bdu9t",
+        "janCode": "",
+        "markCode": "",
+        "productCode": "20R5CTO1WWJAJP4",
+        "modelCode": "20R5CTO1WWJAJP4",
+        "subStoreId": "pdb218",
+        "subStoreName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "adult": "n",
+        "startDate": "20200902",
+        "category": "pcmobile,pc_peripheraldevice,pcbody,notepc",
+        "imageSmall": {
+          "url": "",
+          "height": "",
+          "width": ""
+        },
+        "imageLarge": {
+          "url": "",
+          "height": "",
+          "width": ""
+        },
+        "imageFree": {
+          "url": "https://www.lenovo.com/medias/lenovo-jp-thinkpad-l13-yoga-intel-2020-0721.png?context=bWFzdGVyfHJvb3R8MTc2NzA3fGltYWdlL3BuZ3xoNzUvaDk0LzExMDYwNDkzMDkwODQ2LnBuZ3xiNjIxNjA5NGVlODhhMTFkODIwYWU5ZTI4MjE0YmQxZDg2ZDM3M2VjMWYxYWI1NzYyYmFkMjYzMTVhNGI3YThk",
+          "height": "",
+          "width": ""
+        },
+        "price": 175120,
+        "commissionValue": "0",
+        "commissionPercent": "0.00",
+        "commissionFixed": "0",
+        "latitude": "",
+        "longitude": "",
+        "product_category": "新品",
+        "brand_name": "Lenovo",
+        "brand_url": "",
+        "stock": "在庫有り",
+        "postage": "あり",
+        "point": "",
+        "size": "",
+        "color": "",
+        "gender": "",
+        "shipping_arrangement": "",
+        "sale_price": "",
+        "sale_start_date": "",
+        "sale_end_date": "",
+        "product_update_day": ""
+      }
     },
-    "commerce": {
-      "price": 67980,
-      "affiliate_url": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fl-series%2FThinkPad-L580%2Fp%2F20LWS03900"
-    },
-    "raw": {
-      "title": "ThinkPad L580 - ブラック",
-      "link": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fl-series%2FThinkPad-L580%2Fp%2F20LWS03900",
-      "description": "ThinkPad L580は、あらゆる場所でフルパワーで業務をこなす現代のビジネス、パーソンに最適な15.6型ノートPCです。第8世代インテル(R)Core(TM) プロセッサー搭載、高性能でポータビリティーに優れ、多様なニーズに対応でき、あらゆる場所で生産性を高めるビジネスパートナーです。",
-      "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/l-series/ThinkPad-L580/p/20LWS03900",
-      "pvImg": "<img src=\"//ad.jp.ap.valuecommerce.com/servlet/gifbanner?vs=3697471&vp=889450904\" height=\"1\" width=\"1\" border=\"0\">",
-      "merchantName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "ecCode": "bdu9t",
-      "janCode": "",
-      "markCode": "",
-      "productCode": "20LWS03900",
-      "modelCode": "20LWS03900",
-      "subStoreId": "pdb218",
-      "subStoreName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "adult": "n",
-      "startDate": "20200902",
-      "category": "pcmobile,pc_peripheraldevice,pcbody,notepc",
-      "imageSmall": {
-        "url": "",
-        "height": "",
-        "width": ""
-      },
-      "imageLarge": {
-        "url": "",
-        "height": "",
-        "width": ""
-      },
-      "imageFree": {
-        "url": "https://www.lenovo.com/medias/lenovo-jp-thinkpad-l580-intel-2020-0722.png?context=bWFzdGVyfHJvb3R8NTEyNDR8aW1hZ2UvcG5nfGg3ZC9oODQvMTEwNTU4NzYwNDY4NzgucG5nfDJhNWJlODA2ZjFmMmJiODdiMTA4YmYxNzQ0M2NjNDk4ZmJlNDJlMDA2ZDcyYjA0ZWEwNjQ2Y2MyMjY4ZjZjNTE",
-        "height": "",
-        "width": ""
-      },
-      "price": 67980,
-      "commissionValue": "0",
-      "commissionPercent": "0.00",
-      "commissionFixed": "0",
-      "latitude": "",
-      "longitude": "",
-      "product_category": "新品",
-      "brand_name": "Lenovo",
-      "brand_url": "",
-      "stock": "在庫有り",
-      "postage": "あり",
-      "point": "",
-      "size": "",
-      "color": "",
-      "gender": "",
-      "shipping_arrangement": "",
-      "sale_price": "",
-      "sale_start_date": "",
-      "sale_end_date": "",
-      "product_update_day": ""
+    "import_options": {
+      "maker": "Lenovo",
+      "prefix": "vc"
     }
   },
   {
-    "identity": {
-      "title": "ThinkPad L380 - ブラック",
-      "brand": "Lenovo",
-      "manufacturer": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "model": "20M5S0NU00",
-      "jan": "",
-      "product_code": "20M5S0NU00",
-      "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/l-series/ThinkPad-L380/p/20M5S0NU00"
+    "source": "valuecommerce",
+    "data": {
+      "identity": {
+        "title": "ThinkPad L580 - ブラック",
+        "brand": "Lenovo",
+        "manufacturer": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "model": "20LWS03S00",
+        "jan": "",
+        "product_code": "20LWS03S00",
+        "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/l-series/ThinkPad-L580/p/20LWS03S00"
+      },
+      "commerce": {
+        "price": 46970,
+        "affiliate_url": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fl-series%2FThinkPad-L580%2Fp%2F20LWS03S00"
+      },
+      "raw": {
+        "title": "ThinkPad L580 - ブラック",
+        "link": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fl-series%2FThinkPad-L580%2Fp%2F20LWS03S00",
+        "description": "ThinkPad L580は、あらゆる場所でフルパワーで業務をこなす現代のビジネス、パーソンに最適な15.6型ノートPCです。第8世代インテル(R)Core(TM) プロセッサー搭載、高性能でポータビリティーに優れ、多様なニーズに対応でき、あらゆる場所で生産性を高めるビジネスパートナーです。",
+        "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/l-series/ThinkPad-L580/p/20LWS03S00",
+        "pvImg": "<img src=\"//ad.jp.ap.valuecommerce.com/servlet/gifbanner?vs=3697471&vp=889450904\" height=\"1\" width=\"1\" border=\"0\">",
+        "merchantName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "ecCode": "bdu9t",
+        "janCode": "",
+        "markCode": "",
+        "productCode": "20LWS03S00",
+        "modelCode": "20LWS03S00",
+        "subStoreId": "pdb218",
+        "subStoreName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "adult": "n",
+        "startDate": "20200902",
+        "category": "pcmobile,pc_peripheraldevice,pcbody,notepc",
+        "imageSmall": {
+          "url": "",
+          "height": "",
+          "width": ""
+        },
+        "imageLarge": {
+          "url": "",
+          "height": "",
+          "width": ""
+        },
+        "imageFree": {
+          "url": "https://www.lenovo.com/medias/lenovo-jp-thinkpad-l580-intel-2020-0722.png?context=bWFzdGVyfHJvb3R8NTEyNDR8aW1hZ2UvcG5nfGg3ZC9oODQvMTEwNTU4NzYwNDY4NzgucG5nfDJhNWJlODA2ZjFmMmJiODdiMTA4YmYxNzQ0M2NjNDk4ZmJlNDJlMDA2ZDcyYjA0ZWEwNjQ2Y2MyMjY4ZjZjNTE",
+          "height": "",
+          "width": ""
+        },
+        "price": 46970,
+        "commissionValue": "0",
+        "commissionPercent": "0.00",
+        "commissionFixed": "0",
+        "latitude": "",
+        "longitude": "",
+        "product_category": "新品",
+        "brand_name": "Lenovo",
+        "brand_url": "",
+        "stock": "在庫有り",
+        "postage": "あり",
+        "point": "",
+        "size": "",
+        "color": "",
+        "gender": "",
+        "shipping_arrangement": "",
+        "sale_price": "",
+        "sale_start_date": "",
+        "sale_end_date": "",
+        "product_update_day": ""
+      }
     },
-    "commerce": {
-      "price": 89980,
-      "affiliate_url": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fl-series%2FThinkPad-L380%2Fp%2F20M5S0NU00"
-    },
-    "raw": {
-      "title": "ThinkPad L380 - ブラック",
-      "link": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fl-series%2FThinkPad-L380%2Fp%2F20M5S0NU00",
-      "description": "ThinkPad L380（2020モデル）は、パワフルでモビリティ性にすぐれ使いやすさを追求した13.3型のノートPCです。第8世代インテルCore プロセッサーとグラフィック、高速メモリとストレージを搭載。堅牢なセキュリティ機能でビジネスの生産性に貢献します。",
-      "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/l-series/ThinkPad-L380/p/20M5S0NU00",
-      "pvImg": "<img src=\"//ad.jp.ap.valuecommerce.com/servlet/gifbanner?vs=3697471&vp=889450904\" height=\"1\" width=\"1\" border=\"0\">",
-      "merchantName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "ecCode": "bdu9t",
-      "janCode": "",
-      "markCode": "",
-      "productCode": "20M5S0NU00",
-      "modelCode": "20M5S0NU00",
-      "subStoreId": "pdb218",
-      "subStoreName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "adult": "n",
-      "startDate": "20200902",
-      "category": "pcmobile,pc_peripheraldevice,pcbody,notepc",
-      "imageSmall": {
-        "url": "",
-        "height": "",
-        "width": ""
-      },
-      "imageLarge": {
-        "url": "",
-        "height": "",
-        "width": ""
-      },
-      "imageFree": {
-        "url": "https://www.lenovo.com/medias/lenovo-jp-thinkpad-l380-2020-intel-2020-0722.png?context=bWFzdGVyfHJvb3R8NTY5MTd8aW1hZ2UvcG5nfGhlYi9oZjUvMTEwNTU4NzM0OTA5NzQucG5nfDMxMzM3MDU2YjQ5MTU5ODY4MTg4ODdmNmQ4MDcxMGI3OTI0ZmQ5ZDBmZmI4OWI2YjBmOWI5MjljYzRiOGNlNTM",
-        "height": "",
-        "width": ""
-      },
-      "price": 89980,
-      "commissionValue": "0",
-      "commissionPercent": "0.00",
-      "commissionFixed": "0",
-      "latitude": "",
-      "longitude": "",
-      "product_category": "新品",
-      "brand_name": "Lenovo",
-      "brand_url": "",
-      "stock": "在庫有り",
-      "postage": "あり",
-      "point": "",
-      "size": "",
-      "color": "",
-      "gender": "",
-      "shipping_arrangement": "",
-      "sale_price": "",
-      "sale_start_date": "",
-      "sale_end_date": "",
-      "product_update_day": ""
+    "import_options": {
+      "maker": "Lenovo",
+      "prefix": "vc"
     }
   },
   {
-    "identity": {
-      "title": "ThinkPad L13 Yoga：スタンダード",
-      "brand": "Lenovo",
-      "manufacturer": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "model": "20R5CTO1WWJAJP1",
-      "jan": "",
-      "product_code": "20R5CTO1WWJAJP1",
-      "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/yoga-series/ThinkPad-L13-Yoga/p/20R5CTO1WWJAJP1"
+    "source": "valuecommerce",
+    "data": {
+      "identity": {
+        "title": "ThinkPad L580 - ブラック",
+        "brand": "Lenovo",
+        "manufacturer": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "model": "20LWS03900",
+        "jan": "",
+        "product_code": "20LWS03900",
+        "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/l-series/ThinkPad-L580/p/20LWS03900"
+      },
+      "commerce": {
+        "price": 67980,
+        "affiliate_url": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fl-series%2FThinkPad-L580%2Fp%2F20LWS03900"
+      },
+      "raw": {
+        "title": "ThinkPad L580 - ブラック",
+        "link": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fl-series%2FThinkPad-L580%2Fp%2F20LWS03900",
+        "description": "ThinkPad L580は、あらゆる場所でフルパワーで業務をこなす現代のビジネス、パーソンに最適な15.6型ノートPCです。第8世代インテル(R)Core(TM) プロセッサー搭載、高性能でポータビリティーに優れ、多様なニーズに対応でき、あらゆる場所で生産性を高めるビジネスパートナーです。",
+        "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/l-series/ThinkPad-L580/p/20LWS03900",
+        "pvImg": "<img src=\"//ad.jp.ap.valuecommerce.com/servlet/gifbanner?vs=3697471&vp=889450904\" height=\"1\" width=\"1\" border=\"0\">",
+        "merchantName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "ecCode": "bdu9t",
+        "janCode": "",
+        "markCode": "",
+        "productCode": "20LWS03900",
+        "modelCode": "20LWS03900",
+        "subStoreId": "pdb218",
+        "subStoreName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "adult": "n",
+        "startDate": "20200902",
+        "category": "pcmobile,pc_peripheraldevice,pcbody,notepc",
+        "imageSmall": {
+          "url": "",
+          "height": "",
+          "width": ""
+        },
+        "imageLarge": {
+          "url": "",
+          "height": "",
+          "width": ""
+        },
+        "imageFree": {
+          "url": "https://www.lenovo.com/medias/lenovo-jp-thinkpad-l580-intel-2020-0722.png?context=bWFzdGVyfHJvb3R8NTEyNDR8aW1hZ2UvcG5nfGg3ZC9oODQvMTEwNTU4NzYwNDY4NzgucG5nfDJhNWJlODA2ZjFmMmJiODdiMTA4YmYxNzQ0M2NjNDk4ZmJlNDJlMDA2ZDcyYjA0ZWEwNjQ2Y2MyMjY4ZjZjNTE",
+          "height": "",
+          "width": ""
+        },
+        "price": 67980,
+        "commissionValue": "0",
+        "commissionPercent": "0.00",
+        "commissionFixed": "0",
+        "latitude": "",
+        "longitude": "",
+        "product_category": "新品",
+        "brand_name": "Lenovo",
+        "brand_url": "",
+        "stock": "在庫有り",
+        "postage": "あり",
+        "point": "",
+        "size": "",
+        "color": "",
+        "gender": "",
+        "shipping_arrangement": "",
+        "sale_price": "",
+        "sale_start_date": "",
+        "sale_end_date": "",
+        "product_update_day": ""
+      }
     },
-    "commerce": {
-      "price": 118800,
-      "affiliate_url": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fyoga-series%2FThinkPad-L13-Yoga%2Fp%2F20R5CTO1WWJAJP1"
-    },
-    "raw": {
-      "title": "ThinkPad L13 Yoga：スタンダード",
-      "link": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fyoga-series%2FThinkPad-L13-Yoga%2Fp%2F20R5CTO1WWJAJP1",
-      "description": "薄いボディの13.3型マルチモードモバイル 、第10世代インテル(R) Core(TM) プロセッサー 、高速なSSD (PCIe NVMe OPAL 2.0対応) 、本体に収納可能なThinkPad Pen Pro",
-      "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/yoga-series/ThinkPad-L13-Yoga/p/20R5CTO1WWJAJP1",
-      "pvImg": "<img src=\"//ad.jp.ap.valuecommerce.com/servlet/gifbanner?vs=3697471&vp=889450904\" height=\"1\" width=\"1\" border=\"0\">",
-      "merchantName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "ecCode": "bdu9t",
-      "janCode": "",
-      "markCode": "",
-      "productCode": "20R5CTO1WWJAJP1",
-      "modelCode": "20R5CTO1WWJAJP1",
-      "subStoreId": "pdb218",
-      "subStoreName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "adult": "n",
-      "startDate": "20200902",
-      "category": "pcmobile,pc_peripheraldevice,pcbody,notepc",
-      "imageSmall": {
-        "url": "",
-        "height": "",
-        "width": ""
-      },
-      "imageLarge": {
-        "url": "",
-        "height": "",
-        "width": ""
-      },
-      "imageFree": {
-        "url": "https://www.lenovo.com/medias/lenovo-jp-thinkpad-l13-yoga-intel-2020-0721.png?context=bWFzdGVyfHJvb3R8MTc2NzA3fGltYWdlL3BuZ3xoNzUvaDk0LzExMDYwNDkzMDkwODQ2LnBuZ3xiNjIxNjA5NGVlODhhMTFkODIwYWU5ZTI4MjE0YmQxZDg2ZDM3M2VjMWYxYWI1NzYyYmFkMjYzMTVhNGI3YThk",
-        "height": "",
-        "width": ""
-      },
-      "price": 118800,
-      "commissionValue": "0",
-      "commissionPercent": "0.00",
-      "commissionFixed": "0",
-      "latitude": "",
-      "longitude": "",
-      "product_category": "新品",
-      "brand_name": "Lenovo",
-      "brand_url": "",
-      "stock": "在庫有り",
-      "postage": "あり",
-      "point": "",
-      "size": "",
-      "color": "",
-      "gender": "",
-      "shipping_arrangement": "",
-      "sale_price": "",
-      "sale_start_date": "",
-      "sale_end_date": "",
-      "product_update_day": ""
+    "import_options": {
+      "maker": "Lenovo",
+      "prefix": "vc"
     }
   },
   {
-    "identity": {
-      "title": "ThinkPad L13 Yoga：プレミアム",
-      "brand": "Lenovo",
-      "manufacturer": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "model": "20R5CTO1WWJAJP4",
-      "jan": "",
-      "product_code": "20R5CTO1WWJAJP4",
-      "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/yoga-series/ThinkPad-L13-Yoga/p/20R5CTO1WWJAJP4"
+    "source": "valuecommerce",
+    "data": {
+      "identity": {
+        "title": "ThinkPad L380 - ブラック",
+        "brand": "Lenovo",
+        "manufacturer": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "model": "20M5S0NU00",
+        "jan": "",
+        "product_code": "20M5S0NU00",
+        "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/l-series/ThinkPad-L380/p/20M5S0NU00"
+      },
+      "commerce": {
+        "price": 89980,
+        "affiliate_url": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fl-series%2FThinkPad-L380%2Fp%2F20M5S0NU00"
+      },
+      "raw": {
+        "title": "ThinkPad L380 - ブラック",
+        "link": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fl-series%2FThinkPad-L380%2Fp%2F20M5S0NU00",
+        "description": "ThinkPad L380（2020モデル）は、パワフルでモビリティ性にすぐれ使いやすさを追求した13.3型のノートPCです。第8世代インテルCore プロセッサーとグラフィック、高速メモリとストレージを搭載。堅牢なセキュリティ機能でビジネスの生産性に貢献します。",
+        "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/l-series/ThinkPad-L380/p/20M5S0NU00",
+        "pvImg": "<img src=\"//ad.jp.ap.valuecommerce.com/servlet/gifbanner?vs=3697471&vp=889450904\" height=\"1\" width=\"1\" border=\"0\">",
+        "merchantName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "ecCode": "bdu9t",
+        "janCode": "",
+        "markCode": "",
+        "productCode": "20M5S0NU00",
+        "modelCode": "20M5S0NU00",
+        "subStoreId": "pdb218",
+        "subStoreName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "adult": "n",
+        "startDate": "20200902",
+        "category": "pcmobile,pc_peripheraldevice,pcbody,notepc",
+        "imageSmall": {
+          "url": "",
+          "height": "",
+          "width": ""
+        },
+        "imageLarge": {
+          "url": "",
+          "height": "",
+          "width": ""
+        },
+        "imageFree": {
+          "url": "https://www.lenovo.com/medias/lenovo-jp-thinkpad-l380-2020-intel-2020-0722.png?context=bWFzdGVyfHJvb3R8NTY5MTd8aW1hZ2UvcG5nfGhlYi9oZjUvMTEwNTU4NzM0OTA5NzQucG5nfDMxMzM3MDU2YjQ5MTU5ODY4MTg4ODdmNmQ4MDcxMGI3OTI0ZmQ5ZDBmZmI4OWI2YjBmOWI5MjljYzRiOGNlNTM",
+          "height": "",
+          "width": ""
+        },
+        "price": 89980,
+        "commissionValue": "0",
+        "commissionPercent": "0.00",
+        "commissionFixed": "0",
+        "latitude": "",
+        "longitude": "",
+        "product_category": "新品",
+        "brand_name": "Lenovo",
+        "brand_url": "",
+        "stock": "在庫有り",
+        "postage": "あり",
+        "point": "",
+        "size": "",
+        "color": "",
+        "gender": "",
+        "shipping_arrangement": "",
+        "sale_price": "",
+        "sale_start_date": "",
+        "sale_end_date": "",
+        "product_update_day": ""
+      }
     },
-    "commerce": {
-      "price": 175120,
-      "affiliate_url": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fyoga-series%2FThinkPad-L13-Yoga%2Fp%2F20R5CTO1WWJAJP4"
-    },
-    "raw": {
-      "title": "ThinkPad L13 Yoga：プレミアム",
-      "link": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fyoga-series%2FThinkPad-L13-Yoga%2Fp%2F20R5CTO1WWJAJP4",
-      "description": "薄いボディの13.3型マルチモードモバイル 、第10世代インテル(R) Core(TM) プロセッサー 、高速なSSD (PCIe NVMe OPAL 2.0対応) 、本体に収納可能なThinkPad Pen Pro",
-      "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/yoga-series/ThinkPad-L13-Yoga/p/20R5CTO1WWJAJP4",
-      "pvImg": "<img src=\"//ad.jp.ap.valuecommerce.com/servlet/gifbanner?vs=3697471&vp=889450904\" height=\"1\" width=\"1\" border=\"0\">",
-      "merchantName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "ecCode": "bdu9t",
-      "janCode": "",
-      "markCode": "",
-      "productCode": "20R5CTO1WWJAJP4",
-      "modelCode": "20R5CTO1WWJAJP4",
-      "subStoreId": "pdb218",
-      "subStoreName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "adult": "n",
-      "startDate": "20200902",
-      "category": "pcmobile,pc_peripheraldevice,pcbody,notepc",
-      "imageSmall": {
-        "url": "",
-        "height": "",
-        "width": ""
-      },
-      "imageLarge": {
-        "url": "",
-        "height": "",
-        "width": ""
-      },
-      "imageFree": {
-        "url": "https://www.lenovo.com/medias/lenovo-jp-thinkpad-l13-yoga-intel-2020-0721.png?context=bWFzdGVyfHJvb3R8MTc2NzA3fGltYWdlL3BuZ3xoNzUvaDk0LzExMDYwNDkzMDkwODQ2LnBuZ3xiNjIxNjA5NGVlODhhMTFkODIwYWU5ZTI4MjE0YmQxZDg2ZDM3M2VjMWYxYWI1NzYyYmFkMjYzMTVhNGI3YThk",
-        "height": "",
-        "width": ""
-      },
-      "price": 175120,
-      "commissionValue": "0",
-      "commissionPercent": "0.00",
-      "commissionFixed": "0",
-      "latitude": "",
-      "longitude": "",
-      "product_category": "新品",
-      "brand_name": "Lenovo",
-      "brand_url": "",
-      "stock": "在庫有り",
-      "postage": "あり",
-      "point": "",
-      "size": "",
-      "color": "",
-      "gender": "",
-      "shipping_arrangement": "",
-      "sale_price": "",
-      "sale_start_date": "",
-      "sale_end_date": "",
-      "product_update_day": ""
+    "import_options": {
+      "maker": "Lenovo",
+      "prefix": "vc"
     }
   },
   {
-    "identity": {
-      "title": "ThinkPad L580 - ブラック",
-      "brand": "Lenovo",
-      "manufacturer": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "model": "20LWS03S00",
-      "jan": "",
-      "product_code": "20LWS03S00",
-      "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/l-series/ThinkPad-L580/p/20LWS03S00"
+    "source": "valuecommerce",
+    "data": {
+      "identity": {
+        "title": "ThinkPad L13 Yoga：スタンダード",
+        "brand": "Lenovo",
+        "manufacturer": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "model": "20R5CTO1WWJAJP1",
+        "jan": "",
+        "product_code": "20R5CTO1WWJAJP1",
+        "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/yoga-series/ThinkPad-L13-Yoga/p/20R5CTO1WWJAJP1"
+      },
+      "commerce": {
+        "price": 118800,
+        "affiliate_url": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fyoga-series%2FThinkPad-L13-Yoga%2Fp%2F20R5CTO1WWJAJP1"
+      },
+      "raw": {
+        "title": "ThinkPad L13 Yoga：スタンダード",
+        "link": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fyoga-series%2FThinkPad-L13-Yoga%2Fp%2F20R5CTO1WWJAJP1",
+        "description": "薄いボディの13.3型マルチモードモバイル 、第10世代インテル(R) Core(TM) プロセッサー 、高速なSSD (PCIe NVMe OPAL 2.0対応) 、本体に収納可能なThinkPad Pen Pro",
+        "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/yoga-series/ThinkPad-L13-Yoga/p/20R5CTO1WWJAJP1",
+        "pvImg": "<img src=\"//ad.jp.ap.valuecommerce.com/servlet/gifbanner?vs=3697471&vp=889450904\" height=\"1\" width=\"1\" border=\"0\">",
+        "merchantName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "ecCode": "bdu9t",
+        "janCode": "",
+        "markCode": "",
+        "productCode": "20R5CTO1WWJAJP1",
+        "modelCode": "20R5CTO1WWJAJP1",
+        "subStoreId": "pdb218",
+        "subStoreName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "adult": "n",
+        "startDate": "20200902",
+        "category": "pcmobile,pc_peripheraldevice,pcbody,notepc",
+        "imageSmall": {
+          "url": "",
+          "height": "",
+          "width": ""
+        },
+        "imageLarge": {
+          "url": "",
+          "height": "",
+          "width": ""
+        },
+        "imageFree": {
+          "url": "https://www.lenovo.com/medias/lenovo-jp-thinkpad-l13-yoga-intel-2020-0721.png?context=bWFzdGVyfHJvb3R8MTc2NzA3fGltYWdlL3BuZ3xoNzUvaDk0LzExMDYwNDkzMDkwODQ2LnBuZ3xiNjIxNjA5NGVlODhhMTFkODIwYWU5ZTI4MjE0YmQxZDg2ZDM3M2VjMWYxYWI1NzYyYmFkMjYzMTVhNGI3YThk",
+          "height": "",
+          "width": ""
+        },
+        "price": 118800,
+        "commissionValue": "0",
+        "commissionPercent": "0.00",
+        "commissionFixed": "0",
+        "latitude": "",
+        "longitude": "",
+        "product_category": "新品",
+        "brand_name": "Lenovo",
+        "brand_url": "",
+        "stock": "在庫有り",
+        "postage": "あり",
+        "point": "",
+        "size": "",
+        "color": "",
+        "gender": "",
+        "shipping_arrangement": "",
+        "sale_price": "",
+        "sale_start_date": "",
+        "sale_end_date": "",
+        "product_update_day": ""
+      }
     },
-    "commerce": {
-      "price": 46970,
-      "affiliate_url": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fl-series%2FThinkPad-L580%2Fp%2F20LWS03S00"
-    },
-    "raw": {
-      "title": "ThinkPad L580 - ブラック",
-      "link": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fl-series%2FThinkPad-L580%2Fp%2F20LWS03S00",
-      "description": "ThinkPad L580は、あらゆる場所でフルパワーで業務をこなす現代のビジネス、パーソンに最適な15.6型ノートPCです。第8世代インテル(R)Core(TM) プロセッサー搭載、高性能でポータビリティーに優れ、多様なニーズに対応でき、あらゆる場所で生産性を高めるビジネスパートナーです。",
-      "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/l-series/ThinkPad-L580/p/20LWS03S00",
-      "pvImg": "<img src=\"//ad.jp.ap.valuecommerce.com/servlet/gifbanner?vs=3697471&vp=889450904\" height=\"1\" width=\"1\" border=\"0\">",
-      "merchantName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "ecCode": "bdu9t",
-      "janCode": "",
-      "markCode": "",
-      "productCode": "20LWS03S00",
-      "modelCode": "20LWS03S00",
-      "subStoreId": "pdb218",
-      "subStoreName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "adult": "n",
-      "startDate": "20200902",
-      "category": "pcmobile,pc_peripheraldevice,pcbody,notepc",
-      "imageSmall": {
-        "url": "",
-        "height": "",
-        "width": ""
-      },
-      "imageLarge": {
-        "url": "",
-        "height": "",
-        "width": ""
-      },
-      "imageFree": {
-        "url": "https://www.lenovo.com/medias/lenovo-jp-thinkpad-l580-intel-2020-0722.png?context=bWFzdGVyfHJvb3R8NTEyNDR8aW1hZ2UvcG5nfGg3ZC9oODQvMTEwNTU4NzYwNDY4NzgucG5nfDJhNWJlODA2ZjFmMmJiODdiMTA4YmYxNzQ0M2NjNDk4ZmJlNDJlMDA2ZDcyYjA0ZWEwNjQ2Y2MyMjY4ZjZjNTE",
-        "height": "",
-        "width": ""
-      },
-      "price": 46970,
-      "commissionValue": "0",
-      "commissionPercent": "0.00",
-      "commissionFixed": "0",
-      "latitude": "",
-      "longitude": "",
-      "product_category": "新品",
-      "brand_name": "Lenovo",
-      "brand_url": "",
-      "stock": "在庫有り",
-      "postage": "あり",
-      "point": "",
-      "size": "",
-      "color": "",
-      "gender": "",
-      "shipping_arrangement": "",
-      "sale_price": "",
-      "sale_start_date": "",
-      "sale_end_date": "",
-      "product_update_day": ""
+    "import_options": {
+      "maker": "Lenovo",
+      "prefix": "vc"
     }
   },
   {
-    "identity": {
-      "title": "ThinkPad P15v：パフォーマンス",
-      "brand": "Lenovo",
-      "manufacturer": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "model": "20TQCTO1WWJAJP2",
-      "jan": "",
-      "product_code": "20TQCTO1WWJAJP2",
-      "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/p-series/ThinkPad-P15v-Mobile-Workstation/p/20TQCTO1WWJAJP2"
+    "source": "valuecommerce",
+    "data": {
+      "identity": {
+        "title": "ThinkPad P15v：パフォーマンス",
+        "brand": "Lenovo",
+        "manufacturer": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "model": "20TQCTO1WWJAJP2",
+        "jan": "",
+        "product_code": "20TQCTO1WWJAJP2",
+        "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/p-series/ThinkPad-P15v-Mobile-Workstation/p/20TQCTO1WWJAJP2"
+      },
+      "commerce": {
+        "price": 187308,
+        "affiliate_url": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fp-series%2FThinkPad-P15v-Mobile-Workstation%2Fp%2F20TQCTO1WWJAJP2"
+      },
+      "raw": {
+        "title": "ThinkPad P15v：パフォーマンス",
+        "link": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fp-series%2FThinkPad-P15v-Mobile-Workstation%2Fp%2F20TQCTO1WWJAJP2",
+        "description": "コストパフォーマンスを追求したモバイルワークステーションThinkPad P15vは、最大8コアの第10世代インテル(R)Core(TM) ?i7/i5 H プロセッサー、インテル(R)Xeon(R)W プロセッサーを搭載可能。ディスプレイは屋外でも鮮明で見やすい600nitの高輝度4K UHD IPS液晶が選択可能。グラフィックスはNVIDIA(R)Quadro P620を搭載し、建設や製造、メディア、エンターテインメントなど、さまざまな業種に最適です。",
+        "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/p-series/ThinkPad-P15v-Mobile-Workstation/p/20TQCTO1WWJAJP2",
+        "pvImg": "<img src=\"//ad.jp.ap.valuecommerce.com/servlet/gifbanner?vs=3697471&vp=889450904\" height=\"1\" width=\"1\" border=\"0\">",
+        "merchantName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "ecCode": "bdu9t",
+        "janCode": "",
+        "markCode": "",
+        "productCode": "20TQCTO1WWJAJP2",
+        "modelCode": "20TQCTO1WWJAJP2",
+        "subStoreId": "pdb218",
+        "subStoreName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "adult": "n",
+        "startDate": "20200902",
+        "category": "pcmobile,pc_peripheraldevice,pcbody,notepc",
+        "imageSmall": {
+          "url": "",
+          "height": "",
+          "width": ""
+        },
+        "imageLarge": {
+          "url": "",
+          "height": "",
+          "width": ""
+        },
+        "imageFree": {
+          "url": "https://www.lenovo.com/medias/lenovo-jp-thinkpad-p15v-2020-0813.png?context=bWFzdGVyfHJvb3R8NTM2NTl8aW1hZ2UvcG5nfGhhNy9oNjIvMTEwNDY4MTY3MTA2ODYucG5nfDMwZTgxMDc0Zjg3ZGE1YTI2NTdiMTBmMzVmZTk3ZDcwZmQ5OTBiMDU3NDMxYmQ1MDg2ZjkwOWIyOTE0MmI1Mjk",
+          "height": "",
+          "width": ""
+        },
+        "price": 187308,
+        "commissionValue": "0",
+        "commissionPercent": "0.00",
+        "commissionFixed": "0",
+        "latitude": "",
+        "longitude": "",
+        "product_category": "新品",
+        "brand_name": "Lenovo",
+        "brand_url": "",
+        "stock": "在庫有り",
+        "postage": "あり",
+        "point": "",
+        "size": "",
+        "color": "",
+        "gender": "",
+        "shipping_arrangement": "",
+        "sale_price": "",
+        "sale_start_date": "",
+        "sale_end_date": "",
+        "product_update_day": ""
+      }
     },
-    "commerce": {
-      "price": 187308,
-      "affiliate_url": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fp-series%2FThinkPad-P15v-Mobile-Workstation%2Fp%2F20TQCTO1WWJAJP2"
-    },
-    "raw": {
-      "title": "ThinkPad P15v：パフォーマンス",
-      "link": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fp-series%2FThinkPad-P15v-Mobile-Workstation%2Fp%2F20TQCTO1WWJAJP2",
-      "description": "コストパフォーマンスを追求したモバイルワークステーションThinkPad P15vは、最大8コアの第10世代インテル(R)Core(TM) ?i7/i5 H プロセッサー、インテル(R)Xeon(R)W プロセッサーを搭載可能。ディスプレイは屋外でも鮮明で見やすい600nitの高輝度4K UHD IPS液晶が選択可能。グラフィックスはNVIDIA(R)Quadro P620を搭載し、建設や製造、メディア、エンターテインメントなど、さまざまな業種に最適です。",
-      "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/p-series/ThinkPad-P15v-Mobile-Workstation/p/20TQCTO1WWJAJP2",
-      "pvImg": "<img src=\"//ad.jp.ap.valuecommerce.com/servlet/gifbanner?vs=3697471&vp=889450904\" height=\"1\" width=\"1\" border=\"0\">",
-      "merchantName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "ecCode": "bdu9t",
-      "janCode": "",
-      "markCode": "",
-      "productCode": "20TQCTO1WWJAJP2",
-      "modelCode": "20TQCTO1WWJAJP2",
-      "subStoreId": "pdb218",
-      "subStoreName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "adult": "n",
-      "startDate": "20200902",
-      "category": "pcmobile,pc_peripheraldevice,pcbody,notepc",
-      "imageSmall": {
-        "url": "",
-        "height": "",
-        "width": ""
-      },
-      "imageLarge": {
-        "url": "",
-        "height": "",
-        "width": ""
-      },
-      "imageFree": {
-        "url": "https://www.lenovo.com/medias/lenovo-jp-thinkpad-p15v-2020-0813.png?context=bWFzdGVyfHJvb3R8NTM2NTl8aW1hZ2UvcG5nfGhhNy9oNjIvMTEwNDY4MTY3MTA2ODYucG5nfDMwZTgxMDc0Zjg3ZGE1YTI2NTdiMTBmMzVmZTk3ZDcwZmQ5OTBiMDU3NDMxYmQ1MDg2ZjkwOWIyOTE0MmI1Mjk",
-        "height": "",
-        "width": ""
-      },
-      "price": 187308,
-      "commissionValue": "0",
-      "commissionPercent": "0.00",
-      "commissionFixed": "0",
-      "latitude": "",
-      "longitude": "",
-      "product_category": "新品",
-      "brand_name": "Lenovo",
-      "brand_url": "",
-      "stock": "在庫有り",
-      "postage": "あり",
-      "point": "",
-      "size": "",
-      "color": "",
-      "gender": "",
-      "shipping_arrangement": "",
-      "sale_price": "",
-      "sale_start_date": "",
-      "sale_end_date": "",
-      "product_update_day": ""
+    "import_options": {
+      "maker": "Lenovo",
+      "prefix": "vc"
     }
   },
   {
-    "identity": {
-      "title": "ThinkPad L580 - ブラック -マイクロソフトオフィス付き",
-      "brand": "Lenovo",
-      "manufacturer": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "model": "20LWS05H00",
-      "jan": "",
-      "product_code": "20LWS05H00",
-      "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/l-series/ThinkPad-L580/p/20LWS05H00"
+    "source": "valuecommerce",
+    "data": {
+      "identity": {
+        "title": "ThinkPad L580 - ブラック -マイクロソフトオフィス付き",
+        "brand": "Lenovo",
+        "manufacturer": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "model": "20LWS05H00",
+        "jan": "",
+        "product_code": "20LWS05H00",
+        "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/l-series/ThinkPad-L580/p/20LWS05H00"
+      },
+      "commerce": {
+        "price": 59950,
+        "affiliate_url": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fl-series%2FThinkPad-L580%2Fp%2F20LWS05H00"
+      },
+      "raw": {
+        "title": "ThinkPad L580 - ブラック -マイクロソフトオフィス付き",
+        "link": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fl-series%2FThinkPad-L580%2Fp%2F20LWS05H00",
+        "description": "ThinkPad L580は、あらゆる場所でフルパワーで業務をこなす現代のビジネス、パーソンに最適な15.6型ノートPCです。第8世代インテル(R)Core(TM) プロセッサー搭載、高性能でポータビリティーに優れ、多様なニーズに対応でき、あらゆる場所で生産性を高めるビジネスパートナーです。",
+        "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/l-series/ThinkPad-L580/p/20LWS05H00",
+        "pvImg": "<img src=\"//ad.jp.ap.valuecommerce.com/servlet/gifbanner?vs=3697471&vp=889450904\" height=\"1\" width=\"1\" border=\"0\">",
+        "merchantName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "ecCode": "bdu9t",
+        "janCode": "",
+        "markCode": "",
+        "productCode": "20LWS05H00",
+        "modelCode": "20LWS05H00",
+        "subStoreId": "pdb218",
+        "subStoreName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "adult": "n",
+        "startDate": "20200902",
+        "category": "pcmobile,pc_peripheraldevice,pcbody,notepc",
+        "imageSmall": {
+          "url": "",
+          "height": "",
+          "width": ""
+        },
+        "imageLarge": {
+          "url": "",
+          "height": "",
+          "width": ""
+        },
+        "imageFree": {
+          "url": "https://www.lenovo.com/medias/lenovo-jp-thinkpad-l580-intel-2020-0722.png?context=bWFzdGVyfHJvb3R8NTEyNDR8aW1hZ2UvcG5nfGg3ZC9oODQvMTEwNTU4NzYwNDY4NzgucG5nfDJhNWJlODA2ZjFmMmJiODdiMTA4YmYxNzQ0M2NjNDk4ZmJlNDJlMDA2ZDcyYjA0ZWEwNjQ2Y2MyMjY4ZjZjNTE",
+          "height": "",
+          "width": ""
+        },
+        "price": 59950,
+        "commissionValue": "0",
+        "commissionPercent": "0.00",
+        "commissionFixed": "0",
+        "latitude": "",
+        "longitude": "",
+        "product_category": "新品",
+        "brand_name": "Lenovo",
+        "brand_url": "",
+        "stock": "在庫有り",
+        "postage": "あり",
+        "point": "",
+        "size": "",
+        "color": "",
+        "gender": "",
+        "shipping_arrangement": "",
+        "sale_price": "",
+        "sale_start_date": "",
+        "sale_end_date": "",
+        "product_update_day": ""
+      }
     },
-    "commerce": {
-      "price": 59950,
-      "affiliate_url": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fl-series%2FThinkPad-L580%2Fp%2F20LWS05H00"
-    },
-    "raw": {
-      "title": "ThinkPad L580 - ブラック -マイクロソフトオフィス付き",
-      "link": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fl-series%2FThinkPad-L580%2Fp%2F20LWS05H00",
-      "description": "ThinkPad L580は、あらゆる場所でフルパワーで業務をこなす現代のビジネス、パーソンに最適な15.6型ノートPCです。第8世代インテル(R)Core(TM) プロセッサー搭載、高性能でポータビリティーに優れ、多様なニーズに対応でき、あらゆる場所で生産性を高めるビジネスパートナーです。",
-      "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/l-series/ThinkPad-L580/p/20LWS05H00",
-      "pvImg": "<img src=\"//ad.jp.ap.valuecommerce.com/servlet/gifbanner?vs=3697471&vp=889450904\" height=\"1\" width=\"1\" border=\"0\">",
-      "merchantName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "ecCode": "bdu9t",
-      "janCode": "",
-      "markCode": "",
-      "productCode": "20LWS05H00",
-      "modelCode": "20LWS05H00",
-      "subStoreId": "pdb218",
-      "subStoreName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "adult": "n",
-      "startDate": "20200902",
-      "category": "pcmobile,pc_peripheraldevice,pcbody,notepc",
-      "imageSmall": {
-        "url": "",
-        "height": "",
-        "width": ""
-      },
-      "imageLarge": {
-        "url": "",
-        "height": "",
-        "width": ""
-      },
-      "imageFree": {
-        "url": "https://www.lenovo.com/medias/lenovo-jp-thinkpad-l580-intel-2020-0722.png?context=bWFzdGVyfHJvb3R8NTEyNDR8aW1hZ2UvcG5nfGg3ZC9oODQvMTEwNTU4NzYwNDY4NzgucG5nfDJhNWJlODA2ZjFmMmJiODdiMTA4YmYxNzQ0M2NjNDk4ZmJlNDJlMDA2ZDcyYjA0ZWEwNjQ2Y2MyMjY4ZjZjNTE",
-        "height": "",
-        "width": ""
-      },
-      "price": 59950,
-      "commissionValue": "0",
-      "commissionPercent": "0.00",
-      "commissionFixed": "0",
-      "latitude": "",
-      "longitude": "",
-      "product_category": "新品",
-      "brand_name": "Lenovo",
-      "brand_url": "",
-      "stock": "在庫有り",
-      "postage": "あり",
-      "point": "",
-      "size": "",
-      "color": "",
-      "gender": "",
-      "shipping_arrangement": "",
-      "sale_price": "",
-      "sale_start_date": "",
-      "sale_end_date": "",
-      "product_update_day": ""
+    "import_options": {
+      "maker": "Lenovo",
+      "prefix": "vc"
     }
   },
   {
-    "identity": {
-      "title": "ThinkPad L13 Yoga：パフォーマンス(Pro OS選択可能)",
-      "brand": "Lenovo",
-      "manufacturer": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "model": "20R5CTO1WWJAJP3",
-      "jan": "",
-      "product_code": "20R5CTO1WWJAJP3",
-      "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/yoga-series/ThinkPad-L13-Yoga/p/20R5CTO1WWJAJP3"
+    "source": "valuecommerce",
+    "data": {
+      "identity": {
+        "title": "ThinkPad L13 Yoga：パフォーマンス(Pro OS選択可能)",
+        "brand": "Lenovo",
+        "manufacturer": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "model": "20R5CTO1WWJAJP3",
+        "jan": "",
+        "product_code": "20R5CTO1WWJAJP3",
+        "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/yoga-series/ThinkPad-L13-Yoga/p/20R5CTO1WWJAJP3"
+      },
+      "commerce": {
+        "price": 182600,
+        "affiliate_url": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fyoga-series%2FThinkPad-L13-Yoga%2Fp%2F20R5CTO1WWJAJP3"
+      },
+      "raw": {
+        "title": "ThinkPad L13 Yoga：パフォーマンス(Pro OS選択可能)",
+        "link": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fyoga-series%2FThinkPad-L13-Yoga%2Fp%2F20R5CTO1WWJAJP3",
+        "description": "薄いボディの13.3型マルチモードモバイル 、第10世代インテル(R) Core(TM) プロセッサー 、高速なSSD (PCIe NVMe OPAL 2.0対応) 、本体に収納可能なThinkPad Pen Pro",
+        "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/yoga-series/ThinkPad-L13-Yoga/p/20R5CTO1WWJAJP3",
+        "pvImg": "<img src=\"//ad.jp.ap.valuecommerce.com/servlet/gifbanner?vs=3697471&vp=889450904\" height=\"1\" width=\"1\" border=\"0\">",
+        "merchantName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "ecCode": "bdu9t",
+        "janCode": "",
+        "markCode": "",
+        "productCode": "20R5CTO1WWJAJP3",
+        "modelCode": "20R5CTO1WWJAJP3",
+        "subStoreId": "pdb218",
+        "subStoreName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "adult": "n",
+        "startDate": "20200902",
+        "category": "pcmobile,pc_peripheraldevice,pcbody,notepc",
+        "imageSmall": {
+          "url": "",
+          "height": "",
+          "width": ""
+        },
+        "imageLarge": {
+          "url": "",
+          "height": "",
+          "width": ""
+        },
+        "imageFree": {
+          "url": "https://www.lenovo.com/medias/lenovo-jp-thinkpad-l13-yoga-intel-2020-0721.png?context=bWFzdGVyfHJvb3R8MTc2NzA3fGltYWdlL3BuZ3xoNzUvaDk0LzExMDYwNDkzMDkwODQ2LnBuZ3xiNjIxNjA5NGVlODhhMTFkODIwYWU5ZTI4MjE0YmQxZDg2ZDM3M2VjMWYxYWI1NzYyYmFkMjYzMTVhNGI3YThk",
+          "height": "",
+          "width": ""
+        },
+        "price": 182600,
+        "commissionValue": "0",
+        "commissionPercent": "0.00",
+        "commissionFixed": "0",
+        "latitude": "",
+        "longitude": "",
+        "product_category": "新品",
+        "brand_name": "Lenovo",
+        "brand_url": "",
+        "stock": "在庫有り",
+        "postage": "あり",
+        "point": "",
+        "size": "",
+        "color": "",
+        "gender": "",
+        "shipping_arrangement": "",
+        "sale_price": "",
+        "sale_start_date": "",
+        "sale_end_date": "",
+        "product_update_day": ""
+      }
     },
-    "commerce": {
-      "price": 182600,
-      "affiliate_url": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fyoga-series%2FThinkPad-L13-Yoga%2Fp%2F20R5CTO1WWJAJP3"
-    },
-    "raw": {
-      "title": "ThinkPad L13 Yoga：パフォーマンス(Pro OS選択可能)",
-      "link": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fyoga-series%2FThinkPad-L13-Yoga%2Fp%2F20R5CTO1WWJAJP3",
-      "description": "薄いボディの13.3型マルチモードモバイル 、第10世代インテル(R) Core(TM) プロセッサー 、高速なSSD (PCIe NVMe OPAL 2.0対応) 、本体に収納可能なThinkPad Pen Pro",
-      "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/yoga-series/ThinkPad-L13-Yoga/p/20R5CTO1WWJAJP3",
-      "pvImg": "<img src=\"//ad.jp.ap.valuecommerce.com/servlet/gifbanner?vs=3697471&vp=889450904\" height=\"1\" width=\"1\" border=\"0\">",
-      "merchantName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "ecCode": "bdu9t",
-      "janCode": "",
-      "markCode": "",
-      "productCode": "20R5CTO1WWJAJP3",
-      "modelCode": "20R5CTO1WWJAJP3",
-      "subStoreId": "pdb218",
-      "subStoreName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "adult": "n",
-      "startDate": "20200902",
-      "category": "pcmobile,pc_peripheraldevice,pcbody,notepc",
-      "imageSmall": {
-        "url": "",
-        "height": "",
-        "width": ""
-      },
-      "imageLarge": {
-        "url": "",
-        "height": "",
-        "width": ""
-      },
-      "imageFree": {
-        "url": "https://www.lenovo.com/medias/lenovo-jp-thinkpad-l13-yoga-intel-2020-0721.png?context=bWFzdGVyfHJvb3R8MTc2NzA3fGltYWdlL3BuZ3xoNzUvaDk0LzExMDYwNDkzMDkwODQ2LnBuZ3xiNjIxNjA5NGVlODhhMTFkODIwYWU5ZTI4MjE0YmQxZDg2ZDM3M2VjMWYxYWI1NzYyYmFkMjYzMTVhNGI3YThk",
-        "height": "",
-        "width": ""
-      },
-      "price": 182600,
-      "commissionValue": "0",
-      "commissionPercent": "0.00",
-      "commissionFixed": "0",
-      "latitude": "",
-      "longitude": "",
-      "product_category": "新品",
-      "brand_name": "Lenovo",
-      "brand_url": "",
-      "stock": "在庫有り",
-      "postage": "あり",
-      "point": "",
-      "size": "",
-      "color": "",
-      "gender": "",
-      "shipping_arrangement": "",
-      "sale_price": "",
-      "sale_start_date": "",
-      "sale_end_date": "",
-      "product_update_day": ""
+    "import_options": {
+      "maker": "Lenovo",
+      "prefix": "vc"
     }
   },
   {
-    "identity": {
-      "title": "【おすすめ】ThinkPad P15v：金融トレーディング/分析向けエントリー",
-      "brand": "Lenovo",
-      "manufacturer": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "model": "20TQCTO1WWJAJP4",
-      "jan": "",
-      "product_code": "20TQCTO1WWJAJP4",
-      "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/p-series/ThinkPad-P15v-Mobile-Workstation/p/20TQCTO1WWJAJP4"
+    "source": "valuecommerce",
+    "data": {
+      "identity": {
+        "title": "【おすすめ】ThinkPad P15v：写真/製版向けエントリー",
+        "brand": "Lenovo",
+        "manufacturer": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "model": "20TQCTO1WWJAJP1",
+        "jan": "",
+        "product_code": "20TQCTO1WWJAJP1",
+        "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/p-series/ThinkPad-P15v-Mobile-Workstation/p/20TQCTO1WWJAJP1"
+      },
+      "commerce": {
+        "price": 158994,
+        "affiliate_url": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fp-series%2FThinkPad-P15v-Mobile-Workstation%2Fp%2F20TQCTO1WWJAJP1"
+      },
+      "raw": {
+        "title": "【おすすめ】ThinkPad P15v：写真/製版向けエントリー",
+        "link": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fp-series%2FThinkPad-P15v-Mobile-Workstation%2Fp%2F20TQCTO1WWJAJP1",
+        "description": "コストパフォーマンスを追求したモバイルワークステーションThinkPad P15vは、最大8コアの第10世代インテル(R)Core(TM) ?i7/i5 H プロセッサー、インテル(R)Xeon(R)W プロセッサーを搭載可能。ディスプレイは屋外でも鮮明で見やすい600nitの高輝度4K UHD IPS液晶が選択可能。グラフィックスはNVIDIA(R)Quadro P620を搭載し、建設や製造、メディア、エンターテインメントなど、さまざまな業種に最適です。",
+        "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/p-series/ThinkPad-P15v-Mobile-Workstation/p/20TQCTO1WWJAJP1",
+        "pvImg": "<img src=\"//ad.jp.ap.valuecommerce.com/servlet/gifbanner?vs=3697471&vp=889450904\" height=\"1\" width=\"1\" border=\"0\">",
+        "merchantName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "ecCode": "bdu9t",
+        "janCode": "",
+        "markCode": "",
+        "productCode": "20TQCTO1WWJAJP1",
+        "modelCode": "20TQCTO1WWJAJP1",
+        "subStoreId": "pdb218",
+        "subStoreName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "adult": "n",
+        "startDate": "20200902",
+        "category": "pcmobile,pc_peripheraldevice,pcbody,notepc",
+        "imageSmall": {
+          "url": "",
+          "height": "",
+          "width": ""
+        },
+        "imageLarge": {
+          "url": "",
+          "height": "",
+          "width": ""
+        },
+        "imageFree": {
+          "url": "https://www.lenovo.com/medias/lenovo-jp-thinkpad-p15v-2020-0813.png?context=bWFzdGVyfHJvb3R8NTM2NTl8aW1hZ2UvcG5nfGhhNy9oNjIvMTEwNDY4MTY3MTA2ODYucG5nfDMwZTgxMDc0Zjg3ZGE1YTI2NTdiMTBmMzVmZTk3ZDcwZmQ5OTBiMDU3NDMxYmQ1MDg2ZjkwOWIyOTE0MmI1Mjk",
+          "height": "",
+          "width": ""
+        },
+        "price": 158994,
+        "commissionValue": "0",
+        "commissionPercent": "0.00",
+        "commissionFixed": "0",
+        "latitude": "",
+        "longitude": "",
+        "product_category": "新品",
+        "brand_name": "Lenovo",
+        "brand_url": "",
+        "stock": "在庫有り",
+        "postage": "あり",
+        "point": "",
+        "size": "",
+        "color": "",
+        "gender": "",
+        "shipping_arrangement": "",
+        "sale_price": "",
+        "sale_start_date": "",
+        "sale_end_date": "",
+        "product_update_day": ""
+      }
     },
-    "commerce": {
-      "price": 304194,
-      "affiliate_url": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fp-series%2FThinkPad-P15v-Mobile-Workstation%2Fp%2F20TQCTO1WWJAJP4"
-    },
-    "raw": {
-      "title": "【おすすめ】ThinkPad P15v：金融トレーディング/分析向けエントリー",
-      "link": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fp-series%2FThinkPad-P15v-Mobile-Workstation%2Fp%2F20TQCTO1WWJAJP4",
-      "description": "コストパフォーマンスを追求したモバイルワークステーションThinkPad P15vは、最大8コアの第10世代インテル(R)Core(TM) ?i7/i5 H プロセッサー、インテル(R)Xeon(R)W プロセッサーを搭載可能。ディスプレイは屋外でも鮮明で見やすい600nitの高輝度4K UHD IPS液晶が選択可能。グラフィックスはNVIDIA(R)Quadro P620を搭載し、建設や製造、メディア、エンターテインメントなど、さまざまな業種に最適です。",
-      "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/p-series/ThinkPad-P15v-Mobile-Workstation/p/20TQCTO1WWJAJP4",
-      "pvImg": "<img src=\"//ad.jp.ap.valuecommerce.com/servlet/gifbanner?vs=3697471&vp=889450904\" height=\"1\" width=\"1\" border=\"0\">",
-      "merchantName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "ecCode": "bdu9t",
-      "janCode": "",
-      "markCode": "",
-      "productCode": "20TQCTO1WWJAJP4",
-      "modelCode": "20TQCTO1WWJAJP4",
-      "subStoreId": "pdb218",
-      "subStoreName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "adult": "n",
-      "startDate": "20200902",
-      "category": "pcmobile,pc_peripheraldevice,pcbody,notepc",
-      "imageSmall": {
-        "url": "",
-        "height": "",
-        "width": ""
-      },
-      "imageLarge": {
-        "url": "",
-        "height": "",
-        "width": ""
-      },
-      "imageFree": {
-        "url": "https://www.lenovo.com/medias/lenovo-jp-thinkpad-p15v-2020-0813.png?context=bWFzdGVyfHJvb3R8NTM2NTl8aW1hZ2UvcG5nfGhhNy9oNjIvMTEwNDY4MTY3MTA2ODYucG5nfDMwZTgxMDc0Zjg3ZGE1YTI2NTdiMTBmMzVmZTk3ZDcwZmQ5OTBiMDU3NDMxYmQ1MDg2ZjkwOWIyOTE0MmI1Mjk",
-        "height": "",
-        "width": ""
-      },
-      "price": 304194,
-      "commissionValue": "0",
-      "commissionPercent": "0.00",
-      "commissionFixed": "0",
-      "latitude": "",
-      "longitude": "",
-      "product_category": "新品",
-      "brand_name": "Lenovo",
-      "brand_url": "",
-      "stock": "在庫有り",
-      "postage": "あり",
-      "point": "",
-      "size": "",
-      "color": "",
-      "gender": "",
-      "shipping_arrangement": "",
-      "sale_price": "",
-      "sale_start_date": "",
-      "sale_end_date": "",
-      "product_update_day": ""
+    "import_options": {
+      "maker": "Lenovo",
+      "prefix": "vc"
     }
   },
   {
-    "identity": {
-      "title": "【おすすめ】ThinkPad P15v：写真/製版向けエントリー",
-      "brand": "Lenovo",
-      "manufacturer": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "model": "20TQCTO1WWJAJP1",
-      "jan": "",
-      "product_code": "20TQCTO1WWJAJP1",
-      "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/p-series/ThinkPad-P15v-Mobile-Workstation/p/20TQCTO1WWJAJP1"
+    "source": "valuecommerce",
+    "data": {
+      "identity": {
+        "title": "【おすすめ】ThinkPad P15v：金融トレーディング/分析向けエントリー",
+        "brand": "Lenovo",
+        "manufacturer": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "model": "20TQCTO1WWJAJP4",
+        "jan": "",
+        "product_code": "20TQCTO1WWJAJP4",
+        "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/p-series/ThinkPad-P15v-Mobile-Workstation/p/20TQCTO1WWJAJP4"
+      },
+      "commerce": {
+        "price": 304194,
+        "affiliate_url": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fp-series%2FThinkPad-P15v-Mobile-Workstation%2Fp%2F20TQCTO1WWJAJP4"
+      },
+      "raw": {
+        "title": "【おすすめ】ThinkPad P15v：金融トレーディング/分析向けエントリー",
+        "link": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fp-series%2FThinkPad-P15v-Mobile-Workstation%2Fp%2F20TQCTO1WWJAJP4",
+        "description": "コストパフォーマンスを追求したモバイルワークステーションThinkPad P15vは、最大8コアの第10世代インテル(R)Core(TM) ?i7/i5 H プロセッサー、インテル(R)Xeon(R)W プロセッサーを搭載可能。ディスプレイは屋外でも鮮明で見やすい600nitの高輝度4K UHD IPS液晶が選択可能。グラフィックスはNVIDIA(R)Quadro P620を搭載し、建設や製造、メディア、エンターテインメントなど、さまざまな業種に最適です。",
+        "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/p-series/ThinkPad-P15v-Mobile-Workstation/p/20TQCTO1WWJAJP4",
+        "pvImg": "<img src=\"//ad.jp.ap.valuecommerce.com/servlet/gifbanner?vs=3697471&vp=889450904\" height=\"1\" width=\"1\" border=\"0\">",
+        "merchantName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "ecCode": "bdu9t",
+        "janCode": "",
+        "markCode": "",
+        "productCode": "20TQCTO1WWJAJP4",
+        "modelCode": "20TQCTO1WWJAJP4",
+        "subStoreId": "pdb218",
+        "subStoreName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "adult": "n",
+        "startDate": "20200902",
+        "category": "pcmobile,pc_peripheraldevice,pcbody,notepc",
+        "imageSmall": {
+          "url": "",
+          "height": "",
+          "width": ""
+        },
+        "imageLarge": {
+          "url": "",
+          "height": "",
+          "width": ""
+        },
+        "imageFree": {
+          "url": "https://www.lenovo.com/medias/lenovo-jp-thinkpad-p15v-2020-0813.png?context=bWFzdGVyfHJvb3R8NTM2NTl8aW1hZ2UvcG5nfGhhNy9oNjIvMTEwNDY4MTY3MTA2ODYucG5nfDMwZTgxMDc0Zjg3ZGE1YTI2NTdiMTBmMzVmZTk3ZDcwZmQ5OTBiMDU3NDMxYmQ1MDg2ZjkwOWIyOTE0MmI1Mjk",
+          "height": "",
+          "width": ""
+        },
+        "price": 304194,
+        "commissionValue": "0",
+        "commissionPercent": "0.00",
+        "commissionFixed": "0",
+        "latitude": "",
+        "longitude": "",
+        "product_category": "新品",
+        "brand_name": "Lenovo",
+        "brand_url": "",
+        "stock": "在庫有り",
+        "postage": "あり",
+        "point": "",
+        "size": "",
+        "color": "",
+        "gender": "",
+        "shipping_arrangement": "",
+        "sale_price": "",
+        "sale_start_date": "",
+        "sale_end_date": "",
+        "product_update_day": ""
+      }
     },
-    "commerce": {
-      "price": 158994,
-      "affiliate_url": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fp-series%2FThinkPad-P15v-Mobile-Workstation%2Fp%2F20TQCTO1WWJAJP1"
-    },
-    "raw": {
-      "title": "【おすすめ】ThinkPad P15v：写真/製版向けエントリー",
-      "link": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fp-series%2FThinkPad-P15v-Mobile-Workstation%2Fp%2F20TQCTO1WWJAJP1",
-      "description": "コストパフォーマンスを追求したモバイルワークステーションThinkPad P15vは、最大8コアの第10世代インテル(R)Core(TM) ?i7/i5 H プロセッサー、インテル(R)Xeon(R)W プロセッサーを搭載可能。ディスプレイは屋外でも鮮明で見やすい600nitの高輝度4K UHD IPS液晶が選択可能。グラフィックスはNVIDIA(R)Quadro P620を搭載し、建設や製造、メディア、エンターテインメントなど、さまざまな業種に最適です。",
-      "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/p-series/ThinkPad-P15v-Mobile-Workstation/p/20TQCTO1WWJAJP1",
-      "pvImg": "<img src=\"//ad.jp.ap.valuecommerce.com/servlet/gifbanner?vs=3697471&vp=889450904\" height=\"1\" width=\"1\" border=\"0\">",
-      "merchantName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "ecCode": "bdu9t",
-      "janCode": "",
-      "markCode": "",
-      "productCode": "20TQCTO1WWJAJP1",
-      "modelCode": "20TQCTO1WWJAJP1",
-      "subStoreId": "pdb218",
-      "subStoreName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "adult": "n",
-      "startDate": "20200902",
-      "category": "pcmobile,pc_peripheraldevice,pcbody,notepc",
-      "imageSmall": {
-        "url": "",
-        "height": "",
-        "width": ""
-      },
-      "imageLarge": {
-        "url": "",
-        "height": "",
-        "width": ""
-      },
-      "imageFree": {
-        "url": "https://www.lenovo.com/medias/lenovo-jp-thinkpad-p15v-2020-0813.png?context=bWFzdGVyfHJvb3R8NTM2NTl8aW1hZ2UvcG5nfGhhNy9oNjIvMTEwNDY4MTY3MTA2ODYucG5nfDMwZTgxMDc0Zjg3ZGE1YTI2NTdiMTBmMzVmZTk3ZDcwZmQ5OTBiMDU3NDMxYmQ1MDg2ZjkwOWIyOTE0MmI1Mjk",
-        "height": "",
-        "width": ""
-      },
-      "price": 158994,
-      "commissionValue": "0",
-      "commissionPercent": "0.00",
-      "commissionFixed": "0",
-      "latitude": "",
-      "longitude": "",
-      "product_category": "新品",
-      "brand_name": "Lenovo",
-      "brand_url": "",
-      "stock": "在庫有り",
-      "postage": "あり",
-      "point": "",
-      "size": "",
-      "color": "",
-      "gender": "",
-      "shipping_arrangement": "",
-      "sale_price": "",
-      "sale_start_date": "",
-      "sale_end_date": "",
-      "product_update_day": ""
+    "import_options": {
+      "maker": "Lenovo",
+      "prefix": "vc"
     }
   },
   {
-    "identity": {
-      "title": "【おすすめ】ThinkPad P15v：製造・建築3次元CAD & 2次元CAD向けベーシック",
-      "brand": "Lenovo",
-      "manufacturer": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "model": "20TQCTO1WWJAJP3",
-      "jan": "",
-      "product_code": "20TQCTO1WWJAJP3",
-      "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/p-series/ThinkPad-P15v-Mobile-Workstation/p/20TQCTO1WWJAJP3"
+    "source": "valuecommerce",
+    "data": {
+      "identity": {
+        "title": "【おすすめ】ThinkPad P15v：製造・建築3次元CAD & 2次元CAD向けベーシック",
+        "brand": "Lenovo",
+        "manufacturer": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "model": "20TQCTO1WWJAJP3",
+        "jan": "",
+        "product_code": "20TQCTO1WWJAJP3",
+        "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/p-series/ThinkPad-P15v-Mobile-Workstation/p/20TQCTO1WWJAJP3"
+      },
+      "commerce": {
+        "price": 227964,
+        "affiliate_url": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fp-series%2FThinkPad-P15v-Mobile-Workstation%2Fp%2F20TQCTO1WWJAJP3"
+      },
+      "raw": {
+        "title": "【おすすめ】ThinkPad P15v：製造・建築3次元CAD & 2次元CAD向けベーシック",
+        "link": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fp-series%2FThinkPad-P15v-Mobile-Workstation%2Fp%2F20TQCTO1WWJAJP3",
+        "description": "コストパフォーマンスを追求したモバイルワークステーションThinkPad P15vは、最大8コアの第10世代インテル(R)Core(TM) ?i7/i5 H プロセッサー、インテル(R)Xeon(R)W プロセッサーを搭載可能。ディスプレイは屋外でも鮮明で見やすい600nitの高輝度4K UHD IPS液晶が選択可能。グラフィックスはNVIDIA(R)Quadro P620を搭載し、建設や製造、メディア、エンターテインメントなど、さまざまな業種に最適です。",
+        "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/p-series/ThinkPad-P15v-Mobile-Workstation/p/20TQCTO1WWJAJP3",
+        "pvImg": "<img src=\"//ad.jp.ap.valuecommerce.com/servlet/gifbanner?vs=3697471&vp=889450904\" height=\"1\" width=\"1\" border=\"0\">",
+        "merchantName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "ecCode": "bdu9t",
+        "janCode": "",
+        "markCode": "",
+        "productCode": "20TQCTO1WWJAJP3",
+        "modelCode": "20TQCTO1WWJAJP3",
+        "subStoreId": "pdb218",
+        "subStoreName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "adult": "n",
+        "startDate": "20200902",
+        "category": "pcmobile,pc_peripheraldevice,pcbody,notepc",
+        "imageSmall": {
+          "url": "",
+          "height": "",
+          "width": ""
+        },
+        "imageLarge": {
+          "url": "",
+          "height": "",
+          "width": ""
+        },
+        "imageFree": {
+          "url": "https://www.lenovo.com/medias/lenovo-jp-thinkpad-p15v-2020-0813.png?context=bWFzdGVyfHJvb3R8NTM2NTl8aW1hZ2UvcG5nfGhhNy9oNjIvMTEwNDY4MTY3MTA2ODYucG5nfDMwZTgxMDc0Zjg3ZGE1YTI2NTdiMTBmMzVmZTk3ZDcwZmQ5OTBiMDU3NDMxYmQ1MDg2ZjkwOWIyOTE0MmI1Mjk",
+          "height": "",
+          "width": ""
+        },
+        "price": 227964,
+        "commissionValue": "0",
+        "commissionPercent": "0.00",
+        "commissionFixed": "0",
+        "latitude": "",
+        "longitude": "",
+        "product_category": "新品",
+        "brand_name": "Lenovo",
+        "brand_url": "",
+        "stock": "在庫有り",
+        "postage": "あり",
+        "point": "",
+        "size": "",
+        "color": "",
+        "gender": "",
+        "shipping_arrangement": "",
+        "sale_price": "",
+        "sale_start_date": "",
+        "sale_end_date": "",
+        "product_update_day": ""
+      }
     },
-    "commerce": {
-      "price": 227964,
-      "affiliate_url": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fp-series%2FThinkPad-P15v-Mobile-Workstation%2Fp%2F20TQCTO1WWJAJP3"
-    },
-    "raw": {
-      "title": "【おすすめ】ThinkPad P15v：製造・建築3次元CAD & 2次元CAD向けベーシック",
-      "link": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fp-series%2FThinkPad-P15v-Mobile-Workstation%2Fp%2F20TQCTO1WWJAJP3",
-      "description": "コストパフォーマンスを追求したモバイルワークステーションThinkPad P15vは、最大8コアの第10世代インテル(R)Core(TM) ?i7/i5 H プロセッサー、インテル(R)Xeon(R)W プロセッサーを搭載可能。ディスプレイは屋外でも鮮明で見やすい600nitの高輝度4K UHD IPS液晶が選択可能。グラフィックスはNVIDIA(R)Quadro P620を搭載し、建設や製造、メディア、エンターテインメントなど、さまざまな業種に最適です。",
-      "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/p-series/ThinkPad-P15v-Mobile-Workstation/p/20TQCTO1WWJAJP3",
-      "pvImg": "<img src=\"//ad.jp.ap.valuecommerce.com/servlet/gifbanner?vs=3697471&vp=889450904\" height=\"1\" width=\"1\" border=\"0\">",
-      "merchantName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "ecCode": "bdu9t",
-      "janCode": "",
-      "markCode": "",
-      "productCode": "20TQCTO1WWJAJP3",
-      "modelCode": "20TQCTO1WWJAJP3",
-      "subStoreId": "pdb218",
-      "subStoreName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "adult": "n",
-      "startDate": "20200902",
-      "category": "pcmobile,pc_peripheraldevice,pcbody,notepc",
-      "imageSmall": {
-        "url": "",
-        "height": "",
-        "width": ""
-      },
-      "imageLarge": {
-        "url": "",
-        "height": "",
-        "width": ""
-      },
-      "imageFree": {
-        "url": "https://www.lenovo.com/medias/lenovo-jp-thinkpad-p15v-2020-0813.png?context=bWFzdGVyfHJvb3R8NTM2NTl8aW1hZ2UvcG5nfGhhNy9oNjIvMTEwNDY4MTY3MTA2ODYucG5nfDMwZTgxMDc0Zjg3ZGE1YTI2NTdiMTBmMzVmZTk3ZDcwZmQ5OTBiMDU3NDMxYmQ1MDg2ZjkwOWIyOTE0MmI1Mjk",
-        "height": "",
-        "width": ""
-      },
-      "price": 227964,
-      "commissionValue": "0",
-      "commissionPercent": "0.00",
-      "commissionFixed": "0",
-      "latitude": "",
-      "longitude": "",
-      "product_category": "新品",
-      "brand_name": "Lenovo",
-      "brand_url": "",
-      "stock": "在庫有り",
-      "postage": "あり",
-      "point": "",
-      "size": "",
-      "color": "",
-      "gender": "",
-      "shipping_arrangement": "",
-      "sale_price": "",
-      "sale_start_date": "",
-      "sale_end_date": "",
-      "product_update_day": ""
+    "import_options": {
+      "maker": "Lenovo",
+      "prefix": "vc"
     }
   },
   {
-    "identity": {
-      "title": "ThinkPad P73",
-      "brand": "Lenovo",
-      "manufacturer": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "model": "20QRCTO1WWJAJP1,20QRCTO1WWJAJP2,20QRCTO1WWJAJP4,20QRCTO1WWJAJP3,20QRCTO1WWJAJP5",
-      "jan": "",
-      "product_code": "20QRCTO1WWJAJP1,20QRCTO1WWJAJP2,20QRCTO1WWJAJP4,20QRCTO1WWJAJP3,20QRCTO1WWJAJP5",
-      "guid": "https://www.lenovo.com/jp/ja/workstations/thinkpad-p-series/ThinkPad-P73/p/22WS2WPWP73"
+    "source": "valuecommerce",
+    "data": {
+      "identity": {
+        "title": "ThinkPad P73",
+        "brand": "Lenovo",
+        "manufacturer": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "model": "20QRCTO1WWJAJP1,20QRCTO1WWJAJP2,20QRCTO1WWJAJP4,20QRCTO1WWJAJP3,20QRCTO1WWJAJP5",
+        "jan": "",
+        "product_code": "20QRCTO1WWJAJP1,20QRCTO1WWJAJP2,20QRCTO1WWJAJP4,20QRCTO1WWJAJP3,20QRCTO1WWJAJP5",
+        "guid": "https://www.lenovo.com/jp/ja/workstations/thinkpad-p-series/ThinkPad-P73/p/22WS2WPWP73"
+      },
+      "commerce": {
+        "price": 242770,
+        "affiliate_url": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fworkstations%2Fthinkpad-p-series%2FThinkPad-P73%2Fp%2F22WS2WPWP73"
+      },
+      "raw": {
+        "title": "ThinkPad P73",
+        "link": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fworkstations%2Fthinkpad-p-series%2FThinkPad-P73%2Fp%2F22WS2WPWP73",
+        "description": "大画面17.3型UHD IPS液晶を選択可能 、インテル(R)Xeon(R)プロセッサーや第9世代インテル(R)Core(TM) プロセッサー搭載可能 、NVIDIA(R)Quadro(R)グラフィックス 、大容量ストレージを搭載可能",
+        "guid": "https://www.lenovo.com/jp/ja/workstations/thinkpad-p-series/ThinkPad-P73/p/22WS2WPWP73",
+        "pvImg": "<img src=\"//ad.jp.ap.valuecommerce.com/servlet/gifbanner?vs=3697471&vp=889450904\" height=\"1\" width=\"1\" border=\"0\">",
+        "merchantName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "ecCode": "bdu9t",
+        "janCode": "",
+        "markCode": "",
+        "productCode": "20QRCTO1WWJAJP1,20QRCTO1WWJAJP2,20QRCTO1WWJAJP4,20QRCTO1WWJAJP3,20QRCTO1WWJAJP5",
+        "modelCode": "20QRCTO1WWJAJP1,20QRCTO1WWJAJP2,20QRCTO1WWJAJP4,20QRCTO1WWJAJP3,20QRCTO1WWJAJP5",
+        "subStoreId": "pdb218",
+        "subStoreName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "adult": "n",
+        "startDate": "20200902",
+        "category": "pcmobile,pc_peripheraldevice,pcbody,notepc",
+        "imageSmall": {
+          "url": "",
+          "height": "",
+          "width": ""
+        },
+        "imageLarge": {
+          "url": "",
+          "height": "",
+          "width": ""
+        },
+        "imageFree": {
+          "url": "https://www.lenovo.com/medias/lenovo-jp-thinkpad-p73-intel-logo-2020-0814.png?context=bWFzdGVyfHJvb3R8MTY3MzI1fGltYWdlL3BuZ3xoZDQvaGQ3LzExMDU3NjcyNjE4MDE0LnBuZ3xmMDMwYzBjM2U4OWQxYThlOWQxMmUzNDRlNGY1ZGZlNWI0MDBiMjMyNjI5YjM3ZjI3YmJjOWRjODVhMmU1NzI2",
+          "height": "",
+          "width": ""
+        },
+        "price": 242770,
+        "commissionValue": "0",
+        "commissionPercent": "0.00",
+        "commissionFixed": "0",
+        "latitude": "",
+        "longitude": "",
+        "product_category": "新品",
+        "brand_name": "Lenovo",
+        "brand_url": "",
+        "stock": "在庫有り",
+        "postage": "あり",
+        "point": "",
+        "size": "",
+        "color": "",
+        "gender": "",
+        "shipping_arrangement": "",
+        "sale_price": "",
+        "sale_start_date": "",
+        "sale_end_date": "",
+        "product_update_day": ""
+      }
     },
-    "commerce": {
-      "price": 242770,
-      "affiliate_url": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fworkstations%2Fthinkpad-p-series%2FThinkPad-P73%2Fp%2F22WS2WPWP73"
-    },
-    "raw": {
-      "title": "ThinkPad P73",
-      "link": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fworkstations%2Fthinkpad-p-series%2FThinkPad-P73%2Fp%2F22WS2WPWP73",
-      "description": "大画面17.3型UHD IPS液晶を選択可能 、インテル(R)Xeon(R)プロセッサーや第9世代インテル(R)Core(TM) プロセッサー搭載可能 、NVIDIA(R)Quadro(R)グラフィックス 、大容量ストレージを搭載可能",
-      "guid": "https://www.lenovo.com/jp/ja/workstations/thinkpad-p-series/ThinkPad-P73/p/22WS2WPWP73",
-      "pvImg": "<img src=\"//ad.jp.ap.valuecommerce.com/servlet/gifbanner?vs=3697471&vp=889450904\" height=\"1\" width=\"1\" border=\"0\">",
-      "merchantName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "ecCode": "bdu9t",
-      "janCode": "",
-      "markCode": "",
-      "productCode": "20QRCTO1WWJAJP1,20QRCTO1WWJAJP2,20QRCTO1WWJAJP4,20QRCTO1WWJAJP3,20QRCTO1WWJAJP5",
-      "modelCode": "20QRCTO1WWJAJP1,20QRCTO1WWJAJP2,20QRCTO1WWJAJP4,20QRCTO1WWJAJP3,20QRCTO1WWJAJP5",
-      "subStoreId": "pdb218",
-      "subStoreName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "adult": "n",
-      "startDate": "20200902",
-      "category": "pcmobile,pc_peripheraldevice,pcbody,notepc",
-      "imageSmall": {
-        "url": "",
-        "height": "",
-        "width": ""
-      },
-      "imageLarge": {
-        "url": "",
-        "height": "",
-        "width": ""
-      },
-      "imageFree": {
-        "url": "https://www.lenovo.com/medias/lenovo-jp-thinkpad-p73-intel-logo-2020-0814.png?context=bWFzdGVyfHJvb3R8MTY3MzI1fGltYWdlL3BuZ3xoZDQvaGQ3LzExMDU3NjcyNjE4MDE0LnBuZ3xmMDMwYzBjM2U4OWQxYThlOWQxMmUzNDRlNGY1ZGZlNWI0MDBiMjMyNjI5YjM3ZjI3YmJjOWRjODVhMmU1NzI2",
-        "height": "",
-        "width": ""
-      },
-      "price": 242770,
-      "commissionValue": "0",
-      "commissionPercent": "0.00",
-      "commissionFixed": "0",
-      "latitude": "",
-      "longitude": "",
-      "product_category": "新品",
-      "brand_name": "Lenovo",
-      "brand_url": "",
-      "stock": "在庫有り",
-      "postage": "あり",
-      "point": "",
-      "size": "",
-      "color": "",
-      "gender": "",
-      "shipping_arrangement": "",
-      "sale_price": "",
-      "sale_start_date": "",
-      "sale_end_date": "",
-      "product_update_day": ""
+    "import_options": {
+      "maker": "Lenovo",
+      "prefix": "vc"
     }
   },
   {
-    "identity": {
-      "title": "ThinkPad P53",
-      "brand": "Lenovo",
-      "manufacturer": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "model": "20QNCTO1WWJAJP1,20QNCTO1WWJAJP3,20QQA0NPJP",
-      "jan": "",
-      "product_code": "20QNCTO1WWJAJP1,20QNCTO1WWJAJP3,20QQA0NPJP",
-      "guid": "https://www.lenovo.com/jp/ja/workstations/thinkpad-p-series/P53/p/22WS2WPWP53"
+    "source": "valuecommerce",
+    "data": {
+      "identity": {
+        "title": "ThinkPad P53",
+        "brand": "Lenovo",
+        "manufacturer": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "model": "20QNCTO1WWJAJP1,20QNCTO1WWJAJP3,20QQA0NPJP",
+        "jan": "",
+        "product_code": "20QNCTO1WWJAJP1,20QNCTO1WWJAJP3,20QQA0NPJP",
+        "guid": "https://www.lenovo.com/jp/ja/workstations/thinkpad-p-series/P53/p/22WS2WPWP53"
+      },
+      "commerce": {
+        "price": 184580,
+        "affiliate_url": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fworkstations%2Fthinkpad-p-series%2FP53%2Fp%2F22WS2WPWP53"
+      },
+      "raw": {
+        "title": "ThinkPad P53",
+        "link": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fworkstations%2Fthinkpad-p-series%2FP53%2Fp%2F22WS2WPWP53",
+        "description": "第9世代インテル(R)プロセッサー 、NVIDIA(R)Quadro(R)グラフィックス 、LTEを選択可能 、4K OLEDディスプレイを選択可能",
+        "guid": "https://www.lenovo.com/jp/ja/workstations/thinkpad-p-series/P53/p/22WS2WPWP53",
+        "pvImg": "<img src=\"//ad.jp.ap.valuecommerce.com/servlet/gifbanner?vs=3697471&vp=889450904\" height=\"1\" width=\"1\" border=\"0\">",
+        "merchantName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "ecCode": "bdu9t",
+        "janCode": "",
+        "markCode": "",
+        "productCode": "20QNCTO1WWJAJP1,20QNCTO1WWJAJP3,20QQA0NPJP",
+        "modelCode": "20QNCTO1WWJAJP1,20QNCTO1WWJAJP3,20QQA0NPJP",
+        "subStoreId": "pdb218",
+        "subStoreName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "adult": "n",
+        "startDate": "20200902",
+        "category": "pcmobile,pc_peripheraldevice,pcbody,notepc",
+        "imageSmall": {
+          "url": "",
+          "height": "",
+          "width": ""
+        },
+        "imageLarge": {
+          "url": "",
+          "height": "",
+          "width": ""
+        },
+        "imageFree": {
+          "url": "https://www.lenovo.com/medias/lenovo-jp-thinkpad-p53-intel-logo-2020-0814.png?context=bWFzdGVyfHJvb3R8MTcxMjQ3fGltYWdlL3BuZ3xoNWUvaDFmLzExMDU3NjcyMjI0Nzk4LnBuZ3w2YTRmNjI3MjVlMjVhOGU5MTZjZTk2YWZiMDUwYzUwZjNhNTI1MjcxYWVlYjE3NjUyMWFmY2Q3MWNlOGFiM2My",
+          "height": "",
+          "width": ""
+        },
+        "price": 184580,
+        "commissionValue": "0",
+        "commissionPercent": "0.00",
+        "commissionFixed": "0",
+        "latitude": "",
+        "longitude": "",
+        "product_category": "新品",
+        "brand_name": "Lenovo",
+        "brand_url": "",
+        "stock": "在庫有り",
+        "postage": "あり",
+        "point": "",
+        "size": "",
+        "color": "",
+        "gender": "",
+        "shipping_arrangement": "",
+        "sale_price": "",
+        "sale_start_date": "",
+        "sale_end_date": "",
+        "product_update_day": ""
+      }
     },
-    "commerce": {
-      "price": 184580,
-      "affiliate_url": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fworkstations%2Fthinkpad-p-series%2FP53%2Fp%2F22WS2WPWP53"
-    },
-    "raw": {
-      "title": "ThinkPad P53",
-      "link": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fworkstations%2Fthinkpad-p-series%2FP53%2Fp%2F22WS2WPWP53",
-      "description": "第9世代インテル(R)プロセッサー 、NVIDIA(R)Quadro(R)グラフィックス 、LTEを選択可能 、4K OLEDディスプレイを選択可能",
-      "guid": "https://www.lenovo.com/jp/ja/workstations/thinkpad-p-series/P53/p/22WS2WPWP53",
-      "pvImg": "<img src=\"//ad.jp.ap.valuecommerce.com/servlet/gifbanner?vs=3697471&vp=889450904\" height=\"1\" width=\"1\" border=\"0\">",
-      "merchantName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "ecCode": "bdu9t",
-      "janCode": "",
-      "markCode": "",
-      "productCode": "20QNCTO1WWJAJP1,20QNCTO1WWJAJP3,20QQA0NPJP",
-      "modelCode": "20QNCTO1WWJAJP1,20QNCTO1WWJAJP3,20QQA0NPJP",
-      "subStoreId": "pdb218",
-      "subStoreName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "adult": "n",
-      "startDate": "20200902",
-      "category": "pcmobile,pc_peripheraldevice,pcbody,notepc",
-      "imageSmall": {
-        "url": "",
-        "height": "",
-        "width": ""
-      },
-      "imageLarge": {
-        "url": "",
-        "height": "",
-        "width": ""
-      },
-      "imageFree": {
-        "url": "https://www.lenovo.com/medias/lenovo-jp-thinkpad-p53-intel-logo-2020-0814.png?context=bWFzdGVyfHJvb3R8MTcxMjQ3fGltYWdlL3BuZ3xoNWUvaDFmLzExMDU3NjcyMjI0Nzk4LnBuZ3w2YTRmNjI3MjVlMjVhOGU5MTZjZTk2YWZiMDUwYzUwZjNhNTI1MjcxYWVlYjE3NjUyMWFmY2Q3MWNlOGFiM2My",
-        "height": "",
-        "width": ""
-      },
-      "price": 184580,
-      "commissionValue": "0",
-      "commissionPercent": "0.00",
-      "commissionFixed": "0",
-      "latitude": "",
-      "longitude": "",
-      "product_category": "新品",
-      "brand_name": "Lenovo",
-      "brand_url": "",
-      "stock": "在庫有り",
-      "postage": "あり",
-      "point": "",
-      "size": "",
-      "color": "",
-      "gender": "",
-      "shipping_arrangement": "",
-      "sale_price": "",
-      "sale_start_date": "",
-      "sale_end_date": "",
-      "product_update_day": ""
+    "import_options": {
+      "maker": "Lenovo",
+      "prefix": "vc"
     }
   },
   {
-    "identity": {
-      "title": "ThinkPad 10:ビジネスパッケージ",
-      "brand": "Lenovo",
-      "manufacturer": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "model": "20E3CTO1WWJAJP2",
-      "jan": "",
-      "product_code": "20E3CTO1WWJAJP2",
-      "guid": "https://www.lenovo.com/jp/ja/jpad/tablets/windows-tablets/tablet-10-series/ThinkPad-10-2nd-Gen/p/20E3CTO1WWJAJP2"
+    "source": "valuecommerce",
+    "data": {
+      "identity": {
+        "title": "ThinkPad E15：プレミアム",
+        "brand": "Lenovo",
+        "manufacturer": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "model": "20RDCTO1WWJAJP4",
+        "jan": "",
+        "product_code": "20RDCTO1WWJAJP4",
+        "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/e-series/E15/p/20RDCTO1WWJAJP4"
+      },
+      "commerce": {
+        "price": 111496,
+        "affiliate_url": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fe-series%2FE15%2Fp%2F20RDCTO1WWJAJP4"
+      },
+      "raw": {
+        "title": "ThinkPad E15：プレミアム",
+        "link": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fe-series%2FE15%2Fp%2F20RDCTO1WWJAJP4",
+        "description": "スタイリッシュな狭額縁デザイン 、第10世代インテル(R)Core(TM) プロセッサー 、鮮やかな15.6型フルHD IPS液晶 、豊富な拡張性と接続性 、パワーボタンに統合した指紋認証     販売店経由での購入はこちら ＞＞",
+        "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/e-series/E15/p/20RDCTO1WWJAJP4",
+        "pvImg": "<img src=\"//ad.jp.ap.valuecommerce.com/servlet/gifbanner?vs=3697471&vp=889450904\" height=\"1\" width=\"1\" border=\"0\">",
+        "merchantName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "ecCode": "bdu9t",
+        "janCode": "",
+        "markCode": "",
+        "productCode": "20RDCTO1WWJAJP4",
+        "modelCode": "20RDCTO1WWJAJP4",
+        "subStoreId": "pdb218",
+        "subStoreName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "adult": "n",
+        "startDate": "20200902",
+        "category": "pcmobile,pc_peripheraldevice,pcbody,notepc",
+        "imageSmall": {
+          "url": "",
+          "height": "",
+          "width": ""
+        },
+        "imageLarge": {
+          "url": "",
+          "height": "",
+          "width": ""
+        },
+        "imageFree": {
+          "url": "https://www.lenovo.com/medias/lenovo-jp-e15-intel-2020-721.png?context=bWFzdGVyfHJvb3R8NTc5ODB8aW1hZ2UvcG5nfGhmNS9oNjIvMTEwNjA0OTM4NzcyNzgucG5nfDcxZWFiNTQ3YTRmYWMyYWE3NmU2ZDYyYjI4N2QyNDcyMmZjZmMyNzVlMmU1ZDUyY2QxNjI2MmJmZTk2N2ViNjY",
+          "height": "",
+          "width": ""
+        },
+        "price": 111496,
+        "commissionValue": "0",
+        "commissionPercent": "0.00",
+        "commissionFixed": "0",
+        "latitude": "",
+        "longitude": "",
+        "product_category": "新品",
+        "brand_name": "Lenovo",
+        "brand_url": "",
+        "stock": "在庫有り",
+        "postage": "あり",
+        "point": "",
+        "size": "",
+        "color": "",
+        "gender": "",
+        "shipping_arrangement": "",
+        "sale_price": "",
+        "sale_start_date": "",
+        "sale_end_date": "",
+        "product_update_day": ""
+      }
     },
-    "commerce": {
-      "price": 79920,
-      "affiliate_url": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Ftablets%2Fwindows-tablets%2Ftablet-10-series%2FThinkPad-10-2nd-Gen%2Fp%2F20E3CTO1WWJAJP2"
-    },
-    "raw": {
-      "title": "ThinkPad 10:ビジネスパッケージ",
-      "link": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Ftablets%2Fwindows-tablets%2Ftablet-10-series%2FThinkPad-10-2nd-Gen%2Fp%2F20E3CTO1WWJAJP2",
-      "description": "10.1インチのAtom(TM) プロセッサーを搭載したWindows 10 タブレット。フルサイズUSB3.0ポートを使って周辺機器を直接タブレットに接続し、今までの資産から最新デバイスまで有効活用。また、タブレット本体にセキュリティ、キー、ホールを搭載し盗難対策も可能。",
-      "guid": "https://www.lenovo.com/jp/ja/jpad/tablets/windows-tablets/tablet-10-series/ThinkPad-10-2nd-Gen/p/20E3CTO1WWJAJP2",
-      "pvImg": "<img src=\"//ad.jp.ap.valuecommerce.com/servlet/gifbanner?vs=3697471&vp=889450904\" height=\"1\" width=\"1\" border=\"0\">",
-      "merchantName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "ecCode": "bdu9t",
-      "janCode": "",
-      "markCode": "",
-      "productCode": "20E3CTO1WWJAJP2",
-      "modelCode": "20E3CTO1WWJAJP2",
-      "subStoreId": "pdb218",
-      "subStoreName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "adult": "n",
-      "startDate": "20200902",
-      "category": "pcmobile,pc_peripheraldevice,pcbody",
-      "imageSmall": {
-        "url": "",
-        "height": "",
-        "width": ""
-      },
-      "imageLarge": {
-        "url": "",
-        "height": "",
-        "width": ""
-      },
-      "imageFree": {
-        "url": "https://www.lenovo.com/medias/lenovo-tablet-thinkpad-10-gen-2-main.png?context=bWFzdGVyfGltYWdlc3wzMzI3OHxpbWFnZS9wbmd8aW1hZ2VzL2hjZC9oMTQvOTQ2MTIxMTU5NDc4Mi5wbmd8NzMyY2Y2NWUyNTZjOGJmMjczNzNhYjFlZDg3Zjg5N2JkMTkwZWM0MjE5OTdiNjM3MDgyZWRkNmVkNTgzZTg3YQ",
-        "height": "",
-        "width": ""
-      },
-      "price": 79920,
-      "commissionValue": "0",
-      "commissionPercent": "0.00",
-      "commissionFixed": "0",
-      "latitude": "",
-      "longitude": "",
-      "product_category": "新品",
-      "brand_name": "Lenovo",
-      "brand_url": "",
-      "stock": "在庫有り",
-      "postage": "あり",
-      "point": "",
-      "size": "",
-      "color": "",
-      "gender": "",
-      "shipping_arrangement": "",
-      "sale_price": "",
-      "sale_start_date": "",
-      "sale_end_date": "",
-      "product_update_day": ""
+    "import_options": {
+      "maker": "Lenovo",
+      "prefix": "vc"
     }
   },
   {
-    "identity": {
-      "title": "ThinkPad E15：プレミアム",
-      "brand": "Lenovo",
-      "manufacturer": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "model": "20RDCTO1WWJAJP4",
-      "jan": "",
-      "product_code": "20RDCTO1WWJAJP4",
-      "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/e-series/E15/p/20RDCTO1WWJAJP4"
+    "source": "valuecommerce",
+    "data": {
+      "identity": {
+        "title": "ThinkPad L15：プレミアム",
+        "brand": "Lenovo",
+        "manufacturer": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "model": "20U7CTO1WWJAJP4",
+        "jan": "",
+        "product_code": "20U7CTO1WWJAJP4",
+        "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/l-series/ThinkPad-L15-AMD/p/20U7CTO1WWJAJP4"
+      },
+      "commerce": {
+        "price": 147994,
+        "affiliate_url": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fl-series%2FThinkPad-L15-AMD%2Fp%2F20U7CTO1WWJAJP4"
+      },
+      "raw": {
+        "title": "ThinkPad L15：プレミアム",
+        "link": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fl-series%2FThinkPad-L15-AMD%2Fp%2F20U7CTO1WWJAJP4",
+        "description": "AMD Ryzen(TM) Pro搭載可能 、狭額縁の新デザイン 、最新のWi-Fi規格、WiFi 6に対応 、高度なセキュリティ",
+        "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/l-series/ThinkPad-L15-AMD/p/20U7CTO1WWJAJP4",
+        "pvImg": "<img src=\"//ad.jp.ap.valuecommerce.com/servlet/gifbanner?vs=3697471&vp=889450904\" height=\"1\" width=\"1\" border=\"0\">",
+        "merchantName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "ecCode": "bdu9t",
+        "janCode": "",
+        "markCode": "",
+        "productCode": "20U7CTO1WWJAJP4",
+        "modelCode": "20U7CTO1WWJAJP4",
+        "subStoreId": "pdb218",
+        "subStoreName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "adult": "n",
+        "startDate": "20200902",
+        "category": "pcmobile,pc_peripheraldevice,pcbody,notepc",
+        "imageSmall": {
+          "url": "",
+          "height": "",
+          "width": ""
+        },
+        "imageLarge": {
+          "url": "",
+          "height": "",
+          "width": ""
+        },
+        "imageFree": {
+          "url": "https://www.lenovo.com/medias/lenovo-laptops-think-thinkpad-l-series-l15a-hero.png?context=bWFzdGVyfHJvb3R8NzU2MjV8aW1hZ2UvcG5nfGhlNy9oMDUvMTA4NDg3NzE3MzU1ODIucG5nfDRhNDQ2Y2JhMTZlYjczNjJmMmU0YWE4NDBiMTQ0ZDA0OTBmMmQ4MDY0Njc0ZGExZGRhOTk2YmUwMjk3YmI2NWY",
+          "height": "",
+          "width": ""
+        },
+        "price": 147994,
+        "commissionValue": "0",
+        "commissionPercent": "0.00",
+        "commissionFixed": "0",
+        "latitude": "",
+        "longitude": "",
+        "product_category": "新品",
+        "brand_name": "Lenovo",
+        "brand_url": "",
+        "stock": "在庫有り",
+        "postage": "あり",
+        "point": "",
+        "size": "",
+        "color": "",
+        "gender": "",
+        "shipping_arrangement": "",
+        "sale_price": "",
+        "sale_start_date": "",
+        "sale_end_date": "",
+        "product_update_day": ""
+      }
     },
-    "commerce": {
-      "price": 111496,
-      "affiliate_url": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fe-series%2FE15%2Fp%2F20RDCTO1WWJAJP4"
-    },
-    "raw": {
-      "title": "ThinkPad E15：プレミアム",
-      "link": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fe-series%2FE15%2Fp%2F20RDCTO1WWJAJP4",
-      "description": "スタイリッシュな狭額縁デザイン 、第10世代インテル(R)Core(TM) プロセッサー 、鮮やかな15.6型フルHD IPS液晶 、豊富な拡張性と接続性 、パワーボタンに統合した指紋認証     販売店経由での購入はこちら ＞＞",
-      "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/e-series/E15/p/20RDCTO1WWJAJP4",
-      "pvImg": "<img src=\"//ad.jp.ap.valuecommerce.com/servlet/gifbanner?vs=3697471&vp=889450904\" height=\"1\" width=\"1\" border=\"0\">",
-      "merchantName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "ecCode": "bdu9t",
-      "janCode": "",
-      "markCode": "",
-      "productCode": "20RDCTO1WWJAJP4",
-      "modelCode": "20RDCTO1WWJAJP4",
-      "subStoreId": "pdb218",
-      "subStoreName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "adult": "n",
-      "startDate": "20200902",
-      "category": "pcmobile,pc_peripheraldevice,pcbody,notepc",
-      "imageSmall": {
-        "url": "",
-        "height": "",
-        "width": ""
-      },
-      "imageLarge": {
-        "url": "",
-        "height": "",
-        "width": ""
-      },
-      "imageFree": {
-        "url": "https://www.lenovo.com/medias/lenovo-jp-e15-intel-2020-721.png?context=bWFzdGVyfHJvb3R8NTc5ODB8aW1hZ2UvcG5nfGhmNS9oNjIvMTEwNjA0OTM4NzcyNzgucG5nfDcxZWFiNTQ3YTRmYWMyYWE3NmU2ZDYyYjI4N2QyNDcyMmZjZmMyNzVlMmU1ZDUyY2QxNjI2MmJmZTk2N2ViNjY",
-        "height": "",
-        "width": ""
-      },
-      "price": 111496,
-      "commissionValue": "0",
-      "commissionPercent": "0.00",
-      "commissionFixed": "0",
-      "latitude": "",
-      "longitude": "",
-      "product_category": "新品",
-      "brand_name": "Lenovo",
-      "brand_url": "",
-      "stock": "在庫有り",
-      "postage": "あり",
-      "point": "",
-      "size": "",
-      "color": "",
-      "gender": "",
-      "shipping_arrangement": "",
-      "sale_price": "",
-      "sale_start_date": "",
-      "sale_end_date": "",
-      "product_update_day": ""
+    "import_options": {
+      "maker": "Lenovo",
+      "prefix": "vc"
     }
   },
   {
-    "identity": {
-      "title": "ThinkPad L15：プレミアム",
-      "brand": "Lenovo",
-      "manufacturer": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "model": "20U7CTO1WWJAJP4",
-      "jan": "",
-      "product_code": "20U7CTO1WWJAJP4",
-      "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/l-series/ThinkPad-L15-AMD/p/20U7CTO1WWJAJP4"
+    "source": "valuecommerce",
+    "data": {
+      "identity": {
+        "title": "ThinkPad E490 - ブラック",
+        "brand": "Lenovo",
+        "manufacturer": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "model": "20N8S1AQ00",
+        "jan": "",
+        "product_code": "20N8S1AQ00",
+        "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/e-series/E490/p/20N8S1AQ00"
+      },
+      "commerce": {
+        "price": 84920,
+        "affiliate_url": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fe-series%2FE490%2Fp%2F20N8S1AQ00"
+      },
+      "raw": {
+        "title": "ThinkPad E490 - ブラック",
+        "link": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fe-series%2FE490%2Fp%2F20N8S1AQ00",
+        "description": "スタイリッシュなデザインで小さなフットプリント 第8世代インテル(R) Core(TM) プロセッサー搭載 インテル(R) Optane(TM) メモリーを選択可能 データを守る堅牢なセキュリティー機能",
+        "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/e-series/E490/p/20N8S1AQ00",
+        "pvImg": "<img src=\"//ad.jp.ap.valuecommerce.com/servlet/gifbanner?vs=3697471&vp=889450904\" height=\"1\" width=\"1\" border=\"0\">",
+        "merchantName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "ecCode": "bdu9t",
+        "janCode": "",
+        "markCode": "",
+        "productCode": "20N8S1AQ00",
+        "modelCode": "20N8S1AQ00",
+        "subStoreId": "pdb218",
+        "subStoreName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "adult": "n",
+        "startDate": "20200902",
+        "category": "pcmobile,pc_peripheraldevice,pcbody,notepc",
+        "imageSmall": {
+          "url": "",
+          "height": "",
+          "width": ""
+        },
+        "imageLarge": {
+          "url": "",
+          "height": "",
+          "width": ""
+        },
+        "imageFree": {
+          "url": "https://www.lenovo.com/medias/lenovo-jp-thinkpad-e490-intel-2020-0722.png?context=bWFzdGVyfHJvb3R8NDY4MTl8aW1hZ2UvcG5nfGgxZC9oMGEvMTEwNTU0NDMyNDcxMzQucG5nfDExYjg3NzVhMjZmODI0YjhkNjUyNGJlNWNmMmVhZTM0NjkwMjg2MzFkNjkzNmRiZTM4OWVmNTBjMzAzMDc3ZDM",
+          "height": "",
+          "width": ""
+        },
+        "price": 84920,
+        "commissionValue": "0",
+        "commissionPercent": "0.00",
+        "commissionFixed": "0",
+        "latitude": "",
+        "longitude": "",
+        "product_category": "新品",
+        "brand_name": "Lenovo",
+        "brand_url": "",
+        "stock": "在庫有り",
+        "postage": "あり",
+        "point": "",
+        "size": "",
+        "color": "",
+        "gender": "",
+        "shipping_arrangement": "",
+        "sale_price": "",
+        "sale_start_date": "",
+        "sale_end_date": "",
+        "product_update_day": ""
+      }
     },
-    "commerce": {
-      "price": 147994,
-      "affiliate_url": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fl-series%2FThinkPad-L15-AMD%2Fp%2F20U7CTO1WWJAJP4"
-    },
-    "raw": {
-      "title": "ThinkPad L15：プレミアム",
-      "link": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fl-series%2FThinkPad-L15-AMD%2Fp%2F20U7CTO1WWJAJP4",
-      "description": "AMD Ryzen(TM) Pro搭載可能 、狭額縁の新デザイン 、最新のWi-Fi規格、WiFi 6に対応 、高度なセキュリティ",
-      "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/l-series/ThinkPad-L15-AMD/p/20U7CTO1WWJAJP4",
-      "pvImg": "<img src=\"//ad.jp.ap.valuecommerce.com/servlet/gifbanner?vs=3697471&vp=889450904\" height=\"1\" width=\"1\" border=\"0\">",
-      "merchantName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "ecCode": "bdu9t",
-      "janCode": "",
-      "markCode": "",
-      "productCode": "20U7CTO1WWJAJP4",
-      "modelCode": "20U7CTO1WWJAJP4",
-      "subStoreId": "pdb218",
-      "subStoreName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "adult": "n",
-      "startDate": "20200902",
-      "category": "pcmobile,pc_peripheraldevice,pcbody,notepc",
-      "imageSmall": {
-        "url": "",
-        "height": "",
-        "width": ""
-      },
-      "imageLarge": {
-        "url": "",
-        "height": "",
-        "width": ""
-      },
-      "imageFree": {
-        "url": "https://www.lenovo.com/medias/lenovo-laptops-think-thinkpad-l-series-l15a-hero.png?context=bWFzdGVyfHJvb3R8NzU2MjV8aW1hZ2UvcG5nfGhlNy9oMDUvMTA4NDg3NzE3MzU1ODIucG5nfDRhNDQ2Y2JhMTZlYjczNjJmMmU0YWE4NDBiMTQ0ZDA0OTBmMmQ4MDY0Njc0ZGExZGRhOTk2YmUwMjk3YmI2NWY",
-        "height": "",
-        "width": ""
-      },
-      "price": 147994,
-      "commissionValue": "0",
-      "commissionPercent": "0.00",
-      "commissionFixed": "0",
-      "latitude": "",
-      "longitude": "",
-      "product_category": "新品",
-      "brand_name": "Lenovo",
-      "brand_url": "",
-      "stock": "在庫有り",
-      "postage": "あり",
-      "point": "",
-      "size": "",
-      "color": "",
-      "gender": "",
-      "shipping_arrangement": "",
-      "sale_price": "",
-      "sale_start_date": "",
-      "sale_end_date": "",
-      "product_update_day": ""
+    "import_options": {
+      "maker": "Lenovo",
+      "prefix": "vc"
     }
   },
   {
-    "identity": {
-      "title": "ThinkPad 10:エントリーパッケージ",
-      "brand": "Lenovo",
-      "manufacturer": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "model": "20E3CTO1WWJAJP0",
-      "jan": "",
-      "product_code": "20E3CTO1WWJAJP0",
-      "guid": "https://www.lenovo.com/jp/ja/jpad/tablets/windows-tablets/tablet-10-series/ThinkPad-10-2nd-Gen/p/20E3CTO1WWJAJP0"
+    "source": "valuecommerce",
+    "data": {
+      "identity": {
+        "title": "ThinkPad L14：パフォーマンス",
+        "brand": "Lenovo",
+        "manufacturer": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "model": "20U1CTO1WWJAJP2",
+        "jan": "",
+        "product_code": "20U1CTO1WWJAJP2",
+        "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/l-series/ThinkPad-L14-Intel-/p/20U1CTO1WWJAJP2"
+      },
+      "commerce": {
+        "price": 186010,
+        "affiliate_url": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fl-series%2FThinkPad-L14-Intel-%2Fp%2F20U1CTO1WWJAJP2"
+      },
+      "raw": {
+        "title": "ThinkPad L14：パフォーマンス",
+        "link": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fl-series%2FThinkPad-L14-Intel-%2Fp%2F20U1CTO1WWJAJP2",
+        "description": "第10世代インテル(R)Core(TM) プロセッサー搭載 、AMD Radeon(TM)グラフィックス 、豊富な拡張性と接続性 、最新のWi-Fi規格、WiFi 6に対応 販売店経由での購入はこちら＞＞",
+        "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/l-series/ThinkPad-L14-Intel-/p/20U1CTO1WWJAJP2",
+        "pvImg": "<img src=\"//ad.jp.ap.valuecommerce.com/servlet/gifbanner?vs=3697471&vp=889450904\" height=\"1\" width=\"1\" border=\"0\">",
+        "merchantName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "ecCode": "bdu9t",
+        "janCode": "",
+        "markCode": "",
+        "productCode": "20U1CTO1WWJAJP2",
+        "modelCode": "20U1CTO1WWJAJP2",
+        "subStoreId": "pdb218",
+        "subStoreName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "adult": "n",
+        "startDate": "20200902",
+        "category": "pcmobile,pc_peripheraldevice,pcbody,notepc",
+        "imageSmall": {
+          "url": "",
+          "height": "",
+          "width": ""
+        },
+        "imageLarge": {
+          "url": "",
+          "height": "",
+          "width": ""
+        },
+        "imageFree": {
+          "url": "https://www.lenovo.com/medias/lenovo-jp-thinkpad-l14-intel-2020-0721.png?context=bWFzdGVyfHJvb3R8MTQ0MzY5fGltYWdlL3BuZ3xoODYvaGYxLzExMDU4MTk0MjE5MDM4LnBuZ3wzNmIyNjQ0NDI0ZGFlNzlkY2M1NWZhMjc3ZjRmZTVmMzgxNjMxZjY3YmI0MzQwYmJiMjFhNzgwMDJjYzhjYzFk",
+          "height": "",
+          "width": ""
+        },
+        "price": 186010,
+        "commissionValue": "0",
+        "commissionPercent": "0.00",
+        "commissionFixed": "0",
+        "latitude": "",
+        "longitude": "",
+        "product_category": "新品",
+        "brand_name": "Lenovo",
+        "brand_url": "",
+        "stock": "在庫有り",
+        "postage": "あり",
+        "point": "",
+        "size": "",
+        "color": "",
+        "gender": "",
+        "shipping_arrangement": "",
+        "sale_price": "",
+        "sale_start_date": "",
+        "sale_end_date": "",
+        "product_update_day": ""
+      }
     },
-    "commerce": {
-      "price": 71280,
-      "affiliate_url": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Ftablets%2Fwindows-tablets%2Ftablet-10-series%2FThinkPad-10-2nd-Gen%2Fp%2F20E3CTO1WWJAJP0"
-    },
-    "raw": {
-      "title": "ThinkPad 10:エントリーパッケージ",
-      "link": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Ftablets%2Fwindows-tablets%2Ftablet-10-series%2FThinkPad-10-2nd-Gen%2Fp%2F20E3CTO1WWJAJP0",
-      "description": "10.1インチのAtom(TM) プロセッサーを搭載したWindows 10 タブレット。フルサイズUSB3.0ポートを使って周辺機器を直接タブレットに接続し、今までの資産から最新デバイスまで有効活用。また、タブレット本体にセキュリティ、キー、ホールを搭載し盗難対策も可能。",
-      "guid": "https://www.lenovo.com/jp/ja/jpad/tablets/windows-tablets/tablet-10-series/ThinkPad-10-2nd-Gen/p/20E3CTO1WWJAJP0",
-      "pvImg": "<img src=\"//ad.jp.ap.valuecommerce.com/servlet/gifbanner?vs=3697471&vp=889450904\" height=\"1\" width=\"1\" border=\"0\">",
-      "merchantName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "ecCode": "bdu9t",
-      "janCode": "",
-      "markCode": "",
-      "productCode": "20E3CTO1WWJAJP0",
-      "modelCode": "20E3CTO1WWJAJP0",
-      "subStoreId": "pdb218",
-      "subStoreName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "adult": "n",
-      "startDate": "20200902",
-      "category": "pcmobile,pc_peripheraldevice,pcbody",
-      "imageSmall": {
-        "url": "",
-        "height": "",
-        "width": ""
-      },
-      "imageLarge": {
-        "url": "",
-        "height": "",
-        "width": ""
-      },
-      "imageFree": {
-        "url": "https://www.lenovo.com/medias/lenovo-tablet-thinkpad-10-gen-2-main.png?context=bWFzdGVyfGltYWdlc3wzMzI3OHxpbWFnZS9wbmd8aW1hZ2VzL2hjZC9oMTQvOTQ2MTIxMTU5NDc4Mi5wbmd8NzMyY2Y2NWUyNTZjOGJmMjczNzNhYjFlZDg3Zjg5N2JkMTkwZWM0MjE5OTdiNjM3MDgyZWRkNmVkNTgzZTg3YQ",
-        "height": "",
-        "width": ""
-      },
-      "price": 71280,
-      "commissionValue": "0",
-      "commissionPercent": "0.00",
-      "commissionFixed": "0",
-      "latitude": "",
-      "longitude": "",
-      "product_category": "新品",
-      "brand_name": "Lenovo",
-      "brand_url": "",
-      "stock": "在庫有り",
-      "postage": "あり",
-      "point": "",
-      "size": "",
-      "color": "",
-      "gender": "",
-      "shipping_arrangement": "",
-      "sale_price": "",
-      "sale_start_date": "",
-      "sale_end_date": "",
-      "product_update_day": ""
+    "import_options": {
+      "maker": "Lenovo",
+      "prefix": "vc"
     }
   },
   {
-    "identity": {
-      "title": "ThinkPad E490 - ブラック",
-      "brand": "Lenovo",
-      "manufacturer": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "model": "20N8S1AQ00",
-      "jan": "",
-      "product_code": "20N8S1AQ00",
-      "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/e-series/E490/p/20N8S1AQ00"
+    "source": "valuecommerce",
+    "data": {
+      "identity": {
+        "title": "ThinkPad E490 - ブラック",
+        "brand": "Lenovo",
+        "manufacturer": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "model": "20N8S18R00",
+        "jan": "",
+        "product_code": "20N8S18R00",
+        "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/e-series/E490/p/20N8S18R00"
+      },
+      "commerce": {
+        "price": 69960,
+        "affiliate_url": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fe-series%2FE490%2Fp%2F20N8S18R00"
+      },
+      "raw": {
+        "title": "ThinkPad E490 - ブラック",
+        "link": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fe-series%2FE490%2Fp%2F20N8S18R00",
+        "description": "スタイリッシュなデザインで小さなフットプリント 第8世代インテル(R) Core(TM) プロセッサー搭載 インテル(R) Optane(TM) メモリーを選択可能 データを守る堅牢なセキュリティー機能",
+        "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/e-series/E490/p/20N8S18R00",
+        "pvImg": "<img src=\"//ad.jp.ap.valuecommerce.com/servlet/gifbanner?vs=3697471&vp=889450904\" height=\"1\" width=\"1\" border=\"0\">",
+        "merchantName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "ecCode": "bdu9t",
+        "janCode": "",
+        "markCode": "",
+        "productCode": "20N8S18R00",
+        "modelCode": "20N8S18R00",
+        "subStoreId": "pdb218",
+        "subStoreName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "adult": "n",
+        "startDate": "20200902",
+        "category": "pcmobile,pc_peripheraldevice,pcbody,notepc",
+        "imageSmall": {
+          "url": "",
+          "height": "",
+          "width": ""
+        },
+        "imageLarge": {
+          "url": "",
+          "height": "",
+          "width": ""
+        },
+        "imageFree": {
+          "url": "https://www.lenovo.com/medias/lenovo-jp-thinkpad-e490-intel-2020-0722.png?context=bWFzdGVyfHJvb3R8NDY4MTl8aW1hZ2UvcG5nfGgxZC9oMGEvMTEwNTU0NDMyNDcxMzQucG5nfDExYjg3NzVhMjZmODI0YjhkNjUyNGJlNWNmMmVhZTM0NjkwMjg2MzFkNjkzNmRiZTM4OWVmNTBjMzAzMDc3ZDM",
+          "height": "",
+          "width": ""
+        },
+        "price": 69960,
+        "commissionValue": "0",
+        "commissionPercent": "0.00",
+        "commissionFixed": "0",
+        "latitude": "",
+        "longitude": "",
+        "product_category": "新品",
+        "brand_name": "Lenovo",
+        "brand_url": "",
+        "stock": "在庫有り",
+        "postage": "あり",
+        "point": "",
+        "size": "",
+        "color": "",
+        "gender": "",
+        "shipping_arrangement": "",
+        "sale_price": "",
+        "sale_start_date": "",
+        "sale_end_date": "",
+        "product_update_day": ""
+      }
     },
-    "commerce": {
-      "price": 84920,
-      "affiliate_url": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fe-series%2FE490%2Fp%2F20N8S1AQ00"
-    },
-    "raw": {
-      "title": "ThinkPad E490 - ブラック",
-      "link": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fe-series%2FE490%2Fp%2F20N8S1AQ00",
-      "description": "スタイリッシュなデザインで小さなフットプリント 第8世代インテル(R) Core(TM) プロセッサー搭載 インテル(R) Optane(TM) メモリーを選択可能 データを守る堅牢なセキュリティー機能",
-      "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/e-series/E490/p/20N8S1AQ00",
-      "pvImg": "<img src=\"//ad.jp.ap.valuecommerce.com/servlet/gifbanner?vs=3697471&vp=889450904\" height=\"1\" width=\"1\" border=\"0\">",
-      "merchantName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "ecCode": "bdu9t",
-      "janCode": "",
-      "markCode": "",
-      "productCode": "20N8S1AQ00",
-      "modelCode": "20N8S1AQ00",
-      "subStoreId": "pdb218",
-      "subStoreName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "adult": "n",
-      "startDate": "20200902",
-      "category": "pcmobile,pc_peripheraldevice,pcbody,notepc",
-      "imageSmall": {
-        "url": "",
-        "height": "",
-        "width": ""
-      },
-      "imageLarge": {
-        "url": "",
-        "height": "",
-        "width": ""
-      },
-      "imageFree": {
-        "url": "https://www.lenovo.com/medias/lenovo-jp-thinkpad-e490-intel-2020-0722.png?context=bWFzdGVyfHJvb3R8NDY4MTl8aW1hZ2UvcG5nfGgxZC9oMGEvMTEwNTU0NDMyNDcxMzQucG5nfDExYjg3NzVhMjZmODI0YjhkNjUyNGJlNWNmMmVhZTM0NjkwMjg2MzFkNjkzNmRiZTM4OWVmNTBjMzAzMDc3ZDM",
-        "height": "",
-        "width": ""
-      },
-      "price": 84920,
-      "commissionValue": "0",
-      "commissionPercent": "0.00",
-      "commissionFixed": "0",
-      "latitude": "",
-      "longitude": "",
-      "product_category": "新品",
-      "brand_name": "Lenovo",
-      "brand_url": "",
-      "stock": "在庫有り",
-      "postage": "あり",
-      "point": "",
-      "size": "",
-      "color": "",
-      "gender": "",
-      "shipping_arrangement": "",
-      "sale_price": "",
-      "sale_start_date": "",
-      "sale_end_date": "",
-      "product_update_day": ""
+    "import_options": {
+      "maker": "Lenovo",
+      "prefix": "vc"
     }
   },
   {
-    "identity": {
-      "title": "ThinkPad L14：パフォーマンス",
-      "brand": "Lenovo",
-      "manufacturer": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "model": "20U1CTO1WWJAJP2",
-      "jan": "",
-      "product_code": "20U1CTO1WWJAJP2",
-      "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/l-series/ThinkPad-L14-Intel-/p/20U1CTO1WWJAJP2"
+    "source": "valuecommerce",
+    "data": {
+      "identity": {
+        "title": "ThinkPad T14：パフォーマンス",
+        "brand": "Lenovo",
+        "manufacturer": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "model": "20UDCTO1WWJAJP1",
+        "jan": "",
+        "product_code": "20UDCTO1WWJAJP1",
+        "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/t-series/ThinkPad-T14-AMD-G1/p/20UDCTO1WWJAJP1"
+      },
+      "commerce": {
+        "price": 100980,
+        "affiliate_url": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Ft-series%2FThinkPad-T14-AMD-G1%2Fp%2F20UDCTO1WWJAJP1"
+      },
+      "raw": {
+        "title": "ThinkPad T14：パフォーマンス",
+        "link": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Ft-series%2FThinkPad-T14-AMD-G1%2Fp%2F20UDCTO1WWJAJP1",
+        "description": "AMD Ryzen(TM) PRO プロセッサー搭載 、優れたコネクティビィ 、高度なセキュリティ機能を搭載 、最新のWi-Fi規格 Wi-Fi6対応販売店経由での購入はこちら＞＞",
+        "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/t-series/ThinkPad-T14-AMD-G1/p/20UDCTO1WWJAJP1",
+        "pvImg": "<img src=\"//ad.jp.ap.valuecommerce.com/servlet/gifbanner?vs=3697471&vp=889450904\" height=\"1\" width=\"1\" border=\"0\">",
+        "merchantName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "ecCode": "bdu9t",
+        "janCode": "",
+        "markCode": "",
+        "productCode": "20UDCTO1WWJAJP1",
+        "modelCode": "20UDCTO1WWJAJP1",
+        "subStoreId": "pdb218",
+        "subStoreName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "adult": "n",
+        "startDate": "20200902",
+        "category": "pcmobile,pc_peripheraldevice,pcbody,notepc",
+        "imageSmall": {
+          "url": "",
+          "height": "",
+          "width": ""
+        },
+        "imageLarge": {
+          "url": "",
+          "height": "",
+          "width": ""
+        },
+        "imageFree": {
+          "url": "https://www.lenovo.com/medias/lenovo-laptop-thinkpad-t14-amd-subseries-hero.png?context=bWFzdGVyfHJvb3R8ODk5OTJ8aW1hZ2UvcG5nfGgzNS9oYjUvMTA4NTcyMjQ2OTk5MzQucG5nfDI2NDkwMzAxMGE3OGUzMzhkNTFmMWRhNjJjYjQ0Y2RjNjFjZDZhZThhZDBlYzc2YWM3YzFiNjdhNGY1NzZjODU",
+          "height": "",
+          "width": ""
+        },
+        "price": 100980,
+        "commissionValue": "0",
+        "commissionPercent": "0.00",
+        "commissionFixed": "0",
+        "latitude": "",
+        "longitude": "",
+        "product_category": "新品",
+        "brand_name": "Lenovo",
+        "brand_url": "",
+        "stock": "在庫有り",
+        "postage": "あり",
+        "point": "",
+        "size": "",
+        "color": "",
+        "gender": "",
+        "shipping_arrangement": "",
+        "sale_price": "",
+        "sale_start_date": "",
+        "sale_end_date": "",
+        "product_update_day": ""
+      }
     },
-    "commerce": {
-      "price": 186010,
-      "affiliate_url": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fl-series%2FThinkPad-L14-Intel-%2Fp%2F20U1CTO1WWJAJP2"
-    },
-    "raw": {
-      "title": "ThinkPad L14：パフォーマンス",
-      "link": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fl-series%2FThinkPad-L14-Intel-%2Fp%2F20U1CTO1WWJAJP2",
-      "description": "第10世代インテル(R)Core(TM) プロセッサー搭載 、AMD Radeon(TM)グラフィックス 、豊富な拡張性と接続性 、最新のWi-Fi規格、WiFi 6に対応 販売店経由での購入はこちら＞＞",
-      "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/l-series/ThinkPad-L14-Intel-/p/20U1CTO1WWJAJP2",
-      "pvImg": "<img src=\"//ad.jp.ap.valuecommerce.com/servlet/gifbanner?vs=3697471&vp=889450904\" height=\"1\" width=\"1\" border=\"0\">",
-      "merchantName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "ecCode": "bdu9t",
-      "janCode": "",
-      "markCode": "",
-      "productCode": "20U1CTO1WWJAJP2",
-      "modelCode": "20U1CTO1WWJAJP2",
-      "subStoreId": "pdb218",
-      "subStoreName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "adult": "n",
-      "startDate": "20200902",
-      "category": "pcmobile,pc_peripheraldevice,pcbody,notepc",
-      "imageSmall": {
-        "url": "",
-        "height": "",
-        "width": ""
-      },
-      "imageLarge": {
-        "url": "",
-        "height": "",
-        "width": ""
-      },
-      "imageFree": {
-        "url": "https://www.lenovo.com/medias/lenovo-jp-thinkpad-l14-intel-2020-0721.png?context=bWFzdGVyfHJvb3R8MTQ0MzY5fGltYWdlL3BuZ3xoODYvaGYxLzExMDU4MTk0MjE5MDM4LnBuZ3wzNmIyNjQ0NDI0ZGFlNzlkY2M1NWZhMjc3ZjRmZTVmMzgxNjMxZjY3YmI0MzQwYmJiMjFhNzgwMDJjYzhjYzFk",
-        "height": "",
-        "width": ""
-      },
-      "price": 186010,
-      "commissionValue": "0",
-      "commissionPercent": "0.00",
-      "commissionFixed": "0",
-      "latitude": "",
-      "longitude": "",
-      "product_category": "新品",
-      "brand_name": "Lenovo",
-      "brand_url": "",
-      "stock": "在庫有り",
-      "postage": "あり",
-      "point": "",
-      "size": "",
-      "color": "",
-      "gender": "",
-      "shipping_arrangement": "",
-      "sale_price": "",
-      "sale_start_date": "",
-      "sale_end_date": "",
-      "product_update_day": ""
+    "import_options": {
+      "maker": "Lenovo",
+      "prefix": "vc"
     }
   },
   {
-    "identity": {
-      "title": "ThinkPad E490 - ブラック",
-      "brand": "Lenovo",
-      "manufacturer": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "model": "20N8S18R00",
-      "jan": "",
-      "product_code": "20N8S18R00",
-      "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/e-series/E490/p/20N8S18R00"
+    "source": "valuecommerce",
+    "data": {
+      "identity": {
+        "title": "ThinkPad P15s：パフォーマンス",
+        "brand": "Lenovo",
+        "manufacturer": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "model": "20T4CTO1WWJAJP4",
+        "jan": "",
+        "product_code": "20T4CTO1WWJAJP4",
+        "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/p-series/ThinkPad-P15s/p/20T4CTO1WWJAJP4"
+      },
+      "commerce": {
+        "price": 377080,
+        "affiliate_url": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fp-series%2FThinkPad-P15s%2Fp%2F20T4CTO1WWJAJP4"
+      },
+      "raw": {
+        "title": "ThinkPad P15s：パフォーマンス",
+        "link": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fp-series%2FThinkPad-P15s%2Fp%2F20T4CTO1WWJAJP4",
+        "description": "クアッドコアの第10世代インテル(R) Core(TM) プロセッサー 、NVIDIA(R) Quadroグラフィックスを搭載 、軽量ボディで長時間バッテリー駆動可能 、さまざまなセキュリティ機能を搭載",
+        "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/p-series/ThinkPad-P15s/p/20T4CTO1WWJAJP4",
+        "pvImg": "<img src=\"//ad.jp.ap.valuecommerce.com/servlet/gifbanner?vs=3697471&vp=889450904\" height=\"1\" width=\"1\" border=\"0\">",
+        "merchantName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "ecCode": "bdu9t",
+        "janCode": "",
+        "markCode": "",
+        "productCode": "20T4CTO1WWJAJP4",
+        "modelCode": "20T4CTO1WWJAJP4",
+        "subStoreId": "pdb218",
+        "subStoreName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
+        "adult": "n",
+        "startDate": "20200902",
+        "category": "pcmobile,pc_peripheraldevice,pcbody,notepc",
+        "imageSmall": {
+          "url": "",
+          "height": "",
+          "width": ""
+        },
+        "imageLarge": {
+          "url": "",
+          "height": "",
+          "width": ""
+        },
+        "imageFree": {
+          "url": "https://www.lenovo.com/medias/lenovo-jp-ThinkPad-P15s-2020-0721.png?context=bWFzdGVyfHJvb3R8MTUwNTg5fGltYWdlL3BuZ3xoNWEvaDkwLzExMDU4MDIxMzAyMzAyLnBuZ3xkMjRmMGFmYTVmMzI3ODA1YTM3MWZkZmE1YmM1MDY4MzZmZmViZDk5YjAzNDM3Y2M3ZjM3NmQxN2U5MGVlNzY5",
+          "height": "",
+          "width": ""
+        },
+        "price": 377080,
+        "commissionValue": "0",
+        "commissionPercent": "0.00",
+        "commissionFixed": "0",
+        "latitude": "",
+        "longitude": "",
+        "product_category": "新品",
+        "brand_name": "Lenovo",
+        "brand_url": "",
+        "stock": "在庫有り",
+        "postage": "あり",
+        "point": "",
+        "size": "",
+        "color": "",
+        "gender": "",
+        "shipping_arrangement": "",
+        "sale_price": "",
+        "sale_start_date": "",
+        "sale_end_date": "",
+        "product_update_day": ""
+      }
     },
-    "commerce": {
-      "price": 69960,
-      "affiliate_url": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fe-series%2FE490%2Fp%2F20N8S18R00"
-    },
-    "raw": {
-      "title": "ThinkPad E490 - ブラック",
-      "link": "//ck.jp.ap.valuecommerce.com/servlet/referral?vs=3697471&vp=889450904&va=2294904&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fjpad%2Fnotebooks%2Fthinkpad%2Fe-series%2FE490%2Fp%2F20N8S18R00",
-      "description": "スタイリッシュなデザインで小さなフットプリント 第8世代インテル(R) Core(TM) プロセッサー搭載 インテル(R) Optane(TM) メモリーを選択可能 データを守る堅牢なセキュリティー機能",
-      "guid": "https://www.lenovo.com/jp/ja/jpad/notebooks/thinkpad/e-series/E490/p/20N8S18R00",
-      "pvImg": "<img src=\"//ad.jp.ap.valuecommerce.com/servlet/gifbanner?vs=3697471&vp=889450904\" height=\"1\" width=\"1\" border=\"0\">",
-      "merchantName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "ecCode": "bdu9t",
-      "janCode": "",
-      "markCode": "",
-      "productCode": "20N8S18R00",
-      "modelCode": "20N8S18R00",
-      "subStoreId": "pdb218",
-      "subStoreName": "レノボ・ショッピング　【フル・カスタマイズ可能】",
-      "adult": "n",
-      "startDate": "20200902",
-      "category": "pcmobile,pc_peripheraldevice,pcbody,notepc",
-      "imageSmall": {
-        "url": "",
-        "height": "",
-        "width": ""
-      },
-      "imageLarge": {
-        "url": "",
-        "height": "",
-        "width": ""
-      },
-      "imageFree": {
-        "url": "https://www.lenovo.com/medias/lenovo-jp-thinkpad-e490-intel-2020-0722.png?context=bWFzdGVyfHJvb3R8NDY4MTl8aW1hZ2UvcG5nfGgxZC9oMGEvMTEwNTU0NDMyNDcxMzQucG5nfDExYjg3NzVhMjZmODI0YjhkNjUyNGJlNWNmMmVhZTM0NjkwMjg2MzFkNjkzNmRiZTM4OWVmNTBjMzAzMDc3ZDM",
-        "height": "",
-        "width": ""
-      },
-      "price": 69960,
-      "commissionValue": "0",
-      "commissionPercent": "0.00",
-      "commissionFixed": "0",
-      "latitude": "",
-      "longitude": "",
-      "product_category": "新品",
-      "brand_name": "Lenovo",
-      "brand_url": "",
-      "stock": "在庫有り",
-      "postage": "あり",
-      "point": "",
-      "size": "",
-      "color": "",
-      "gender": "",
-      "shipping_arrangement": "",
-      "sale_price": "",
-      "sale_start_date": "",
-      "sale_end_date": "",
-      "product_update_day": ""
+    "import_options": {
+      "maker": "Lenovo",
+      "prefix": "vc"
     }
   }
 ]

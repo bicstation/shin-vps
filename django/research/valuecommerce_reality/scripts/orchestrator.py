@@ -1,4 +1,7 @@
+# =========================================================
+# FILE:
 # /home/maya/shin-vps/django/research/valuecommerce_reality/scripts/orchestrator.py
+# =========================================================
 
 from __future__ import annotations
 
@@ -8,13 +11,20 @@ from formatter import print_summary
 from mapper import map_products
 from observe import observe
 from validator import validate
-
+from api.services.feed.services.vc_import_service import (
+    ValueCommerceImportService,
+)
 
 RAW_FILENAME = "thinkpad.json"
 OBSERVATION_FILENAME = "thinkpad_observation.json"
+MAPPING_FILENAME = "thinkpad_mapping.json"
 
 
-def run() -> None:
+def run(
+    keyword: str = "ThinkPad",
+    maker: str = "Lenovo",
+    page: int = 1,
+) -> None:
     """
     Execute the ValueCommerce Reality Research pipeline.
     """
@@ -23,8 +33,10 @@ def run() -> None:
     # Phase 1
     # Fetch Reality
     #
+
     raw = fetch_products(
-        keyword="ThinkPad",
+        keyword=keyword,
+        page=page,
     )
 
     export_json(
@@ -37,6 +49,7 @@ def run() -> None:
     # Phase 2
     # Observe Reality
     #
+
     observation = observe(raw)
 
     export_json(
@@ -49,6 +62,7 @@ def run() -> None:
     # Phase 3
     # Validate Observation
     #
+
     valid, errors = validate(observation)
 
     if not valid:
@@ -64,19 +78,35 @@ def run() -> None:
     # Phase 4
     # Identity Mapping
     #
-    products = raw.get("items", [])
-    
-    mapped_products = map_products(products)
+
+    mapped_products = map_products(
+        products=raw.get("items", []),
+        maker=maker,
+    )
 
     export_json(
         data=mapped_products,
         directory="mapping",
-        filename="thinkpad_mapping.json",
+        filename=MAPPING_FILENAME,
     )
+    
+    #
+    # Phase 5
+    # Import PCProduct
+    #
+
+    service = ValueCommerceImportService()
+
+    for contract in mapped_products:
+
+        service.import_contract(
+            contract,
+        )
 
     #
     # Summary
     #
+
     print_summary(
         source="ValueCommerce ProductDB",
         product_count=len(mapped_products),

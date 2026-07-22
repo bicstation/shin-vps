@@ -1,4 +1,7 @@
+# =========================================================
+# FILE:
 # /home/maya/shin-vps/django/research/valuecommerce_reality/scripts/formatter.py
+# =========================================================
 
 from __future__ import annotations
 
@@ -44,7 +47,7 @@ def print_summary(
     filename: str,
 ) -> None:
     """
-    Print observation summary.
+    Print research summary.
     """
 
     print_title(source)

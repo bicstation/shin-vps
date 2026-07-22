@@ -1,11 +1,14 @@
+# =========================================================
+# FILE:
 # /home/maya/shin-vps/django/research/valuecommerce_reality/scripts/validator.py
+# =========================================================
 
 from __future__ import annotations
 
 from typing import Any
 
 
-REQUIRED_KEYS = (
+REQUIRED_KEYS: tuple[str, ...] = (
     "product_count",
     "response_keys",
     "sample_keys",
@@ -50,10 +53,7 @@ def validate(
     ):
         errors.append("sample must be dict")
 
-    return (
-        len(errors) == 0,
-        errors,
-    )
+    return len(errors) == 0, errors
 
 
 if __name__ == "__main__":

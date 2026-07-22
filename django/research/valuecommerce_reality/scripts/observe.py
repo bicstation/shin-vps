@@ -1,46 +1,23 @@
+# =========================================================
+# FILE:
 # /home/maya/shin-vps/django/research/valuecommerce_reality/scripts/observe.py
+# =========================================================
 
 from __future__ import annotations
 
-import json
-from pathlib import Path
+from typing import Any
 
 
-RAW_DIR = (
-    Path(__file__).resolve().parent.parent
-    / "output"
-    / "raw"
-)
-
-OBSERVATION_DIR = (
-    Path(__file__).resolve().parent.parent
-    / "output"
-    / "observation"
-)
-
-
-def load_raw(filename: str) -> dict:
-    """
-    Load raw API response.
-    """
-
-    path = RAW_DIR / filename
-
-    with path.open(
-        "r",
-        encoding="utf-8",
-    ) as fp:
-        return json.load(fp)
-
-
-def observe(data: dict) -> dict:
+def observe(
+    data: dict[str, Any],
+) -> dict[str, Any]:
     """
     Observe ProductDB response without modifying Reality.
     """
 
     products = data.get("items", [])
 
-    observation = {
+    return {
         "product_count": len(products),
         "response_keys": sorted(data.keys()),
         "sample_keys": (
@@ -64,51 +41,3 @@ def observe(data: dict) -> dict:
             else {}
         ),
     }
-
-    return observation
-
-
-def save_observation(
-    observation: dict,
-    filename: str,
-) -> Path:
-
-    OBSERVATION_DIR.mkdir(
-        parents=True,
-        exist_ok=True,
-    )
-
-    path = OBSERVATION_DIR / filename
-
-    with path.open(
-        "w",
-        encoding="utf-8",
-    ) as fp:
-        json.dump(
-            observation,
-            fp,
-            ensure_ascii=False,
-            indent=2,
-        )
-
-    return path
-
-
-def main() -> None:
-
-    data = load_raw(
-        "thinkpad.json",
-    )
-
-    observation = observe(data)
-
-    path = save_observation(
-        observation,
-        "thinkpad_observation.json",
-    )
-
-    print(f"Saved: {path}")
-
-
-if __name__ == "__main__":
-    main()

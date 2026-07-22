@@ -1,4 +1,7 @@
+# =========================================================
+# FILE:
 # /home/maya/shin-vps/django/research/valuecommerce_reality/scripts/exporter.py
+# =========================================================
 
 from __future__ import annotations
 
@@ -17,20 +20,6 @@ def export_json(
 ) -> Path:
     """
     Export JSON data.
-
-    Parameters
-    ----------
-    data
-        JSON serializable object.
-    directory
-        Output directory under output/.
-    filename
-        Output filename.
-
-    Returns
-    -------
-    Path
-        Exported file path.
     """
 
     output_dir = BASE_DIR / "output" / directory

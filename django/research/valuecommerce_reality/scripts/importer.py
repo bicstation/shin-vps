@@ -1,4 +1,7 @@
+# =========================================================
+# FILE:
 # /home/maya/shin-vps/django/research/valuecommerce_reality/scripts/importer.py
+# =========================================================
 
 from __future__ import annotations
 
@@ -12,7 +15,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 OUTPUT_DIR = BASE_DIR / "output"
 
 
-def load_json(path: Path) -> Any:
+# =====================================================
+# JSON Loader
+# =====================================================
+
+def load_json(
+    path: Path,
+) -> Any:
     """
     Load JSON file.
     """
@@ -21,10 +30,17 @@ def load_json(path: Path) -> Any:
         "r",
         encoding="utf-8",
     ) as fp:
+
         return json.load(fp)
 
 
-def import_raw(filename: str) -> dict[str, Any]:
+# =====================================================
+# Import Raw Reality
+# =====================================================
+
+def import_raw(
+    filename: str,
+) -> dict[str, Any]:
     """
     Load raw API response.
     """
@@ -33,6 +49,10 @@ def import_raw(filename: str) -> dict[str, Any]:
         OUTPUT_DIR / "raw" / filename,
     )
 
+
+# =====================================================
+# Import Observation
+# =====================================================
 
 def import_observation(
     filename: str,
@@ -46,11 +66,15 @@ def import_observation(
     )
 
 
+# =====================================================
+# Import Mapping Contract
+# =====================================================
+
 def import_mapping(
     filename: str,
 ) -> list[dict[str, Any]]:
     """
-    Load mapped products.
+    Load Import Contract.
     """
 
     return load_json(
@@ -58,10 +82,30 @@ def import_mapping(
     )
 
 
-if __name__ == "__main__":
+# =====================================================
+# Import Dataset
+# =====================================================
 
-    observation = import_observation(
-        "thinkpad_observation.json",
+def import_dataset(
+    filename: str,
+) -> list[dict[str, Any]]:
+    """
+    Load mapped Import Contract dataset.
+    """
+
+    return import_mapping(
+        filename,
     )
 
-    print(observation)
+
+# =====================================================
+# Main
+# =====================================================
+
+if __name__ == "__main__":
+
+    dataset = import_dataset(
+        "thinkpad_mapping.json",
+    )
+
+    print(dataset)

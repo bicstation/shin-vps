@@ -1,4 +1,7 @@
+# =========================================================
+# FILE:
 # /home/maya/shin-vps/django/research/valuecommerce_reality/scripts/client.py
+# =========================================================
 
 from __future__ import annotations
 
@@ -20,6 +23,7 @@ class ValueCommerceClient:
     """
 
     def __init__(self) -> None:
+
         self.base_url = VALUECOMMERCE_PRODUCTDB_URL
         self.token = VALUECOMMERCE_PRODUCTDB_TOKEN
 
@@ -28,7 +32,7 @@ class ValueCommerceClient:
         **params: Any,
     ) -> dict[str, Any]:
         """
-        Search products from ProductDB API.
+        Search products from the ProductDB API.
         """
 
         query = {
@@ -49,8 +53,9 @@ class ValueCommerceClient:
         )
 
         #
-        # Reality Observation
+        # HTTP Debug
         #
+
         print("=" * 80)
         print("Request URL")
         print(response.request.url)
@@ -67,3 +72,14 @@ class ValueCommerceClient:
         response.raise_for_status()
 
         return response.json()
+
+
+if __name__ == "__main__":
+
+    client = ValueCommerceClient()
+
+    print(
+        client.search_products(
+            keyword="ThinkPad",
+        )
+    )
