@@ -77,6 +77,10 @@ LINKSHARE_SHOPS=(
   "asus"
 )
 
+SCRAPER_SHOPS=(
+  "ark"
+)
+
 # ==========================================================
 # Project Root Topology
 # ==========================================================
@@ -349,6 +353,8 @@ if [ "$RAKUTEN_ENABLED" -eq 1 ]; then
 fi
 
 
+
+
 # ==========================================================
 # ② 02 Reset Stock
 # ==========================================================
@@ -397,6 +403,15 @@ do
 
 done
 
+for SHOP in "${SCRAPER_SHOPS[@]}"
+do
+    log "🤖 AI Spec : $SHOP"
+
+    run_django compile_spec_runtime \
+        --maker "$SHOP" \
+        --limit "$AI_SPEC_LIMIT"
+
+done
 
 # ==========================================================
 # ④ 04-2 AI SUMMARY

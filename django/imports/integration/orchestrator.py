@@ -10,7 +10,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from imports.integration.adapter import ImportAdapter
-from imports.integration.builder import ImportBuilder
+from imports.integration.model_mapper import PCProductModelMapper
 from imports.integration.repository import ImportRepository
 from imports.integration.results import ImportResults
 from imports.integration.semantic import ImportSemantic
@@ -26,7 +26,7 @@ class ImportOrchestrator:
     Adapter
             │
             ▼
-    Builder
+    PCProduct Model Mapper
             │
             ▼
     Semantic
@@ -41,7 +41,7 @@ class ImportOrchestrator:
     def __init__(self) -> None:
 
         self.adapter = ImportAdapter()
-        self.builder = ImportBuilder()
+        self.mapper = PCProductModelMapper()
         self.semantic = ImportSemantic()
         self.repository = ImportRepository()
 
@@ -63,24 +63,70 @@ class ImportOrchestrator:
         # Adapter
         # -------------------------------------------------
 
-        normalized_products = self.adapter.run(json_path)
+        contracts = self.adapter.run(json_path)
 
-        results.loaded = len(normalized_products)
-        results.normalized = len(normalized_products)
+        results.loaded = len(contracts)
+        results.normalized = len(contracts)
 
         # -------------------------------------------------
-        # Builder
+        # Model Mapper
         # -------------------------------------------------
 
         payloads = []
 
-        for normalized in normalized_products:
+        for index, contract in enumerate(contracts, start=1):
 
-            payload = self.builder.build(
-                normalized=normalized,
-                maker=maker,
-                prefix=prefix,
-            )
+            # =============================================
+            # Contract Validation
+            # =============================================
+
+            identity = contract.get("identity", {})
+
+            if not identity.get("unique_id"):
+                print()
+                print("========================================")
+                print("INVALID CONTRACT")
+                print(f"Index : {index}")
+                print(contract)
+                print("========================================")
+                raise ValueError("Import Contract missing unique_id.")
+
+            payload = self.mapper.build(contract)
+
+            # =============================================
+            # Payload Validation
+            # =============================================
+
+            required_fields = [
+                "unique_id",
+                "maker",
+                "name",
+            ]
+
+            missing = [
+                field
+                for field in required_fields
+                if not payload.get(field)
+            ]
+
+            if missing:
+
+                print()
+                print("========================================")
+                print("INVALID PAYLOAD")
+                print(f"Index   : {index}")
+                print(f"Missing : {missing}")
+                print()
+                print("Contract")
+                print(contract)
+                print()
+                print("Payload")
+                print(payload)
+                print("========================================")
+
+                raise ValueError(
+                    f"Payload validation failed : {missing}"
+                )
 
             payloads.append(payload)
 
@@ -93,7 +139,7 @@ class ImportOrchestrator:
 
         semantic_payloads = []
 
-        for payload in payloads:
+        for index, payload in enumerate(payloads, start=1):
 
             semantic_payload = self.semantic.build(payload)
 

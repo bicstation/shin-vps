@@ -222,6 +222,10 @@ class GeminiClient:
         response.raise_for_status()
 
         result = response.json()
+        
+        print("\n========== RAW RESPONSE ==========")
+        print(result)
+        print("==================================\n")
 
         if "candidates" not in result:
             raise Exception("MISSING CANDIDATES")

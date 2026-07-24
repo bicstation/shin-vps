@@ -161,8 +161,7 @@ class PCProduct(models.Model):
     # === 1. 基本情報 ===
     unique_id = models.CharField(max_length=255, unique=True, db_index=True, verbose_name="固有ID")
     site_prefix = models.CharField(max_length=20, verbose_name="サイト接頭辞")
-    maker = models.CharField(max_length=100, db_index=True, verbose_name="メーカー")
-    
+   
     raw_genre = models.CharField(max_length=100, default="", verbose_name="サイト別分類")
     unified_genre = models.CharField(max_length=50, default="", db_index=True, verbose_name="統合ジャンル")
 
@@ -191,7 +190,77 @@ class PCProduct(models.Model):
     is_active = models.BooleanField(default=True, verbose_name="掲載中")
     created_at = models.DateTimeField(default=now, verbose_name="登録日時")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新日時")
+    
+    
+    # =====================================================
+    # Identity Observation（Reality）
+    # =====================================================
+    
+    maker = models.CharField(
+        max_length=100,
+        db_index=True, 
+        verbose_name="メーカー"
+        )
 
+
+    model = models.CharField(
+        max_length=255,
+        blank=True,
+        default="",
+        db_index=True,
+        verbose_name="モデル名"
+    )
+
+    product_no = models.CharField(
+        max_length=255,
+        blank=True,
+        default="",
+        db_index=True,
+        verbose_name="型番"
+    )
+
+    pc_id = models.CharField(
+        max_length=255,
+        blank=True,
+        default="",
+        db_index=True,
+        verbose_name="サイト商品ID"
+    )
+
+    release_date = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="発売日"
+    )
+    
+    # =====================================================
+    # Identity Runtime（AI）
+    # =====================================================
+
+
+    brand = models.CharField(
+        max_length=255,
+        blank=True,
+        default="",
+        db_index=True,
+        verbose_name="ブランド"
+    )
+
+    series = models.CharField(
+        max_length=255,
+        blank=True,
+        default="",
+        db_index=True,
+        verbose_name="シリーズ"
+    )
+
+    collaboration = models.CharField(
+        max_length=255,
+        blank=True,
+        default="",
+        verbose_name="コラボレーション"
+    )
+    
     # =========================================================
     # === 2. PCスペック用解析カラム ===
     # =========================================================

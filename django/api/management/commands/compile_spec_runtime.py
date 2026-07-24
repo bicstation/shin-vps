@@ -12,6 +12,7 @@ from api.models.pc_products import ( PCProduct, )
 from api.services.ai.runtime.ai_runtime import ( AIRuntime, )
 from api.services.ai.services.pc_spec_service import ( PCSpecService, )
 from api.services.ai.services.spec_runtime_persist_service import ( SpecRuntimePersistService, )
+from api.services.ai.exceptions.parse_error import (   ParseError,)
 
 
 class Command(BaseCommand):
@@ -140,7 +141,7 @@ class Command(BaseCommand):
 
                     )
 
-                    raise
+                    continue
 
         self.print_runtime_footer()
 
@@ -283,40 +284,16 @@ class Command(BaseCommand):
                 product
             )
 
-            if not bundle:
-
-                self.stdout.write(
-
-                    self.style.WARNING(
-
-                        f"⚠️ Empty Result "
-                        f"{product.unique_id}"
-
-                    )
-
-                )
-
-                return
-
-            spec_result = bundle[
-                "spec_result"
-            ]
+            spec_result = bundle["spec_result"]
 
             self.persist_service.save(
-
                 product,
-
                 spec_result,
-
             )
 
             elapsed = round(
-
-                time.time()
-                - started,
-
+                time.time() - started,
                 2,
-
             )
 
             self.stdout.write(
@@ -343,6 +320,47 @@ class Command(BaseCommand):
                 )
 
             )
+
+        except ParseError as e:
+
+            self.stdout.write(
+
+                self.style.WARNING(
+
+                    "\n"
+                    "==================================================\n"
+                    "⚠️ PARSE FAILED\n"
+                    "==================================================\n"
+                    f"PRODUCT : {product.unique_id}\n"
+                    f"ERROR   : {e}\n"
+                    "=================================================="
+
+                )
+
+            )
+
+            return
+
+        except Exception as e:
+
+            self.stdout.write(
+
+                self.style.ERROR(
+
+                    "\n"
+                    "==================================================\n"
+                    "❌ SPEC FAILED\n"
+                    "==================================================\n"
+                    f"PRODUCT : {product.unique_id}\n"
+                    f"ERROR   : {type(e).__name__}\n"
+                    f"MESSAGE : {e}\n"
+                    "=================================================="
+
+                )
+
+            )
+
+            return
 
         finally:
 
