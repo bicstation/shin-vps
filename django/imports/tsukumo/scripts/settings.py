@@ -1,15 +1,18 @@
-# /home/maya/shin-vps/django/imports/ark/scripts/settings.py
+# /home/maya/shin-vps/django/imports/tsukumo/scripts/settings.py
 
 """
-ARK Importer Settings
+TSUKUMO Importer Settings
 """
+
+from pathlib import Path
+
 
 # ==========================================================
 # Site
 # ==========================================================
 
-SITE_NAME = "ARK"
-BASE_URL = "https://www.ark-pc.co.jp"
+SITE_NAME = "TSUKUMO"
+BASE_URL = "https://www.tsukumo.co.jp"
 
 
 # ==========================================================
@@ -36,19 +39,27 @@ AFFILIATE = {
     # False: Realityの商品URLをそのまま返す
     "enabled": True,
 
-    # 利用するASP
+    # 将来利用する場合
     "provider": "valuecommerce",
 
-    # ValueCommerce SID / PID
-    # ※ '&' は含めない
+    # SID / PID
     "sid": "3697471",
-    "pid": "892466351",
+    "pid": "892665496",
 }
+
 
 # ==========================================================
 # Output
 # ==========================================================
 
-RAW_DIR = ...
-PAYLOAD_DIR = ...
-IMPORT_CONTRACT_DIR = ...
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+OUTPUT_DIR = BASE_DIR / "output"
+
+RAW_DIR = OUTPUT_DIR / "raw"
+PAYLOAD_DIR = OUTPUT_DIR / "payload"
+IMPORT_CONTRACT_DIR = OUTPUT_DIR / "import_contract"
+
+RAW_DIR.mkdir(parents=True, exist_ok=True)
+PAYLOAD_DIR.mkdir(parents=True, exist_ok=True)
+IMPORT_CONTRACT_DIR.mkdir(parents=True, exist_ok=True)

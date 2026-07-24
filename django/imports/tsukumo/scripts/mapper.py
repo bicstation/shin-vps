@@ -1,31 +1,20 @@
 #!/usr/bin/env python3
 """
-ARK Mapper
+TSUKUMO Mapper
 
 Payload(JSON) → Import Contract(JSON)
 
-役割
-    - Payload を Import Contract へ変換
-    - Affiliate URL を生成
-    - Identity を完成させる
-    - Reality を Import Contract へ統合
-
-設計思想
-    Reality First
-    Observation First
-    Identity First
-
-依存
-    - Backendなし
-    - Djangoなし
+Reality First
+Observation First
+Identity First
 """
 
 from pathlib import Path
 import json
 
 from imports.common.affiliate import generate_affiliate_url
-from imports.ark.scripts.settings import AFFILIATE
 from imports.common.tsv.identity_classifier import classify_identity
+from imports.tsukumo.scripts.settings import AFFILIATE
 
 
 # ==========================================================
@@ -43,93 +32,86 @@ OUTPUT_FILE = OUTPUT_DIR / "products.json"
 
 
 # ==========================================================
-# Identity Resolver
+# Identity
 # ==========================================================
 
-SOURCE_PREFIX = "ARK"
+SOURCE_PREFIX = "TSUKUMO"
+
+
+def normalize_identifier(value: str) -> str:
+    return (
+        value.strip()
+        .replace(" ", "_")
+        .replace("/", "_")
+    )
 
 
 def build_unique_id(item: dict) -> str:
-    """
-    Build stable unique_id.
 
-    Priority
-    --------
-    1. model
-    2. product_no
-    3. pc_id
-    4. product_url
-    """
-
-    if model := item.get("model", "").strip():
-        normalized = normalize_identifier(model)
-        return f"{SOURCE_PREFIX}_{normalized}"
-
-    if product_no := item.get("product_no", "").strip():
-        return f"{SOURCE_PREFIX}_{product_no}"
-
-    if pc_id := item.get("pc_id", "").strip():
-        return f"{SOURCE_PREFIX}_{pc_id}"
-
-    if product_url := item.get("product_url", "").strip():
-        return f"{SOURCE_PREFIX}_{product_url}"
+    for key in (
+        "model",
+        "product_no",
+        "pc_id",
+        "product_url",
+    ):
+        value = item.get(key, "").strip()
+        if value:
+            return f"{SOURCE_PREFIX}_{normalize_identifier(value)}"
 
     return SOURCE_PREFIX
 
-def normalize_identifier(value: str) -> str:
-    
-    return value.strip().replace(" ", "_")
 
 # ==========================================================
 # Mapper
 # ==========================================================
 
 def map_item(item: dict) -> dict:
-    """Payload → Import Contract"""
-    
+
+    observation = item.get("observation", {})
+
+    specifications = (
+        observation.get("specifications")
+        or item.get("specs", {})
+    )
+
     identity = classify_identity(
         maker=item.get("maker", ""),
         product_name=item.get("product_name", ""),
-        description=item.get("observation", {}).get("feature", ""),
+        description=observation.get("description", ""),
     )
 
     product_url = item.get("product_url", "")
-
-    affiliate_url = generate_affiliate_url(
-        product_url,
-        AFFILIATE,
-    )
-
-    unique_id = build_unique_id(item)
 
     return {
 
         # ==================================================
         # Identity
         # ==================================================
-
+        
         "identity": {
 
-            "unique_id": unique_id,
+            "unique_id": build_unique_id(item),
 
             "maker": item.get("maker", ""),
-            
-            "brand": identity["brand"],
 
-            "series": identity["series"],
+            "brand": (
+                item.get("brand")
+                or identity["brand"]
+            ),
+
+            "series": (
+                item.get("series")
+                or identity["series"]
+            ),
 
             "collaboration": identity["collaboration"],
 
             "product_name": item.get("product_name", ""),
-
             "model": item.get("model", ""),
-
             "product_no": item.get("product_no", ""),
-
             "pc_id": item.get("pc_id", ""),
 
             "product_url": product_url,
-
         },
 
         # ==================================================
@@ -138,7 +120,10 @@ def map_item(item: dict) -> dict:
 
         "affiliate": {
 
-            "url": affiliate_url,
+            "url": generate_affiliate_url(
+                product_url,
+                AFFILIATE,
+            ),
 
         },
 
@@ -149,7 +134,6 @@ def map_item(item: dict) -> dict:
         "commerce": {
 
             "price": item.get("price", ""),
-
             "release_date": item.get("release_date", ""),
 
         },
@@ -168,20 +152,20 @@ def map_item(item: dict) -> dict:
         # Observation
         # ==================================================
 
-        "observation": item.get(
-            "observation",
-            {
-                "raw_title": "",
-                "feature": "",
-                "specifications": {},
-            },
-        ),
+        "observation": {
+
+            "raw_title": observation.get("raw_title", ""),
+            "feature": observation.get("feature", ""),
+            "description": observation.get("description", ""),
+            "specifications": specifications,
+
+        },
 
         # ==================================================
-        # Specifications
+        # Reality
         # ==================================================
 
-        "specifications": item.get("specs", {}),
+        "specifications": specifications,
 
     }
 
@@ -193,7 +177,9 @@ def map_item(item: dict) -> dict:
 def main():
 
     payload = json.loads(
-        INPUT_FILE.read_text(encoding="utf-8")
+        INPUT_FILE.read_text(
+            encoding="utf-8",
+        )
     )
 
     contracts = [
@@ -202,16 +188,23 @@ def main():
     ]
 
     OUTPUT_FILE.write_text(
+
         json.dumps(
             contracts,
             ensure_ascii=False,
             indent=2,
         ),
+
         encoding="utf-8",
+
     )
 
+    print("=" * 60)
+    print("TSUKUMO IMPORT CONTRACT")
+    print("=" * 60)
     print(f"Items : {len(contracts)}")
     print(f"Saved : {OUTPUT_FILE}")
+    print("=" * 60)
 
 
 if __name__ == "__main__":

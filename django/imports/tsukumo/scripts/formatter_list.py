@@ -1,24 +1,24 @@
 #!/usr/bin/env python3
 """
-ARK List Formatter
+TSUKUMO Spec Formatter
 
-保存した一覧HTMLを解析し、
-全ページ分の商品Payloadを生成する。
+保存した Reality HTML を解析し、
+商品Payloadを生成する。
 
 Reality First
 Observation First
 """
 
 from pathlib import Path
+from urllib.parse import urljoin
+import csv
 import json
-from urllib.parse import parse_qs, urlparse
 
 from bs4 import BeautifulSoup
 
-from imports.ark.scripts.settings import BASE_URL
-
-
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+LIST_FILE = BASE_DIR / "scripts" / "list.tsv"
 
 RAW_DIR = BASE_DIR / "output" / "raw"
 
@@ -32,227 +32,150 @@ def text(node):
     return "" if node is None else node.get_text(" ", strip=True)
 
 
-def attr(node, name):
-    return "" if node is None else node.get(name, "")
+def normalize_maker():
+    return "TSUKUMO"
 
 
-def absolute_url(url):
-    if not url:
-        return ""
-
-    if url.startswith(("http://", "https://")):
-        return url
-
-    return f"{BASE_URL}{url}"
-
-
-def normalize_maker(_maker):
-
-    return "ARK"
-
-
-def extract_pc_id(url):
-
-    if not url:
-        return ""
-
-    query = parse_qs(urlparse(url).query)
-
-    return query.get("pc_id", [""])[0]
+def build_description(specs):
+    return "\n".join(
+        f"{k}: {v}"
+        for k, v in specs.items()
+        if v
+    )
 
 
 def parse():
 
     results = []
 
-    html_files = sorted(RAW_DIR.glob("list_page*.html"))
+    with open(LIST_FILE, encoding="utf-8") as f:
+        entries = list(csv.DictReader(f, delimiter="\t"))
 
-    for html_file in html_files:
+    print("=" * 60)
+    print("TSUKUMO SPEC FORMATTER")
+    print("=" * 60)
 
-        print(f"Parsing : {html_file.name}")
+    for index, entry in enumerate(entries, start=1):
 
-        soup = BeautifulSoup(
-            html_file.read_text(encoding="utf-8"),
-            "html.parser",
-        )
+        slug = entry["slug"]
+        series_url = entry["url"]
 
-        for card in soup.select(".mdl-card"):
+        html_file = RAW_DIR / f"{slug}.html"
 
-            ##################################################
-            # Basic
-            ##################################################
+        if not html_file.exists():
+            print(f"[{index}/{len(entries)}] Skip : {slug}.html")
+            continue
 
-            a = card.select_one('.parent_img a[href*="/bto/customizer/"]')
+        print(f"[{index}/{len(entries)}] Parsing : {slug}.html")
 
-            img = card.select_one(".parent_img img")
-
-            href = attr(a, "href")
-
-            product_url = absolute_url(href)
-
-            image_url = absolute_url(
-                attr(img, "data-src") or attr(img, "src")
+        try:
+            html = html_file.read_text(encoding="cp932")
+        except UnicodeDecodeError:
+            html = html_file.read_text(
+                encoding="shift_jis",
+                errors="replace",
             )
 
-            pc_id = extract_pc_id(product_url)
+        soup = BeautifulSoup(html, "html.parser")
 
-            ##################################################
-            # Title
-            ##################################################
+        table = soup.select_one("#Spec_List_Detail")
 
-            title = card.select(".mdl_title p")
+        if table is None:
+            print("Spec_List_Detail not found.")
+            continue
 
-            maker = normalize_maker(text(title[0])) if len(title) >= 1 else ""
+        rows = table.find_all("tr")
 
-            product_name = text(title[1]) if len(title) >= 2 else ""
+        if not rows:
+            continue
 
-            model = text(title[2]) if len(title) >= 3 else ""
+        ########################################################
+        # Products
+        ########################################################
 
-            raw_title = " ".join(
-                t.get_text(" ", strip=True)
-                for t in title
-            )
+        products = []
 
-            ##################################################
-            # Specs
-            ##################################################
+        for td in rows[0].find_all("td"):
 
-            specs = {}
+            container = td.find("div")
 
-            for row in card.select(".mdl_spec_list tr"):
+            if container is None:
+                continue
 
-                cols = row.find_all("td")
+            detail = container.find("a", href=True)
 
-                if len(cols) != 2:
-                    continue
+            product_url = ""
 
-                key = text(cols[0])
+            if detail:
+                product_url = urljoin(
+                    series_url,
+                    detail["href"],
+                )
 
-                value = text(cols[1])
+            products.append({
 
-                specs[key] = value
+                "maker": normalize_maker(),
+                "brand": entry["brand"],
+                "series": entry["series"],
 
-            ##################################################
-            # Feature
-            ##################################################
+                "product_name": text(container.find("p")),
+                "model": container.get("id", ""),
+                "product_no": "",
 
-            feature = ""
-
-            feature_block = card.select_one(".mdl_desc")
-
-            if feature_block:
-
-                p = feature_block.select_one("p")
-
-                if p:
-                    feature = text(p)
-
-            ##################################################
-            # Identity
-            ##################################################
-
-            product_no = ""
-
-            if feature_block:
-
-                for small in feature_block.select("small"):
-
-                    value = text(small)
-
-                    if value.startswith("商品番号:"):
-
-                        product_no = (
-                            value.replace("商品番号:", "")
-                            .strip()
-                        )
-
-                    elif value.startswith("型番:"):
-
-                        if not model:
-
-                            model = (
-                                value.replace("型番:", "")
-                                .strip()
-                            )
-
-            ##################################################
-            # Release
-            ##################################################
-
-            release_date = ""
-
-            for small in card.select(".mdl_spec_list small"):
-
-                value = text(small)
-
-                if value.startswith("リリース:"):
-
-                    release_date = (
-                        value.replace("リリース:", "")
-                        .strip()
-                    )
-
-            ##################################################
-            # Price
-            ##################################################
-
-            price = text(
-                card.select_one('[itemprop="price"]')
-            )
-
-            ##################################################
-            # Payload
-            ##################################################
-
-            results.append({
-
-                #
-                # Identity
-                #
-
-                "maker": maker,
-
-                "product_name": product_name,
-
-                "model": model,
-
-                "product_no": product_no,
-
-                "pc_id": pc_id,
-
-                #
-                # Commerce
-                #
-
-                "price": price,
-
-                "release_date": release_date,
+                "price": text(container.select_one(".price")),
+                "release_date": "",
 
                 "product_url": product_url,
+                "image_url": "",
 
-                "image_url": image_url,
-
-                #
-                # Observation
-                #
-
-                "observation": {
-
-                    "raw_title": raw_title,
-
-                    "feature": feature,
-
-                    "specifications": specs,
-
-                },
-
-                #
-                # Legacy
-                #
-
-                "specs": specs,
+                "specs": {},
 
             })
+
+        ########################################################
+        # Specifications
+        ########################################################
+
+        for row in rows[1:]:
+
+            headers = row.find_all("th")
+
+            if not headers:
+                continue
+
+            key = " ".join(
+                text(th)
+                for th in headers
+            ).strip()
+
+            for i, td in enumerate(row.find_all("td")):
+
+                if i >= len(products):
+                    break
+
+                products[i]["specs"][key] = text(td)
+
+        ########################################################
+        # Observation
+        ########################################################
+
+        for product in products:
+
+            product["observation"] = {
+
+                "raw_title": product["product_name"],
+
+                "feature": "",
+
+                "description": build_description(
+                    product["specs"]
+                ),
+
+                "specifications": product["specs"],
+
+            }
+
+        results.extend(products)
 
     OUTPUT_FILE.write_text(
         json.dumps(
@@ -263,9 +186,11 @@ def parse():
         encoding="utf-8",
     )
 
-    print(f"Pages    : {len(html_files)}")
+    print()
+    print("=" * 60)
     print(f"Products : {len(results)}")
     print(f"Saved    : {OUTPUT_FILE}")
+    print("=" * 60)
 
 
 if __name__ == "__main__":

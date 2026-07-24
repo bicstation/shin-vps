@@ -108,7 +108,7 @@ class ImportNormalizer:
             commerce.get("availability")
         )
 
-        commerce["release_date"] = self.clean_text(
+        commerce["release_date"] = self.normalize_date(
             commerce.get("release_date")
         )
 
@@ -160,6 +160,21 @@ class ImportNormalizer:
     # =========================================================
     # Helpers
     # =========================================================
+    
+    def normalize_date(
+        self,
+        value: Any,
+    ) -> str | None:
+
+        if value is None:
+            return None
+
+        text = str(value).strip()
+
+        if not text:
+            return None
+
+        return text
 
     def clean_text(
         self,

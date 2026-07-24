@@ -1,111 +1,92 @@
 #!/usr/bin/env python3
 """
-ARK BTO List Fetcher
+TSUKUMO Reality Fetch
 
-一覧ページを取得し、
-全ページのHTMLを保存する。
+Reality HTML を取得し、
+生データをそのまま保存する。
+
+Reality First
+Observation First
 """
 
 from pathlib import Path
-import re
-
+import sys
+import csv
 import requests
-from bs4 import BeautifulSoup
 
-from imports.ark.scripts.settings import (
-    BASE_URL,
+# ==========================================================
+# Django Root
+# ==========================================================
+
+ROOT_DIR = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(ROOT_DIR))
+
+from imports.tsukumo.scripts.settings import (
     USER_AGENT,
     TIMEOUT,
 )
 
-LIST_URL = f"{BASE_URL}/bto/list/"
+# ==========================================================
+# Paths
+# ==========================================================
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+LIST_FILE = BASE_DIR / "scripts" / "list.tsv"
 
 RAW_DIR = BASE_DIR / "output" / "raw"
 RAW_DIR.mkdir(parents=True, exist_ok=True)
 
-
-def get_total_pages(soup: BeautifulSoup) -> int:
-    """
-    ページャーから総ページ数を取得する。
-    """
-
-    pages = []
-
-    for a in soup.select("a[href*='page=']"):
-
-        href = a.get("href", "")
-
-        m = re.search(r"page=(\d+)", href)
-
-        if m:
-            pages.append(int(m.group(1)))
-
-    return max(pages) if pages else 1
-
+# ==========================================================
+# Fetch
+# ==========================================================
 
 def fetch():
 
-    headers = {
-        "User-Agent": USER_AGENT,
-    }
+    with open(LIST_FILE, encoding="utf-8") as f:
+        rows = list(csv.DictReader(f, delimiter="\t"))
 
-    page = 1
-    total_pages = None
-    total_products = 0
+    print("=" * 60)
+    print("TSUKUMO REALITY FETCH")
+    print("=" * 60)
+    print(f"Target : {len(rows)} Series")
+    print("=" * 60)
 
-    while True:
+    for index, row in enumerate(rows, start=1):
 
-        url = LIST_URL if page == 1 else f"{LIST_URL}?page={page}"
+        url = row["url"]
+        slug = row["slug"]
+
+        print(f"[{index}/{len(rows)}] {row['series']}")
 
         response = requests.get(
             url,
-            headers=headers,
+            headers={
+                "User-Agent": USER_AGENT,
+            },
             timeout=TIMEOUT,
         )
+
         response.raise_for_status()
 
-        soup = BeautifulSoup(
-            response.text,
-            "html.parser",
+        output_file = RAW_DIR / f"{slug}.html"
+
+        #
+        # Realityは一切加工しない
+        #
+
+        output_file.write_bytes(
+            response.content
         )
 
-        if total_pages is None:
-            total_pages = get_total_pages(soup)
+        print(f"  URL    : {url}")
+        print(f"  Status : {response.status_code}")
+        print(f"  Saved  : {output_file}")
+        print()
 
-        cards = soup.select(".mdl-card")
-
-        if not cards:
-            print("Finished.")
-            break
-
-        output = RAW_DIR / f"list_page{page}.html"
-
-        output.write_text(
-            response.text,
-            encoding="utf-8",
-        )
-
-        total_products += len(cards)
-
-        print(
-            f"[{page}/{total_pages}] "
-            f"Cards:{len(cards):2d} "
-            f"Total:{total_products:4d}"
-        )
-
-        page += 1
-
-        if page > total_pages:
-            break
-
-    print()
-    print("=" * 50)
-    print(f"Pages    : {page - 1}")
-    print(f"Products : {total_products}")
-    print(f"Saved    : {RAW_DIR}")
-    print("=" * 50)
+    print("=" * 60)
+    print("COMPLETE")
+    print("=" * 60)
 
 
 if __name__ == "__main__":

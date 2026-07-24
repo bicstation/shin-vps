@@ -1,5 +1,3 @@
-# /home/maya/shin-vps/django/imports/ark/run.py
-
 #!/usr/bin/env python3
 
 from pathlib import Path
@@ -16,9 +14,9 @@ sys.path.insert(0, str(PROJECT_DIR))
 # Import
 # ==========================================================
 
-from imports.ark.scripts.fetch_list import fetch
-from imports.ark.scripts.formatter_list import parse
-from imports.ark.scripts.mapper import main as mapper
+from imports.tsukumo.scripts.fetch_list import fetch
+from imports.tsukumo.scripts.formatter_list import parse
+from imports.tsukumo.scripts.mapper import main as mapper
 
 from imports.integration.orchestrator import ImportOrchestrator
 
@@ -27,7 +25,7 @@ from imports.integration.orchestrator import ImportOrchestrator
 CONTRACT_PATH = (
     PROJECT_DIR
     / "imports"
-    / "ark"
+    / "tsukumo"
     / "output"
     / "import_contract"
     / "products.json"
@@ -35,6 +33,7 @@ CONTRACT_PATH = (
 
 
 def main() -> None:
+
     # ------------------------------------------------------
     # Reality
     # ------------------------------------------------------
@@ -51,8 +50,8 @@ def main() -> None:
 
     results = orchestrator.run(
         json_path=CONTRACT_PATH,
-        maker="ARK",
-        prefix="ARK",
+        maker="TSUKUMO",
+        prefix="TSUKUMO",
     )
 
     return results

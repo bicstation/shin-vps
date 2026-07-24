@@ -92,7 +92,7 @@ class PCProductModelMapper:
             # ==========================================
 
             "description":
-                observation.get("feature", ""),
+                observation.get("description", ""),
 
             # ==========================================
             # Initial State

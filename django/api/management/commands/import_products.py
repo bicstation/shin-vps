@@ -7,6 +7,7 @@ from __future__ import annotations
 from django.core.management.base import BaseCommand, CommandError
 
 from imports.ark.run import main as ark_import
+from imports.tsukumo.run import main as tsukumo_import
 
 
 class Command(BaseCommand):
@@ -33,6 +34,13 @@ class Command(BaseCommand):
             self.stdout.write("")
             self.stdout.write(self.style.SUCCESS("=== ARK Import ==="))
             ark_import()
+            return
+
+        if source == "tsukumo":
+
+            self.stdout.write("")
+            self.stdout.write(self.style.SUCCESS("=== TSUKUMO Import ==="))
+            tsukumo_import()
             return
 
         raise CommandError(
