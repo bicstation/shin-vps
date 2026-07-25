@@ -82,7 +82,7 @@ class PCProductModelMapper:
                 identity.get("product_url"),
 
             "affiliate_url":
-                affiliate.get("url"),
+                identity.get("affiliate_url"),
 
             "image_url":
                 media.get("image_url"),
@@ -119,7 +119,6 @@ class PCProductModelMapper:
     def extract_site_prefix(
 
         self,
-
         unique_id: str | None,
 
     ) -> str:

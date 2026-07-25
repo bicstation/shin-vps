@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """
-GEEKOM Reality Fetch
+fetch_list.py
 
-Reality HTML を取得し、
-生データをそのまま保存する。
+GEEKOM Collection Fetch Runtime
+
+collections.tsv に登録された Collection を巡回し、
+HTMLをそのまま保存する。
 
 Reality First
 Observation First
@@ -12,6 +14,7 @@ Observation First
 from pathlib import Path
 import sys
 import csv
+
 import requests
 
 # ==========================================================
@@ -30,34 +33,46 @@ from imports.geekom.scripts.settings import (
 # Paths
 # ==========================================================
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parent.parent
 
-LIST_FILE = BASE_DIR / "scripts" / "list.tsv"
+INPUT_TSV = ROOT / "collections.tsv"
 
-RAW_DIR = BASE_DIR / "output" / "raw"
+RAW_DIR = ROOT / "output" / "raw"
 RAW_DIR.mkdir(parents=True, exist_ok=True)
 
 # ==========================================================
 # Fetch
 # ==========================================================
 
-def fetch():
+def fetch() -> None:
 
-    with open(LIST_FILE, encoding="utf-8") as f:
+    with INPUT_TSV.open(
+        "r",
+        encoding="utf-8",
+        newline="",
+    ) as f:
+
         rows = list(csv.DictReader(f, delimiter="\t"))
 
     print("=" * 60)
-    print("GEEKOM REALITY FETCH")
+    print("GEEKOM COLLECTION FETCH")
     print("=" * 60)
     print(f"Target : {len(rows)} Collections")
     print("=" * 60)
 
     session = requests.Session()
+
     session.headers.update({
         "User-Agent": USER_AGENT,
     })
 
+    success = []
+    failed = []
+
     for index, row in enumerate(rows, start=1):
+
+        if row["enabled"].lower() != "true":
+            continue
 
         slug = row["slug"]
         url = row["url"]
@@ -72,23 +87,61 @@ def fetch():
                 allow_redirects=True,
             )
 
-            output_file = RAW_DIR / f"{slug}.html"
-            output_file.write_bytes(response.content)
+            response.raise_for_status()
+
+            output = RAW_DIR / f"{slug}.html"
+            output.write_bytes(response.content)
+
+            success.append(slug)
 
             print(f"  Status : {response.status_code}")
             print(f"  Size   : {len(response.content):,} bytes")
-            print(f"  Saved  : {output_file}")
+            print(f"  Saved  : {output}")
+
+        except requests.HTTPError:
+
+            status = response.status_code if "response" in locals() else 0
+
+            failed.append((slug, status))
+
+            print(f"  ERROR  : HTTP {status}")
 
         except Exception as e:
+
+            failed.append((slug, "ERROR"))
 
             print(f"  ERROR  : {e}")
 
         print()
 
     print("=" * 60)
+    print("SUMMARY")
+    print("=" * 60)
+
+    print(f"SUCCESS : {len(success)}")
+    for slug in success:
+        print(f"  ✓ {slug}")
+
+    print()
+
+    print(f"FAILED  : {len(failed)}")
+    for slug, status in failed:
+        print(f"  ✗ [{status}] {slug}")
+
+    print()
+    print("=" * 60)
     print("COMPLETE")
     print("=" * 60)
 
 
-if __name__ == "__main__":
+# ==========================================================
+# Entry Point
+# ==========================================================
+
+def main() -> None:
+    """Execute Collection Fetch."""
     fetch()
+
+
+if __name__ == "__main__":
+    main()

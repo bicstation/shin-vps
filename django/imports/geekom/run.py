@@ -14,44 +14,47 @@ sys.path.insert(0, str(PROJECT_DIR))
 # Import
 # ==========================================================
 
-from imports.tsukumo.scripts.fetch_list import fetch
-from imports.tsukumo.scripts.formatter_list import parse
-from imports.tsukumo.scripts.mapper import main as mapper
+from imports.geekom.pipeline import run as reality_pipeline
 
 from imports.integration.orchestrator import ImportOrchestrator
 
+# ==========================================================
+# Import Contract
 # ==========================================================
 
 CONTRACT_PATH = (
     PROJECT_DIR
     / "imports"
-    / "tsukumo"
+    / "geekom"
     / "output"
     / "import_contract"
     / "products.json"
 )
 
 
+# ==========================================================
+# Run
+# ==========================================================
+
 def main() -> None:
+    """Execute TSUKUMO Import Runtime."""
 
     # ------------------------------------------------------
-    # Reality
+    # Reality Pipeline
     # ------------------------------------------------------
 
-    fetch()
-    parse()
-    mapper()
+    reality_pipeline()
 
     # ------------------------------------------------------
-    # Integration
+    # Import Pipeline
     # ------------------------------------------------------
 
     orchestrator = ImportOrchestrator()
 
     results = orchestrator.run(
         json_path=CONTRACT_PATH,
-        maker="TSUKUMO",
-        prefix="TSUKUMO",
+        maker="GEEKOM",
+        prefix="GEEKOM",
     )
 
     return results

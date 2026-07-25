@@ -1,3 +1,5 @@
+# /home/maya/shin-dev/shin-vps/django/imports/common/affiliate.py
+
 #!/usr/bin/env python3
 """
 Affiliate URL Generator

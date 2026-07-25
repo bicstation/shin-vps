@@ -19,8 +19,8 @@ from bs4 import BeautifulSoup
 
 ROOT = Path(__file__).resolve().parent.parent
 
-INPUT_TSV = ROOT / "collections.tsv"
-OUTPUT_TSV = ROOT / "output" / "collections_discovered.tsv"
+INPUT_TSV = ROOT / "root.tsv"
+OUTPUT_TSV = ROOT / "collections.tsv"
 
 HEADERS = {
     "User-Agent": (

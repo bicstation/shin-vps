@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """
-TSUKUMO Mapper
+GEEKOM Mapper
 
-Payload(JSON) → Import Contract(JSON)
+Payload
+    ↓
+Import Contract
 
 Reality First
 Observation First
@@ -11,31 +13,35 @@ Identity First
 
 from pathlib import Path
 import json
+import sys
+from urllib.parse import urlparse
 
-from imports.common.affiliate import generate_affiliate_url
+# ==========================================================
+# Project Root
+# ==========================================================
+
+ROOT_DIR = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(ROOT_DIR))
+
 from imports.common.tsv.identity_classifier import classify_identity
-from imports.tsukumo.scripts.settings import AFFILIATE
-
+from imports.common.affiliate import generate_affiliate_url
+from imports.geekom.scripts.settings import AFFILIATE
 
 # ==========================================================
 # Paths
 # ==========================================================
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 INPUT_FILE = BASE_DIR / "output" / "payload" / "products.json"
-
 OUTPUT_DIR = BASE_DIR / "output" / "import_contract"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-
 OUTPUT_FILE = OUTPUT_DIR / "products.json"
-
 
 # ==========================================================
 # Identity
 # ==========================================================
 
-SOURCE_PREFIX = "TSUKUMO"
+SOURCE_PREFIX = "GEEKOM"
 
 
 def normalize_identifier(value: str) -> str:
@@ -46,17 +52,37 @@ def normalize_identifier(value: str) -> str:
     )
 
 
-def build_unique_id(item: dict) -> str:
+def extract_handle(url: str) -> str:
+    """
+    https://geekom.jp/products/geekom-a5-pro-mini-pc-2026-edition
+        ↓
+    geekom-a5-pro-mini-pc-2026-edition
+    """
 
-    for key in (
-        "model",
-        "product_no",
-        "pc_id",
-        "product_url",
-    ):
-        value = item.get(key, "").strip()
-        if value:
-            return f"{SOURCE_PREFIX}_{normalize_identifier(value)}"
+    if not url:
+        return ""
+
+    path = urlparse(url).path.rstrip("/")
+
+    if path.startswith("/products/"):
+        return path.split("/")[-1]
+
+    return ""
+
+
+def build_unique_id(identity: dict) -> str:
+
+    url = identity.get("url", "").strip()
+
+    handle = extract_handle(url)
+
+    if handle:
+        return f"{SOURCE_PREFIX}_{normalize_identifier(handle)}"
+
+    title = identity.get("title", "").strip()
+
+    if title:
+        return f"{SOURCE_PREFIX}_{normalize_identifier(title)}"
 
     return SOURCE_PREFIX
 
@@ -67,106 +93,52 @@ def build_unique_id(item: dict) -> str:
 
 def map_item(item: dict) -> dict:
 
+    identity = item.get("identity", {})
+    content = item.get("content", {})
+    media = item.get("media", {})
     observation = item.get("observation", {})
 
-    specifications = (
-        observation.get("specifications")
-        or item.get("specs", {})
+    product_url = identity.get("url", "").strip()
+
+    affiliate_url = generate_affiliate_url(
+        product_url,
+        AFFILIATE,
     )
 
-    identity = classify_identity(
+    classified = classify_identity(
         maker=item.get("maker", ""),
-        product_name=item.get("product_name", ""),
-        description=observation.get("description", ""),
+        product_name=identity.get("title", ""),
+        description=content.get("description", ""),
     )
-
-    product_url = item.get("product_url", "")
 
     return {
-
-        # ==================================================
-        # Identity
-        # ==================================================
         
         "identity": {
-
-            "unique_id": build_unique_id(item),
-
+            "unique_id": build_unique_id(identity),
             "maker": item.get("maker", ""),
-
             "brand": (
-                item.get("brand")
-                or identity["brand"]
+                identity.get("brand")
+                or classified["brand"]
             ),
-
             "series": (
-                item.get("series")
-                or identity["series"]
+                identity.get("series")
+                or classified["series"]
             ),
-
-            "collaboration": identity["collaboration"],
-
-            "product_name": item.get("product_name", ""),
-            "model": item.get("model", ""),
-            "product_no": item.get("product_no", ""),
-            "pc_id": item.get("pc_id", ""),
-
+            "collaboration": classified["collaboration"],
+            "product_name": identity.get("title", ""),
             "product_url": product_url,
+            "affiliate_url": affiliate_url,
         },
-
-        # ==================================================
-        # Affiliate
-        # ==================================================
-
-        "affiliate": {
-
-            "url": generate_affiliate_url(
-                product_url,
-                AFFILIATE,
-            ),
-
-        },
-
-        # ==================================================
-        # Commerce
-        # ==================================================
 
         "commerce": {
-
-            "price": item.get("price", ""),
-            "release_date": item.get("release_date", ""),
-
+            "price": observation.get("price", ""),
+            "currency": observation.get("currency", ""),
         },
-
-        # ==================================================
-        # Media
-        # ==================================================
 
         "media": {
-
-            "image_url": item.get("image_url", ""),
-
+            "images": media.get("images", []),
         },
-
-        # ==================================================
-        # Observation
-        # ==================================================
-
-        "observation": {
-
-            "raw_title": observation.get("raw_title", ""),
-            "feature": observation.get("feature", ""),
-            "description": observation.get("description", ""),
-            "specifications": specifications,
-
-        },
-
-        # ==================================================
-        # Reality
-        # ==================================================
-
-        "specifications": specifications,
-
+        "observation": observation,
     }
 
 
@@ -188,19 +160,16 @@ def main():
     ]
 
     OUTPUT_FILE.write_text(
-
         json.dumps(
             contracts,
             ensure_ascii=False,
             indent=2,
         ),
-
         encoding="utf-8",
-
     )
 
     print("=" * 60)
-    print("TSUKUMO IMPORT CONTRACT")
+    print("GEEKOM IMPORT CONTRACT")
     print("=" * 60)
     print(f"Items : {len(contracts)}")
     print(f"Saved : {OUTPUT_FILE}")

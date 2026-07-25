@@ -1,7 +1,5 @@
-# /home/maya/shin-vps/django/imports/tsukumo/scripts/settings.py
-
 """
-TSUKUMO Importer Settings
+GEEKOM Importer Settings
 """
 
 from pathlib import Path
@@ -11,8 +9,9 @@ from pathlib import Path
 # Site
 # ==========================================================
 
-SITE_NAME = "TSUKUMO"
-BASE_URL = "https://www.tsukumo.co.jp"
+SITE_NAME = "GEEKOM"
+
+BASE_URL = "https://geekom.jp"
 
 
 # ==========================================================
@@ -35,16 +34,17 @@ TIMEOUT = 30
 # ==========================================================
 
 AFFILIATE = {
-    # True: アフィリエイトURLを生成する
-    # False: Realityの商品URLをそのまま返す
+
+    # True : アフィリエイトURLを生成
+    # False: Realityの商品URLをそのまま利用
     "enabled": True,
 
-    # 将来利用する場合
-    "provider": "valuecommerce",
+    # Affiliate Provider
+    "provider": "a8",
 
-    # SID / PID
-    "sid": "3697471",
-    "pid": "892665496",
+    # A8 広告素材ID
+    "a8mat": "459XR1+CCSU76+5G4A+BW0YB",
+
 }
 
 
@@ -57,9 +57,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 OUTPUT_DIR = BASE_DIR / "output"
 
 RAW_DIR = OUTPUT_DIR / "raw"
+OBSERVATION_DIR = OUTPUT_DIR / "observation"
 PAYLOAD_DIR = OUTPUT_DIR / "payload"
 IMPORT_CONTRACT_DIR = OUTPUT_DIR / "import_contract"
 
 RAW_DIR.mkdir(parents=True, exist_ok=True)
+OBSERVATION_DIR.mkdir(parents=True, exist_ok=True)
 PAYLOAD_DIR.mkdir(parents=True, exist_ok=True)
 IMPORT_CONTRACT_DIR.mkdir(parents=True, exist_ok=True)
