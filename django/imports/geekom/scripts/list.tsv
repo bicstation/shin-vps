@@ -1,0 +1,5 @@
+maker	source_type	slug	name	url	enabled	priority
+GEEKOM	root	collections	Collection Index	https://geekom.jp/collections/	true	0
+GEEKOM	collection	amd-ryzen	AMD Ryzen	https://geekom.jp/collections/amd-ryzen	true	1
+GEEKOM	collection	intel	Intel	https://geekom.jp/collections/intel	true	2
+GEEKOM	collection	minipc	Mini PC	https://geekom.jp/collections/minipc	true	3

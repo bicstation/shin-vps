@@ -1,0 +1,1 @@
+# /home/maya/shin-dev/shin-vps/django/imports/geekom/scripts/discover_list.py

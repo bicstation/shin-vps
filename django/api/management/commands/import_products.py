@@ -8,6 +8,8 @@ from django.core.management.base import BaseCommand, CommandError
 
 from imports.ark.run import main as ark_import
 from imports.tsukumo.run import main as tsukumo_import
+from imports.frontier.run import main as frontier_import
+from imports.ozgaming.run import main as ozgaming_import
 
 
 class Command(BaseCommand):
@@ -30,17 +32,27 @@ class Command(BaseCommand):
         source = options["source"].lower()
 
         if source == "ark":
-
             self.stdout.write("")
             self.stdout.write(self.style.SUCCESS("=== ARK Import ==="))
             ark_import()
             return
 
         if source == "tsukumo":
-
             self.stdout.write("")
             self.stdout.write(self.style.SUCCESS("=== TSUKUMO Import ==="))
             tsukumo_import()
+            return
+        
+        if source == "frontier":
+            self.stdout.write("")
+            self.stdout.write(self.style.SUCCESS("=== FRONTIER Import ==="))
+            frontier_import()
+            return
+        
+        if source == "ozgaming":
+            self.stdout.write("")
+            self.stdout.write(self.style.SUCCESS("=== OzGaming Import ==="))
+            ozgaming_import()
             return
 
         raise CommandError(

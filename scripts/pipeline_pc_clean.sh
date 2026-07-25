@@ -79,6 +79,9 @@ LINKSHARE_SHOPS=(
 
 SCRAPER_SHOPS=(
   "ark"
+  "tsukumo"
+  "frontier"
+   "OZ GAMING"
 )
 
 # ==========================================================

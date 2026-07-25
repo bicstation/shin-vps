@@ -4,39 +4,25 @@ Affiliate URL Generator
 
 Importer共通ライブラリ
 
-役割:
-    Realityの商品URLからアフィリエイトURLを生成する。
-
-責務:
-    - ASPごとのURL生成ロジック
-    - ショップ固有設定は持たない
-
-注意:
-    - Importer専用ライブラリ
-    - Backend依存なし
-    - Django依存なし
+Responsibility
+--------------
+- Reality URL → Affiliate URL
+- ASPごとの生成ロジックのみを担当
+- ショップ固有設定は settings.py に委譲
 """
 
 from urllib.parse import quote
 
 
 # ==========================================================
-# Affiliate Providers
+# Providers
 # ==========================================================
 
 PROVIDERS = {
-    "valuecommerce": {
-        "endpoint": "https://ck.jp.ap.valuecommerce.com/servlet/referral",
-    },
-    "a8": {
-        "endpoint": "",
-    },
-    "amazon": {
-        "endpoint": "",
-    },
-    "rakuten": {
-        "endpoint": "",
-    },
+    "valuecommerce": "https://ck.jp.ap.valuecommerce.com/servlet/referral",
+    "a8": "https://px.a8.net/svt/ejp",
+    "amazon": "",
+    "rakuten": "",
 }
 
 
@@ -45,27 +31,11 @@ PROVIDERS = {
 # ==========================================================
 
 def generate_affiliate_url(product_url: str, affiliate: dict) -> str:
-    """
-    商品URLからアフィリエイトURLを生成する。
 
-    Parameters
-    ----------
-    product_url : str
-        Realityの商品URL
-
-    affiliate : dict
-        settings.py の AFFILIATE 設定
-
-    Returns
-    -------
-    str
-        アフィリエイトURL
-    """
-
-    if not affiliate:
-        return product_url
-
-    if not affiliate.get("enabled", False):
+    if (
+        not affiliate
+        or not affiliate.get("enabled")
+    ):
         return product_url
 
     provider = affiliate.get("provider")
@@ -90,20 +60,15 @@ def generate_affiliate_url(product_url: str, affiliate: dict) -> str:
 # ==========================================================
 
 def _valuecommerce(url: str, config: dict) -> str:
-    """
-    ValueCommerce
-    """
 
-    endpoint = PROVIDERS["valuecommerce"]["endpoint"]
-
-    sid = config.get("sid", "")
-    pid = config.get("pid", "")
+    sid = config.get("sid")
+    pid = config.get("pid")
 
     if not sid or not pid:
         return url
 
     return (
-        f"{endpoint}"
+        f"{PROVIDERS['valuecommerce']}"
         f"?sid={sid}"
         f"&pid={pid}"
         f"&vc_url={quote(url, safe='')}"
@@ -111,21 +76,22 @@ def _valuecommerce(url: str, config: dict) -> str:
 
 
 def _a8(url: str, config: dict) -> str:
-    """
-    A8.net
-    """
-    return url
+
+    a8mat = config.get("a8mat")
+
+    if not a8mat:
+        return url
+
+    return (
+        f"{PROVIDERS['a8']}"
+        f"?a8mat={a8mat}"
+        f"&a8ejpredirect={quote(url, safe='')}"
+    )
 
 
 def _amazon(url: str, config: dict) -> str:
-    """
-    Amazon Associates
-    """
     return url
 
 
 def _rakuten(url: str, config: dict) -> str:
-    """
-    楽天アフィリエイト
-    """
     return url

@@ -48,6 +48,14 @@ class ImportRepository:
 
         defaults = payload.copy()
         defaults.pop("unique_id", None)
+        
+        import pprint
+
+        # print()
+        # print("=" * 80)
+        # print("IMPORT PAYLOAD")
+        # pprint.pp(defaults)
+        # print("=" * 80)
 
         product, created = PCProduct.objects.update_or_create(
             unique_id=unique_id,

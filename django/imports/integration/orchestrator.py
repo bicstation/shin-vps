@@ -146,14 +146,31 @@ class ImportOrchestrator:
             semantic_payloads.append(semantic_payload)
 
         results.semantic = len(semantic_payloads)
-
+        
         # -------------------------------------------------
         # Repository
         # -------------------------------------------------
 
+        from django.db import DataError
+
         for payload in semantic_payloads:
 
-            product, created = self.repository.save(payload)
+            try:
+
+                product, created = self.repository.save(payload)
+
+            except DataError as e:
+
+                print()
+                print("========================================")
+                print("SKIP DATA ERROR")
+                print(f'Unique ID : {payload.get("unique_id")}')
+                print(f'Name      : {payload.get("name")}')
+                print(f'Price     : {payload.get("price")}')
+                print(e)
+                print("========================================")
+
+                continue
 
             results.products.append(product)
 
