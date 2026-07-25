@@ -81,7 +81,8 @@ SCRAPER_SHOPS=(
   "ark"
   "tsukumo"
   "frontier"
-   "OZ GAMING"
+  "OZ GAMING"
+  "geekom"
 )
 
 # ==========================================================

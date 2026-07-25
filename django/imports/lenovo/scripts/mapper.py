@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 """
-GEEKOM Mapper
+TSUKUMO Mapper
 
-Payload
-    ↓
-Import Contract
+Payload(JSON) → Import Contract(JSON)
 
 Reality First
 Observation First
@@ -12,20 +10,12 @@ Identity First
 """
 
 from pathlib import Path
-from urllib.parse import urlparse
 import json
-import sys
 
-# ==========================================================
-# Project Root
-# ==========================================================
-
-ROOT_DIR = Path(__file__).resolve().parents[3]
-sys.path.insert(0, str(ROOT_DIR))
-
-from imports.common.tsv.identity_classifier import classify_identity
 from imports.common.affiliate import generate_affiliate_url
-from imports.geekom.scripts.settings import AFFILIATE
+from imports.common.tsv.identity_classifier import classify_identity
+from imports.tsukumo.scripts.settings import AFFILIATE
+
 
 # ==========================================================
 # Paths
@@ -40,43 +30,33 @@ OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 OUTPUT_FILE = OUTPUT_DIR / "products.json"
 
+
 # ==========================================================
 # Identity
 # ==========================================================
 
-SOURCE_PREFIX = "GEEKOM"
+SOURCE_PREFIX = "TSUKUMO"
 
 
 def normalize_identifier(value: str) -> str:
-    return value.strip().replace(" ", "_").replace("/", "_")
-
-
-def extract_handle(url: str) -> str:
-
-    if not url:
-        return ""
-
-    path = urlparse(url).path.rstrip("/")
-
-    if path.startswith("/products/"):
-        return path.split("/")[-1]
-
-    return ""
+    return (
+        value.strip()
+        .replace(" ", "_")
+        .replace("/", "_")
+    )
 
 
 def build_unique_id(item: dict) -> str:
 
-    product_url = item.get("product_url", "").strip()
-
-    handle = extract_handle(product_url)
-
-    if handle:
-        return f"{SOURCE_PREFIX}_{normalize_identifier(handle)}"
-
-    product_name = item.get("product_name", "").strip()
-
-    if product_name:
-        return f"{SOURCE_PREFIX}_{normalize_identifier(product_name)}"
+    for key in (
+        "model",
+        "product_no",
+        "pc_id",
+        "product_url",
+    ):
+        value = item.get(key, "").strip()
+        if value:
+            return f"{SOURCE_PREFIX}_{normalize_identifier(value)}"
 
     return SOURCE_PREFIX
 
@@ -87,10 +67,17 @@ def build_unique_id(item: dict) -> str:
 
 def map_item(item: dict) -> dict:
 
+    observation = item.get("observation", {})
+
+    specifications = (
+        observation.get("specifications")
+        or item.get("specs", {})
+    )
+
     identity = classify_identity(
         maker=item.get("maker", ""),
         product_name=item.get("product_name", ""),
-        description=item.get("description", ""),
+        description=observation.get("description", ""),
     )
 
     product_url = item.get("product_url", "")
@@ -100,7 +87,7 @@ def map_item(item: dict) -> dict:
         # ==================================================
         # Identity
         # ==================================================
-
+        
         "identity": {
 
             "unique_id": build_unique_id(item),
@@ -120,15 +107,11 @@ def map_item(item: dict) -> dict:
             "collaboration": identity["collaboration"],
 
             "product_name": item.get("product_name", ""),
-
             "model": item.get("model", ""),
-
             "product_no": item.get("product_no", ""),
-
             "pc_id": item.get("pc_id", ""),
 
             "product_url": product_url,
-
         },
 
         # ==================================================
@@ -151,10 +134,7 @@ def map_item(item: dict) -> dict:
         "commerce": {
 
             "price": item.get("price", ""),
-
-            "stock": item.get("stock", ""),
-
-            "delivery": item.get("delivery", ""),
+            "release_date": item.get("release_date", ""),
 
         },
 
@@ -172,13 +152,20 @@ def map_item(item: dict) -> dict:
         # Observation
         # ==================================================
 
-        "observation": item.get("observation", {}),
+        "observation": {
+
+            "raw_title": observation.get("raw_title", ""),
+            "feature": observation.get("feature", ""),
+            "description": observation.get("description", ""),
+            "specifications": specifications,
+
+        },
 
         # ==================================================
         # Reality
         # ==================================================
 
-        "specifications": item.get("tables", []),
+        "specifications": specifications,
 
     }
 
@@ -201,16 +188,19 @@ def main():
     ]
 
     OUTPUT_FILE.write_text(
+
         json.dumps(
             contracts,
             ensure_ascii=False,
             indent=2,
         ),
+
         encoding="utf-8",
+
     )
 
     print("=" * 60)
-    print("GEEKOM IMPORT CONTRACT")
+    print("TSUKUMO IMPORT CONTRACT")
     print("=" * 60)
     print(f"Items : {len(contracts)}")
     print(f"Saved : {OUTPUT_FILE}")

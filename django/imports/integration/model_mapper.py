@@ -82,7 +82,7 @@ class PCProductModelMapper:
                 identity.get("product_url"),
 
             "affiliate_url":
-                identity.get("affiliate_url"),
+                affiliate.get("url"),
 
             "image_url":
                 media.get("image_url"),
