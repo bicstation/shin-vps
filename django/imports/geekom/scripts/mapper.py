@@ -12,9 +12,9 @@ Identity First
 """
 
 from pathlib import Path
+from urllib.parse import urlparse
 import json
 import sys
-from urllib.parse import urlparse
 
 # ==========================================================
 # Project Root
@@ -32,9 +32,12 @@ from imports.geekom.scripts.settings import AFFILIATE
 # ==========================================================
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
 INPUT_FILE = BASE_DIR / "output" / "payload" / "products.json"
+
 OUTPUT_DIR = BASE_DIR / "output" / "import_contract"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
 OUTPUT_FILE = OUTPUT_DIR / "products.json"
 
 # ==========================================================
@@ -45,19 +48,10 @@ SOURCE_PREFIX = "GEEKOM"
 
 
 def normalize_identifier(value: str) -> str:
-    return (
-        value.strip()
-        .replace(" ", "_")
-        .replace("/", "_")
-    )
+    return value.strip().replace(" ", "_").replace("/", "_")
 
 
 def extract_handle(url: str) -> str:
-    """
-    https://geekom.jp/products/geekom-a5-pro-mini-pc-2026-edition
-        ↓
-    geekom-a5-pro-mini-pc-2026-edition
-    """
 
     if not url:
         return ""
@@ -70,19 +64,19 @@ def extract_handle(url: str) -> str:
     return ""
 
 
-def build_unique_id(identity: dict) -> str:
+def build_unique_id(item: dict) -> str:
 
-    url = identity.get("url", "").strip()
+    product_url = item.get("product_url", "").strip()
 
-    handle = extract_handle(url)
+    handle = extract_handle(product_url)
 
     if handle:
         return f"{SOURCE_PREFIX}_{normalize_identifier(handle)}"
 
-    title = identity.get("title", "").strip()
+    product_name = item.get("product_name", "").strip()
 
-    if title:
-        return f"{SOURCE_PREFIX}_{normalize_identifier(title)}"
+    if product_name:
+        return f"{SOURCE_PREFIX}_{normalize_identifier(product_name)}"
 
     return SOURCE_PREFIX
 
@@ -93,52 +87,99 @@ def build_unique_id(identity: dict) -> str:
 
 def map_item(item: dict) -> dict:
 
-    identity = item.get("identity", {})
-    content = item.get("content", {})
-    media = item.get("media", {})
-    observation = item.get("observation", {})
-
-    product_url = identity.get("url", "").strip()
-
-    affiliate_url = generate_affiliate_url(
-        product_url,
-        AFFILIATE,
-    )
-
-    classified = classify_identity(
+    identity = classify_identity(
         maker=item.get("maker", ""),
-        product_name=identity.get("title", ""),
-        description=content.get("description", ""),
+        product_name=item.get("product_name", ""),
+        description=item.get("description", ""),
     )
+
+    product_url = item.get("product_url", "")
 
     return {
-        
+
+        # ==================================================
+        # Identity
+        # ==================================================
+
         "identity": {
-            "unique_id": build_unique_id(identity),
+
+            "unique_id": build_unique_id(item),
+
             "maker": item.get("maker", ""),
+
             "brand": (
-                identity.get("brand")
-                or classified["brand"]
+                item.get("brand")
+                or identity["brand"]
             ),
+
             "series": (
-                identity.get("series")
-                or classified["series"]
+                item.get("series")
+                or identity["series"]
             ),
-            "collaboration": classified["collaboration"],
-            "product_name": identity.get("title", ""),
+
+            "collaboration": identity["collaboration"],
+
+            "product_name": item.get("product_name", ""),
+
+            "model": item.get("model", ""),
+
+            "product_no": item.get("product_no", ""),
+
+            "pc_id": item.get("pc_id", ""),
+
             "product_url": product_url,
-            "affiliate_url": affiliate_url,
+
         },
+
+        # ==================================================
+        # Affiliate
+        # ==================================================
+
+        "affiliate": {
+
+            "url": generate_affiliate_url(
+                product_url,
+                AFFILIATE,
+            ),
+
+        },
+
+        # ==================================================
+        # Commerce
+        # ==================================================
 
         "commerce": {
-            "price": observation.get("price", ""),
-            "currency": observation.get("currency", ""),
+
+            "price": item.get("price", ""),
+
+            "stock": item.get("stock", ""),
+
+            "delivery": item.get("delivery", ""),
+
         },
 
+        # ==================================================
+        # Media
+        # ==================================================
+
         "media": {
-            "images": media.get("images", []),
+
+            "image_url": item.get("image_url", ""),
+
         },
-        "observation": observation,
+
+        # ==================================================
+        # Observation
+        # ==================================================
+
+        "observation": item.get("observation", {}),
+
+        # ==================================================
+        # Reality
+        # ==================================================
+
+        "specifications": item.get("tables", []),
+
     }
 
 

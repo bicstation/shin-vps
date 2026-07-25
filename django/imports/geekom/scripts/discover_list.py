@@ -5,7 +5,8 @@ discover_list.py
 GEEKOM Product Discovery Runtime
 
 保存済み Collection HTML を解析し、
-Product URL を抽出して product_list.tsv を生成する。
+Product URL と Price を抽出して
+product_list.tsv を生成する。
 """
 
 from pathlib import Path
@@ -34,31 +35,50 @@ def load_collections():
             if row["enabled"].lower() == "true"
         ]
 
-
 def discover_products(html: str):
 
     soup = BeautifulSoup(html, "html.parser")
 
-    urls = set()
+    products = {}
 
-    for a in soup.find_all("a", href=True):
+    for card in soup.find_all("product-card"):
 
-        href = a["href"]
+        link = card.select_one(
+            ".product-card__title a[href]"
+        )
 
-        if href.startswith("/products/"):
+        if not link:
+            continue
 
-            urls.add(
-                href.split("?")[0].rstrip("/")
+        href = link["href"].split("?")[0].rstrip("/")
+
+        if not href.startswith("/products/"):
+            continue
+
+        slug = href.split("/")[-1]
+
+        price = ""
+
+        sale = card.select_one("sale-price")
+
+        if sale:
+            price = re.sub(
+                r"\D",
+                "",
+                sale.get_text(),
             )
 
-    for slug in re.findall(
-        r"/products/([a-zA-Z0-9\-_]+)",
-        html,
-    ):
+        products.setdefault(
+            slug,
+            {
+                "slug": slug,
+                "url": f"https://geekom.jp{href}",
+                "price": price,
+            },
+        )
 
-        urls.add(f"/products/{slug}")
+    return list(products.values())
 
-    return sorted(urls)
 
 
 def save_products(products):
@@ -76,6 +96,7 @@ def save_products(products):
                 "collection",
                 "slug",
                 "url",
+                "price",
                 "enabled",
             ],
             delimiter="\t",
@@ -100,9 +121,9 @@ def main():
 
     for row in load_collections():
 
-        slug = row["slug"]
+        collection = row["slug"]
 
-        html_file = RAW_DIR / f"{slug}.html"
+        html_file = RAW_DIR / f"{collection}.html"
 
         if not html_file.exists():
             continue
@@ -112,21 +133,20 @@ def main():
             errors="ignore",
         )
 
-        urls = discover_products(html)
+        discovered = discover_products(html)
 
-        print(f"{slug:20} {len(urls):3} products")
+        print(f"{collection:20} {len(discovered):3} products")
 
-        for url in urls:
-
-            product_slug = url.split("/")[-1]
+        for item in discovered:
 
             products.setdefault(
-                product_slug,
+                item["slug"],
                 {
                     "maker": "GEEKOM",
-                    "collection": slug,
-                    "slug": product_slug,
-                    "url": f"https://geekom.jp{url}",
+                    "collection": collection,
+                    "slug": item["slug"],
+                    "url": item["url"],
+                    "price": item["price"],
                     "enabled": "true",
                 },
             )

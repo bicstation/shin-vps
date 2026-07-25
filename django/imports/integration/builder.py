@@ -1,5 +1,4 @@
 # /home/maya/shin-vps/django/imports/integration/builder.py
-# /home/maya/shin-vps/django/imports/integration/builder.py
 
 """
 SHIN CORE LINX
