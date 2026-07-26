@@ -14,46 +14,92 @@ class PCProductBuilder:
 
     ):
 
+        identity = normalized.get(
+            "identity",
+            {},
+        )
+
         return {
 
-            "unique_id":
+            # =====================================================
+            # Identity
+            # =====================================================
 
-                f"{prefix}_{normalized['sku']}",
+            "unique_id": (
+                identity.get("unique_id")
+                or f"{prefix}_{normalized['sku']}"
+            ),
 
-            "site_prefix":
-                prefix,
+            "site_prefix": prefix,
 
-            "maker":
-                maker,
+            "maker": maker,
 
-            "name":
-                normalized["name"],
+            "brand": (
+                identity.get("brand")
+                or normalized.get("brand", "")
+            ),
 
-            "price":
-                normalized["price"],
+            "series": (
+                identity.get("series")
+                or normalized.get("series", "")
+            ),
 
-            "url":
+            "collaboration": (
+                identity.get("collaboration")
+                or normalized.get("collaboration", "")
+            ),
+
+            "model": normalized.get(
+                "model",
+                "",
+            ),
+
+            "product_no": normalized.get(
+                "product_no",
+                "",
+            ),
+
+            "release_date": normalized.get(
+                "release_date",
+            ),
+
+            # =====================================================
+            # Product
+            # =====================================================
+
+            "name": normalized["name"],
+
+            "description": normalized["description"],
+
+            # =====================================================
+            # Commerce
+            # =====================================================
+
+            "price": normalized["price"],
+
+            "url": normalized["url"],
+
+            "affiliate_url": normalized.get(
+                "affiliate_url",
                 normalized["url"],
+            ),
 
-            "affiliate_url":
-                normalized["url"],
+            # =====================================================
+            # Media
+            # =====================================================
 
-            "image_url":
-                normalized["image_url"],
+            "image_url": normalized["image_url"],
 
-            "description":
-                normalized["description"],
+            # =====================================================
+            # Runtime Defaults
+            # =====================================================
 
-            "raw_genre":
-                "PC",
+            "raw_genre": "PC",
 
-            "unified_genre":
-                "PC",
+            "unified_genre": "PC",
 
-            "stock_status":
-                "在庫あり",
+            "stock_status": "在庫あり",
 
-            "is_active":
-                True,
+            "is_active": True,
 
         }

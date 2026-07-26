@@ -1,0 +1,26 @@
+{
+  "site": "GEEKOM",
+  "product_name": "第13世代インテル製GT13 ProミニPC | Core i7/i9 & 拡張可能なUSB 4ポート| GEEKOM（ギコム)",
+  "product_url": "https://geekom.jp/products/geekom-nuc-gt13-pro",
+  "description": "GEEKOM GT13 PROは、14コア20スレッドのIntel Core i9-13900H、最大5.4GHzのターボクロック、Intel Iris Xeグラフィックスを搭載。2TB NVMe SSD、最大64GB DDR4メモリ、多様なポート、4K・8Kディスプレイ対応、Wi-Fi 6E、高性能と接続性を備える",
+  "image_url": "https://geekom.jp/cdn/shop/files/gt13-pro-sale.webp?v=1784875039&width=1600",
+  "images": [
+    "https://geekom.jp/cdn/shop/files/gt13-pro-sale.webp?v=1784875039&width=1600"
+  ],
+  "tables": [
+    "サイズ\n112.2*112.2*38mm\nCPU\nインテル コア  i7-13620H(10C/16T)\nインテル コア  i9-13900H(14C/20T)\nグラフィック\nIris Xe グラフィックス\nメモリ\nDDR4 260PIN SODIMM、最大64GB\nストレージ\n1 × SSD（PCIe Gen 4×4）、最大2TB\n1 x M.2 Key-M スロット（PCIe x4 Gen 4 NVMe SSD用）\n1 x M.2 Key-B スロット（SATA用）\nI/O Port\n3 x USB 3.2 Gen 2 Type-A\n1 x USB 2.0 Type-A\n2 x USB 4.0 Gen 3 Type-C\n1 x 3.5mm ステレオヘッドセットジャック\n1 x RJ45\n2 x HDMI 2.0\n1 x DC入力\n1 x 電源ボタン\n1x SDカードスロット\nイーサネット\nIntel10/100/1000/2500 Mbps RJ45\nWIFI/BT\nM.2 Wi-Fi 6E\nBluetooth 5.2\nアダプター\n19V 6.32A\nOS\nwindows 11pro\n認証\nCE、FCC、 CB、 CCC、RoHS、PSE\nVESA\nVESA Mount"
+  ],
+  "observation": {
+    "title": "第13世代インテル製GT13 ProミニPC | Core i7/i9 & 拡張可能なUSB 4ポート| GEEKOM（ギコム)",
+    "url": "https://geekom.jp/products/geekom-nuc-gt13-pro",
+    "description": "GEEKOM GT13 PROは、14コア20スレッドのIntel Core i9-13900H、最大5.4GHzのターボクロック、Intel Iris Xeグラフィックスを搭載。2TB NVMe SSD、最大64GB DDR4メモリ、多様なポート、4K・8Kディスプレイ対応、Wi-Fi 6E、高性能と接続性を備える",
+    "main_image": "https://geekom.jp/cdn/shop/files/gt13-pro-sale.webp?v=1784875039&width=1600",
+    "images": [
+      "https://geekom.jp/cdn/shop/files/gt13-pro-sale.webp?v=1784875039&width=1600"
+    ],
+    "tables": [
+      "サイズ\n112.2*112.2*38mm\nCPU\nインテル コア  i7-13620H(10C/16T)\nインテル コア  i9-13900H(14C/20T)\nグラフィック\nIris Xe グラフィックス\nメモリ\nDDR4 260PIN SODIMM、最大64GB\nストレージ\n1 × SSD（PCIe Gen 4×4）、最大2TB\n1 x M.2 Key-M スロット（PCIe x4 Gen 4 NVMe SSD用）\n1 x M.2 Key-B スロット（SATA用）\nI/O Port\n3 x USB 3.2 Gen 2 Type-A\n1 x USB 2.0 Type-A\n2 x USB 4.0 Gen 3 Type-C\n1 x 3.5mm ステレオヘッドセットジャック\n1 x RJ45\n2 x HDMI 2.0\n1 x DC入力\n1 x 電源ボタン\n1x SDカードスロット\nイーサネット\nIntel10/100/1000/2500 Mbps RJ45\nWIFI/BT\nM.2 Wi-Fi 6E\nBluetooth 5.2\nアダプター\n19V 6.32A\nOS\nwindows 11pro\n認証\nCE、FCC、 CB、 CCC、RoHS、PSE\nVESA\nVESA Mount"
+    ],
+    "scripts": []
+  }
+}

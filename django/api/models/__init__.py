@@ -81,3 +81,8 @@ from .runtime_models import (
 from .fanza_sample_movie import (
     FanzaSampleMovie,   # FANZA Preview Reality Repository
 )
+
+# ==============================================================================
+# 10. Acquisition Platform
+# ==============================================================================
+from .acquisition_document import AcquisitionDocument

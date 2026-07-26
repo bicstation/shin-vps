@@ -1,0 +1,26 @@
+{
+  "site": "GEEKOM",
+  "product_name": "GEEKOM GT12 PRO ミニPC インテル® CORE™I7-12650H/ I9-12900H",
+  "product_url": "https://geekom.jp/products/geekom-nuc-intel-gt12-pro-i7-12650h-i9-12900h",
+  "description": "GEEKOM GT12は第12世代インテル® Core™i9-12900Hプロセッサを搭載。超薄型アルミデザイン、革新的なIceBlast冷却技術、Wi-Fi 6EとBluetooth 5.2の最先端接続性を備え。32GB RAM、1TB SSD、Windows 11 Pro搭載で、すぐに高性能を体験可能。",
+  "image_url": "https://geekom.jp/cdn/shop/files/gt12-pro-2026-sale.webp?v=1784875308&width=1600",
+  "images": [
+    "https://geekom.jp/cdn/shop/files/gt12-pro-2026-sale.webp?v=1784875308&width=1600"
+  ],
+  "tables": [
+    "サイズ\n112.2×112.2×38mm\nCPU\nIntel Core 12th Gen Alder Lake Hi7-12650H、i9-12900H\nGPU\nIris Xe Graphics\nメモリ\nデュアルチャネルDDR4 260PIN 3200MHz SODIMM、最大64GB\nストレージ\n1 × SSD (PCIe Gen 4×4)、最大2TB\nI/Oポート\n1 × リアUSB 3.2 Gen 2 Type-A\n1 × リアUSB 2.0 Type-A\n1 × フロントUSB 3.2 Gen 2 Type-A（Power Delivery対応）\n1 × フロントUSB 3.2 Gen 2 Type-A\n2 × USB 4 Gen 3 Type-C\n1 × フロント3.5mmステレオヘッドセットジャック\n1 × RJ45（バックパネル）\n2 × HDMI 2.0（バックパネル）\n1 × DC入力（バックパネル）\n1 × 電源ボタン\n1 × SDカードスロット\n内部コネクタ\n1 × M.2 key-Mスロット（PCIe x4 Gen 4 NVMe SSD用）\n1 × M.2 key-Bスロット（SATA用）\n1 × M.2 2230（WiFi用）\n1 × ファン\nLED\n1 × 電源LED（電源オン時：白色）\n1 × マルチLED（M.2 R/W：白色、SATA R/W：白色、Bluetooth：白色）\nイーサネット\nIntel 10/100/1000/2500 Mbps RJ45\nワイヤレスLAN\nM.2 Wi-Fi 6E Bluetooth 5.2 - XB591\nケンジントンロック\nなし\nDTPM2.0\nFTPM\nバッテリー\nRTCコインバッテリー\n認証\nCE、FCC、CB、CCC、RoHS、PSE\nオペレーティングシステム\nMicrosoft Windows 11（64ビット）\nアクセサリ\nVESAマウント"
+  ],
+  "observation": {
+    "title": "GEEKOM GT12 PRO ミニPC インテル® CORE™I7-12650H/ I9-12900H",
+    "url": "https://geekom.jp/products/geekom-nuc-intel-gt12-pro-i7-12650h-i9-12900h",
+    "description": "GEEKOM GT12は第12世代インテル® Core™i9-12900Hプロセッサを搭載。超薄型アルミデザイン、革新的なIceBlast冷却技術、Wi-Fi 6EとBluetooth 5.2の最先端接続性を備え。32GB RAM、1TB SSD、Windows 11 Pro搭載で、すぐに高性能を体験可能。",
+    "main_image": "https://geekom.jp/cdn/shop/files/gt12-pro-2026-sale.webp?v=1784875308&width=1600",
+    "images": [
+      "https://geekom.jp/cdn/shop/files/gt12-pro-2026-sale.webp?v=1784875308&width=1600"
+    ],
+    "tables": [
+      "サイズ\n112.2×112.2×38mm\nCPU\nIntel Core 12th Gen Alder Lake Hi7-12650H、i9-12900H\nGPU\nIris Xe Graphics\nメモリ\nデュアルチャネルDDR4 260PIN 3200MHz SODIMM、最大64GB\nストレージ\n1 × SSD (PCIe Gen 4×4)、最大2TB\nI/Oポート\n1 × リアUSB 3.2 Gen 2 Type-A\n1 × リアUSB 2.0 Type-A\n1 × フロントUSB 3.2 Gen 2 Type-A（Power Delivery対応）\n1 × フロントUSB 3.2 Gen 2 Type-A\n2 × USB 4 Gen 3 Type-C\n1 × フロント3.5mmステレオヘッドセットジャック\n1 × RJ45（バックパネル）\n2 × HDMI 2.0（バックパネル）\n1 × DC入力（バックパネル）\n1 × 電源ボタン\n1 × SDカードスロット\n内部コネクタ\n1 × M.2 key-Mスロット（PCIe x4 Gen 4 NVMe SSD用）\n1 × M.2 key-Bスロット（SATA用）\n1 × M.2 2230（WiFi用）\n1 × ファン\nLED\n1 × 電源LED（電源オン時：白色）\n1 × マルチLED（M.2 R/W：白色、SATA R/W：白色、Bluetooth：白色）\nイーサネット\nIntel 10/100/1000/2500 Mbps RJ45\nワイヤレスLAN\nM.2 Wi-Fi 6E Bluetooth 5.2 - XB591\nケンジントンロック\nなし\nDTPM2.0\nFTPM\nバッテリー\nRTCコインバッテリー\n認証\nCE、FCC、CB、CCC、RoHS、PSE\nオペレーティングシステム\nMicrosoft Windows 11（64ビット）\nアクセサリ\nVESAマウント"
+    ],
+    "scripts": []
+  }
+}

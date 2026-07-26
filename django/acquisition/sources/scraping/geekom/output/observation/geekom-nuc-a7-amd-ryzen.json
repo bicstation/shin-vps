@@ -1,0 +1,13 @@
+{
+  "title": "GEEKOM A7 ミニPC Ryzen 5 7545U搭載｜強力冷却でサクサク快適",
+  "url": "https://geekom.jp/products/geekom-nuc-a7-amd-ryzen",
+  "description": "GEEKOM A7は、AMD Ryzen 5 7545U搭載の2026新登場ミニPC。AMD Radeon 740Mのグラフィックス性能で、人気のオンラインゲームも快適。USB 3.2やType-Cなど計6つのインターフェースを備え、多彩なタスクに対応。独自の冷却システムで、高負荷時も安定した動作を支えます。",
+  "main_image": "https://geekom.jp/cdn/shop/files/a7_1_380e75d6-257f-43c1-9bd5-fe52da0bf2a1.jpg?v=1780910818&width=4000",
+  "images": [
+    "https://geekom.jp/cdn/shop/files/a7_1_380e75d6-257f-43c1-9bd5-fe52da0bf2a1.jpg?v=1780910818&width=4000"
+  ],
+  "tables": [
+    "サイズ\n112.4 × 112.4 ×  37 mm\n重量\n429.3g\nCPU\nAMD Ryzen™ 5-7545U(6コア、12スレッド、最大4.90Ghz)\nTDP 30W\nGPU\nAMD Radeon™ 740M\nメモリ\nデュアルチャンネルDDR5 262PIN 5600MHz SODIMM, 最大 256GB\nSSD\n1 x SSD  PCIE Gen 4 × 4 ,最大 4TB\nI/Oポート\n2 x USB 3.2 Gen 2 Type-A\n1 x USB 2.0 Type-A\n1 x USB 3.2 Gen 2 Type-A（S5電源供給対応）\n1 x USB 3.2 Gen 2 Type-C(10Gbps、Alt DP2.0、PD 15W出力対応)\n1 x USB 4 Gen3 Type-C（(40Gbps、Alt DP2.1 UHBR20、PD 15W出力対応)\n1 x 3.5mm ステレオヘッドセットジャック\n1 x RJ45 RTL8125BG-CG\n2 x HDMI 2.0）\n1 x DC入力端子\n1 x 電源ボタン\n1 x SDカードスロット\nLED\n2 x POWER LED (電源オン: 白色)\nイーサネット\n10/100/1000/2500 Mbps RJ45\nワイヤレス LAN\nM.2 Wi-Fi 6E  BT5.4 AW-XB591NF\nDTPM2.0\nFTPM\nバッテリー\nRTCコインバッテリー\nアダプター\n120W 19V 6.32A 100-240Vac\n認証\nCE, FCC, CB, CCC, RoHSなど\nOS\nMicrosoft Windows*11(64-bit)"
+  ],
+  "scripts": []
+}

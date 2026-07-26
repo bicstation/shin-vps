@@ -1,0 +1,1 @@
+# /home/maya/shin-dev/shin-vps/django/imports/lenovo/scripts/observe_products.py

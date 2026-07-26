@@ -1,0 +1,13 @@
+{
+  "title": "GEEKOM NUC MINI AIR12 第12世代 インテル® Pentium® Gold 7505",
+  "url": "https://geekom.jp/products/geekom-mini-air12-nuc",
+  "description": "11世代インテルPentium® Gold 7505プロセッサ搭載。最大32GB DDR4 SODIMM、2TBまでのM.2 SSD。WiFi 6、Bluetooth 5.2で高速接続。8K三画面対応",
+  "main_image": "https://geekom.jp/cdn/shop/files/AIR12-Pentium-Gold-7505.jpg?v=1774334566&width=4000",
+  "images": [
+    "https://geekom.jp/cdn/shop/files/AIR12-Pentium-Gold-7505.jpg?v=1774334566&width=4000"
+  ],
+  "tables": [
+    "サイズ\n117 x 112 x 34.2 mm\nCPU\nIntel® Pentium® Gold 7505（2コア、4スレッド、最大3.50Ghz）\nTDP 15W\n重量\n500g\nGPU\n第11世代インテル® プロセッサー用 インテル® UHD グラフィックス\nメモリ\nDDR4 260PIN SODIMM、最大64GB\nオーディオ\nHDA CODEC\nストレージ\n1 x M.2 2280 PCIe Gen3 x 4,最大4TB\nI/Oポート\n1 × Type-C(データ専用)\n1 × Type-C(DP 1.4 Alt Mode対応)\n2 × USB3.2 Gen 2 ポート\n1 × SDカードリーダー\n1 × 3.5mmヘッドフォンジャック\n1 × RJ45\n1 × HDMI 2.0\n1 × MINI DP\n1 × DCイン\n1 × 電源ボタン\n1 × ケンジントンロック\nLED\n電源LED（電源ON：青色、S3：オレンジ色点滅）\nイーサネット\nIntel® 10/100/1000 Mbpsイーサネット\nワイヤレスLAN\nM.2 1216 WIFI6, YM2208 (CNVI)\nケンジントンロック\nあり\nバッテリー\nRTCコインバッテリー\nFTPM2.0\nDTPM2.0 サポート (オプション)\nアダプター\n100～240V AC間の自動電圧調整、50/60Hz、45ワット（19V/2.36A）、3ピン、長さ1.8メートル & 65W（19V/3.42A）\n認証\nPSE、CE、RoHS、FCC、CEC、CB、PSE、TELEC\nOS\nWindows 11Pro 25H2（モダン スタンバイ対応）\n付属品\nVESAマウント"
+  ],
+  "scripts": []
+}
