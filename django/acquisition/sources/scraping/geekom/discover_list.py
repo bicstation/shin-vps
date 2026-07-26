@@ -2,7 +2,7 @@
 """
 GEEKOM Product Discovery Runtime
 
-Discover Products from Collection HTML.
+Discover Products from Collection Documents.
 """
 
 from __future__ import annotations
@@ -12,11 +12,13 @@ import re
 
 from bs4 import BeautifulSoup
 
-from settings import (
+from api.models import AcquisitionDocument
+
+from .settings import (
     BASE_URL,
+    SITE_NAME,
     COLLECTIONS_TSV,
     PRODUCT_LIST_TSV,
-    RAW_DIR,
 )
 
 
@@ -35,27 +37,59 @@ def load_collections():
         ]
 
 
+def load_collection_html(
+    collection: str,
+) -> str | None:
+
+    document = (
+        AcquisitionDocument.objects.filter(
+            source_name=SITE_NAME,
+            document_type="collection",
+            document_key=collection,
+        )
+        .first()
+    )
+
+    if document is None:
+        return None
+
+    return document.content
+
+
 def discover_products(html: str):
 
-    soup = BeautifulSoup(html, "html.parser")
+    soup = BeautifulSoup(
+        html,
+        "html.parser",
+    )
 
     products = {}
 
-    for card in soup.find_all("product-card"):
+    for card in soup.find_all(
+        "product-card",
+    ):
 
-        link = card.select_one(".product-card__title a[href]")
+        link = card.select_one(
+            ".product-card__title a[href]"
+        )
 
         if not link:
             continue
 
-        href = link["href"].split("?")[0].rstrip("/")
+        href = (
+            link["href"]
+            .split("?")[0]
+            .rstrip("/")
+        )
 
         if not href.startswith("/products/"):
             continue
 
         slug = href.split("/")[-1]
 
-        sale = card.select_one("sale-price")
+        sale = card.select_one(
+            "sale-price"
+        )
 
         products.setdefault(
             slug,
@@ -63,7 +97,11 @@ def discover_products(html: str):
                 "slug": slug,
                 "url": f"{BASE_URL}{href}",
                 "price": (
-                    re.sub(r"\D", "", sale.get_text())
+                    re.sub(
+                        r"\D",
+                        "",
+                        sale.get_text(),
+                    )
                     if sale
                     else ""
                 ),
@@ -105,6 +143,7 @@ def save_products(products):
             products.values(),
             key=lambda row: row["slug"],
         ):
+
             writer.writerow(product)
 
 
@@ -120,16 +159,18 @@ def main():
 
         collection = row["slug"]
 
-        html_file = RAW_DIR / f"{collection}.html"
+        html = load_collection_html(
+            collection,
+        )
 
-        if not html_file.exists():
+        if not html:
+            print(
+                f"{collection:20} not found"
+            )
             continue
 
         discovered = discover_products(
-            html_file.read_text(
-                encoding="utf-8",
-                errors="ignore",
-            )
+            html,
         )
 
         print(
@@ -150,10 +191,14 @@ def main():
                 },
             )
 
-    save_products(products)
+    save_products(
+        products,
+    )
 
     print("-" * 60)
-    print(f"TOTAL : {len(products)} products")
+    print(
+        f"TOTAL : {len(products)} products"
+    )
     print(PRODUCT_LIST_TSV)
 
 

@@ -4,9 +4,16 @@ observe.py
 
 GEEKOM Observation Runtime
 
-Normalized HTML
-    ↓
-Observation JSON
+AcquisitionDocument
+        │
+        ▼
+Formatter Runtime (Memory)
+        │
+        ▼
+Observation
+        │
+        ▼
+ObservationDocument
 
 Reality First
 Observation First
@@ -18,10 +25,13 @@ import json
 
 from bs4 import BeautifulSoup
 
-from settings import (
-    FORMATTED_DIR,
-    OBSERVATION_DIR,
+from api.models import (
+    AcquisitionDocument,
+    ObservationDocument,
 )
+
+from .formatter import normalize
+
 
 def observe(html: str):
 
@@ -161,56 +171,57 @@ def observe(html: str):
                         isinstance(node, dict)
                         and node.get("url")
                     ):
+
                         result["url"] = node["url"]
                         break
 
     return result
 
 
-def main():
+def run():
 
     print("=" * 60)
     print("👀 GEEKOM OBSERVATION")
     print("=" * 60)
 
-    files = sorted(
-        FORMATTED_DIR.glob("*.html")
-    )
-    print(f"Target : {len(files)}")
-    print("-" * 60)
+    documents = AcquisitionDocument.objects.filter(
+        source_name="geekom",
+        document_type="product",
+    ).iterator()
 
-    for html_file in files:
+    success = 0
+
+    for document in documents:
+
+        normalized = normalize(
+            document.content,
+        )
 
         observation = observe(
-
-            html_file.read_text(
-                encoding="utf-8",
-                errors="ignore",
-            )
-
+            normalized,
         )
 
-        output = (
-            OBSERVATION_DIR
-            / f"{html_file.stem}.json"
+        ObservationDocument.objects.update_or_create(
+            source_name=document.source_name,
+            document_type=document.document_type,
+            document_key=document.document_key,
+            defaults={
+                "observation": observation,
+            },
         )
 
-        output.write_text(
-            json.dumps(
-                observation,
-                ensure_ascii=False,
-                indent=2,
-            ),
-            encoding="utf-8",
-        )
+        success += 1
 
-        print(f"✓ {html_file.stem}")
+        print(f"✓ {document.document_key}")
 
-    print("-" * 60)
-    print(f"Saved : {OBSERVATION_DIR}")
     print("=" * 60)
-    print("COMPLETE")
+    print(f"SUCCESS : {success}")
     print("=" * 60)
+
+
+def main():
+
+    run()
 
 
 if __name__ == "__main__":

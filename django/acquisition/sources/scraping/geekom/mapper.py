@@ -1,25 +1,27 @@
-# /home/maya/shin-dev/shin-vps/django/acquisition/sources/scraping/geekom/mapper.py
 #!/usr/bin/env python3
 """
 mapper.py
 
 GEEKOM Mapper Runtime
 
-Observation
-    ↓
+ObservationDocument
+        │
+        ▼
 Import Contract
+        │
+        ▼
+ImportDocument
 
 Reality First
 Observation First
+Translation Authority
 """
 
 from __future__ import annotations
 
-import json
-
-from settings import (
-    OBSERVATION_DIR,
-    IMPORT_CONTRACT_DIR,
+from api.models import (
+    ObservationDocument,
+    ImportDocument,
 )
 
 
@@ -88,55 +90,49 @@ def map_observation(observation: dict) -> dict:
 
 
 # ==========================================================
-# Main
+# Runtime
 # ==========================================================
 
-def main():
+def run():
 
     print("=" * 60)
     print("🗺️ GEEKOM MAPPER")
     print("=" * 60)
 
-    files = sorted(
-        OBSERVATION_DIR.glob("*.json")
-    )
+    documents = ObservationDocument.objects.filter(
+        source_name="geekom",
+        document_type="product",
+    ).iterator()
 
-    print(f"Target : {len(files)}")
-    print("-" * 60)
+    success = 0
 
-    for file in files:
-
-        observation = json.loads(
-            file.read_text(
-                encoding="utf-8",
-            )
-        )
+    for document in documents:
 
         contract = map_observation(
-            observation
+            document.observation,
         )
 
-        output = (
-            IMPORT_CONTRACT_DIR
-            / file.name
+        ImportDocument.objects.update_or_create(
+            source_name=document.source_name,
+            document_type=document.document_type,
+            document_key=document.document_key,
+            defaults={
+                "contract": contract,
+            },
         )
 
-        output.write_text(
-            json.dumps(
-                contract,
-                ensure_ascii=False,
-                indent=2,
-            ),
-            encoding="utf-8",
-        )
+        success += 1
 
-        print(f"✓ {file.stem}")
+        print(f"✓ {document.document_key}")
 
-    print("-" * 60)
-    print(f"Saved : {IMPORT_CONTRACT_DIR}")
     print("=" * 60)
-    print("COMPLETE")
+    print(f"SUCCESS : {success}")
     print("=" * 60)
+
+
+def main():
+
+    run()
 
 
 if __name__ == "__main__":

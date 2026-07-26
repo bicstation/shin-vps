@@ -86,3 +86,5 @@ from .fanza_sample_movie import (
 # 10. Acquisition Platform
 # ==============================================================================
 from .acquisition_document import AcquisitionDocument
+from .observation_document import ObservationDocument
+from .import_document import ImportDocument

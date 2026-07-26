@@ -1,8 +1,5 @@
 maker	source_type	slug	name	url	enabled	priority
 GEEKOM	collection	accessories	Accessories	https://geekom.jp/collections/accessories	true	100
 GEEKOM	collection	amd-ryzen	Amd Ryzen	https://geekom.jp/collections/amd-ryzen	true	110
-GEEKOM	collection	amd-ryzen-695162	Amd Ryzen 695162	https://geekom.jp/collections/amd-ryzen-695162	true	120
-GEEKOM	collection	intel	Intel	https://geekom.jp/collections/intel	true	130
-GEEKOM	collection	intel-225895	Intel 225895	https://geekom.jp/collections/intel-225895	true	140
-GEEKOM	collection	minipc	Minipc	https://geekom.jp/collections/minipc	true	150
-GEEKOM	collection	pc-715602	Pc 715602	https://geekom.jp/collections/pc-715602	true	160
+GEEKOM	collection	intel	Intel	https://geekom.jp/collections/intel	true	120
+GEEKOM	collection	minipc	Minipc	https://geekom.jp/collections/minipc	true	130

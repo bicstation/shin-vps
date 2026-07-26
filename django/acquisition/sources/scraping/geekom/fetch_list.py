@@ -2,7 +2,8 @@
 """
 GEEKOM Collection Fetch Runtime
 
-Fetch Collection HTML.
+Fetch Collection HTML
+→ Save AcquisitionDocument
 """
 
 from __future__ import annotations
@@ -11,9 +12,10 @@ import csv
 
 import requests
 
-from settings import (
+from api.models.acquisition_document import AcquisitionDocument
+
+from .settings import (
     COLLECTIONS_TSV,
-    RAW_DIR,
     USER_AGENT,
     TIMEOUT,
 )
@@ -61,8 +63,20 @@ def fetch():
             )
             response.raise_for_status()
 
-            output = RAW_DIR / f"{slug}.html"
-            output.write_bytes(response.content)
+            AcquisitionDocument.objects.update_or_create(
+                source_type="scraping",
+                source_name="geekom",
+                document_type="collection",
+                document_key=slug,
+                defaults={
+                    "source_url": row["url"],
+                    "content_type": response.headers.get(
+                        "Content-Type",
+                        "text/html",
+                    ),
+                    "content": response.text,
+                },
+            )
 
             success.append(slug)
 

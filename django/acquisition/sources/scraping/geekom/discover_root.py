@@ -2,7 +2,7 @@
 """
 GEEKOM Collection Discovery Runtime
 
-Discover Collection URLs from root.tsv.
+Discover valid Collection URLs from Root Reality.
 """
 
 from __future__ import annotations
@@ -13,7 +13,7 @@ import re
 import requests
 from bs4 import BeautifulSoup
 
-from settings import (
+from .settings import (
     BASE_URL,
     TIMEOUT,
     USER_AGENT,
@@ -26,63 +26,128 @@ HEADERS = {
 }
 
 
-def load_roots():
+def load_roots() -> list[dict[str, str]]:
+    """Load enabled root sources."""
 
-    with ROOT_TSV.open("r", encoding="utf-8", newline="") as f:
+    with ROOT_TSV.open(
+        "r",
+        encoding="utf-8",
+        newline="",
+    ) as f:
 
         return [
             row
             for row in csv.DictReader(f, delimiter="\t")
-            if row["source_type"] == "root"
-            and row["enabled"].lower() == "true"
+            if (
+                row["source_type"] == "root"
+                and row["enabled"].lower() == "true"
+            )
         ]
 
 
-def discover(url: str):
-
-    print(f"🌐 {url}")
+def fetch_html(url: str) -> str:
+    """Fetch HTML."""
 
     response = requests.get(
         url,
         headers=HEADERS,
         timeout=TIMEOUT,
     )
+
     response.raise_for_status()
 
-    soup = BeautifulSoup(response.text, "html.parser")
+    return response.text
 
-    urls = {
+
+def extract_collections(html: str) -> list[str]:
+    """Extract collection paths from HTML."""
+
+    soup = BeautifulSoup(html, "html.parser")
+
+    paths = {
         href
         for a in soup.find_all("a", href=True)
         if (
             (href := a["href"].split("?")[0].rstrip("/")).startswith("/collections/")
-            and href not in {"/collections", "/collections/all"}
+            and href not in {
+                "/collections",
+                "/collections/all",
+            }
         )
     }
 
-    urls.update(
+    paths.update(
         f"/collections/{slug}"
         for slug in re.findall(
-            r"/collections/([a-zA-Z0-9_-]+)",
-            response.text,
+            r"/collections/([A-Za-z0-9_-]+)",
+            html,
         )
         if slug != "all"
     )
 
-    return sorted(urls)
+    return sorted(paths)
+
+
+def validate_collections(paths: list[str]) -> list[str]:
+    """Keep only valid collections."""
+
+    valid = []
+
+    for path in paths:
+
+        url = f"{BASE_URL}{path}"
+
+        try:
+
+            response = requests.get(
+                url,
+                headers=HEADERS,
+                timeout=TIMEOUT,
+                allow_redirects=True,
+            )
+
+            if response.status_code != 200:
+                continue
+
+            final_path = response.url.replace(BASE_URL, "").rstrip("/")
+
+            if not final_path.startswith("/collections/"):
+                continue
+
+            if final_path in {
+                "/collections",
+                "/collections/all",
+            }:
+                continue
+
+            valid.append(final_path)
+
+        except Exception:
+
+            continue
+
+    return sorted(set(valid))
 
 
 def slug_to_name(slug: str) -> str:
+    """Convert slug into display name."""
+
     return slug.replace("-", " ").title()
 
 
-def save(rows):
+def save(rows: list[dict[str, str]]) -> None:
+    """Save collections."""
 
-    COLLECTIONS_TSV.parent.mkdir(parents=True, exist_ok=True)
+    with COLLECTIONS_TSV.open(
+        "w",
+        encoding="utf-8",
+        newline="",
+    ) as f:
 
-    with COLLECTIONS_TSV.open("w", encoding="utf-8", newline="") as f:
-
-        writer = csv.writer(f, delimiter="\t")
+        writer = csv.writer(
+            f,
+            delimiter="\t",
+        )
 
         writer.writerow([
             "maker",
@@ -94,7 +159,10 @@ def save(rows):
             "priority",
         ])
 
-        for priority, row in enumerate(rows, start=10):
+        for priority, row in enumerate(
+            rows,
+            start=10,
+        ):
 
             writer.writerow([
                 "GEEKOM",
@@ -107,17 +175,34 @@ def save(rows):
             ])
 
 
-def main():
+def main() -> None:
 
     print("=" * 60)
     print("🔎 GEEKOM ROOT DISCOVERY")
     print("=" * 60)
 
-    discovered = {}
+    discovered: dict[str, dict[str, str]] = {}
 
     for root in load_roots():
 
-        for path in discover(root["url"].rstrip("/")):
+        print(f"🌐 {root['url']}")
+
+        html = fetch_html(
+            root["url"].rstrip("/")
+        )
+
+        candidates = extract_collections(html)
+
+        print(f"Candidates : {len(candidates)}")
+
+        collections = validate_collections(
+            candidates
+        )
+
+        print(f"Valid      : {len(collections)}")
+        print()
+
+        for path in collections:
 
             slug = path.split("/")[-1]
 
@@ -134,9 +219,10 @@ def main():
 
     save(rows)
 
-    print()
+    print("=" * 60)
     print(f"✅ {len(rows)} collections discovered")
     print(f"📄 {COLLECTIONS_TSV}")
+    print("=" * 60)
 
 
 if __name__ == "__main__":

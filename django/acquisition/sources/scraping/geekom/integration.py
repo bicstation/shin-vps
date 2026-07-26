@@ -9,37 +9,27 @@ GEEKOM Integration Runtime
 
 Pipeline
 
-Import Contract
+ImportDocument
         │
         ▼
 Import Builder
         │
         ▼
-Payload JSON
+PCProduct
 ==============================================================================
 """
 
 from __future__ import annotations
 
-import json
-from pathlib import Path
-import sys
-
-# ==========================================================
-# Project Root
-# ==========================================================
-
-ROOT_DIR = Path(__file__).resolve().parents[4]
-sys.path.insert(0, str(ROOT_DIR))
+from api.models import ImportDocument
 
 from acquisition.integration.builder import ImportBuilder
 
-from settings import (
+from .settings import (
     AFFILIATE,
-    IMPORT_CONTRACT_DIR,
-    PAYLOAD_DIR,
     SITE_NAME,
 )
+
 
 # ==========================================================
 # Builder
@@ -68,55 +58,50 @@ def integrate(
 
 
 # ==========================================================
-# Main
+# Runtime
 # ==========================================================
 
-def main():
+def run():
 
     print("=" * 60)
     print("🔗 GEEKOM INTEGRATION")
     print("=" * 60)
 
-    files = sorted(
-        IMPORT_CONTRACT_DIR.glob("*.json")
-    )
+    documents = ImportDocument.objects.filter(
+        source_name="geekom",
+        document_type="product",
+    ).iterator()
 
-    print(f"Target : {len(files)}")
-    print("-" * 60)
+    success = 0
 
-    payloads = []
+    for document in documents:
 
-    for file in files:
-
-        contract = json.loads(
-            file.read_text(
-                encoding="utf-8",
-            )
+        payload = integrate(
+            document.contract,
         )
 
-        payload = integrate(contract)
+        #
+        # PCProduct登録
+        #
+        # ここは ImportBuilder が担当
+        #
 
-        payloads.append(payload)
+        success += 1
 
-        print(f"✓ {file.stem}")
-
-    output = PAYLOAD_DIR / "products.json"
-
-    output.write_text(
-        json.dumps(
-            payloads,
-            ensure_ascii=False,
-            indent=2,
-        ),
-        encoding="utf-8",
-    )
+        print(f"✓ {document.document_key}")
 
     print("-" * 60)
-    print(f"Items : {len(payloads)}")
-    print(f"Saved : {output}")
+    print(f"SUCCESS : {success}")
     print("=" * 60)
-    print("COMPLETE")
-    print("=" * 60)
+
+
+# ==========================================================
+# Main
+# ==========================================================
+
+def main():
+
+    run()
 
 
 if __name__ == "__main__":

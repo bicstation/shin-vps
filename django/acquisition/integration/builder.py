@@ -20,22 +20,13 @@ Import Contract
  Commerce Runtime
         │
         ▼
+ Normalize Runtime
+        │
+        ▼
  PCProductBuilder
         │
         ▼
  PCProduct Payload
-
-Responsibilities
-
-- Orchestrate Common Runtimes
-- Build Final PCProduct Payload
-
-NOT
-
-- HTML Parsing
-- TSV Access
-- Observation
-- Semantic
 ==============================================================================
 """
 
@@ -53,21 +44,6 @@ from api.services.feed.builders.pc_product_builder import (
 
 
 class ImportBuilder:
-    """
-    Acquisition Integration Builder
-
-    Responsibility
-    --------------
-    Import Contract
-            │
-            ├── Identity Runtime
-            ├── Affiliate Runtime
-            ├── Commerce Runtime
-            ▼
-    PCProductBuilder
-            ▼
-    PCProduct Payload
-    """
 
     def __init__(self) -> None:
 
@@ -89,21 +65,18 @@ class ImportBuilder:
         maker: str,
         prefix: str,
     ) -> dict[str, Any]:
-        """
-        Build PCProduct payload.
-        """
 
-        #
+        # =====================================================
         # Identity Runtime
-        #
+        # =====================================================
 
         identity = self.identity_builder.build(
             contract,
         )
 
-        #
+        # =====================================================
         # Affiliate Runtime
-        #
+        # =====================================================
 
         affiliate = self.affiliate_builder.build(
             product_url=contract.get(
@@ -113,33 +86,148 @@ class ImportBuilder:
             config=affiliate_config,
         )
 
-        #
+        # =====================================================
         # Commerce Runtime
-        #
+        # =====================================================
 
         commerce = self.commerce_builder.build(
             contract,
         )
 
-        #
-        # Merge Runtime Results
-        #
+        # =====================================================
+        # Normalize Runtime
+        # =====================================================
 
         normalized = {
 
+            # -------------------------------------------------
+            # Keep Original Contract
+            # -------------------------------------------------
+
             **contract,
+
+            # -------------------------------------------------
+            # Identity
+            # -------------------------------------------------
 
             "identity": identity,
 
-            "affiliate": affiliate,
+            "unique_id": identity.get(
+                "unique_id",
+                "",
+            ),
+
+            "maker": identity.get(
+                "maker",
+                maker,
+            ),
+
+            "brand": identity.get(
+                "brand",
+                "",
+            ),
+
+            "series": identity.get(
+                "series",
+                "",
+            ),
+
+            "collaboration": identity.get(
+                "collaboration",
+                "",
+            ),
+
+            # -------------------------------------------------
+            # Product
+            # -------------------------------------------------
+
+            "name": contract.get(
+                "name",
+                contract.get(
+                    "product_name",
+                    "",
+                ),
+            ),
+
+            "description": contract.get(
+                "description",
+                "",
+            ),
+
+            "model": contract.get(
+                "model",
+                "",
+            ),
+
+            "product_no": contract.get(
+                "product_no",
+                "",
+            ),
+
+            "release_date": contract.get(
+                "release_date",
+            ),
+
+            # -------------------------------------------------
+            # Commerce
+            # -------------------------------------------------
 
             "commerce": commerce,
 
+            "price": contract.get(
+                "price",
+                commerce.get(
+                    "price",
+                    0,
+                ),
+            ),
+
+            "url": contract.get(
+                "url",
+                contract.get(
+                    "product_url",
+                    "",
+                ),
+            ),
+
+            # -------------------------------------------------
+            # Affiliate
+            # -------------------------------------------------
+
+            "affiliate": affiliate,
+
+            "affiliate_url": affiliate.get(
+                "affiliate_url",
+                contract.get(
+                    "product_url",
+                    "",
+                ),
+            ),
+
+            # -------------------------------------------------
+            # Media
+            # -------------------------------------------------
+
+            "image_url": contract.get(
+                "image_url",
+                "",
+            ),
+
+            "images": contract.get(
+                "images",
+                [],
+            ),
+
+            "tables": contract.get(
+                "tables",
+                [],
+            ),
+
         }
 
-        #
+        # =====================================================
         # Build Final Payload
-        #
+        # =====================================================
 
         return self.pc_builder.build(
             normalized=normalized,

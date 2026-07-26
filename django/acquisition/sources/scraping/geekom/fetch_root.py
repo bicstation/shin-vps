@@ -2,45 +2,39 @@
 """
 GEEKOM Reality Fetch
 
-Fetch Root Reality HTML.
+Fetch Root Reality HTML
+→ Save AcquisitionDocument
 """
 
-from pathlib import Path
-import sys
+from __future__ import annotations
+
 import csv
+
 import requests
 
-# ==========================================================
-# Django Root
-# ==========================================================
+from api.models.acquisition_document import AcquisitionDocument
 
-ROOT_DIR = Path(__file__).resolve().parents[3]
-sys.path.insert(0, str(ROOT_DIR))
-
-from imports.geekom.scripts.settings import (
+from .settings import (
     USER_AGENT,
     TIMEOUT,
+    ROOT_TSV,
 )
 
-# ==========================================================
-# Paths
-# ==========================================================
-
-BASE_DIR = Path(__file__).resolve().parent.parent
-
-LIST_FILE = BASE_DIR / "root.tsv"
-
-RAW_DIR = BASE_DIR / "output" / "raw"
-RAW_DIR.mkdir(parents=True, exist_ok=True)
-
-# ==========================================================
-# Fetch
-# ==========================================================
 
 def fetch() -> None:
 
-    with open(LIST_FILE, encoding="utf-8") as f:
-        rows = list(csv.DictReader(f, delimiter="\t"))
+    with ROOT_TSV.open(
+        "r",
+        encoding="utf-8",
+        newline="",
+    ) as f:
+
+        rows = list(
+            csv.DictReader(
+                f,
+                delimiter="\t",
+            )
+        )
 
     print("=" * 60)
     print("GEEKOM REALITY FETCH")
@@ -61,21 +55,35 @@ def fetch() -> None:
         print(f"[{index}/{len(rows)}] {slug}")
 
         try:
+
             response = session.get(
                 url,
                 timeout=TIMEOUT,
                 allow_redirects=True,
             )
+
             response.raise_for_status()
 
-            output_file = RAW_DIR / f"{slug}.html"
-            output_file.write_bytes(response.content)
+            AcquisitionDocument.objects.update_or_create(
+                source_type="scraping",
+                source_name="geekom",
+                document_type="root",
+                document_key=slug,
+                defaults={
+                    "source_url": url,
+                    "content_type": response.headers.get(
+                        "Content-Type",
+                        "text/html",
+                    ),
+                    "content": response.text,
+                },
+            )
 
             print(f"  Status : {response.status_code}")
             print(f"  Size   : {len(response.content):,} bytes")
-            print(f"  Saved  : {output_file}")
 
         except Exception as e:
+
             print(f"  ERROR  : {e}")
 
         print()
@@ -85,12 +93,7 @@ def fetch() -> None:
     print("=" * 60)
 
 
-# ==========================================================
-# Entry Point
-# ==========================================================
-
 def main() -> None:
-    """Execute Root Fetch."""
     fetch()
 
 

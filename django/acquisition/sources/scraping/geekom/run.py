@@ -1,63 +1,50 @@
 #!/usr/bin/env python3
+"""
+==============================================================================
+FILE:
+    acquisition/sources/scraping/geekom/run.py
 
-from pathlib import Path
-import sys
+SHIN CORE LINX
+GEEKOM Acquisition Runtime
 
-# ==========================================================
-# Python Path
-# ==========================================================
+Entry Point
 
-PROJECT_DIR = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(PROJECT_DIR))
+Pipeline
 
-# ==========================================================
-# Import
-# ==========================================================
+Reality Source
+        │
+        ▼
+pipeline.py
+        │
+        ▼
+PCProduct Payload
+==============================================================================
 
-from imports.geekom.pipeline import run as reality_pipeline
+Responsibilities
 
-from imports.integration.orchestrator import ImportOrchestrator
+- Execute Acquisition Pipeline
 
-# ==========================================================
-# Import Contract
-# ==========================================================
+NOT
 
-CONTRACT_PATH = (
-    PROJECT_DIR
-    / "imports"
-    / "geekom"
-    / "output"
-    / "import_contract"
-    / "products.json"
-)
+- HTML Parsing
+- Observation
+- Adapter
+- Integration
+- Business Logic
+==============================================================================
+"""
 
+from __future__ import annotations
 
-# ==========================================================
-# Run
-# ==========================================================
+from .pipeline import run
+
 
 def main() -> None:
-    """Execute TSUKUMO Import Runtime."""
+    """
+    Execute Acquisition Pipeline.
+    """
 
-    # ------------------------------------------------------
-    # Reality Pipeline
-    # ------------------------------------------------------
-
-    reality_pipeline()
-
-    # ------------------------------------------------------
-    # Import Pipeline
-    # ------------------------------------------------------
-
-    orchestrator = ImportOrchestrator()
-
-    results = orchestrator.run(
-        json_path=CONTRACT_PATH,
-        maker="GEEKOM",
-        prefix="GEEKOM",
-    )
-
-    return results
+    run()
 
 
 if __name__ == "__main__":

@@ -1,35 +1,70 @@
 #!/usr/bin/env python3
 """
-GEEKOM Reality Pipeline
+==============================================================================
+GEEKOM Acquisition Pipeline
 
-Acquire Reality
-        ↓
-Observe Reality
-        ↓
-Normalize Reality
-        ↓
-Build Import Contract
+Reality Source
+        │
+        ▼
+Acquire Runtime
+        │
+        ▼
+AcquisitionDocument
+        │
+        ▼
+Observation Runtime
+        │
+        ├─ Formatter Runtime (Memory)
+        └─ Observation Runtime
+        │
+        ▼
+ObservationDocument
+        │
+        ▼
+Adapter Runtime
+        │
+        ▼
+ImportDocument
+        │
+        ▼
+Integration Runtime
+        ├─ Identity Runtime
+        ├─ Affiliate Runtime
+        ├─ Commerce Runtime
+        ├─ Normalize Runtime
+        └─ PCProductBuilder
+        │
+        ▼
+PCProduct
+==============================================================================
+
+Reality First
+Observation First
+Translation Authority
+Semantic Later
+==============================================================================
 """
 
-from imports.geekom.scripts.fetch_root import main as fetch_root
-from imports.geekom.scripts.discover_root import main as discover_root
+from __future__ import annotations
 
-from imports.geekom.scripts.fetch_list import main as fetch_list
-from imports.geekom.scripts.discover_list import main as discover_list
+from .fetch_root import main as fetch_root
+from .discover_root import main as discover_root
 
-from imports.geekom.scripts.fetch_product import main as fetch_product
+from .fetch_list import main as fetch_list
+from .discover_list import main as discover_list
 
-from imports.geekom.scripts.observe import main as observe
-from imports.geekom.scripts.formatter import main as formatter
-from imports.geekom.scripts.mapper import main as mapper
+from .fetch_product import main as fetch_product
+
+from .observe import main as observe
+from .mapper import main as mapper
+from .integration import main as integration
 
 
 # ==========================================================
-# Acquire Reality
+# Acquire Runtime
 # ==========================================================
 
 def run_acquire() -> None:
-    """Acquire Reality."""
 
     fetch_root()
     discover_root()
@@ -41,43 +76,46 @@ def run_acquire() -> None:
 
 
 # ==========================================================
-# Observe Reality
+# Observation Runtime
 # ==========================================================
 
 def run_observe() -> None:
-    """Observe Reality."""
 
     observe()
 
 
 # ==========================================================
-# Normalize Reality
+# Adapter Runtime
 # ==========================================================
 
-def run_formatter() -> None:
-    """Build Payload."""
-
-    formatter()
-
-
-# ==========================================================
-# Build Import Contract
-# ==========================================================
-
-def run_mapper() -> None:
-    """Build Import Contract."""
+def run_adapter() -> None:
 
     mapper()
 
 
 # ==========================================================
-# Reality Pipeline
+# Integration Runtime
+# ==========================================================
+
+def run_integration() -> None:
+
+    integration()
+
+
+# ==========================================================
+# Pipeline
 # ==========================================================
 
 def run() -> None:
-    """Execute GEEKOM Reality Pipeline."""
 
     run_acquire()
+
     run_observe()
-    run_formatter()
-    run_mapper()
+
+    run_adapter()
+
+    run_integration()
+
+
+if __name__ == "__main__":
+    run()
