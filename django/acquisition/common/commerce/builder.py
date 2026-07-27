@@ -1,4 +1,3 @@
-# /home/maya/shin-dev/shin-vps/django/acquisition/common/commerce/builder.py
 #!/usr/bin/env python3
 """
 ==============================================================================
@@ -25,8 +24,6 @@ NOT
 
 from __future__ import annotations
 
-from acquisition.common.commerce.repository import CommerceRepository
-
 
 class CommerceBuilder:
     """
@@ -42,32 +39,14 @@ class CommerceBuilder:
         Build Commerce Contract.
         """
 
-        repository = CommerceRepository()
-
-        commerce = repository.find(
-            contract,
-        )
-
-        if commerce is None:
-
-            return {
-
-                "price": "",
-
-                "stock": "",
-
-                "delivery": "",
-
-                "currency": "JPY",
-
-            }
+        commerce = contract.get("commerce", {})
 
         return {
 
             "price": commerce.get(
                 "price",
-                "",
-            ),
+                0,
+            ) or 0,
 
             "stock": commerce.get(
                 "stock",

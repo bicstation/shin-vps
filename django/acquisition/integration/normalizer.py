@@ -1,4 +1,4 @@
-# /home/maya/shin-vps/django/imports/integration/normalizer.py
+# /home/maya/shin-vps/django/acquisition/integration/normalizer.py
 
 """
 SHIN CORE LINX
@@ -35,17 +35,16 @@ class ImportNormalizer:
     should produce the same normalized contract.
     """
 
-    # =========================================================
-    # Public
-    # =========================================================
+    def build(
+        self,
+        contract: dict[str, Any],
+    ) -> dict[str, Any]:
+        return self.normalize(contract)
 
     def normalize(
         self,
         contract: dict[str, Any],
     ) -> dict[str, Any]:
-        """
-        Normalize Import Contract.
-        """
 
         contract = copy.deepcopy(contract)
 
@@ -56,111 +55,36 @@ class ImportNormalizer:
         observation = contract.setdefault("observation", {})
         specifications = contract.setdefault("specifications", {})
 
-        # =====================================================
-        # Identity
-        # =====================================================
+        identity["maker"] = self.clean_text(identity.get("maker"))
+        identity["brand"] = self.clean_text(identity.get("brand"))
+        identity["product_name"] = self.clean_text(identity.get("product_name"))
+        identity["model"] = self.clean_text(identity.get("model"))
+        identity["product_no"] = self.clean_text(identity.get("product_no"))
+        identity["sku"] = self.clean_text(identity.get("sku"))
+        identity["jan"] = self.clean_text(identity.get("jan"))
+        identity["pc_id"] = self.clean_text(identity.get("pc_id"))
+        identity["product_url"] = self.clean_url(identity.get("product_url"))
 
-        identity["maker"] = self.clean_text(
-            identity.get("maker")
-        )
+        commerce["price"] = self.normalize_price(commerce.get("price"))
+        commerce["availability"] = self.clean_text(commerce.get("availability"))
+        commerce["release_date"] = self.normalize_date(commerce.get("release_date"))
 
-        identity["brand"] = self.clean_text(
-            identity.get("brand")
-        )
+        affiliate["url"] = self.clean_url(affiliate.get("url"))
 
-        identity["product_name"] = self.clean_text(
-            identity.get("product_name")
-        )
+        media["image_url"] = self.clean_url(media.get("image_url"))
 
-        identity["model"] = self.clean_text(
-            identity.get("model")
-        )
+        observation["raw_title"] = self.clean_text(observation.get("raw_title"))
+        observation["feature"] = self.clean_text(observation.get("feature"))
 
-        identity["product_no"] = self.clean_text(
-            identity.get("product_no")
-        )
-
-        identity["sku"] = self.clean_text(
-            identity.get("sku")
-        )
-
-        identity["jan"] = self.clean_text(
-            identity.get("jan")
-        )
-
-        identity["pc_id"] = self.clean_text(
-            identity.get("pc_id")
-        )
-
-        identity["product_url"] = self.clean_url(
-            identity.get("product_url")
-        )
-
-        # =====================================================
-        # Commerce
-        # =====================================================
-
-        commerce["price"] = self.normalize_price(
-            commerce.get("price")
-        )
-
-        commerce["availability"] = self.clean_text(
-            commerce.get("availability")
-        )
-
-        commerce["release_date"] = self.normalize_date(
-            commerce.get("release_date")
-        )
-
-        # =====================================================
-        # Affiliate
-        # =====================================================
-
-        affiliate["url"] = self.clean_url(
-            affiliate.get("url")
-        )
-
-        # =====================================================
-        # Media
-        # =====================================================
-
-        media["image_url"] = self.clean_url(
-            media.get("image_url")
-        )
-
-        # =====================================================
-        # Observation
-        # =====================================================
-
-        observation["raw_title"] = self.clean_text(
-            observation.get("raw_title")
-        )
-
-        observation["feature"] = self.clean_text(
-            observation.get("feature")
-        )
-
-        observation_specs = observation.setdefault(
-            "specifications",
-            {}
-        )
-
+        observation_specs = observation.setdefault("specifications", {})
         if not isinstance(observation_specs, dict):
             observation["specifications"] = {}
-
-        # =====================================================
-        # Specifications
-        # =====================================================
 
         if not isinstance(specifications, dict):
             contract["specifications"] = {}
 
         return contract
 
-    # =========================================================
-    # Helpers
-    # =========================================================
-    
     def normalize_date(
         self,
         value: Any,
@@ -210,15 +134,7 @@ class ImportNormalizer:
         if isinstance(value, float):
             return int(value)
 
-        text = str(value)
-
-        #
-        # 1,128,000 円
-        # ￥1,128,000
-        # 1128000
-        #
-
-        text = re.sub(r"[^\d]", "", text)
+        text = re.sub(r"[^\d]", "", str(value))
 
         if not text:
             return 0

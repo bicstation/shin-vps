@@ -1,18 +1,37 @@
-# /home/maya/shin-vps/django/imports/integration/semantic.py
-
+#!/usr/bin/env python3
 """
+==============================================================================
+FILE:
+    acquisition/integration/semantic.py
+
 SHIN CORE LINX
-Import Integration Semantic
+Acquisition Integration Semantic
 
 Pipeline
 
-Payload
-    │
-    ▼
+BuilderResult
+        │
+        ▼
 SemanticBuilder
-    │
-    ▼
-Semantic Payload
+        │
+        ▼
+SemanticRuntimeBuilder
+        │
+        ▼
+SemanticResult
+
+Responsibilities
+
+- Build Semantic Information
+- Build Semantic Runtime
+
+NOT
+
+- Model Mapping
+- Database
+- Persistence
+- PCProduct
+==============================================================================
 """
 
 from __future__ import annotations
@@ -23,7 +42,6 @@ from typing import Any
 from api.services.feed.semantic.builders.semantic_builder import (
     SemanticBuilder,
 )
-
 from api.services.feed.semantic.builders.semantic_runtime_builder import (
     SemanticRuntimeBuilder,
 )
@@ -31,17 +49,7 @@ from api.services.feed.semantic.builders.semantic_runtime_builder import (
 
 class ImportSemantic:
     """
-    Import Semantic
-
-    Responsibility
-    --------------
-    Payload
-        ↓
-    SemanticBuilder
-        ↓
-    SemanticRuntimeBuilder
-        ↓
-    Semantic Payload
+    Build SemanticResult from BuilderResult.
     """
 
     def __init__(self) -> None:
@@ -55,34 +63,54 @@ class ImportSemantic:
 
     def build(
         self,
-        payload: dict[str, Any],
+        builder_result: dict[str, Any],
     ) -> dict[str, Any]:
-        """
-        Build semantic information.
-        """
 
         product = SimpleNamespace(
-            name=payload.get("name", ""),
-            description=payload.get("description", ""),
-            maker=payload.get("maker", ""),
+            name=builder_result.get("name", ""),
+            description=builder_result.get("description", ""),
+            maker=builder_result.get("maker", ""),
         )
 
-        semantic_payload = self.semantic_builder.build(product)
+        semantic = self.semantic_builder.build(product)
 
-        runtime_payload = self.runtime_builder.build(
-            semantic_payload
+        runtime = self.runtime_builder.build(
+            semantic,
         )
 
-        payload.update(semantic_payload)
-        payload.update(runtime_payload)
+        return {
 
-        payload["semantic_runtime"] = {
-            "product_type": semantic_payload.get("product_type"),
-            "target_segment": semantic_payload.get("target_segment"),
-            "is_ai_pc": semantic_payload.get("is_ai_pc"),
-            "semantic_labels": runtime_payload.get("semantic_labels", []),
-            "workflow_tags": runtime_payload.get("workflow_tags", []),
-            "runtime_profiles": runtime_payload.get("runtime_profiles", []),
+            "semantic": semantic,
+
+            "runtime": runtime,
+
+            "semantic_runtime": {
+
+                "product_type": semantic.get(
+                    "product_type"
+                ),
+
+                "target_segment": semantic.get(
+                    "target_segment"
+                ),
+
+                "is_ai_pc": semantic.get(
+                    "is_ai_pc"
+                ),
+
+                "semantic_labels": runtime.get(
+                    "semantic_labels",
+                    [],
+                ),
+
+                "workflow_tags": runtime.get(
+                    "workflow_tags",
+                    [],
+                ),
+
+                "runtime_profiles": runtime.get(
+                    "runtime_profiles",
+                    [],
+                ),
+            },
         }
-
-        return payload

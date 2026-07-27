@@ -27,7 +27,6 @@ class PCProductBuilder:
 
             "unique_id": (
                 identity.get("unique_id")
-                or f"{prefix}_{normalized['sku']}"
             ),
 
             "site_prefix": prefix,

@@ -1,5 +1,3 @@
-# /home/maya/shin-dev/shin-vps/django/acquisition/integration/orchestrator.py
-
 #!/usr/bin/env python3
 """
 ==============================================================================
@@ -8,129 +6,106 @@ FILE:
 
 SHIN CORE LINX
 Acquisition Integration Orchestrator
-
-Pipeline
-
-Import Contract
-        │
-        ▼
-Import Adapter
-        │
-        ▼
-PCProduct Model Mapper
-        │
-        ▼
-Semantic Runtime
-        │
-        ▼
-Import Repository
-        │
-        ▼
-Import Results
-
-Responsibilities
-
-- Execute Integration Workflow
-- Coordinate Components
-
-NOT
-
-- Business Logic
-- HTML Parsing
-- TSV Access
-- Semantic Implementation
 ==============================================================================
 """
 
 from __future__ import annotations
 
-from pathlib import Path
-
 from django.db import DataError
 
-from acquisition.integration.adapter import ImportAdapter
-from acquisition.integration.model_mapper import PCProductModelMapper
+from acquisition.integration.normalizer import ImportNormalizer
+from acquisition.integration.builder import ImportBuilder
+from acquisition.integration.semantic import ImportSemantic
+from acquisition.integration.model_mapper import ImportModelMapper
 from acquisition.integration.repository import ImportRepository
 from acquisition.integration.results import ImportResults
-from acquisition.integration.semantic import ImportSemantic
+from acquisition.integration.stock import ImportStock
 
 
 class ImportOrchestrator:
-    """
-    Acquisition Integration Orchestrator.
-    """
 
     def __init__(self) -> None:
 
-        self.adapter = ImportAdapter()
-        self.mapper = PCProductModelMapper()
+        self.stock = ImportStock()
+        self.normalizer = ImportNormalizer()
+        self.builder = ImportBuilder()
         self.semantic = ImportSemantic()
+        self.mapper = ImportModelMapper()
         self.repository = ImportRepository()
-
-    # =========================================================
-    # Run
-    # =========================================================
 
     def run(
         self,
-        json_path: str | Path,
+        documents,
         *,
         maker: str,
         prefix: str,
+        affiliate_config: dict,
     ) -> ImportResults:
 
         results = ImportResults()
 
-        #
-        # Import Contract
-        #
+        self.stock.reset()
 
-        contracts = self.adapter.run(json_path)
+        documents = list(documents)
 
-        results.loaded = len(contracts)
-        results.normalized = len(contracts)
+        results.loaded = len(documents)
 
-        #
-        # Payload Build
-        #
-
-        payloads = []
-
-        for contract in contracts:
-
-            payload = self.mapper.build(contract)
-
-            payloads.append(payload)
-
-        results.payloads = payloads
-        results.built = len(payloads)
-
-        #
-        # Semantic Runtime
-        #
-
-        semantic_payloads = [
-
-            self.semantic.build(payload)
-
-            for payload in payloads
-
-        ]
-
-        results.semantic = len(semantic_payloads)
-
-        #
-        # Repository
-        #
-
-        for payload in semantic_payloads:
+        for document in documents:
 
             try:
 
-                product, created = self.repository.save(payload)
+                #
+                # Contract
+                #
+
+                contract = document.contract
+
+                #
+                # Normalize
+                #
+
+                normalized = self.normalizer.build(contract)
+                results.normalized += 1
+
+                #
+                # Builder
+                #
+
+                builder_result = self.builder.build(
+                    normalized,
+                    affiliate_config=affiliate_config,
+                    maker=maker,
+                    prefix=prefix,
+                )
+                results.built += 1
+
+                #
+                # Semantic
+                #
+
+                semantic_result = self.semantic.build(
+                    builder_result,
+                )
+                results.semantic += 1
+
+                #
+                # Model Mapper
+                #
+
+                payload = self.mapper.build(
+                    builder_result,
+                    semantic_result,
+                )
+
+                #
+                # Repository
+                #
+
+                product, created = self.repository.save(
+                    payload,
+                )
 
             except DataError:
-
                 continue
 
             results.products.append(product)

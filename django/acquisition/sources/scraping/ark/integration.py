@@ -6,7 +6,10 @@ ARK Integration Runtime
 ImportDocument
         │
         ▼
-Import Builder
+ImportService
+        │
+        ▼
+Integration Runtime
         │
         ▼
 PCProduct
@@ -17,7 +20,7 @@ from __future__ import annotations
 
 from api.models import ImportDocument
 
-from acquisition.integration.builder import ImportBuilder
+from acquisition.integration.import_service import ImportService
 
 from .settings import (
     AFFILIATE,
@@ -26,33 +29,10 @@ from .settings import (
 
 
 # ==========================================================
-# Builder
-# ==========================================================
-
-builder = ImportBuilder()
-
-
-# ==========================================================
-# Integration
-# ==========================================================
-
-def integrate(
-    contract: dict,
-) -> dict:
-
-    return builder.build(
-        contract=contract,
-        affiliate_config=AFFILIATE,
-        maker=SITE_NAME,
-        prefix=SITE_NAME.upper(),
-    )
-
-
-# ==========================================================
 # Runtime
 # ==========================================================
 
-def run():
+def run() -> None:
 
     print("=" * 60)
     print("🔗 ARK INTEGRATION")
@@ -61,22 +41,19 @@ def run():
     documents = ImportDocument.objects.filter(
         source_name=SITE_NAME,
         document_type="product",
-    ).iterator()
+    )
 
-    success = 0
-
-    for document in documents:
-
-        integrate(
-            document.contract,
-        )
-
-        success += 1
-
-        print(f"✓ {document.document_key}")
+    results = ImportService.run(
+        documents=documents,
+        affiliate_config=AFFILIATE,
+        maker=SITE_NAME,
+        prefix=SITE_NAME.upper(),
+    )
 
     print("-" * 60)
-    print(f"SUCCESS : {success}")
+    print(f"Loaded  : {results.loaded}")
+    print(f"Created : {results.created}")
+    print(f"Updated : {results.updated}")
     print("=" * 60)
 
 
@@ -84,8 +61,7 @@ def run():
 # Main
 # ==========================================================
 
-def main():
-
+def main() -> None:
     run()
 
 

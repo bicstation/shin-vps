@@ -19,9 +19,9 @@ from acquisition.sources.scraping.ark.run import (
 #     main as frontier_import,
 # )
 
-# from acquisition.sources.scraping.ozgaming.run import (
-#     main as ozgaming_import,
-# )
+from acquisition.sources.scraping.ozgaming.run import (
+    main as ozgaming_import,
+)
 
 from acquisition.sources.scraping.geekom.run import (
     main as geekom_import,
@@ -49,10 +49,10 @@ ACQUISITION_RUNTIMES = {
     #     frontier_import,
     # ),
 
-    # "ozgaming": (
-    #     "OzGaming",
-    #     ozgaming_import,
-    # ),
+    "ozgaming": (
+        "OzGaming",
+        ozgaming_import,
+    ),
 
     "geekom": (
         "GEEKOM",

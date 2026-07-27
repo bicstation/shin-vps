@@ -9,7 +9,7 @@ Acquisition Integration Builder
 
 Pipeline
 
-Import Contract
+ImportDocument
         │
         ├──────────────┐
         │              │
@@ -23,10 +23,22 @@ Import Contract
  Normalize Runtime
         │
         ▼
- PCProductBuilder
-        │
-        ▼
- PCProduct Payload
+ BuilderResult
+
+Responsibilities
+
+- Build Integration Runtime Data
+- Execute Identity Runtime
+- Execute Affiliate Runtime
+- Execute Commerce Runtime
+- Normalize Import Contract
+
+NOT
+
+- Semantic Runtime
+- PCProduct Mapping
+- Database
+- Persistence
 ==============================================================================
 """
 
@@ -34,24 +46,26 @@ from __future__ import annotations
 
 from typing import Any
 
-from acquisition.common.identity.builder import IdentityBuilder
 from acquisition.common.affiliate.builder import AffiliateBuilder
 from acquisition.common.commerce.builder import CommerceBuilder
-
-from api.services.feed.builders.pc_product_builder import (
-    PCProductBuilder,
-)
+from acquisition.common.identity.builder import IdentityBuilder
 
 
 class ImportBuilder:
+    """
+    Build BuilderResult from ImportDocument.
+
+    This builder is responsible only for constructing
+    the intermediate runtime payload.
+
+    It does NOT build PCProduct.
+    """
 
     def __init__(self) -> None:
 
         self.identity_builder = IdentityBuilder()
         self.affiliate_builder = AffiliateBuilder()
         self.commerce_builder = CommerceBuilder()
-
-        self.pc_builder = PCProductBuilder()
 
     # =========================================================
     # Build
@@ -66,80 +80,54 @@ class ImportBuilder:
         prefix: str,
     ) -> dict[str, Any]:
 
-        # =====================================================
+        #
         # Identity Runtime
-        # =====================================================
+        #
 
-        identity = self.identity_builder.build(
-            contract,
-        )
+        identity = self.identity_builder.build(contract)
 
-        # =====================================================
+        #
         # Affiliate Runtime
-        # =====================================================
+        #
 
         affiliate = self.affiliate_builder.build(
-            product_url=contract.get(
-                "product_url",
-                "",
-            ),
+            product_url=contract.get("product_url", ""),
             config=affiliate_config,
         )
 
-        # =====================================================
+        #
         # Commerce Runtime
-        # =====================================================
+        #
 
-        commerce = self.commerce_builder.build(
-            contract,
-        )
+        commerce = self.commerce_builder.build(contract)
 
-        # =====================================================
-        # Normalize Runtime
-        # =====================================================
+        #
+        # Builder Result
+        #
 
-        normalized = {
+        return {
 
-            # -------------------------------------------------
-            # Keep Original Contract
-            # -------------------------------------------------
+            #
+            # Original Contract
+            #
 
             **contract,
 
-            # -------------------------------------------------
+            #
             # Identity
-            # -------------------------------------------------
+            #
 
             "identity": identity,
 
-            "unique_id": identity.get(
-                "unique_id",
-                "",
-            ),
+            "unique_id": identity["unique_id"],
+            "maker": identity["maker"],
+            "brand": identity.get("brand", ""),
+            "series": identity.get("series", ""),
+            "collaboration": identity.get("collaboration", ""),
 
-            "maker": identity.get(
-                "maker",
-                maker,
-            ),
-
-            "brand": identity.get(
-                "brand",
-                "",
-            ),
-
-            "series": identity.get(
-                "series",
-                "",
-            ),
-
-            "collaboration": identity.get(
-                "collaboration",
-                "",
-            ),
-
-            # -------------------------------------------------
+            #
             # Product
-            # -------------------------------------------------
+            #
 
             "name": contract.get(
                 "name",
@@ -149,88 +137,49 @@ class ImportBuilder:
                 ),
             ),
 
-            "description": contract.get(
-                "description",
-                "",
-            ),
+            "description": contract.get("description", ""),
+            "model": contract.get("model", ""),
+            "product_no": contract.get("product_no", ""),
+            "release_date": contract.get("release_date"),
 
-            "model": contract.get(
-                "model",
-                "",
-            ),
-
-            "product_no": contract.get(
-                "product_no",
-                "",
-            ),
-
-            "release_date": contract.get(
-                "release_date",
-            ),
-
-            # -------------------------------------------------
+            #
             # Commerce
-            # -------------------------------------------------
+            #
 
             "commerce": commerce,
 
-            "price": contract.get(
+            "price": commerce.get(
                 "price",
-                commerce.get(
-                    "price",
-                    0,
-                ),
+                contract.get("price", 0),
             ),
 
             "url": contract.get(
                 "url",
-                contract.get(
-                    "product_url",
-                    "",
-                ),
+                contract.get("product_url", ""),
             ),
 
-            # -------------------------------------------------
+            #
             # Affiliate
-            # -------------------------------------------------
+            #
 
             "affiliate": affiliate,
 
             "affiliate_url": affiliate.get(
                 "affiliate_url",
-                contract.get(
-                    "product_url",
-                    "",
-                ),
+                contract.get("product_url", ""),
             ),
 
-            # -------------------------------------------------
+            #
             # Media
-            # -------------------------------------------------
+            #
 
-            "image_url": contract.get(
-                "image_url",
-                "",
-            ),
+            "image_url": contract.get("image_url", ""),
+            "images": contract.get("images", []),
+            "tables": contract.get("tables", []),
 
-            "images": contract.get(
-                "images",
-                [],
-            ),
+            #
+            # Runtime Metadata
+            #
 
-            "tables": contract.get(
-                "tables",
-                [],
-            ),
-
+            "prefix": prefix,
         }
-
-        # =====================================================
-        # Build Final Payload
-        # =====================================================
-
-        return self.pc_builder.build(
-            normalized=normalized,
-            maker=maker,
-            prefix=prefix,
-        )
