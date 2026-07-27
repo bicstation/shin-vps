@@ -7,9 +7,9 @@ from django.core.management.base import (
     CommandError,
 )
 
-# from acquisition.sources.scraping.ark.run import (
-#     main as ark_import,
-# )
+from acquisition.sources.scraping.ark.run import (
+    main as ark_import,
+)
 
 # from acquisition.sources.scraping.tsukumo.run import (
 #     main as tsukumo_import,
@@ -34,10 +34,10 @@ from acquisition.sources.scraping.geekom.run import (
 
 ACQUISITION_RUNTIMES = {
 
-    # "ark": (
-    #     "ARK",
-    #     ark_import,
-    # ),
+    "ark": (
+        "ARK",
+        ark_import,
+    ),
 
     # "tsukumo": (
     #     "TSUKUMO",
