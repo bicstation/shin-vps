@@ -38,6 +38,13 @@ export default function ProductCard({
 
     } = product
 
+
+    console.log('━━━━━━━━━━━━━━━━━━━━')
+    console.log('🔥 PRODUCT CARD')
+    console.log('unique_id =', unique_id)
+    console.log('href =', `/product/${unique_id}`)
+    console.log('━━━━━━━━━━━━━━━━━━━━')
+
     return (
 
         <Link

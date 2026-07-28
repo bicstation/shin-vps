@@ -256,13 +256,13 @@ urlpatterns = [
     ),
 
     path(
-        "products/<slug:unique_id>/",
+        "products/<str:unique_id>/",
         semantic_product_detail_v2,
         name="product_detail",
     ),
 
     path(
-        "products/<slug:unique_id>/related/",
+        "products/<str:unique_id>/related/",
         semantic_related_v2,
         name="related",
     ),

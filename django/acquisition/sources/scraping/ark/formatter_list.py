@@ -9,12 +9,10 @@ into runtime payload.
 """
 
 from __future__ import annotations
-
 from urllib.parse import parse_qs, urlparse
-
 from bs4 import BeautifulSoup
-
 from .settings import BASE_URL
+from acquisition.common.trace.reality_trace import trace
 
 
 def text(node):
@@ -176,8 +174,8 @@ def normalize(html: str):
                 '[itemprop="price"]'
             )
         )
-
-        results.append({
+        
+        payload = {
 
             "maker": maker,
             "product_name": product_name,
@@ -191,15 +189,21 @@ def normalize(html: str):
             "image_url": image_url,
 
             "observation": {
-
                 "raw_title": raw_title,
                 "feature": feature,
                 "specifications": specs,
-
             },
 
             "specs": specs,
 
-        })
+        }
+
+        trace(
+            stage="FORMATTER",
+            data=payload,
+        )
+
+        results.append(payload)
+
 
     return results

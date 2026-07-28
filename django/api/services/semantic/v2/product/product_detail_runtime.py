@@ -1,11 +1,24 @@
 # -*- coding: utf-8 -*-
 # api/services/semantic/v2/product/product_detail_runtime.py
 
-from api.models import ( PCProduct, )
-from api.services.semantic.v2.authority.authority_runtime import ( build_authority_runtime,)
-from api.services.semantic.v2.meaning.meaning_runtime import ( build_product_meaning, )
-from api.services.semantic.v2.seo.seo_runtime import ( build_product_seo, )
-from api.services.semantic.v2.product.product_semantic_runtime import ( build_product_semantic_runtime, )
+from api.models import PCProduct
+
+from api.services.semantic.v2.authority.authority_runtime import (
+    build_authority_runtime,
+)
+
+from api.services.semantic.v2.meaning.meaning_runtime import (
+    build_product_meaning,
+)
+
+from api.services.semantic.v2.seo.seo_runtime import (
+    build_product_seo,
+)
+
+from api.services.semantic.v2.product.product_semantic_runtime import (
+    build_product_semantic_runtime,
+)
+
 
 # ==========================================================
 # PRODUCT DETAIL
@@ -15,191 +28,165 @@ def build_product_detail_runtime(
     unique_id,
 ):
 
-    authority = (
-        build_authority_runtime()
+    import inspect
+
+    print("FILE :", __file__)
+    print("FUNC :", inspect.getfile(build_product_detail_runtime))
+
+    authority = build_authority_runtime()
+    meaning = build_product_meaning()
+
+    # ------------------------------------------------------
+    # OBSERVATION
+    # ------------------------------------------------------
+
+    print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+    print("🔥 PRODUCT DETAIL RUNTIME")
+
+    print(
+        "INPUT :",
+        repr(unique_id),
     )
 
-    meaning = (
-        build_product_meaning()
+    qs = PCProduct.objects.filter(
+        unique_id=unique_id,
     )
 
-    try:
+    print(
+        "EXISTS :",
+        qs.exists(),
+    )
 
+    if qs.exists():
 
-        # ------------------------------------------------------
-        # PRODUCT REALITY
-        #
-        # Reality must remain accessible even when
-        # inventory refresh temporarily marks products
-        # as inactive.
-        #
-        # Inventory state is exposed separately via:
-        #
-        # product.is_active
-        # product.stock_status
-        #
-        # ------------------------------------------------------
-
-        product = (
-
-            PCProduct.objects
-
-            .get(
-                unique_id=unique_id,
-                # is_active=True,
-            )
+        print(
+            "DB :",
+            repr(
+                qs.first().unique_id
+            ),
         )
 
-    except PCProduct.DoesNotExist:
-
-        return {
-
-            "meaning":
-                meaning,
-
-            "seo":
-                {},
-
-            "data": {
-
-                "found":
-                    False,
-
-                "unique_id":
-                    unique_id,
-            },
-
-            "ready":
-                True,
-        }
-
+    print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 
     # ------------------------------------------------------
     # PRODUCT REALITY
     # ------------------------------------------------------
 
+    try:
+
+        product = (
+
+            PCProduct.objects.get(
+
+                unique_id=unique_id,
+
+                # is_active=True,
+
+            )
+
+        )
+
+    except PCProduct.DoesNotExist:
+
+        print(
+            "❌ PRODUCT NOT FOUND"
+        )
+
+        return {
+
+            "meaning": meaning,
+
+            "seo": {},
+
+            "data": {
+
+                "found": False,
+
+                "unique_id": unique_id,
+
+            },
+
+            "ready": True,
+
+        }
+
+    # ------------------------------------------------------
+    # PRODUCT DATA
+    # ------------------------------------------------------
+
     EXCLUDED_FIELDS = {
 
         "semantic_runtime",
-
         "workflow_tags",
-
         "semantic_labels",
-
         "runtime_profiles",
-
         "semantic_runtime_compiled",
-
         "semantic_updated_at",
 
     }
 
-    product_data = {}
+    product_data = {
 
-    for field in product._meta.fields:
+        field.name: getattr(product, field.name)
 
-        if field.name in EXCLUDED_FIELDS:
+        for field in product._meta.fields
 
-            continue
+        if field.name not in EXCLUDED_FIELDS
 
-        product_data[
-            field.name
-        ] = getattr(
-            product,
-            field.name
-        )
+    }
 
     # ------------------------------------------------------
-    # COMPILED AUTHORITY RUNTIME
+    # RUNTIMES
     # ------------------------------------------------------
 
     compiled_runtime = (
 
         product.semantic_runtime
         or {}
-    )
 
-    # ------------------------------------------------------
-    # PRODUCT SEMANTIC RUNTIME
-    # ------------------------------------------------------
+    )
 
     product_semantic_runtime = (
 
         build_product_semantic_runtime(
             product
         )
-    )
 
-    # ------------------------------------------------------
-    # SEO
-    # ------------------------------------------------------
+    )
 
     seo = (
 
         build_product_seo(
 
-            meaning=
-                meaning,
+            meaning=meaning,
 
-            product=
-                product,
+            product=product,
+
         )
+
     )
 
     # ------------------------------------------------------
-    # PAYLOAD
+    # RESPONSE
     # ------------------------------------------------------
 
     return {
 
-        # ----------------------------------------------
-        # STATIC MEANING
-        # ----------------------------------------------
+        "meaning": meaning,
 
-        "meaning":
-            meaning,
-
-        # ----------------------------------------------
-        # SEO
-        # ----------------------------------------------
-
-        "seo":
-            seo,
-
-        # ----------------------------------------------
-        # REALITY
-        # ----------------------------------------------
+        "seo": seo,
 
         "data": {
 
-            "found":
-                True,
+            "found": True,
 
-            # --------------------------
-            # Product Reality
-            # --------------------------
+            "product": product_data,
 
-            "product":
-                product_data,
+            "compiled_runtime": compiled_runtime,
 
-            # --------------------------
-            # Semantic Authority Runtime
-            # --------------------------
+            "product_semantic_runtime": product_semantic_runtime,
 
-            "compiled_runtime":
-                compiled_runtime,
-
-            # --------------------------
-            # Product Meaning Runtime
-            # --------------------------
-
-            "product_semantic_runtime":
-                product_semantic_runtime,
         },
-
-        # ----------------------------------------------
-        # AUTHORITY METADATA
-        # ----------------------------------------------
 
         "semantic_schema_version":
 
@@ -219,7 +206,6 @@ def build_product_detail_runtime(
                 "semantic_authority"
             ),
 
-        "ready":
-            True,
-    }
+        "ready": True,
 
+    }

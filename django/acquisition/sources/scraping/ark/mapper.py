@@ -23,7 +23,7 @@ from api.models import (
 
 from .formatter_list import normalize
 from .settings import SITE_NAME
-
+from acquisition.common.trace.reality_trace import trace
 
 # ==========================================================
 # Mapper
@@ -35,94 +35,51 @@ def map_item(item: dict) -> dict:
         "observation",
         {},
     )
-
-    return {
-
-        #
-        # Source
-        #
+    
+    contract = {
 
         "site": "ARK",
 
-        #
-        # Product
-        #
+        "identity": {
+            "maker": item.get("maker", ""),
+            "brand": "",
+            "product_name": item.get("product_name", ""),
+            "model": item.get("model", ""),
+            "product_no": item.get("product_no", ""),
+            "sku": "",
+            "jan": "",
+            "pc_id": item.get("pc_id", ""),
+            "product_url": item.get("product_url", ""),
+        },
 
-        "maker": item.get(
-            "maker",
-            "",
-        ),
+        "commerce": {
+            "price": item.get("price", ""),
+            "availability": "",
+            "release_date": item.get("release_date", ""),
+        },
 
-        "product_name": item.get(
-            "product_name",
-            "",
-        ),
+        "affiliate": {
+            "url": item.get("product_url", ""),
+        },
 
-        "description": observation.get(
-            "feature",
-            "",
-        ),
+        "media": {
+            "image_url": item.get("image_url", ""),
+        },
 
-        "model": item.get(
-            "model",
-            "",
-        ),
+        "description": observation.get("feature", ""),
 
-        "product_no": item.get(
-            "product_no",
-            "",
-        ),
-
-        "pc_id": item.get(
-            "pc_id",
-            "",
-        ),
-
-        "product_url": item.get(
-            "product_url",
-            "",
-        ),
-
-        #
-        # Commerce
-        #
-
-        "price": item.get(
-            "price",
-            "",
-        ),
-
-        "release_date": item.get(
-            "release_date",
-            "",
-        ),
-
-        #
-        # Media
-        #
-
-        "image_url": item.get(
-            "image_url",
-            "",
-        ),
-
-        #
-        # Specifications
-        #
-
-        "specifications": item.get(
-            "specs",
-            {},
-        ),
-
-        #
-        # Observation
-        #
+        "specifications": item.get("specs", {}),
 
         "observation": observation,
-
     }
+    
 
+    trace(
+        stage="MAPPER",
+        data=contract,
+    )
+
+    return contract
 
 # ==========================================================
 # Runtime

@@ -10,231 +10,91 @@
  * SHIN CORE LINX
  * Product Detail Gateway
  * ============================================================================
- *
- * PURPOSE
- *
- * Transport the Backend Product Detail Runtime into the
- * Canonical Product Detail Contract.
- *
- * Backend Product Detail Runtime
- *      ↓
- * Transport
- *      ↓
- * Normalize
- *      ↓
- * Product Detail Contract
- *
- * Backend remains:
- *
- * Reality Authority
- *
- * Gateway Responsibilities
- *
- * ✓ Resolve Endpoint
- * ✓ Transport Runtime
- * ✓ Invoke Normalize
- * ✓ Observe Runtime
- *
- * Gateway SHALL NOT
- *
- * ✗ Generate Meaning
- * ✗ Generate Runtime
- * ✗ Generate Projection
- * ✗ Generate UI
- *
- * ============================================================================
  */
 
-import type {
+import type { ProductDetailRuntimeContract } from './contracts'
+import { buildEndpoint } from '../utils/buildEndpoint'
+import { safeFetch } from '../utils/safeFetch'
+import { normalizeProductDetail } from './normalize'
 
-    ProductDetailRuntimeContract,
-
-} from './contracts'
-
-import {
-
-    buildEndpoint,
-
-} from '../utils/buildEndpoint'
-
-import {
-
-    safeFetch,
-
-} from '../utils/safeFetch'
-
-import {
-
-    normalizeProductDetail,
-
-} from './normalize'
-
-/* ============================================================================
-🔥 Endpoint
-============================================================================ */
-
-const PRODUCT_DETAIL_ENDPOINT =
-
-    '/pc/products'
-
-/* ============================================================================
-🔥 Fetch Product Detail Runtime
-============================================================================ */
+const PRODUCT_DETAIL_ENDPOINT = '/pc/products'
 
 export async function fetchProductDetail(
-
     uniqueId: string,
-
 ): Promise<ProductDetailRuntimeContract> {
 
-    /* ------------------------------------------------------------------------
-    Endpoint
-    ------------------------------------------------------------------------ */
+    const encodedUniqueId =
+        encodeURIComponent(uniqueId)
+
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+    console.log('🔥 PRODUCT DETAIL INPUT')
+    console.log({
+        raw: uniqueId,
+        decoded: decodeURIComponent(uniqueId),
+        reEncoded: encodeURIComponent(decodeURIComponent(uniqueId)),
+        encodedUniqueId,
+    })
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
 
     const endpoint =
-
         buildEndpoint(
-
-            `${PRODUCT_DETAIL_ENDPOINT}/${encodeURIComponent(uniqueId)}/`
-
+            `${PRODUCT_DETAIL_ENDPOINT}/${encodedUniqueId}/`
         )
 
-    console.log(
-        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
-    )
-
-    console.log(
-        '🔥 FETCH PRODUCT DETAIL'
-    )
-
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+    console.log('🔥 FETCH PRODUCT DETAIL')
     console.log({
-
         uniqueId,
-
+        encodedUniqueId,
         endpoint,
-
     })
-
-    console.log(
-        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
-    )
-
-    /* ------------------------------------------------------------------------
-    Transport
-    ------------------------------------------------------------------------ */
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
 
     const payload =
-
         await safeFetch<ProductDetailRuntimeContract>(
-
             endpoint
-
         )
 
-    /* ------------------------------------------------------------------------
-    Raw Runtime
-    ------------------------------------------------------------------------ */
-
     console.log(
-
         '🔥 PRODUCT DETAIL RAW',
-
         payload
-
     )
-
-    /* ------------------------------------------------------------------------
-    Empty Runtime
-    ------------------------------------------------------------------------ */
 
     if (!payload) {
 
         console.warn(
-
             '⚠️ PRODUCT DETAIL EMPTY'
-
         )
 
         return normalizeProductDetail()
 
     }
 
-    /* ------------------------------------------------------------------------
-    Normalize
-    ------------------------------------------------------------------------ */
-
     const runtime =
-
         normalizeProductDetail(
-
             payload
-
         )
 
-    /* ------------------------------------------------------------------------
-    Observatory
-    ------------------------------------------------------------------------ */
-
     console.log(
-
         '🔥 PRODUCT DETAIL CONTRACT',
-
         {
-
-            found:
-
-                runtime.data.found,
-
-            unique_id:
-
-                runtime.data.product.unique_id,
-
-            name:
-
-                runtime.data.product.name,
-
-            semantic_schema_version:
-
-                runtime.semantic_schema_version,
-
-            authority_version:
-
-                runtime.authority_version,
-
-            semantic_authority:
-
-                runtime.semantic_authority,
-
-            ready:
-
-                runtime.ready,
-
+            found: runtime.data.found,
+            unique_id: runtime.data.product.unique_id,
+            name: runtime.data.product.name,
+            semantic_schema_version: runtime.semantic_schema_version,
+            authority_version: runtime.authority_version,
+            semantic_authority: runtime.semantic_authority,
+            ready: runtime.ready,
         }
-
     )
 
-    console.log(
-        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
-    )
-
-    /* ------------------------------------------------------------------------
-    Return
-    ------------------------------------------------------------------------ */
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
 
     return runtime
 
 }
 
-/* ============================================================================
-🔥 Legacy Compatibility
-============================================================================ */
-
 export const fetchProduct =
-
     fetchProductDetail
-
-/* ============================================================================
-🔥 Default Export
-============================================================================ */
 
 export default fetchProductDetail

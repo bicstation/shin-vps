@@ -70,7 +70,6 @@ class ImportBuilder:
     # =========================================================
     # Build
     # =========================================================
-
     def build(
         self,
         contract: dict[str, Any],
@@ -80,24 +79,21 @@ class ImportBuilder:
         prefix: str,
     ) -> dict[str, Any]:
 
+        identity_contract = contract.get("identity", {})
+        commerce_contract = contract.get("commerce", {})
+        affiliate_contract = contract.get("affiliate", {})
+        media_contract = contract.get("media", {})
+
         #
-        # Identity Runtime
+        # Runtime Builders
         #
 
         identity = self.identity_builder.build(contract)
 
-        #
-        # Affiliate Runtime
-        #
-
         affiliate = self.affiliate_builder.build(
-            product_url=contract.get("product_url", ""),
+            product_url=affiliate_contract.get("url", ""),
             config=affiliate_config,
         )
-
-        #
-        # Commerce Runtime
-        #
 
         commerce = self.commerce_builder.build(contract)
 
@@ -107,14 +103,10 @@ class ImportBuilder:
 
         return {
 
-            #
-            # Original Contract
-            #
-
             **contract,
 
             #
-            # Identity
+            # Identity Runtime
             #
 
             "identity": identity,
@@ -129,57 +121,47 @@ class ImportBuilder:
             # Product
             #
 
-            "name": contract.get(
-                "name",
-                contract.get(
-                    "product_name",
-                    "",
-                ),
-            ),
-
+            "name": identity_contract.get("product_name", ""),
             "description": contract.get("description", ""),
-            "model": contract.get("model", ""),
-            "product_no": contract.get("product_no", ""),
-            "release_date": contract.get("release_date"),
+            "model": identity_contract.get("model", ""),
+            "product_no": identity_contract.get("product_no", ""),
+            "release_date": commerce_contract.get("release_date", ""),
 
             #
             # Commerce
             #
 
             "commerce": commerce,
+            "price": commerce.get("price", 0),
 
-            "price": commerce.get(
-                "price",
-                contract.get("price", 0),
-            ),
+            #
+            # URLs
+            #
 
-            "url": contract.get(
-                "url",
-                contract.get("product_url", ""),
-            ),
+            "url": identity_contract.get("product_url", ""),
 
             #
             # Affiliate
             #
 
             "affiliate": affiliate,
-
             "affiliate_url": affiliate.get(
                 "affiliate_url",
-                contract.get("product_url", ""),
+                affiliate_contract.get("url", ""),
             ),
 
             #
             # Media
             #
 
-            "image_url": contract.get("image_url", ""),
-            "images": contract.get("images", []),
-            "tables": contract.get("tables", []),
+            "image_url": media_contract.get("image_url", ""),
+            "images": media_contract.get("images", []),
+            "tables": media_contract.get("tables", []),
 
             #
-            # Runtime Metadata
+            # Runtime
             #
 
             "prefix": prefix,
         }
+    

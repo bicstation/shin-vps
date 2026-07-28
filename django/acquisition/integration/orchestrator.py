@@ -20,7 +20,7 @@ from acquisition.integration.model_mapper import ImportModelMapper
 from acquisition.integration.repository import ImportRepository
 from acquisition.integration.results import ImportResults
 from acquisition.integration.stock import ImportStock
-
+from acquisition.common.trace.reality_trace import ( trace, trace_model,)
 
 class ImportOrchestrator:
 
@@ -60,11 +60,22 @@ class ImportOrchestrator:
 
                 contract = document.contract
 
+                trace(
+                    stage="CONTRACT",
+                    data=contract,
+                )
+
                 #
                 # Normalize
                 #
 
                 normalized = self.normalizer.build(contract)
+
+                trace(
+                    stage="NORMALIZED",
+                    data=normalized,
+                )
+
                 results.normalized += 1
 
                 #
@@ -77,6 +88,12 @@ class ImportOrchestrator:
                     maker=maker,
                     prefix=prefix,
                 )
+
+                trace(
+                    stage="BUILDER",
+                    data=builder_result,
+                )
+
                 results.built += 1
 
                 #
@@ -86,6 +103,12 @@ class ImportOrchestrator:
                 semantic_result = self.semantic.build(
                     builder_result,
                 )
+
+                trace(
+                    stage="SEMANTIC",
+                    data=semantic_result,
+                )
+
                 results.semantic += 1
 
                 #
@@ -96,6 +119,10 @@ class ImportOrchestrator:
                     builder_result,
                     semantic_result,
                 )
+                trace(
+                    stage="MODEL_MAPPER",
+                    data=payload,
+                )
 
                 #
                 # Repository
@@ -104,6 +131,12 @@ class ImportOrchestrator:
                 product, created = self.repository.save(
                     payload,
                 )
+                
+                trace_model(
+                    stage="PC_PRODUCT",
+                    obj=product,
+                )
+                
 
             except DataError:
                 continue
