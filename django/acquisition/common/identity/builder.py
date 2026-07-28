@@ -25,8 +25,11 @@ NOT
 """
 
 from __future__ import annotations
-from urllib.parse import urlparse, unquote
+
+from urllib.parse import unquote, urlparse
+
 from acquisition.common.tsv.identity_classifier import classify_identity
+
 
 class IdentityBuilder:
 
@@ -37,7 +40,8 @@ class IdentityBuilder:
         """
 
         return (
-            value.strip()
+            str(value)
+            .strip()
             .replace(" ", "_")
             .replace("/", "_")
         )
@@ -64,9 +68,16 @@ class IdentityBuilder:
         maker: str,
         product_url: str,
         product_name: str,
+        product_no: str,
     ) -> str:
         """
         Build Unique ID.
+
+        Priority
+
+        1. Shopify Handle
+        2. Product Number
+        3. Product Name
         """
 
         prefix = maker.upper()
@@ -77,6 +88,13 @@ class IdentityBuilder:
             return (
                 f"{prefix}_"
                 f"{cls.normalize_identifier(handle)}"
+            )
+
+        if product_no:
+            return (
+                f"{prefix}_"
+                f"{cls.normalize_identifier(product_name)}_"
+                f"{cls.normalize_identifier(product_no)}"
             )
 
         if product_name:
@@ -129,6 +147,10 @@ class IdentityBuilder:
                 ),
                 product_name=contract.get(
                     "product_name",
+                    "",
+                ),
+                product_no=contract.get(
+                    "product_no",
                     "",
                 ),
             ),

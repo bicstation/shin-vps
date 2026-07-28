@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # /home/maya/shin-dev/shin-vps/django/acquisition/sources/scraping/ark/fetch_list.py
 
 #!/usr/bin/env python3
@@ -24,6 +25,16 @@ from .settings import (
 )
 
 LIST_URL = f"{BASE_URL}/bto/list/"
+
+# ==========================================================
+# DEBUG
+# ==========================================================
+#
+# None : Fetch all pages
+# 1    : First page only
+# 3    : First 3 pages
+#
+MAX_PAGES = None
 
 
 def get_total_pages(soup: BeautifulSoup) -> int:
@@ -58,7 +69,11 @@ def fetch():
 
     while True:
 
-        url = LIST_URL if page == 1 else f"{LIST_URL}?page={page}"
+        url = (
+            LIST_URL
+            if page == 1
+            else f"{LIST_URL}?page={page}"
+        )
 
         response = requests.get(
             url,
@@ -102,6 +117,20 @@ def fetch():
         )
 
         page += 1
+
+        # ==================================================
+        # DEBUG LIMIT
+        # ==================================================
+
+        if (
+            MAX_PAGES is not None
+            and page > MAX_PAGES
+        ):
+            break
+
+        # ==================================================
+        # NORMAL END
+        # ==================================================
 
         if page > total_pages:
             break

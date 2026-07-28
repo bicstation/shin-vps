@@ -143,10 +143,16 @@ def run():
         "document_key",
     )
 
+    print(f"Documents : {documents.count()}")
+
     for document in documents:
 
         payload = normalize(
             document.content,
+        )
+
+        print(
+            f"{document.document_key} : {len(payload)} products"
         )
 
         for item in payload:
