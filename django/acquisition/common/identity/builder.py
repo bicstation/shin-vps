@@ -1,5 +1,3 @@
-# /home/maya/shin-dev/shin-vps/django/acquisition/common/identity/builder.py
-
 #!/usr/bin/env python3
 """
 ==============================================================================
@@ -8,19 +6,6 @@ FILE:
 
 SHIN CORE LINX
 Acquisition Identity Runtime
-
-Responsibilities
-
-- Build Identity Runtime
-- Generate Unique ID
-- Build Identity Contract
-
-NOT
-
-- TSV Loading
-- Affiliate
-- Commerce
-- Semantic
 ==============================================================================
 """
 
@@ -35,10 +20,6 @@ class IdentityBuilder:
 
     @staticmethod
     def normalize_identifier(value: str) -> str:
-        """
-        Normalize identifier.
-        """
-
         return (
             str(value)
             .strip()
@@ -48,9 +29,6 @@ class IdentityBuilder:
 
     @staticmethod
     def extract_handle(url: str) -> str:
-        """
-        Extract Shopify Handle.
-        """
 
         if not url:
             return ""
@@ -70,25 +48,13 @@ class IdentityBuilder:
         product_name: str,
         product_no: str,
     ) -> str:
-        """
-        Build Unique ID.
-
-        Priority
-
-        1. Shopify Handle
-        2. Product Number
-        3. Product Name
-        """
 
         prefix = maker.upper()
 
         handle = cls.extract_handle(product_url)
 
         if handle:
-            return (
-                f"{prefix}_"
-                f"{cls.normalize_identifier(handle)}"
-            )
+            return f"{prefix}_{cls.normalize_identifier(handle)}"
 
         if product_no:
             return (
@@ -110,66 +76,36 @@ class IdentityBuilder:
         cls,
         contract: dict,
     ) -> dict:
-        """
-        Build Identity Runtime.
-        """
 
-        maker = contract.get(
-            "maker",
-            "",
-        )
+        maker = contract.get("maker") or contract.get("site", "")
 
-        if not maker:
-            maker = contract.get(
-                "site",
-                "",
-            )
+        identity_contract = contract.get("identity", {})
+
+        product_name = identity_contract.get("product_name", "")
+        product_no = identity_contract.get("product_no", "")
+        product_url = identity_contract.get("product_url", "")
 
         identity = classify_identity(
             maker=maker,
-            product_name=contract.get(
-                "product_name",
-                "",
-            ),
-            description=contract.get(
-                "description",
-                "",
-            ),
+            product_name=product_name,
+            description=contract.get("description", ""),
         )
 
         return {
 
             "unique_id": cls.build_unique_id(
                 maker=maker,
-                product_url=contract.get(
-                    "product_url",
-                    "",
-                ),
-                product_name=contract.get(
-                    "product_name",
-                    "",
-                ),
-                product_no=contract.get(
-                    "product_no",
-                    "",
-                ),
+                product_url=product_url,
+                product_name=product_name,
+                product_no=product_no,
             ),
 
             "maker": maker,
 
-            "brand": identity.get(
-                "brand",
-                "",
-            ),
+            "brand": identity.get("brand", ""),
 
-            "series": identity.get(
-                "series",
-                "",
-            ),
+            "series": identity.get("series", ""),
 
-            "collaboration": identity.get(
-                "collaboration",
-                "",
-            ),
+            "collaboration": identity.get("collaboration", ""),
 
         }

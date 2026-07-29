@@ -37,11 +37,8 @@ NOT
 
 
 from __future__ import annotations
-
 from typing import Any
-
 from api.models import PCProduct
-
 
 class ImportRepository:
     """
@@ -75,6 +72,18 @@ class ImportRepository:
             unique_id=unique_id,
             defaults=defaults,
         )
+        
+        print("=" * 60)
+        print("💾 AFTER UPDATE_OR_CREATE")
+        print("=" * 60)
+        print("payload.price :", defaults.get("price"))
+        print("object.price  :", product.price)
+
+        product.refresh_from_db()
+
+        print("db.price      :", product.price)
+        print("=" * 60)
+        
 
         return product, created
 

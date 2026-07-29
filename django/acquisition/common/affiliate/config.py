@@ -1,4 +1,4 @@
-# /home/maya/shin-vps/django/imports/common/config.py
+# /home/maya/shin-dev/shin-vps/django/acquisition/common/affiliate/config.py
 
 #!/usr/bin/env python3
 """

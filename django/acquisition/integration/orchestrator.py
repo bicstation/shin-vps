@@ -21,6 +21,7 @@ from acquisition.integration.repository import ImportRepository
 from acquisition.integration.results import ImportResults
 from acquisition.integration.stock import ImportStock
 from acquisition.common.trace.reality_trace import ( trace, trace_model,)
+from django.forms.models import model_to_dict
 
 class ImportOrchestrator:
 
@@ -127,6 +128,14 @@ class ImportOrchestrator:
                 #
                 # Repository
                 #
+                
+                print("=" * 60)
+                print("💰 REPOSITORY INPUT")
+                print("=" * 60)
+                print("unique_id :", payload["unique_id"])
+                print("price     :", payload.get("price"))
+                print("=" * 60)
+                
 
                 product, created = self.repository.save(
                     payload,
@@ -137,6 +146,21 @@ class ImportOrchestrator:
                     obj=product,
                 )
                 
+                product.refresh_from_db()
+
+                print()
+                print("=" * 70)
+                print("🖥️ FINAL PCPRODUCT")
+                print("=" * 70)
+
+                for field in product._meta.fields:
+                    name = field.name
+                    print(
+                        f"{name:<28}: {getattr(product, name)}"
+                    )
+
+                print("=" * 70)
+
 
             except DataError:
                 continue

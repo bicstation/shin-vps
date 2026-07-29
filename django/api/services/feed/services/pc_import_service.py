@@ -4,12 +4,24 @@
 # =========================================================
 
 from django.utils import timezone
+
+from acquisition.integration.pipeline import (
+    IntegrationPipeline,
+)
+
 from api.models.pc_products import PCProduct
-from api.services.feed.parsers.linkshare_feed_parser import ( LinkshareFeedParser,)
-from api.services.feed.normalizers.pc_feed_normalizer import ( PCFeedNormalizer, )
-from api.services.feed.builders.pc_product_builder import ( PCProductBuilder, )
-from api.services.feed.semantic.builders.semantic_builder import ( SemanticBuilder,)
-from api.services.feed.semantic.builders.semantic_runtime_builder import ( SemanticRuntimeBuilder,)
+from api.services.feed.normalizers.pc_feed_normalizer import (
+    PCFeedNormalizer,
+)
+from api.services.feed.parsers.linkshare_feed_parser import (
+    LinkshareFeedParser,
+)
+from api.services.feed.semantic.builders.semantic_builder import (
+    SemanticBuilder,
+)
+from api.services.feed.semantic.builders.semantic_runtime_builder import (
+    SemanticRuntimeBuilder,
+)
 
 
 class PCImportService:
@@ -18,14 +30,23 @@ class PCImportService:
     # INIT
     # =====================================================
 
-
     def __init__(self):
 
-        self.parser = ( LinkshareFeedParser()  )
-        self.normalizer = ( PCFeedNormalizer() )
-        self.builder = ( PCProductBuilder() )
-        self.semantic_builder = ( SemanticBuilder() )
-        self.runtime_builder = ( SemanticRuntimeBuilder() )
+        self.parser = LinkshareFeedParser()
+        self.normalizer = PCFeedNormalizer()
+
+        #
+        # Acquisition Integration Pipeline
+        #
+
+        self.pipeline = IntegrationPipeline()
+
+        #
+        # Semantic Runtime
+        #
+
+        self.semantic_builder = SemanticBuilder()
+        self.runtime_builder = SemanticRuntimeBuilder()
 
     # =====================================================
     # IMPORT
@@ -39,7 +60,7 @@ class PCImportService:
         prefix,
 
     ):
-        
+
         parsed = (
             self.parser.parse(
                 source
@@ -53,20 +74,45 @@ class PCImportService:
             )
         )
 
+        #
+        # Acquisition Pipeline
+        #
+
         payload = (
 
-            self.builder.build(
+            self.pipeline.build_payload(
+
                 normalized=normalized,
                 maker=maker,
                 prefix=prefix,
+
             )
+
         )
+        # =====================================================
+        # DEBUG :: PRICE TRACE
+        # =====================================================
+
+        print()
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        print("💰 PRICE TRACE :: PIPELINE")
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        print(f"unique_id        : {payload.get('unique_id')}")
+        print(f"product_no       : {payload.get('product_no')}")
+        print(f"name             : {payload.get('name')}")
+        print(f"price            : {payload.get('price')}")
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        print()
         
-        # print(payload)
-        
+
+        # =====================================================
+        # Semantic Runtime
+        # =====================================================
+
         semantic_payload = (
 
             self.semantic_builder.build(
+
                 type(
                     "SemanticObject",
                     (),
@@ -76,22 +122,59 @@ class PCImportService:
             )
 
         )
+        
+        print()
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        print("💰 PRICE TRACE :: AFTER SEMANTIC")
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        print(f"payload.price    : {payload.get('price')}")
+        print(f"semantic.price   : {semantic_payload.get('price', '<none>')}")
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        print()
+        
+        
 
         payload.update(
             semantic_payload
         )
         
+        print()
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        print("💰 PRICE TRACE :: AFTER UPDATE(SEMANTIC)")
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        print(f"payload.price    : {payload.get('price')}")
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        print()
+
         runtime_payload = (
+
             self.runtime_builder.build(
                 semantic_payload
             )
 
         )
+        
+        print()
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        print("💰 PRICE TRACE :: AFTER RUNTIME")
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        print(f"payload.price    : {payload.get('price')}")
+        print(f"runtime.price    : {runtime_payload.get('price', '<none>')}")
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        print()
 
         payload.update(
             runtime_payload
         )
         
+        print()
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        print("💰 PRICE TRACE :: AFTER UPDATE(RUNTIME)")
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        print(f"payload.price    : {payload.get('price')}")
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        print()
+
         payload["semantic_runtime"] = {
 
             "product_type":
@@ -128,17 +211,31 @@ class PCImportService:
                 ),
 
         }
-        
+
         payload["semantic_schema_version"] = 1
 
         payload["semantic_updated_at"] = (
             timezone.now()
         )
-        
+
         # Semantic Runtime は compile_semantic_runtime が正式生成する
         # payload["semantic_runtime_compiled"] = True
-        
+
         payload["affiliate_updated_at"] = timezone.now()
+
+        # =====================================================
+        # Persist
+        # =====================================================
+        
+        print()
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        print("💰 PRICE TRACE :: BEFORE SAVE")
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        print(f"unique_id        : {payload.get('unique_id')}")
+        print(f"product_no       : {payload.get('product_no')}")
+        print(f"price            : {payload.get('price')}")
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        print()
 
         obj, created = (
 
@@ -153,6 +250,16 @@ class PCImportService:
             )
 
         )
+        
+        print()
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        print("💰 PRICE TRACE :: AFTER SAVE")
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        print(f"payload.price    : {payload.get('price')}")
+        print(f"model.price      : {obj.price}")
+        print(f"created          : {created}")
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        print()
 
         return {
 
@@ -189,11 +296,15 @@ class PCImportService:
             try:
 
                 result = (
+
                     self.import_product(
+
                         source=source,
                         maker=maker,
                         prefix=prefix,
+
                     )
+
                 )
 
                 if result["created"]:

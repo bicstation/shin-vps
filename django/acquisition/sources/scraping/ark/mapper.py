@@ -21,9 +21,20 @@ from api.models import (
     ImportDocument,
 )
 
+from acquisition.common.affiliate.builder import (
+    AffiliateBuilder,
+)
+
+from acquisition.common.trace.reality_trace import (
+    trace,
+)
+
 from .formatter_list import normalize
-from .settings import SITE_NAME
-from acquisition.common.trace.reality_trace import trace
+
+from .settings import (
+    SITE_NAME,
+    AFFILIATE,
+)
 
 # ==========================================================
 # Mapper
@@ -35,7 +46,17 @@ def map_item(item: dict) -> dict:
         "observation",
         {},
     )
+
     
+    affiliate = AffiliateBuilder.build(
+        product_url=item.get(
+            "product_url",
+            "",
+        ),
+        config=AFFILIATE,
+    )
+    
+
     contract = {
 
         "site": "ARK",
@@ -58,21 +79,28 @@ def map_item(item: dict) -> dict:
             "release_date": item.get("release_date", ""),
         },
 
-        "affiliate": {
-            "url": item.get("product_url", ""),
-        },
+        #
+        # Affiliate Contract
+        #
+
+        "affiliate": affiliate,
 
         "media": {
             "image_url": item.get("image_url", ""),
         },
 
-        "description": observation.get("feature", ""),
+        "description": observation.get(
+            "feature",
+            "",
+        ),
 
-        "specifications": item.get("specs", {}),
+        "specifications": item.get(
+            "specs",
+            {},
+        ),
 
         "observation": observation,
     }
-    
 
     trace(
         stage="MAPPER",
@@ -80,6 +108,7 @@ def map_item(item: dict) -> dict:
     )
 
     return contract
+
 
 # ==========================================================
 # Runtime
