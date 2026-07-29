@@ -9,9 +9,13 @@ Fetch Product HTML
 from __future__ import annotations
 
 import csv
+import random
+import time
+
 import requests
 
 from api.models.acquisition_document import AcquisitionDocument
+
 from .settings import (
     PRODUCT_LIST_TSV,
     USER_AGENT,
@@ -34,7 +38,7 @@ def load_products():
         ]
 
 
-def fetch():
+def fetch(force: bool = False):
 
     products = load_products()
 
@@ -58,12 +62,64 @@ def fetch():
 
         print(f"[{index}/{len(products)}] {slug}")
 
+        # --------------------------------------------------
+        # Cache Check
+        # --------------------------------------------------
+
+        if not force:
+
+            exists = AcquisitionDocument.objects.filter(
+                source_name="geekom",
+                document_type="product",
+                document_key=slug,
+            ).exists()
+
+            if exists:
+
+                success.append(slug)
+
+                print("  Cache  : HIT")
+                print()
+
+                continue
+
         try:
 
-            response = session.get(
-                row["url"],
-                timeout=TIMEOUT,
-            )
+            #
+            # アクセス間隔
+            #
+            if index > 1:
+                wait = random.uniform(20.0, 30.0)
+                print(f"  😴 Sleep {wait:.1f}s")
+                time.sleep(wait)
+
+            response = None
+
+            #
+            # 最大3回リトライ
+            #
+            for attempt in range(3):
+
+                response = session.get(
+                    row["url"],
+                    timeout=TIMEOUT,
+                )
+
+                if response.status_code == 200:
+                    break
+
+                if response.status_code == 429:
+
+                    wait = 20 * (attempt + 1)
+
+                    print(f"  ⏳ 429 Retry ({wait}s)")
+
+                    time.sleep(wait)
+
+                    continue
+
+                response.raise_for_status()
+
             response.raise_for_status()
 
             AcquisitionDocument.objects.update_or_create(
@@ -83,12 +139,14 @@ def fetch():
 
             success.append(slug)
 
+            print("  Cache  : MISS")
             print(f"  ✓ {response.status_code}")
             print(f"  {len(response.content):,} bytes")
 
         except Exception as e:
 
             failed.append((slug, str(e)))
+
             print(f"  ✗ {e}")
 
         print()
@@ -99,8 +157,8 @@ def fetch():
     print("=" * 60)
 
 
-def main():
-    fetch()
+def main(force: bool = False):
+    fetch(force=force)
 
 
 if __name__ == "__main__":

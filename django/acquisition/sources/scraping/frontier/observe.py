@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """
+==============================================================================
 observe.py
 
-GEEKOM Observation Runtime
+FRONTIER Observation Runtime
 
 AcquisitionDocument
         │
@@ -17,6 +18,7 @@ ObservationDocument
 
 Reality First
 Observation First
+==============================================================================
 """
 
 from __future__ import annotations
@@ -212,13 +214,13 @@ def observe(html: str):
 def run():
 
     print("=" * 60)
-    print("👀 GEEKOM OBSERVATION")
+    print("👀 FRONTIER OBSERVATION")
     print("=" * 60)
 
     trace_pipeline("Observation")
 
     documents = AcquisitionDocument.objects.filter(
-        source_name="geekom",
+        source_name="frontier",
         document_type="product",
     ).iterator()
 

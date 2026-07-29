@@ -8,22 +8,15 @@ Discover valid Collection URLs from Root Reality.
 from __future__ import annotations
 
 import csv
-import re
 
-import requests
 from bs4 import BeautifulSoup
 
 from .settings import (
     BASE_URL,
-    TIMEOUT,
-    USER_AGENT,
     ROOT_TSV,
     COLLECTIONS_TSV,
 )
-
-HEADERS = {
-    "User-Agent": USER_AGENT,
-}
+from api.models import AcquisitionDocument
 
 
 def load_roots() -> list[dict[str, str]]:
@@ -45,18 +38,21 @@ def load_roots() -> list[dict[str, str]]:
         ]
 
 
-def fetch_html(url: str) -> str:
-    """Fetch HTML."""
+def load_root_html(slug: str) -> str | None:
+    """Load cached Root HTML."""
 
-    response = requests.get(
-        url,
-        headers=HEADERS,
-        timeout=TIMEOUT,
+    document = (
+        AcquisitionDocument.objects.filter(
+            source_name="geekom",
+            document_type="root",
+            document_key=slug,
+        ).first()
     )
 
-    response.raise_for_status()
+    if document is None:
+        return None
 
-    return response.text
+    return document.content
 
 
 def extract_collections(html: str) -> list[str]:
@@ -76,57 +72,7 @@ def extract_collections(html: str) -> list[str]:
         )
     }
 
-    paths.update(
-        f"/collections/{slug}"
-        for slug in re.findall(
-            r"/collections/([A-Za-z0-9_-]+)",
-            html,
-        )
-        if slug != "all"
-    )
-
     return sorted(paths)
-
-
-def validate_collections(paths: list[str]) -> list[str]:
-    """Keep only valid collections."""
-
-    valid = []
-
-    for path in paths:
-
-        url = f"{BASE_URL}{path}"
-
-        try:
-
-            response = requests.get(
-                url,
-                headers=HEADERS,
-                timeout=TIMEOUT,
-                allow_redirects=True,
-            )
-
-            if response.status_code != 200:
-                continue
-
-            final_path = response.url.replace(BASE_URL, "").rstrip("/")
-
-            if not final_path.startswith("/collections/"):
-                continue
-
-            if final_path in {
-                "/collections",
-                "/collections/all",
-            }:
-                continue
-
-            valid.append(final_path)
-
-        except Exception:
-
-            continue
-
-    return sorted(set(valid))
 
 
 def slug_to_name(slug: str) -> str:
@@ -187,18 +133,15 @@ def main() -> None:
 
         print(f"🌐 {root['url']}")
 
-        html = fetch_html(
-            root["url"].rstrip("/")
-        )
+        html = load_root_html(root["slug"])
 
-        candidates = extract_collections(html)
+        if not html:
+            print(f"❌ Root HTML not found : {root['slug']}")
+            continue
 
-        print(f"Candidates : {len(candidates)}")
+        collections = extract_collections(html)
 
-        collections = validate_collections(
-            candidates
-        )
-
+        print(f"Candidates : {len(collections)}")
         print(f"Valid      : {len(collections)}")
         print()
 

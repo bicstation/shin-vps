@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 """
-mapper.py
-
 GEEKOM Mapper Runtime
 
 ObservationDocument
@@ -11,49 +9,154 @@ Import Contract
         │
         ▼
 ImportDocument
-
-Reality First
-Observation First
-Translation Authority
 """
 
 from __future__ import annotations
+
+import csv
 
 from api.models import (
     ObservationDocument,
     ImportDocument,
 )
 
+from acquisition.common.affiliate.builder import (
+    AffiliateBuilder,
+)
+
+from acquisition.common.trace.reality_trace import (
+    trace,
+    trace_model,
+    trace_pipeline,
+)
+
+from .settings import (
+    SITE_NAME,
+    AFFILIATE,
+    PRODUCT_LIST_TSV,
+)
+
+
+# ==========================================================
+# Price Runtime
+# ==========================================================
+
+def load_price_map() -> dict[str, str]:
+    """Load PRODUCT_LIST_TSV."""
+
+    with PRODUCT_LIST_TSV.open(
+        "r",
+        encoding="utf-8",
+        newline="",
+    ) as f:
+
+        return {
+            row["slug"]: row.get("price", "")
+            for row in csv.DictReader(
+                f,
+                delimiter="\t",
+            )
+        }
+
 
 # ==========================================================
 # Mapper
 # ==========================================================
 
-def map_observation(observation: dict) -> dict:
+def map_observation(
+    observation: dict,
+    *,
+    document_key: str,
+    price: str,
+) -> dict:
 
-    images = observation.get("images", [])
+    affiliate = AffiliateBuilder.build(
+        product_url=observation.get(
+            "url",
+            "",
+        ),
+        config=AFFILIATE,
+    )
 
-    return {
+    contract = {
 
         #
         # Source
         #
 
-        "site": "GEEKOM",
+        "site": SITE_NAME,
 
         #
-        # Product
+        # Identity
         #
 
-        "product_name": observation.get(
-            "title",
-            "",
-        ),
+        "identity": {
 
-        "product_url": observation.get(
-            "url",
-            "",
-        ),
+            "maker": SITE_NAME,
+
+            "brand": "",
+
+            "product_name": observation.get(
+                "title",
+                "",
+            ),
+
+            "model": "",
+
+            "product_no": "",
+
+            "sku": "",
+
+            "jan": "",
+
+            "pc_id": document_key,
+
+            "product_url": observation.get(
+                "url",
+                "",
+            ),
+
+        },
+
+        #
+        # Commerce
+        #
+
+        "commerce": {
+
+            "price": price,
+
+            "stock": observation.get(
+                "stock",
+                "",
+            ),
+
+            "delivery": "",
+
+        },
+
+        #
+        # Affiliate
+        #
+
+        "affiliate": affiliate,
+
+        #
+        # Media
+        #
+
+        "media": {
+
+            "image_url": observation.get(
+                "main_image",
+                "",
+            ),
+
+        },
+
+        #
+        # Description
+        #
 
         "description": observation.get(
             "description",
@@ -61,24 +164,22 @@ def map_observation(observation: dict) -> dict:
         ),
 
         #
-        # Media
+        # Specifications
         #
 
-        "image_url": observation.get(
-            "main_image",
-            "",
-        ),
+        "specifications": {
 
-        "images": images,
+            "tables": observation.get(
+                "tables",
+                [],
+            ),
 
-        #
-        # Reality
-        #
+            "images": observation.get(
+                "images",
+                [],
+            ),
 
-        "tables": observation.get(
-            "tables",
-            [],
-        ),
+        },
 
         #
         # Observation
@@ -88,31 +189,49 @@ def map_observation(observation: dict) -> dict:
 
     }
 
+    trace(
+        "Import Contract",
+        contract,
+    )
+
+    return contract
+
 
 # ==========================================================
 # Runtime
 # ==========================================================
 
-def run():
+def run() -> None:
 
     print("=" * 60)
     print("🗺️ GEEKOM MAPPER")
     print("=" * 60)
 
-    documents = ObservationDocument.objects.filter(
-        source_name="geekom",
-        document_type="product",
-    ).iterator()
+    trace_pipeline("Mapper")
+
+    price_map = load_price_map()
 
     success = 0
 
+    documents = ObservationDocument.objects.filter(
+        source_name=SITE_NAME,
+        document_type="product",
+    ).iterator()
+
     for document in documents:
+
+        price = price_map.get(
+            document.document_key,
+            "",
+        )
 
         contract = map_observation(
             document.observation,
+            document_key=document.document_key,
+            price=price,
         )
 
-        ImportDocument.objects.update_or_create(
+        obj, _ = ImportDocument.objects.update_or_create(
             source_name=document.source_name,
             document_type=document.document_type,
             document_key=document.document_key,
@@ -121,17 +240,19 @@ def run():
             },
         )
 
-        success += 1
+        trace_model(
+            "ImportDocument",
+            obj,
+        )
 
-        print(f"✓ {document.document_key}")
+        success += 1
 
     print("=" * 60)
     print(f"SUCCESS : {success}")
     print("=" * 60)
 
 
-def main():
-
+def main() -> None:
     run()
 
 

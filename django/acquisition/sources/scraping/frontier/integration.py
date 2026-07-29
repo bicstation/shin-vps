@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-OZ GAMING Integration Runtime
+==============================================================================
+FRONTIER Integration Runtime
 
 ImportDocument
         │
@@ -12,15 +13,22 @@ Integration Runtime
         │
         ▼
 PCProduct
+
+Reality First
+Translation Authority
+==============================================================================
 """
 
 from __future__ import annotations
 
 from api.models import ImportDocument
 
-from acquisition.integration.import_service import (
-    ImportService,
+from acquisition.common.trace.reality_trace import (
+    trace_pipeline,
+    trace_model,
 )
+
+from acquisition.integration.import_service import ImportService
 
 from .settings import (
     AFFILIATE,
@@ -34,8 +42,10 @@ from .settings import (
 
 def run() -> None:
 
+    trace_pipeline("INTEGRATION")
+
     print("=" * 60)
-    print("🔗 OZ GAMING INTEGRATION")
+    print("🔗 FRONTIER INTEGRATION")
     print("=" * 60)
 
     documents = ImportDocument.objects.filter(
@@ -50,6 +60,11 @@ def run() -> None:
         prefix=SITE_NAME.upper(),
     )
 
+    trace_model(
+        stage="INTEGRATION",
+        obj=results,
+    )
+
     print("-" * 60)
     print(f"Loaded  : {results.loaded}")
     print(f"Created : {results.created}")
@@ -62,10 +77,8 @@ def run() -> None:
 # ==========================================================
 
 def main() -> None:
-
     run()
 
 
 if __name__ == "__main__":
-
     main()

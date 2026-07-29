@@ -1,77 +1,39 @@
 #!/usr/bin/env python3
 """
-==============================================================================
-OZ GAMING Pipeline
-
-Reality
-    │
-    ▼
-Fetch
-    │
-    ▼
-AcquisitionDocument
-    │
-    ▼
-Mapper
-    │
-    ▼
-ImportDocument
-    │
-    ▼
-Integration
-    │
-    ▼
-PCProduct
-==============================================================================
-
-Responsibilities
-----------------
-1. Fetch Reality
-2. Build Import Documents
-3. Import Products
+OZ GAMING Acquisition Pipeline
 """
 
 from __future__ import annotations
 
 from .fetch_list import fetch
-from .mapper import run as map_runtime
-from .integration import run as import_runtime
+from .mapper import main as mapper
+from .integration import main as integration
 
-
-# ==========================================================
-# Pipeline
-# ==========================================================
 
 def run():
 
     print()
     print("=" * 70)
-    print("🚀 OZ GAMING PIPELINE")
+    print("🚀 OZ GAMING ACQUISITION PIPELINE")
     print("=" * 70)
-    print()
 
     #
-    # Step 1
+    # Acquisition
     #
 
-    print("[1/3] Reality Fetch")
     fetch()
 
     #
-    # Step 2
+    # Mapping
     #
 
-    print()
-    print("[2/3] Build Import Documents")
-    map_runtime()
+    mapper()
 
     #
-    # Step 3
+    # Integration
     #
 
-    print()
-    print("[3/3] Import Products")
-    import_runtime()
+    integration()
 
     print()
     print("=" * 70)
@@ -79,15 +41,5 @@ def run():
     print("=" * 70)
 
 
-# ==========================================================
-# Main
-# ==========================================================
-
-def main():
-
-    run()
-
-
 if __name__ == "__main__":
-
-    main()
+    run()

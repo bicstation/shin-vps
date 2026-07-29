@@ -178,6 +178,18 @@ def main():
         )
 
         for item in discovered.values():
+            
+            # title = item.get("title", "").lower()
+
+            # if any(keyword in title for keyword in [
+            #     "usb",
+            #     "hub",
+            #     "dock",
+            #     "adapter",
+            #     "ケーブル",
+            #     "充電器",
+            # ]):
+            #     continue
 
             products.setdefault(
                 item["slug"],

@@ -21,7 +21,7 @@ from .settings import (
 )
 
 
-def fetch() -> None:
+def fetch(force: bool = False) -> None:
 
     with ROOT_TSV.open(
         "r",
@@ -54,6 +54,25 @@ def fetch() -> None:
 
         print(f"[{index}/{len(rows)}] {slug}")
 
+        # --------------------------------------------------
+        # Cache Check
+        # --------------------------------------------------
+
+        if not force:
+
+            exists = AcquisitionDocument.objects.filter(
+                source_name="geekom",
+                document_type="root",
+                document_key=slug,
+            ).exists()
+
+            if exists:
+
+                print("  Cache  : HIT")
+                print()
+
+                continue
+
         try:
 
             response = session.get(
@@ -79,6 +98,7 @@ def fetch() -> None:
                 },
             )
 
+            print("  Cache  : MISS")
             print(f"  Status : {response.status_code}")
             print(f"  Size   : {len(response.content):,} bytes")
 
@@ -93,8 +113,8 @@ def fetch() -> None:
     print("=" * 60)
 
 
-def main() -> None:
-    fetch()
+def main(force: bool = False) -> None:
+    fetch(force=force)
 
 
 if __name__ == "__main__":

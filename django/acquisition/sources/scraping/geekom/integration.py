@@ -5,17 +5,22 @@ FILE:
     acquisition/sources/scraping/geekom/integration.py
 
 SHIN CORE LINX
-GEEKOM Integration Runtime
 
-Pipeline
+GEEKOM Integration Runtime
 
 ImportDocument
         │
         ▼
-Import Builder
+ImportService
+        │
+        ▼
+Integration Runtime
         │
         ▼
 PCProduct
+
+Reality First
+Translation Authority
 ==============================================================================
 """
 
@@ -23,7 +28,12 @@ from __future__ import annotations
 
 from api.models import ImportDocument
 
-from acquisition.integration.builder import ImportBuilder
+from acquisition.common.trace.reality_trace import (
+    trace_pipeline,
+    trace_model,
+)
+
+from acquisition.integration.import_service import ImportService
 
 from .settings import (
     AFFILIATE,
@@ -32,66 +42,38 @@ from .settings import (
 
 
 # ==========================================================
-# Builder
-# ==========================================================
-
-builder = ImportBuilder()
-
-
-# ==========================================================
-# Integration
-# ==========================================================
-
-def integrate(
-    contract: dict,
-) -> dict:
-    """
-    Build Integration Payload.
-    """
-
-    return builder.build(
-        contract=contract,
-        affiliate_config=AFFILIATE,
-        maker=SITE_NAME,
-        prefix=SITE_NAME.upper(),
-    )
-
-
-# ==========================================================
 # Runtime
 # ==========================================================
 
-def run():
+def run() -> None:
 
     print("=" * 60)
     print("🔗 GEEKOM INTEGRATION")
     print("=" * 60)
 
+    trace_pipeline("Integration")
+
     documents = ImportDocument.objects.filter(
-        source_name="geekom",
+        source_name=SITE_NAME,
         document_type="product",
-    ).iterator()
+    )
 
-    success = 0
+    results = ImportService.run(
+        documents=documents,
+        affiliate_config=AFFILIATE,
+        maker=SITE_NAME,
+        prefix=SITE_NAME.upper(),
+    )
 
-    for document in documents:
-
-        payload = integrate(
-            document.contract,
-        )
-
-        #
-        # PCProduct登録
-        #
-        # ここは ImportBuilder が担当
-        #
-
-        success += 1
-
-        print(f"✓ {document.document_key}")
+    trace_model(
+        "Integration Result",
+        results,
+    )
 
     print("-" * 60)
-    print(f"SUCCESS : {success}")
+    print(f"Loaded  : {results.loaded}")
+    print(f"Created : {results.created}")
+    print(f"Updated : {results.updated}")
     print("=" * 60)
 
 
@@ -99,8 +81,7 @@ def run():
 # Main
 # ==========================================================
 
-def main():
-
+def main() -> None:
     run()
 
 

@@ -1,21 +1,9 @@
-# /home/maya/shin-vps/django/acquisition/sources/scraping/ozgaming/formatter_list.py
-
 #!/usr/bin/env python3
 """
-==============================================================================
 OZ GAMING List Formatter
 
-AcquisitionDocument HTML
-        │
-        ▼
-Normalize
-        │
-        ▼
-list[dict]
-
-Reality First
-Observation First
-==============================================================================
+Normalize AcquisitionDocument(list)
+into runtime payload.
 """
 
 from __future__ import annotations
@@ -25,7 +13,11 @@ from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup
 
-BASE_URL = "https://www.ozgaming-pcshop.com"
+from acquisition.common.trace.reality_trace import (
+    trace,
+)
+
+from .settings import BASE_URL
 
 
 # ==========================================================
@@ -35,9 +27,12 @@ BASE_URL = "https://www.ozgaming-pcshop.com"
 def text(node):
 
     return (
-        node.get_text(" ", strip=True)
-        if node
-        else ""
+        ""
+        if node is None
+        else node.get_text(
+            " ",
+            strip=True,
+        )
     )
 
 
@@ -75,7 +70,9 @@ def parse_spec(
             1,
         )
 
-        specs[key.strip()] = value.strip()
+        specs[
+            key.strip()
+        ] = value.strip()
 
     return specs
 
@@ -93,19 +90,17 @@ def normalize(
         "html.parser",
     )
 
-    cards = soup.select(
+    results = []
+
+    for card in soup.select(
         "li.item-list",
-    )
-
-    payload = []
-
-    for card in cards:
+    ):
 
         link = card.select_one(
             "a[href]",
         )
 
-        if not link:
+        if link is None:
             continue
 
         product_url = urljoin(
@@ -130,66 +125,73 @@ def normalize(
             else ""
         )
 
-        payload.append(
-
-            {
-
-                "maker": "OZ GAMING",
-
-                "unique_id": extract_unique_id(
-                    product_url,
-                ),
-
-                "product_url": product_url,
-
-                "image_url": (
-                    urljoin(
-                        BASE_URL,
-                        image.get(
-                            "src",
-                            "",
-                        ),
-                    )
-                    if image
-                    else ""
-                ),
-
-                "product_name": text(
-                    card.select_one(
-                        ".item-list-name",
-                    )
-                ),
-
-                "price": text(
-                    card.select_one(
-                        ".item-list-price",
-                    )
-                ),
-
-                "stock": text(
-                    card.select_one(
-                        ".item-list-stock",
-                    )
-                ),
-
-                "delivery": text(
-                    card.select_one(
-                        ".item-list-delivery",
-                    )
-                ),
-
-                "specifications": parse_spec(
-                    raw_spec,
-                ),
-
-                "observation": {
-
-                    "raw_spec": raw_spec,
-
-                },
-
-            }
-
+        specs = parse_spec(
+            raw_spec,
         )
 
-    return payload
+        payload = {
+
+            "maker": "OZ GAMING",
+
+            "unique_id": extract_unique_id(
+                product_url,
+            ),
+
+            "product_url": product_url,
+
+            "image_url": (
+                urljoin(
+                    BASE_URL,
+                    image.get(
+                        "src",
+                        "",
+                    ),
+                )
+                if image
+                else ""
+            ),
+
+            "product_name": text(
+                card.select_one(
+                    ".item-list-name",
+                )
+            ),
+
+            "price": text(
+                card.select_one(
+                    ".item-list-price",
+                )
+            ),
+
+            "stock": text(
+                card.select_one(
+                    ".item-list-stock",
+                )
+            ),
+
+            "delivery": text(
+                card.select_one(
+                    ".item-list-delivery",
+                )
+            ),
+
+            "specifications": specs,
+
+            "observation": {
+
+                "raw_spec": raw_spec,
+
+            },
+
+        }
+
+        trace(
+            stage="FORMATTER",
+            data=payload,
+        )
+
+        results.append(
+            payload,
+        )
+
+    return results

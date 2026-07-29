@@ -1,37 +1,16 @@
 #!/usr/bin/env python3
 """
-==============================================================================
-OZ GAMING Runtime
-
-Entry Point
-==============================================================================
-
-Pipeline
-
-    Reality
-        │
-        ▼
-    AcquisitionDocument
-        │
-        ▼
-    ImportDocument
-        │
-        ▼
-    PCProduct
+OZ GAMING Runtime Entry Point
 """
 
 from __future__ import annotations
 
-from .pipeline import run as pipeline
+from .pipeline import run
 
-
-# ==========================================================
-# Main
-# ==========================================================
 
 def main():
 
-    pipeline()
+    run()
 
 
 if __name__ == "__main__":

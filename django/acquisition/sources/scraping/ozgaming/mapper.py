@@ -21,8 +21,20 @@ from api.models import (
     ImportDocument,
 )
 
+from acquisition.common.affiliate.builder import (
+    AffiliateBuilder,
+)
+
+from acquisition.common.trace.reality_trace import (
+    trace,
+)
+
 from .formatter_list import normalize
-from .settings import SITE_NAME
+
+from .settings import (
+    SITE_NAME,
+    AFFILIATE,
+)
 
 
 # ==========================================================
@@ -36,78 +48,114 @@ def map_item(item: dict) -> dict:
         {},
     )
 
-    return {
+    affiliate = AffiliateBuilder.build(
+        product_url=item.get(
+            "product_url",
+            "",
+        ),
+        config=AFFILIATE,
+    )
+
+    contract = {
 
         #
         # Source
         #
 
-        "site": "OZ GAMING",
+        "site": SITE_NAME,
 
         #
-        # Product
+        # Identity
         #
 
-        "maker": item.get(
-            "maker",
-            "",
-        ),
+        "identity": {
 
-        "product_name": item.get(
-            "product_name",
-            "",
-        ),
+            "maker": item.get(
+                "maker",
+                "",
+            ),
 
-        "description": observation.get(
-            "raw_spec",
-            "",
-        ),
+            "brand": "",
 
-        "model": item.get(
-            "model",
-            "",
-        ),
+            "product_name": item.get(
+                "product_name",
+                "",
+            ),
 
-        "product_no": item.get(
-            "product_no",
-            "",
-        ),
+            "model": item.get(
+                "model",
+                "",
+            ),
 
-        "pc_id": item.get(
-            "unique_id",
-            "",
-        ),
+            "product_no": item.get(
+                "product_no",
+                "",
+            ),
 
-        "product_url": item.get(
-            "product_url",
-            "",
-        ),
+            "sku": "",
+
+            "jan": "",
+
+            "pc_id": item.get(
+                "unique_id",
+                "",
+            ),
+
+            "product_url": item.get(
+                "product_url",
+                "",
+            ),
+
+        },
 
         #
         # Commerce
         #
 
-        "price": item.get(
-            "price",
-            "",
-        ),
+        "commerce": {
 
-        "stock": item.get(
-            "stock",
-            "",
-        ),
+            "price": item.get(
+                "price",
+                "",
+            ),
 
-        "delivery": item.get(
-            "delivery",
-            "",
-        ),
+            "stock": item.get(
+                "stock",
+                "",
+            ),
+
+            "delivery": item.get(
+                "delivery",
+                "",
+            ),
+
+        },
+
+        #
+        # Affiliate
+        #
+
+        "affiliate": affiliate,
 
         #
         # Media
         #
 
-        "image_url": item.get(
-            "image_url",
+        "media": {
+
+            "image_url": item.get(
+                "image_url",
+                "",
+            ),
+
+        },
+
+        #
+        # Description
+        #
+
+        "description": observation.get(
+            "raw_spec",
             "",
         ),
 
@@ -127,6 +175,13 @@ def map_item(item: dict) -> dict:
         "observation": observation,
 
     }
+
+    trace(
+        stage="MAPPER",
+        data=contract,
+    )
+
+    return contract
 
 
 # ==========================================================
@@ -148,10 +203,18 @@ def run():
         "document_key",
     )
 
+    print(
+        f"Documents : {documents.count()}"
+    )
+
     for document in documents:
 
         payload = normalize(
             document.content,
+        )
+
+        print(
+            f"{document.document_key} : {len(payload)} products"
         )
 
         for item in payload:
@@ -186,7 +249,9 @@ def run():
             )
 
     print("=" * 60)
-    print(f"SUCCESS : {success}")
+    print(
+        f"SUCCESS : {success}"
+    )
     print("=" * 60)
 
 

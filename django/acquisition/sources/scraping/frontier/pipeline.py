@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 ==============================================================================
-GEEKOM Acquisition Pipeline
+FRONTIER Runtime Pipeline
 
 Reality Source
         │
@@ -9,34 +9,13 @@ Reality Source
 Acquire Runtime
         │
         ▼
-AcquisitionDocument
-        │
-        ▼
 Observation Runtime
-        │
-        ├─ Formatter Runtime (Memory)
-        └─ Observation Runtime
-        │
-        ▼
-ObservationDocument
         │
         ▼
 Adapter Runtime
         │
         ▼
-ImportDocument
-        │
-        ▼
 Integration Runtime
-        ├─ Identity Runtime
-        ├─ Affiliate Runtime
-        ├─ Commerce Runtime
-        ├─ Normalize Runtime
-        └─ PCProductBuilder
-        │
-        ▼
-PCProduct
-==============================================================================
 
 Reality First
 Observation First
@@ -47,41 +26,45 @@ Semantic Later
 
 from __future__ import annotations
 
-from .fetch_root import main as fetch_root
-from .discover_root import main as discover_root
+from .fetch_list import fetch as fetch_seed
+from .fetch_products import fetch as fetch_products
 
-from .fetch_list import main as fetch_list
-from .discover_list import main as discover_list
+from .discover_models import discover as discover_models
+from .discover_series import discover as discover_series
+from .discover_products import discover as discover_products
 
-from .fetch_product import main as fetch_product
+from .observe import run as run_observe
 
-from .observe import main as observe
+from .formatter_list import format_products
 from .mapper import main as mapper
-from .integration import main as integration
+
+from .integration import run as run_integration
 
 
 # ==========================================================
 # Acquire Runtime
 # ==========================================================
 
-def run_acquire() -> None:
+def run_acquire(force: bool = False) -> None:
 
-    fetch_root()
-    discover_root()
+    fetch_seed(force=force)
 
-    fetch_list()
-    discover_list()
-    
-    fetch_product()
+    discover_models()
+
+    fetch_products(force=force)
+
+    discover_series()
+
+    discover_products()
 
 
 # ==========================================================
 # Observation Runtime
 # ==========================================================
 
-def run_observe() -> None:
+def run_observation() -> None:
 
-    observe()
+    run_observe()
 
 
 # ==========================================================
@@ -90,6 +73,16 @@ def run_observe() -> None:
 
 def run_adapter() -> None:
 
+    #
+    # TSV → Observation Runtime の補助データ生成
+    #
+
+    format_products()
+
+    #
+    # ObservationDocument → ImportDocument
+    #
+
     mapper()
 
 
@@ -97,25 +90,30 @@ def run_adapter() -> None:
 # Integration Runtime
 # ==========================================================
 
-def run_integration() -> None:
+def run_integration_runtime() -> None:
 
-    integration()
+    run_integration()
 
 
 # ==========================================================
 # Pipeline
 # ==========================================================
 
-def run() -> None:
+def run(force: bool = False) -> None:
 
-    run_acquire()
+    run_acquire(force=force)
 
-    run_observe()
+    run_observation()
 
     run_adapter()
 
-    run_integration()
+    run_integration_runtime()
+
+
+def main(force: bool = False) -> None:
+
+    run(force=force)
 
 
 if __name__ == "__main__":
-    run()
+    main()

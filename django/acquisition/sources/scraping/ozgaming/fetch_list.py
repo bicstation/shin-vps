@@ -1,29 +1,8 @@
-# /home/maya/shin-vps/django/acquisition/sources/scraping/ozgaming/fetch_list.py
-
 #!/usr/bin/env python3
 """
-==============================================================================
-OZ GAMING Reality Fetch Runtime
+OZ GAMING List Acquisition Runtime
 
-Category List
-        │
-        ▼
-Fetch HTML
-        │
-        ▼
-AcquisitionDocument
-
-Responsibilities
-----------------
-- Read list.tsv
-- Fetch category HTML
-- Discover pagination
-- Save HTML to AcquisitionDocument
-
-No product parsing.
-Reality First.
-Observation First.
-==============================================================================
+Fetch all category pages and store them into AcquisitionDocument.
 """
 
 from __future__ import annotations
@@ -46,54 +25,45 @@ from .settings import (
 # Runtime
 # ==========================================================
 
-LIST_FILE = (
-    Path(__file__).resolve().parent
-    / "list.tsv"
-)
+LIST_FILE = Path(__file__).resolve().parent / "list.tsv"
+
+#
+# DEBUG
+#
+# None : All Categories
+# 1    : First Category
+# 3    : First 3 Categories
+#
+MAX_CATEGORIES = None
 
 
 # ==========================================================
 # Pager
 # ==========================================================
 
-def discover_total_pages(
-    html: bytes,
-) -> int:
-    """
-    Discover total pages.
-
-    Product parsing is NOT allowed.
-    """
+def discover_total_pages(html: bytes) -> int:
 
     soup = BeautifulSoup(
         html,
         "html.parser",
     )
 
-    pager = soup.select(
-        "nav.pager a.pager-num",
-    )
-
     pages = []
 
-    for a in pager:
+    for a in soup.select(
+        "nav.pager a.pager-num",
+    ):
 
-        text = a.get_text(
+        value = a.get_text(
             strip=True,
         )
 
-        if text.isdigit():
-
+        if value.isdigit():
             pages.append(
-                int(text),
+                int(value),
             )
 
-    if not pages:
-        return 1
-
-    return max(
-        pages,
-    )
+    return max(pages) if pages else 1
 
 
 # ==========================================================
@@ -115,22 +85,22 @@ def fetch():
         )
 
     print("=" * 60)
-    print("🌐 OZ GAMING REALITY FETCH")
+    print("🌐 OZ GAMING LIST FETCH")
     print("=" * 60)
-    print(f"Categories : {len(rows)}")
-    print(f"Timeout    : {TIMEOUT} sec")
-    print("=" * 60)
+
+    headers = {
+        "User-Agent": USER_AGENT,
+        "Accept": "text/html",
+    }
 
     success = 0
     failed = 0
+    total_pages = 0
 
     with requests.Session() as session:
 
         session.headers.update(
-            {
-                "User-Agent": USER_AGENT,
-                "Accept": "text/html",
-            }
+            headers,
         )
 
         for index, row in enumerate(
@@ -138,23 +108,21 @@ def fetch():
             start=1,
         ):
 
+            if (
+                MAX_CATEGORIES is not None
+                and index > MAX_CATEGORIES
+            ):
+                break
+
             category_id = row["category_id"]
             category_name = row["category_name"]
             base_url = row["url"]
 
-            print()
-            print("=" * 60)
             print(
-                f"[{index}/{len(rows)}] "
-                f"{category_name}"
+                f"[{index}/{len(rows)}] {category_name}"
             )
-            print("=" * 60)
 
             try:
-
-                #
-                # First Page
-                #
 
                 response = session.get(
                     base_url,
@@ -163,27 +131,23 @@ def fetch():
 
                 response.raise_for_status()
 
-                total_pages = discover_total_pages(
+                pages = discover_total_pages(
                     response.content,
                 )
 
                 print(
-                    f"Pages : {total_pages}"
+                    f"Pages : {pages}"
                 )
-
-                #
-                # Fetch All Pages
-                #
 
                 for page in range(
                     1,
-                    total_pages + 1,
+                    pages + 1,
                 ):
 
                     if page == 1:
 
-                        page_response = response
                         page_url = base_url
+                        page_response = response
 
                     else:
 
@@ -197,10 +161,6 @@ def fetch():
                         )
 
                         page_response.raise_for_status()
-
-                    #
-                    # Store Reality
-                    #
 
                     AcquisitionDocument.objects.update_or_create(
 
@@ -222,9 +182,10 @@ def fetch():
 
                     )
 
+                    total_pages += 1
+
                     print(
-                        f"  Page {page:>2} "
-                        f"-> {category_id}_p{page}"
+                        f"  ✓ {category_id}_p{page}"
                     )
 
                 success += 1
@@ -234,23 +195,15 @@ def fetch():
                 failed += 1
 
                 print(
-                    f"Category : {category_id}"
+                    f"ERROR : {category_id}"
                 )
 
-                print(
-                    f"URL      : {base_url}"
-                )
+                print(e)
 
-                print(
-                    f"ERROR    : {e}"
-                )
-
-    print()
-    print("=" * 60)
-    print("✅ FETCH COMPLETE")
-    print("=" * 60)
-    print(f"Success : {success}")
-    print(f"Failed  : {failed}")
+    print("-" * 60)
+    print(f"Categories : {success}")
+    print(f"Pages      : {total_pages}")
+    print(f"Failed     : {failed}")
     print("=" * 60)
 
 

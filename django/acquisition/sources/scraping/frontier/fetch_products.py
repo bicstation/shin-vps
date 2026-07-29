@@ -1,49 +1,60 @@
+# /home/maya/shin-vps/django/acquisition/sources/scraping/frontier/fetch_products.py
 #!/usr/bin/env python3
 """
-GEEKOM Collection Fetch Runtime
+FRONTIER Product Fetch
 
-Fetch Collection HTML
-→ Save AcquisitionDocument
+Model List
+    ↓
+Fetch Reality
+    ↓
+AcquisitionDocument
+
+Reality First
 """
 
 from __future__ import annotations
 
 import csv
-import random
-import time
 
 import requests
 
 from api.models.acquisition_document import AcquisitionDocument
 
 from .settings import (
-    COLLECTIONS_TSV,
+    MODEL_LIST_TSV,
     USER_AGENT,
     TIMEOUT,
 )
 
 
-def fetch(force: bool = False):
+def load_models():
 
-    with COLLECTIONS_TSV.open(
+    with MODEL_LIST_TSV.open(
         "r",
         encoding="utf-8",
         newline="",
     ) as f:
 
-        rows = [
-            row
-            for row in csv.DictReader(f, delimiter="\t")
-            if row["enabled"].lower() == "true"
-        ]
+        return list(
+            csv.DictReader(
+                f,
+                delimiter="\t",
+            )
+        )
+
+
+def fetch(force: bool = False):
+
+    models = load_models()
 
     print("=" * 60)
-    print("🌐 GEEKOM COLLECTION FETCH")
+    print("🌐 FRONTIER PRODUCT FETCH")
     print("=" * 60)
-    print(f"Target : {len(rows)} Collections")
+    print(f"Target : {len(models)} Products")
     print("=" * 60)
 
     session = requests.Session()
+
     session.headers.update({
         "User-Agent": USER_AGENT,
     })
@@ -51,21 +62,21 @@ def fetch(force: bool = False):
     success = []
     failed = []
 
-    for index, row in enumerate(rows, start=1):
+    for index, row in enumerate(models, start=1):
 
         slug = row["slug"]
 
-        print(f"[{index}/{len(rows)}] {slug}")
+        print(f"[{index}/{len(models)}] {slug}")
 
-        # --------------------------------------------------
-        # Cache Check
-        # --------------------------------------------------
+        #
+        # Cache
+        #
 
         if not force:
 
             exists = AcquisitionDocument.objects.filter(
-                source_name="geekom",
-                document_type="collection",
+                source_name="frontier",
+                document_type="product",
                 document_key=slug,
             ).exists()
 
@@ -73,54 +84,24 @@ def fetch(force: bool = False):
 
                 success.append(slug)
 
-                print("  Cache  : HIT")
+                print("  Cache : HIT")
                 print()
 
                 continue
 
         try:
 
-            #
-            # アクセス間隔を空ける
-            #
-            if index > 1:
-                wait = random.uniform(8.0, 15.0)
-                print(f"  😴 Sleep {wait:.1f}s")
-                time.sleep(wait)
-
-            response = None
-
-            #
-            # 最大3回リトライ
-            #
-            for attempt in range(3):
-
-                response = session.get(
-                    row["url"],
-                    timeout=TIMEOUT,
-                )
-
-                if response.status_code == 200:
-                    break
-
-                if response.status_code == 429:
-
-                    wait = 10 * (attempt + 1)
-
-                    print(f"  ⏳ 429 Retry ({wait}s)")
-
-                    time.sleep(wait)
-
-                    continue
-
-                response.raise_for_status()
+            response = session.get(
+                row["url"],
+                timeout=TIMEOUT,
+            )
 
             response.raise_for_status()
 
             AcquisitionDocument.objects.update_or_create(
                 source_type="scraping",
-                source_name="geekom",
-                document_type="collection",
+                source_name="frontier",
+                document_type="product",
                 document_key=slug,
                 defaults={
                     "source_url": row["url"],
@@ -134,7 +115,7 @@ def fetch(force: bool = False):
 
             success.append(slug)
 
-            print("  Cache  : MISS")
+            print("  Cache : MISS")
             print(f"  ✓ {response.status_code}")
             print(f"  {len(response.content):,} bytes")
 

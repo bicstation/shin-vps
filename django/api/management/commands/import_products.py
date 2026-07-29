@@ -15,9 +15,9 @@ from acquisition.sources.scraping.ark.run import (
 #     main as tsukumo_import,
 # )
 
-# from acquisition.sources.scraping.frontier.run import (
-#     main as frontier_import,
-# )
+from acquisition.sources.scraping.frontier.run import (
+    main as frontier_import,
+)
 
 from acquisition.sources.scraping.ozgaming.run import (
     main as ozgaming_import,
@@ -44,10 +44,10 @@ ACQUISITION_RUNTIMES = {
     #     tsukumo_import,
     # ),
 
-    # "frontier": (
-    #     "FRONTIER",
-    #     frontier_import,
-    # ),
+    "frontier": (
+        "FRONTIER",
+        frontier_import,
+    ),
 
     "ozgaming": (
         "OzGaming",
