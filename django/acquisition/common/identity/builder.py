@@ -77,19 +77,57 @@ class IdentityBuilder:
         contract: dict,
     ) -> dict:
 
-        maker = contract.get("maker") or contract.get("site", "")
+        # ==========================================================
+        # Identity Contract
+        # ==========================================================
 
         identity_contract = contract.get("identity", {})
 
-        product_name = identity_contract.get("product_name", "")
-        product_no = identity_contract.get("product_no", "")
-        product_url = identity_contract.get("product_url", "")
+        # ==========================================================
+        # Identity
+        # Priority:
+        # 1. Identity Contract
+        # 2. Top Level Contract
+        # 3. Site
+        # ==========================================================
+
+        maker = (
+            identity_contract.get("maker")
+            or contract.get("maker")
+            or contract.get("site", "")
+        )
+
+        product_name = identity_contract.get(
+            "product_name",
+            "",
+        )
+
+        product_no = identity_contract.get(
+            "product_no",
+            "",
+        )
+
+        product_url = identity_contract.get(
+            "product_url",
+            "",
+        )
+
+        # ==========================================================
+        # TSV Classification
+        # ==========================================================
 
         identity = classify_identity(
             maker=maker,
             product_name=product_name,
-            description=contract.get("description", ""),
+            description=contract.get(
+                "description",
+                "",
+            ),
         )
+
+        # ==========================================================
+        # Runtime
+        # ==========================================================
 
         return {
 
@@ -102,10 +140,19 @@ class IdentityBuilder:
 
             "maker": maker,
 
-            "brand": identity.get("brand", ""),
+            "brand": identity.get(
+                "brand",
+                "",
+            ),
 
-            "series": identity.get("series", ""),
+            "series": identity.get(
+                "series",
+                "",
+            ),
 
-            "collaboration": identity.get("collaboration", ""),
+            "collaboration": identity.get(
+                "collaboration",
+                "",
+            ),
 
         }

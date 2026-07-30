@@ -36,10 +36,10 @@ from .settings import (
 
 HEADERS = (
     "category",
-    "series",
-    "vendor",
-    "chipset",
-    "slug",
+    "series_text",
+    "vendor_text",
+    "chipset_text",
+    "model_slug",
     "url",
 )
 
@@ -70,20 +70,21 @@ def slugify(url: str) -> str:
 
 def create_row(
     category: str,
-    series: str,
+    series_text: str,
     url: str,
-    vendor: str = "",
-    chipset: str = "",
+    vendor_text: str = "",
+    chipset_text: str = "",
 ):
 
     return {
         "category": category,
-        "series": series,
-        "vendor": vendor,
-        "chipset": chipset,
-        "slug": slugify(url),
+        "series_text": series_text,
+        "vendor_text": vendor_text,
+        "chipset_text": chipset_text,
+        "model_slug": slugify(url),
         "url": url,
     }
+
 
 
 # ==============================================================================
@@ -111,27 +112,27 @@ def discover_desktop(
         series = title.get_text(strip=True)
 
         for link in card.select("a[href]"):
+            
+            series_text = title.get_text(strip=True)
 
-            text = link.get_text(" ", strip=True)
-
-            vendor = ""
-            chipset = ""
+            vendor_text = ""
+            chipset_text = ""
 
             if "Intel" in text:
-                vendor = "Intel"
+                vendor_text = "Intel"
             elif "AMD" in text:
-                vendor = "AMD"
+                vendor_text = "AMD"
 
             if "（" in text and "）" in text:
-                chipset = text.split("（")[1].split("）")[0]
+                chipset_text = text.split("（")[1].split("）")[0]
 
             rows.append(
                 create_row(
                     category,
-                    series,
+                    series_text,
                     absolute_url(link["href"]),
-                    vendor,
-                    chipset,
+                    vendor_text,
+                    chipset_text,
                 )
             )
 

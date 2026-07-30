@@ -12,10 +12,16 @@ Normalized HTML (Memory Only)
 Responsibilities
 
 - HTML Parse
-- Remove Script
-- Remove Style
-- Remove Comments
-- Normalize Attributes
+- Remove HTML Comments
+- Normalize HTML Attributes
+
+NOT
+
+- Parse Specifications
+- Parse JSON-LD
+- Parse Tables
+- Generate Meaning
+- Classify Reality
 
 Reality First
 Observation First
@@ -31,7 +37,7 @@ from acquisition.common.trace.reality_trace import trace
 
 def normalize(html: str) -> str:
     """
-    Normalize HTML without changing semantic meaning.
+    Normalize HTML while preserving observable Reality.
     """
 
     trace(
@@ -41,35 +47,29 @@ def normalize(html: str) -> str:
         },
     )
 
+    #
+    # HTML Parse
+    #
+
     soup = BeautifulSoup(
         html,
         "html.parser",
     )
 
     #
-    # Remove script/style
-    #
-
-    script_count = 0
-
-    for tag in soup(["script", "style"]):
-        script_count += 1
-        tag.decompose()
-
-    #
-    # Remove HTML comments
+    # Remove HTML Comments
     #
 
     comment_count = 0
 
     for comment in soup.find_all(
-        string=lambda text: isinstance(text, Comment)
+        string=lambda text: isinstance(text, Comment),
     ):
         comment_count += 1
         comment.extract()
 
     #
-    # Normalize attributes
+    # Normalize Attributes
     #
 
     attribute_removed = 0
@@ -80,8 +80,12 @@ def normalize(html: str) -> str:
 
         for key, value in tag.attrs.items():
 
-            if value in (None, "", [], {}):
-
+            if value in (
+                None,
+                "",
+                [],
+                {},
+            ):
                 attribute_removed += 1
                 continue
 
@@ -95,7 +99,6 @@ def normalize(html: str) -> str:
         "Formatter Output",
         {
             "html_length": len(normalized),
-            "scripts_removed": script_count,
             "comments_removed": comment_count,
             "attributes_removed": attribute_removed,
         },

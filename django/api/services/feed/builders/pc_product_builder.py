@@ -31,7 +31,10 @@ class PCProductBuilder:
 
             "site_prefix": prefix,
 
-            "maker": maker,
+            "maker": (
+                identity.get("maker")
+                or maker
+            ),
 
             "brand": (
                 identity.get("brand")
@@ -69,6 +72,15 @@ class PCProductBuilder:
             "name": normalized["name"],
 
             "description": normalized["description"],
+            
+            # =====================================================
+            # Reality Runtime
+            # =====================================================
+
+            "observation_runtime": normalized.get(
+                "observation_runtime",
+                {},
+            ),
 
             # =====================================================
             # Commerce

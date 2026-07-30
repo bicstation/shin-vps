@@ -4,20 +4,35 @@ GEEKOM Reality Fetch
 
 Fetch Root Reality HTML
 → Save AcquisitionDocument
+
+Responsibilities
+
+- Acquire Reality
+- Save AcquisitionDocument
+
+NOT
+
+- Parse HTML
+- Generate Meaning
+- Observe Reality
+
+Reality First
 """
 
 from __future__ import annotations
 
 import csv
+import random
+import time
 
-import requests
+from curl_cffi import requests
 
 from api.models.acquisition_document import AcquisitionDocument
 
 from .settings import (
-    USER_AGENT,
-    TIMEOUT,
     ROOT_TSV,
+    TIMEOUT,
+    USER_AGENT,
 )
 
 
@@ -42,10 +57,20 @@ def fetch(force: bool = False) -> None:
     print(f"Target : {len(rows)} Collections")
     print("=" * 60)
 
-    session = requests.Session()
-    session.headers.update({
-        "User-Agent": USER_AGENT,
-    })
+    #
+    # Chrome Session
+    #
+
+    session = requests.Session(
+        impersonate="chrome",
+    )
+
+    session.headers.update(
+        {
+            "User-Agent": USER_AGENT,
+            "Referer": "https://geekom.jp/",
+        }
+    )
 
     for index, row in enumerate(rows, start=1):
 
@@ -54,9 +79,9 @@ def fetch(force: bool = False) -> None:
 
         print(f"[{index}/{len(rows)}] {slug}")
 
-        # --------------------------------------------------
-        # Cache Check
-        # --------------------------------------------------
+        #
+        # Cache
+        #
 
         if not force:
 
@@ -73,13 +98,40 @@ def fetch(force: bool = False) -> None:
 
                 continue
 
+        response = None
+
         try:
 
-            response = session.get(
-                url,
-                timeout=TIMEOUT,
-                allow_redirects=True,
-            )
+            #
+            # Retry
+            #
+
+            for attempt in range(3):
+
+                response = session.get(
+                    url,
+                    timeout=TIMEOUT,
+                    allow_redirects=True,
+                )
+
+                print(f"  Status : {response.status_code}")
+                print(
+                    f"  Type   : {response.headers.get('Content-Type')}"
+                )
+
+                if response.status_code != 429:
+                    break
+
+                wait = 5 * (attempt + 1)
+
+                print(
+                    f"  Retry  : {attempt + 1}/3"
+                )
+                print(
+                    f"  Sleep  : {wait}s"
+                )
+
+                time.sleep(wait)
 
             response.raise_for_status()
 
@@ -100,11 +152,46 @@ def fetch(force: bool = False) -> None:
 
             print("  Cache  : MISS")
             print(f"  Status : {response.status_code}")
-            print(f"  Size   : {len(response.content):,} bytes")
+            print(
+                f"  Size   : {len(response.content):,} bytes"
+            )
+
+        except requests.HTTPError as e:
+
+            response = e.response
+
+            if response is not None:
+
+                print(f"  Status : {response.status_code}")
+
+                print("  Headers")
+
+                for key, value in response.headers.items():
+
+                    print(f"    {key}: {value}")
+
+                print()
+
+                print(response.text[:1000])
+
+            else:
+
+                print(f"  ERROR : {e}")
 
         except Exception as e:
 
-            print(f"  ERROR  : {e}")
+            print(f"  ERROR : {e}")
+
+        #
+        # Gentle Delay
+        #
+
+        time.sleep(
+            random.uniform(
+                1.5,
+                3.5,
+            )
+        )
 
         print()
 
@@ -114,8 +201,10 @@ def fetch(force: bool = False) -> None:
 
 
 def main(force: bool = False) -> None:
+
     fetch(force=force)
 
 
 if __name__ == "__main__":
+
     main()

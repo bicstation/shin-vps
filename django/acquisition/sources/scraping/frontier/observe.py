@@ -3,7 +3,7 @@
 ==============================================================================
 FRONTIER Observation Runtime
 
-Acquire HTML
+Acquire Runtime
         │
         ▼
 Formatter Runtime
@@ -16,19 +16,51 @@ ObservationDocument
 
 Reality First
 Observation First
-==============================================================================
+
+Overview
+
+Observe Reality exactly as published.
+
+This Runtime extracts observable evidence from HTML and stores it
+without interpretation or semantic classification.
 
 Responsibilities
 
 - Observe Reality
-- Extract Evidence
+- Extract Observable Evidence
 - Produce ObservationDocument
+- Preserve Reality
 
 Not Responsibilities
 
-- Semantic Mapping
-- Import Contract
+- Semantic Classification
+- Identity Resolution
+- AI Processing
+- Import Contract Generation
 - Database Integration
+==============================================================================
+
+ObservationDocument
+
+{
+    "html_title": "...",
+    "canonical_url": "...",
+    "meta_description": "...",
+
+    "main_image": "...",
+    "images": [...],
+
+    "tables": [
+        {
+            "text": "...",
+            "html": "..."
+        }
+    ],
+
+    "jsonld_scripts": [
+        "{...}"
+    ]
+}
 ==============================================================================
 """
 
@@ -49,7 +81,7 @@ from acquisition.common.trace.reality_trace import (
     trace_pipeline,
 )
 
-from .formatter import normalize
+from .formatter_product import normalize
 
 
 # ==============================================================================
@@ -57,42 +89,70 @@ from .formatter import normalize
 # ==============================================================================
 
 def create_observation() -> dict:
-
     """
-    Create empty Observation Runtime object.
+    Create an empty ObservationDocument.
+
+    Every field represents directly observable Reality.
+
+    No semantic meaning should be generated here.
     """
 
     return {
-        "title": "",
-        "url": "",
-        "description": "",
+
+        #
+        # HTML Observation
+        #
+
+        "html_title": "",
+
+        "canonical_url": "",
+
+        "meta_description": "",
+
+        #
+        # Media Observation
+        #
+
         "main_image": "",
+
         "images": [],
+
+        #
+        # Structure Observation
+        #
+
         "tables": [],
-        "scripts": [],
+
+        #
+        # Structured Data Observation
+        #
+
+        "jsonld_scripts": [],
+
     }
 
 
 # ==============================================================================
-# Title Observation
+# HTML Title Observation
 # ==============================================================================
 
 def observe_title(
     soup: BeautifulSoup,
     observation: dict,
 ):
-
     """
-    Observe HTML Title.
+    Observe HTML <title>.
+
+    This is the raw document title published
+    by the source website.
     """
 
-    if soup.title:
+    if not soup.title:
+        return
 
-        observation["title"] = soup.title.get_text(
-            strip=True,
-        )
-
-
+    observation["html_title"] = soup.title.get_text(
+        strip=True,
+    )
 # ==============================================================================
 # Canonical URL Observation
 # ==============================================================================
@@ -101,9 +161,13 @@ def observe_url(
     soup: BeautifulSoup,
     observation: dict,
 ):
-
     """
     Observe Canonical URL.
+
+    The canonical URL is treated as the primary
+    identity URL published by the source website.
+
+    No inference is performed.
     """
 
     canonical = soup.find(
@@ -111,24 +175,30 @@ def observe_url(
         rel="canonical",
     )
 
-    if canonical:
+    if not canonical:
+        return
 
-        observation["url"] = canonical.get(
+    observation["canonical_url"] = (
+        canonical.get(
             "href",
             "",
         ).strip()
-        
+    )
+
+
 # ==============================================================================
-# Description Observation
+# Meta Description Observation
 # ==============================================================================
 
 def observe_description(
     soup: BeautifulSoup,
     observation: dict,
 ):
-
     """
-    Observe Meta Description.
+    Observe HTML Meta Description.
+
+    Only the published meta description
+    is preserved.
     """
 
     meta = soup.find(
@@ -138,25 +208,35 @@ def observe_description(
         },
     )
 
-    if meta:
+    if not meta:
+        return
 
-        observation["description"] = meta.get(
+    observation["meta_description"] = (
+        meta.get(
             "content",
             "",
         ).strip()
+    )
 
 
 # ==============================================================================
-# Image Observation
+# Product Image Observation
 # ==============================================================================
 
 def observe_images(
     soup: BeautifulSoup,
     observation: dict,
 ):
-
     """
     Observe Product Images.
+
+    Responsibilities
+
+    - Collect published product images
+    - Preserve published image order
+    - Ignore inline data images
+
+    No image classification is performed.
     """
 
     images = []
@@ -174,21 +254,33 @@ def observe_images(
         if not src:
             continue
 
+        #
+        # Ignore inline images
+        #
+
         if src.startswith("data:image"):
             continue
+
+        #
+        # Normalize protocol-relative URL
+        #
 
         if src.startswith("//"):
             src = "https:" + src
 
-        if src not in images:
-            images.append(src)
+        #
+        # Preserve unique images only
+        #
+
+        if src in images:
+            continue
+
+        images.append(src)
 
     observation["images"] = images
 
     if images:
-
         observation["main_image"] = images[0]
-
 
 # ==============================================================================
 # Table Observation
@@ -198,9 +290,15 @@ def observe_tables(
     soup: BeautifulSoup,
     observation: dict,
 ):
-
     """
     Observe HTML Tables.
+
+    Every published HTML table is preserved as Reality.
+
+    Both rendered text and original HTML are stored.
+
+    This enables future AI Runtime to analyze either
+    human-readable content or original document structure.
     """
 
     tables = []
@@ -208,13 +306,30 @@ def observe_tables(
     for table in soup.find_all("table"):
 
         tables.append(
-            table.get_text(
-                "\n",
-                strip=True,
-            )
+
+            {
+
+                #
+                # Human-readable text
+                #
+
+                "text": table.get_text(
+                    "\n",
+                    strip=True,
+                ),
+
+                #
+                # Original HTML
+                #
+
+                "html": str(table),
+
+            }
+
         )
 
     observation["tables"] = tables
+
 
 # ==============================================================================
 # JSON-LD Observation
@@ -224,12 +339,17 @@ def observe_jsonld(
     soup: BeautifulSoup,
     observation: dict,
 ):
-
     """
     Observe JSON-LD.
 
-    Store every JSON-LD script as Reality.
-    If Canonical URL is missing, supplement it from JSON-LD.
+    Responsibilities
+
+    - Preserve every JSON-LD block
+    - Supplement Canonical URL when absent
+
+    JSON-LD itself is treated as published Reality.
+
+    No semantic interpretation is performed.
     """
 
     for script in soup.find_all(
@@ -240,15 +360,19 @@ def observe_jsonld(
         if not script.string:
             continue
 
-        observation["scripts"].append(
+        #
+        # Preserve raw JSON-LD
+        #
+
+        observation["jsonld_scripts"].append(
             script.string
         )
 
         #
-        # URL already observed
+        # Canonical URL already observed
         #
 
-        if observation["url"]:
+        if observation["canonical_url"]:
             continue
 
         try:
@@ -274,37 +398,37 @@ def observe_jsonld(
 
             if url:
 
-                observation["url"] = url
+                observation["canonical_url"] = url
 
                 continue
 
             #
-            # @graph
+            # JSON-LD Graph
             #
 
             graph = data.get("@graph")
 
-            if isinstance(
+            if not isinstance(
                 graph,
                 list,
             ):
+                continue
 
-                for node in graph:
+            for node in graph:
 
-                    if not isinstance(
-                        node,
-                        dict,
-                    ):
-                        continue
+                if not isinstance(
+                    node,
+                    dict,
+                ):
+                    continue
 
-                    url = node.get("url")
+                url = node.get("url")
 
-                    if url:
+                if url:
 
-                        observation["url"] = url
+                    observation["canonical_url"] = url
 
-                        break
-
+                    break
 
 # ==============================================================================
 # Observation Runtime
@@ -312,10 +436,13 @@ def observe_jsonld(
 
 def observe(
     html: str,
-):
-
+) -> dict:
     """
-    Observe Reality from HTML.
+    Observe Reality from normalized HTML.
+
+    Observation Runtime performs no semantic analysis.
+
+    It only preserves observable evidence.
     """
 
     trace_pipeline(
@@ -373,34 +500,91 @@ def observe(
     trace(
         "Observation Result",
         {
-            "title": observation["title"],
-            "url": observation["url"],
-            "description": bool(
-                observation["description"]
-            ),
-            "main_image": observation["main_image"],
-            "images": len(
-                observation["images"]
-            ),
-            "tables": len(
-                observation["tables"]
-            ),
-            "jsonld": len(
-                observation["scripts"]
-            ),
+
+            "html_title":
+                observation["html_title"],
+
+            "canonical_url":
+                observation["canonical_url"],
+
+            "meta_description":
+                bool(
+                    observation["meta_description"]
+                ),
+
+            "main_image":
+                observation["main_image"],
+
+            "images":
+                len(
+                    observation["images"]
+                ),
+
+            "tables":
+                len(
+                    observation["tables"]
+                ),
+
+            "jsonld_scripts":
+                len(
+                    observation["jsonld_scripts"]
+                ),
+
         },
     )
 
     return observation
+
+
+# ==============================================================================
+# ObservationDocument Persistence
+# ==============================================================================
+
+def save_observation_document(
+    *,
+    document: AcquisitionDocument,
+    observation: dict,
+):
+    """
+    Persist ObservationDocument.
+
+    ObservationDocument is the canonical
+    Reality representation for downstream runtimes.
+    """
+
+    obj, created = (
+        ObservationDocument.objects
+        .update_or_create(
+
+            source_name=document.source_name,
+
+            document_type=document.document_type,
+
+            document_key=document.document_key,
+
+            defaults={
+
+                "observation": observation,
+
+            },
+
+        )
+    )
+
+    return obj, created
+
 
 # ==============================================================================
 # Runtime
 # ==============================================================================
 
 def run():
+    """
+    Execute Observation Runtime.
+    """
 
     print("=" * 70)
-    print("👀 FRONTIER OBSERVATION")
+    print("👀 FRONTIER OBSERVATION RUNTIME")
     print("=" * 70)
 
     trace_pipeline(
@@ -408,12 +592,23 @@ def run():
     )
 
     documents = (
+
         AcquisitionDocument.objects
+
         .filter(
+
             source_name="frontier",
+
             document_type="product",
+
         )
+
+        .order_by(
+            "document_key",
+        )
+
         .iterator()
+
     )
 
     success = 0
@@ -423,7 +618,8 @@ def run():
         trace(
             "Observation Document",
             {
-                "key": document.document_key,
+                "document_key":
+                    document.document_key,
             },
         )
 
@@ -444,19 +640,15 @@ def run():
         )
 
         #
-        # Save ObservationDocument
+        # Persist ObservationDocument
         #
 
-        obj, _ = (
-            ObservationDocument.objects
-            .update_or_create(
-                source_name=document.source_name,
-                document_type=document.document_type,
-                document_key=document.document_key,
-                defaults={
-                    "observation": observation,
-                },
-            )
+        obj, created = save_observation_document(
+
+            document=document,
+
+            observation=observation,
+
         )
 
         trace_model(
@@ -467,10 +659,15 @@ def run():
         success += 1
 
     print()
+
     print("=" * 70)
     print("RESULT")
     print("=" * 70)
-    print(f"SUCCESS : {success}")
+
+    print(
+        f"SUCCESS : {success}"
+    )
+
     print("=" * 70)
 
 
@@ -479,10 +676,12 @@ def run():
 # ==============================================================================
 
 def main():
+    """
+    Runtime Entry Point.
+    """
 
     run()
 
 
 if __name__ == "__main__":
     main()
-    

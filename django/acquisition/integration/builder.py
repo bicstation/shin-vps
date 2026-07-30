@@ -207,8 +207,12 @@ class PCProductBuilder:
             ),
 
             "site_prefix": prefix,
+           
+            "maker": (
+                identity.get("maker")
+                or maker
+            ),
 
-            "maker": maker,
 
             "brand": (
                 identity.get("brand")

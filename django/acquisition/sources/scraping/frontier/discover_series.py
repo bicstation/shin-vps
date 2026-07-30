@@ -1,15 +1,33 @@
 #!/usr/bin/env python3
 """
 ==============================================================================
-FRONTIER Series Discovery
+FRONTIER Model Token Observation
 
 Acquire Runtime
 
 AcquisitionDocument
-    ↓
-Discover Series
-    ↓
-Generate series_list.tsv
+        │
+        ▼
+Observe Model Tokens
+        │
+        ▼
+model_token_list.tsv
+
+Reality First
+Observation First
+
+Responsibilities
+
+- Observe Model Slug
+- Observe Raw Tokens
+- Produce Observation TSV
+
+Not Responsibilities
+
+- Series Classification
+- Brand Detection
+- Category Detection
+- Semantic Mapping
 ==============================================================================
 """
 
@@ -27,88 +45,45 @@ from .settings import (
     SITE_NAME,
 )
 
-
 # ==============================================================================
 # TSV
 # ==============================================================================
 
 HEADERS = (
     "model_slug",
-    "brand",
-    "category",
-    "series",
+    "raw_slug",
+    "raw_tokens",
 )
 
-
 # ==============================================================================
-# Series Resolution
-# ==============================================================================
-
-def detect_series(model_slug: str) -> str:
-
-    slug = model_slug.lower()
-
-    if "asus" in slug:
-        return "ASUS Collaboration"
-
-    if "msi" in slug:
-        return "MSI Collaboration"
-
-    if "ghl" in slug:
-        return "GHL"
-
-    if "gpl" in slug:
-        return "GPL"
-
-    if "gbl" in slug:
-        return "GBL"
-
-    if "gam" in slug:
-        return "GAM"
-
-    if "gk" in slug:
-        return "GK"
-
-    if "za" in slug:
-        return "ZA"
-
-    if "xa" in slug:
-        return "XA"
-
-    if re.fullmatch(r"ejgb.*", slug):
-        return "GB"
-
-    if "cr" in slug:
-        return "Creator"
-
-    if "cs" in slug:
-        return "Slim"
-
-    return ""
-
-
-# ==============================================================================
-# Category Resolution
+# Observation
 # ==============================================================================
 
-def detect_category(series: str) -> str:
+def observe_tokens(
+    model_slug: str,
+) -> str:
+    """
+    Observe slug tokens.
 
-    if series == "Creator":
-        return "Creator Desktop"
+    No semantic classification.
+    """
 
-    if series == "Slim":
-        return "Desktop"
+    tokens = re.findall(
+        r"[A-Za-z]+|\d+",
+        model_slug,
+    )
 
-    return "Gaming Desktop"
-
+    return " ".join(tokens)
 
 # ==============================================================================
-# Discovery
+# Runtime
 # ==============================================================================
 
 def discover():
 
-    trace_pipeline("DISCOVER")
+    trace_pipeline(
+        "TOKEN OBSERVATION",
+    )
 
     rows = []
     seen = set()
@@ -123,45 +98,31 @@ def discover():
     )
 
     print("=" * 70)
-    print(f"{SITE_NAME} SERIES DISCOVERY")
+    print(f"{SITE_NAME} TOKEN OBSERVATION")
     print("=" * 70)
 
     for document in documents:
 
         model_slug = document.document_key
 
-        #
-        # Skip
-        #
-
-        if re.fullmatch(r"g\d+", model_slug):
-            continue
-
         if model_slug in seen:
             continue
 
         seen.add(model_slug)
 
-        series = detect_series(model_slug)
-
-        rows.append({
-            "model_slug": model_slug,
-            "brand": SITE_NAME,
-            "category": detect_category(series),
-            "series": series,
-        })
-
-        print(
-            f"{model_slug:20} -> {series}"
+        rows.append(
+            {
+                "model_slug": model_slug,
+                "raw_slug": model_slug,
+                "raw_tokens": observe_tokens(
+                    model_slug,
+                ),
+            }
         )
 
     rows.sort(
         key=lambda row: row["model_slug"]
     )
-
-    #
-    # Save TSV
-    #
 
     with SERIES_LIST_TSV.open(
         "w",
@@ -182,10 +143,9 @@ def discover():
     print("=" * 70)
     print("RESULT")
     print("=" * 70)
-    print(f"Series : {len(rows)}")
-    print(f"Saved   : {SERIES_LIST_TSV}")
+    print(f"Observed : {len(rows)}")
+    print(f"Saved    : {SERIES_LIST_TSV}")
     print("=" * 70)
-
 
 # ==============================================================================
 # Entry Point

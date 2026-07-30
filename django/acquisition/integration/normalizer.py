@@ -52,6 +52,10 @@ class ImportNormalizer:
         commerce = contract.setdefault("commerce", {})
         affiliate = contract.setdefault("affiliate", {})
         media = contract.setdefault("media", {})
+        # =====================================================
+        # Observation Runtime
+        # =====================================================
+        contract.setdefault( "observation_runtime", {}, )
         observation = contract.setdefault("observation", {})
         specifications = contract.setdefault("specifications", {})
 

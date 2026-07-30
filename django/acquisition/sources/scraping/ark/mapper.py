@@ -99,7 +99,18 @@ def map_item(item: dict) -> dict:
             {},
         ),
 
+        #
+        # Observation
+        #
+
         "observation": observation,
+
+        #
+        # Observation Runtime
+        #
+
+        "observation_runtime": item,
+
     }
 
     trace(

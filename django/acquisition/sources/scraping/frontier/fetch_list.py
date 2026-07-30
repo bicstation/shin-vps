@@ -28,7 +28,6 @@ from .settings import (
     SITE_NAME,
 )
 
-
 # ==============================================================================
 # Seed
 # ==============================================================================
@@ -73,7 +72,7 @@ def save_document(
     response: requests.Response,
 ):
 
-    AcquisitionDocument.objects.update_or_create(
+    document, created = AcquisitionDocument.objects.update_or_create(
         source_type="scraping",
         source_name=SITE_NAME.lower(),
         document_type="seed",
@@ -87,6 +86,8 @@ def save_document(
             "content": response.text,
         },
     )
+
+    return document, created
 
 
 # ==============================================================================
@@ -123,9 +124,7 @@ def fetch_seed(
             category = row["category"]
             url = row["url"]
 
-            print(
-                f"[{index}/{len(seeds)}] {category}"
-            )
+            print(f"[{index}/{len(seeds)}] {category}")
 
             #
             # Cache
@@ -153,7 +152,7 @@ def fetch_seed(
 
                 response.raise_for_status()
 
-                save_document(
+                document, created = save_document(
                     slug=slug,
                     url=url,
                     response=response,
@@ -161,8 +160,11 @@ def fetch_seed(
 
                 success.append(slug)
 
-                print("  Status :", response.status_code)
+                print(f"  HTTP   : {response.status_code}")
                 print(f"  Size   : {len(response.content):,} bytes")
+                print(
+                    f"  Saved  : {'CREATED' if created else 'UPDATED'}"
+                )
 
             except Exception as e:
 

@@ -184,6 +184,10 @@ class PCProduct(models.Model):
 
     ai_content = models.TextField(null=True, blank=True, verbose_name="AI生成記事本文")
     raw_html = models.TextField(null=True, blank=True, verbose_name="生のHTML内容")
+    # =====================================================
+    # Observation Runtime（Reality Snapshot）
+    # =====================================================
+    observation_runtime = models.JSONField( default=dict, blank=True, verbose_name="Observation Runtime" )
     stock_status = models.CharField(max_length=100, default="在庫あり", verbose_name="在庫/受注状況") 
     
     is_posted = models.BooleanField(default=False, verbose_name="WP投稿済み")

@@ -9,6 +9,9 @@ Reality Source
 Acquire Runtime
         │
         ▼
+Formatter Runtime
+        │
+        ▼
 Observation Runtime
         │
         ▼
@@ -24,6 +27,27 @@ Reality First
 Observation First
 Translation Authority
 Semantic Later
+
+Overview
+
+Execute the complete FRONTIER Runtime Pipeline.
+
+Each Runtime is responsible for exactly one stage
+of the acquisition lifecycle.
+
+Responsibilities
+
+- Execute Runtime Stages
+- Preserve Runtime Order
+- Coordinate Runtime Flow
+
+Not Responsibilities
+
+- HTML Parsing
+- Reality Observation
+- Mapping
+- Product Building
+- Semantic Processing
 ==============================================================================
 """
 
@@ -33,16 +57,73 @@ from acquisition.common.trace.reality_trace import (
     trace_pipeline,
 )
 
-from .fetch_list import main as fetch_seed
-from .discover_series import main as discover_series
-from .discover_models import main as discover_models
-from .fetch_products import main as fetch_products
+from .fetch_list import (
+    main as fetch_seed,
+)
 
-from .observe import main as observe
+from .discover_series import (
+    main as discover_series,
+)
 
-from .mapper import main as mapper
+from .discover_models import (
+    main as discover_models,
+)
 
-from .integration import main as integration
+from .fetch_products import (
+    main as fetch_products,
+)
+
+from .observe import (
+    main as observe,
+)
+
+from .mapper import (
+    main as mapper,
+)
+
+from .integration import (
+    main as integration,
+)
+
+
+# ==============================================================================
+# Pipeline Stage
+# ==============================================================================
+
+PIPELINE_ACQUIRE = "Acquire Runtime"
+
+PIPELINE_OBSERVATION = "Observation Runtime"
+
+PIPELINE_MAPPER = "Mapper Runtime"
+
+PIPELINE_INTEGRATION = "Integration Runtime"
+
+PIPELINE_COMPLETE = "FRONTIER Runtime Complete"
+
+
+# ==============================================================================
+# Stage Runner
+# ==============================================================================
+
+def run_stage(
+    title: str,
+    runtime,
+) -> None:
+    """
+    Execute a Runtime stage.
+    """
+
+    print()
+
+    print("=" * 70)
+
+    trace_pipeline(
+        title,
+    )
+
+    print("=" * 70)
+
+    runtime()
 
 
 # ==============================================================================
@@ -54,11 +135,23 @@ def run_acquire() -> None:
     Execute Acquire Runtime.
     """
 
+    #
+    # Seed Discovery
+    #
+
     fetch_seed()
+
+    #
+    # Runtime Discovery
+    #
 
     discover_series()
 
     discover_models()
+
+    #
+    # Product Acquisition
+    #
 
     fetch_products()
 
@@ -100,45 +193,42 @@ def run_integration() -> None:
 
 
 # ==============================================================================
-# Pipeline
+# Runtime Pipeline
 # ==============================================================================
 
 def run() -> None:
     """
-    Execute complete FRONTIER Runtime Pipeline.
+    Execute the complete Runtime Pipeline.
     """
 
-    print()
-    print("=" * 70)
-    trace_pipeline("Acquire Runtime")
-    print("=" * 70)
+    run_stage(
+        PIPELINE_ACQUIRE,
+        run_acquire,
+    )
 
-    run_acquire()
+    run_stage(
+        PIPELINE_OBSERVATION,
+        run_observation,
+    )
 
-    print()
-    print("=" * 70)
-    trace_pipeline("Observation Runtime")
-    print("=" * 70)
+    run_stage(
+        PIPELINE_MAPPER,
+        run_mapper,
+    )
 
-    run_observation()
-
-    print()
-    print("=" * 70)
-    trace_pipeline("Mapper Runtime")
-    print("=" * 70)
-
-    run_mapper()
-
-    print()
-    print("=" * 70)
-    trace_pipeline("Integration Runtime")
-    print("=" * 70)
-
-    run_integration()
+    run_stage(
+        PIPELINE_INTEGRATION,
+        run_integration,
+    )
 
     print()
+
     print("=" * 70)
-    trace_pipeline("FRONTIER Runtime Complete")
+
+    trace_pipeline(
+        PIPELINE_COMPLETE,
+    )
+
     print("=" * 70)
 
 

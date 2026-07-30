@@ -1,27 +1,35 @@
 #!/usr/bin/env python3
 """
 ==============================================================================
-FRONTIER Formatter Runtime
+FRONTIER Product Formatter Runtime
 
-Acquire HTML
+Acquire Runtime
+
+AcquisitionDocument
         │
         ▼
-Normalize HTML
+Formatter Runtime
         │
         ▼
 Observation Runtime
 
+Reality First
+Observation First
+
 Responsibilities
 
+- Normalize HTML
 - Runtime Safety
-- HTML Normalization
+- Preserve Reality
 - Site-specific Preprocessing
 
 Not Responsibilities
 
 - HTML Parsing
 - Reality Observation
-- Semantic Extraction
+- Semantic Mapping
+- Data Classification
+- AI Processing
 ==============================================================================
 """
 
@@ -29,24 +37,30 @@ from __future__ import annotations
 
 
 # ==============================================================================
-# Formatter
+# Formatter Runtime
 # ==============================================================================
 
 def normalize(
     html: str,
 ) -> str:
     """
-    Normalize HTML before Observation Runtime.
+    Normalize Product HTML before Observation Runtime.
 
-    Reserved for:
+    Rules
 
-        - Whitespace cleanup
-        - HTML normalization
-        - Script removal
-        - Site-specific preprocessing
+    - Preserve Reality
+    - Preserve Observable Information
+    - Never Generate Meaning
 
-    This Runtime intentionally performs no transformation
-    until normalization becomes necessary.
+    Reserved For
+
+    - Whitespace cleanup
+    - HTML normalization
+    - Site-specific preprocessing
+
+    Current Runtime
+
+    This Runtime intentionally performs no transformation.
     """
 
     return html

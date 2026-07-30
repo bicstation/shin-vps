@@ -67,25 +67,32 @@ class ImportRepository:
 
         defaults = payload.copy()
         defaults.pop("unique_id", None)
-
+        
+        
         product, created = PCProduct.objects.update_or_create(
             unique_id=unique_id,
             defaults=defaults,
         )
-        
+
         print("=" * 60)
         print("💾 AFTER UPDATE_OR_CREATE")
         print("=" * 60)
+
         print("payload.price :", defaults.get("price"))
         print("object.price  :", product.price)
+
+        print("payload.maker :", defaults.get("maker"))
+        print("object.maker  :", product.maker)
 
         product.refresh_from_db()
 
         print("db.price      :", product.price)
+        print("db.maker      :", product.maker)
+
         print("=" * 60)
-        
 
         return product, created
+
 
     # =========================================================
     # Save Many

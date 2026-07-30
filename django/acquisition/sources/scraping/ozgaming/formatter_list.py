@@ -176,12 +176,48 @@ def normalize(
             ),
 
             "specifications": specs,
-
+            
             "observation": {
+
+                "product_name": text(
+                    card.select_one(
+                        ".item-list-name",
+                    )
+                ),
+
+                "price": text(
+                    card.select_one(
+                        ".item-list-price",
+                    )
+                ),
+
+                "stock": text(
+                    card.select_one(
+                        ".item-list-stock",
+                    )
+                ),
+
+                "delivery": text(
+                    card.select_one(
+                        ".item-list-delivery",
+                    )
+                ),
+
+                "image_url": (
+                    urljoin(
+                        BASE_URL,
+                        image.get("src", ""),
+                    )
+                    if image
+                    else ""
+                ),
+
+                "product_url": product_url,
 
                 "raw_spec": raw_spec,
 
             },
+
 
         }
 

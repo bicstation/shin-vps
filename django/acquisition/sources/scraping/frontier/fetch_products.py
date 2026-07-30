@@ -77,7 +77,7 @@ def save_document(
     response: requests.Response,
 ):
 
-    AcquisitionDocument.objects.update_or_create(
+    document, created = AcquisitionDocument.objects.update_or_create(
         source_type="scraping",
         source_name=SITE_NAME.lower(),
         document_type="product",
@@ -91,6 +91,8 @@ def save_document(
             "content": response.text,
         },
     )
+
+    return document, created
 
 
 # ==============================================================================
@@ -126,9 +128,7 @@ def fetch_products(
             slug = row["slug"]
             url = row["url"]
 
-            print(
-                f"[{index}/{len(models)}] {slug}"
-            )
+            print(f"[{index}/{len(models)}] {slug}")
 
             #
             # Cache
@@ -156,7 +156,7 @@ def fetch_products(
 
                 response.raise_for_status()
 
-                save_document(
+                document, created = save_document(
                     slug=slug,
                     url=url,
                     response=response,
@@ -164,12 +164,9 @@ def fetch_products(
 
                 success.append(slug)
 
-                print(
-                    f"  Status : {response.status_code}"
-                )
-                print(
-                    f"  Size   : {len(response.content):,} bytes"
-                )
+                print(f"  HTTP   : {response.status_code}")
+                print(f"  Size   : {len(response.content):,} bytes")
+                print(f"  Saved  : {'CREATED' if created else 'UPDATED'}")
 
             except Exception as e:
 

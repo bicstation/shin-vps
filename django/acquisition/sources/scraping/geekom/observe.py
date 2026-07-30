@@ -4,16 +4,30 @@ observe.py
 
 GEEKOM Observation Runtime
 
-AcquisitionDocument
+Acquire Runtime
         │
         ▼
 Formatter Runtime (Memory)
         │
         ▼
-Observation
+Observation Runtime
         │
         ▼
 ObservationDocument
+
+Responsibilities
+
+- Observe Reality
+- Preserve Reality
+- Produce ObservationDocument
+
+NOT
+
+- Parse Specifications
+- Generate Meaning
+- Classify Reality
+- Infer
+- Guess
 
 Reality First
 Observation First
@@ -39,7 +53,11 @@ from acquisition.common.trace.reality_trace import (
 from .formatter import normalize
 
 
-def observe(html: str):
+# ==========================================================
+# Observation
+# ==========================================================
+
+def observe(html: str) -> dict:
 
     trace_pipeline("Observation")
 
@@ -55,14 +73,38 @@ def observe(html: str):
         "html.parser",
     )
 
+    #
+    # Reality Snapshot
+    #
+
     result = {
+
+        #
+        # Identity
+        #
+
         "title": "",
+
         "url": "",
+
         "description": "",
+
+        #
+        # Media
+        #
+
         "main_image": "",
+
         "images": [],
+
+        #
+        # Reality
+        #
+
         "tables": [],
+
         "scripts": [],
+
     }
 
     #
@@ -70,7 +112,10 @@ def observe(html: str):
     #
 
     if soup.title:
-        result["title"] = soup.title.get_text(strip=True)
+
+        result["title"] = soup.title.get_text(
+            strip=True,
+        )
 
     #
     # Canonical URL
@@ -89,12 +134,14 @@ def observe(html: str):
         ).strip()
 
     #
-    # Description
+    # Meta Description
     #
 
     meta = soup.find(
         "meta",
-        attrs={"name": "description"},
+        attrs={
+            "name": "description",
+        },
     )
 
     if meta:
@@ -103,7 +150,6 @@ def observe(html: str):
             "content",
             "",
         )
-
     #
     # Images
     #
@@ -111,7 +157,7 @@ def observe(html: str):
     images = []
 
     for img in soup.select(
-        '.product-gallery__media[data-media-type="image"] img'
+        '.product-gallery__media[data-media-type="image"] img',
     ):
 
         src = (
@@ -135,6 +181,7 @@ def observe(html: str):
     result["images"] = images
 
     if images:
+
         result["main_image"] = images[0]
 
     #
@@ -142,8 +189,16 @@ def observe(html: str):
     #
 
     result["tables"] = [
-        table.get_text("\n", strip=True)
-        for table in soup.find_all("table")
+
+        table.get_text(
+            "\n",
+            strip=True,
+        )
+
+        for table in soup.find_all(
+            "table",
+        )
+
     ]
 
     #
@@ -158,58 +213,101 @@ def observe(html: str):
         if not script.string:
             continue
 
+        #
+        # Preserve Reality
+        #
+
         result["scripts"].append(
-            script.string
+            script.string,
         )
+
+        #
+        # URL Fallback
+        #
 
         if result["url"]:
             continue
 
         try:
 
-            data = json.loads(script.string)
+            data = json.loads(
+                script.string,
+            )
 
         except Exception:
+
             continue
 
-        if isinstance(data, dict):
+        if isinstance(
+            data,
+            dict,
+        ):
 
-            if data.get("url"):
+            if data.get(
+                "url",
+            ):
 
                 result["url"] = data["url"]
+
                 continue
 
-            graph = data.get("@graph")
+            graph = data.get(
+                "@graph",
+            )
 
-            if isinstance(graph, list):
+            if isinstance(
+                graph,
+                list,
+            ):
 
                 for node in graph:
 
                     if (
-                        isinstance(node, dict)
-                        and node.get("url")
+                        isinstance(
+                            node,
+                            dict,
+                        )
+                        and node.get(
+                            "url",
+                        )
                     ):
 
                         result["url"] = node["url"]
+
                         break
+
+    #
+    # Trace
+    #
 
     trace(
         "Observation Result",
         {
             "title": result["title"],
             "url": result["url"],
-            "description": bool(result["description"]),
+            "description": bool(
+                result["description"],
+            ),
             "main_image": result["main_image"],
-            "images": len(result["images"]),
-            "tables": len(result["tables"]),
-            "jsonld": len(result["scripts"]),
+            "images": len(
+                result["images"],
+            ),
+            "tables": len(
+                result["tables"],
+            ),
+            "jsonld": len(
+                result["scripts"],
+            ),
         },
     )
 
     return result
 
+# ==========================================================
+# Runtime
+# ==========================================================
 
-def run():
+def run() -> None:
 
     print("=" * 60)
     print("👀 GEEKOM OBSERVATION")
@@ -233,13 +331,25 @@ def run():
             },
         )
 
+        #
+        # Formatter Runtime
+        #
+
         normalized = normalize(
             document.content,
         )
 
+        #
+        # Observation Runtime
+        #
+
         observation = observe(
             normalized,
         )
+
+        #
+        # ObservationDocument
+        #
 
         obj, _ = ObservationDocument.objects.update_or_create(
             source_name=document.source_name,
@@ -262,10 +372,15 @@ def run():
     print("=" * 60)
 
 
-def main():
+# ==========================================================
+# Main
+# ==========================================================
+
+def main() -> None:
 
     run()
 
 
 if __name__ == "__main__":
+
     main()

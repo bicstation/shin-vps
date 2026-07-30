@@ -12,7 +12,7 @@ import csv
 import random
 import time
 
-import requests
+from curl_cffi import requests
 
 from api.models.acquisition_document import AcquisitionDocument
 
@@ -33,7 +33,10 @@ def load_products():
 
         return [
             row
-            for row in csv.DictReader(f, delimiter="\t")
+            for row in csv.DictReader(
+                f,
+                delimiter="\t",
+            )
             if row["enabled"].lower() == "true"
         ]
 
@@ -48,10 +51,20 @@ def fetch(force: bool = False):
     print(f"Target : {len(products)} Products")
     print("=" * 60)
 
-    session = requests.Session()
-    session.headers.update({
-        "User-Agent": USER_AGENT,
-    })
+    #
+    # Chrome Session
+    #
+
+    session = requests.Session(
+        impersonate="chrome",
+    )
+
+    session.headers.update(
+        {
+            "User-Agent": USER_AGENT,
+            "Referer": "https://geekom.jp/",
+        }
+    )
 
     success = []
     failed = []
@@ -62,9 +75,9 @@ def fetch(force: bool = False):
 
         print(f"[{index}/{len(products)}] {slug}")
 
-        # --------------------------------------------------
+        #
         # Cache Check
-        # --------------------------------------------------
+        #
 
         if not force:
 
@@ -86,23 +99,37 @@ def fetch(force: bool = False):
         try:
 
             #
-            # アクセス間隔
+            # Gentle Delay
             #
+
             if index > 1:
-                wait = random.uniform(20.0, 30.0)
+
+                wait = random.uniform(
+                    20.0,
+                    30.0,
+                )
+
                 print(f"  😴 Sleep {wait:.1f}s")
+
                 time.sleep(wait)
 
             response = None
 
             #
-            # 最大3回リトライ
+            # Retry
             #
+
             for attempt in range(3):
 
                 response = session.get(
                     row["url"],
                     timeout=TIMEOUT,
+                    allow_redirects=True,
+                )
+
+                print(f"  Status : {response.status_code}")
+                print(
+                    f"  Type   : {response.headers.get('Content-Type')}"
                 )
 
                 if response.status_code == 200:
@@ -141,13 +168,49 @@ def fetch(force: bool = False):
 
             print("  Cache  : MISS")
             print(f"  ✓ {response.status_code}")
-            print(f"  {len(response.content):,} bytes")
+            print(
+                f"  {len(response.content):,} bytes"
+            )
+
+        except requests.HTTPError as e:
+
+            response = e.response
+
+            if response is not None:
+
+                print(f"  Status : {response.status_code}")
+
+                print("  Headers")
+
+                for key, value in response.headers.items():
+
+                    print(f"    {key}: {value}")
+
+                print()
+
+                print(response.text[:1000])
+
+            else:
+
+                print(f"  ERROR : {e}")
+
+            failed.append(
+                (
+                    slug,
+                    str(e),
+                )
+            )
 
         except Exception as e:
 
-            failed.append((slug, str(e)))
+            failed.append(
+                (
+                    slug,
+                    str(e),
+                )
+            )
 
-            print(f"  ✗ {e}")
+            print(f"  ERROR : {e}")
 
         print()
 
@@ -158,8 +221,10 @@ def fetch(force: bool = False):
 
 
 def main(force: bool = False):
+
     fetch(force=force)
 
 
 if __name__ == "__main__":
+
     main()
