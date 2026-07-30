@@ -1,9 +1,16 @@
 #!/usr/bin/env python3
 """
+==============================================================================
 FRONTIER Model Discovery
 
-Reality First
-Observation First
+Acquire Runtime
+
+AcquisitionDocument (Seed)
+        ↓
+Discover Models
+        ↓
+Generate model_list.tsv
+==============================================================================
 """
 
 from __future__ import annotations
@@ -14,15 +21,27 @@ from bs4 import BeautifulSoup
 
 from api.models.acquisition_document import AcquisitionDocument
 
-from acquisition.common.trace.reality_trace import (
-    trace_pipeline,
-)
+from acquisition.common.trace.reality_trace import trace_pipeline
 
 from .settings import (
     MODEL_LIST_TSV,
+    BASE_URL,
+    SITE_NAME,
 )
 
-BASE_URL = "https://www.frontier-direct.jp"
+
+# ==============================================================================
+# Runtime
+# ==============================================================================
+
+HEADERS = (
+    "category",
+    "series",
+    "vendor",
+    "chipset",
+    "slug",
+    "url",
+)
 
 DESKTOP = {
     "full",
@@ -31,14 +50,12 @@ DESKTOP = {
     "slim",
 }
 
-rows = []
 
-
-# ==========================================================
+# ==============================================================================
 # Helpers
-# ==========================================================
+# ==============================================================================
 
-def absolute_url(href):
+def absolute_url(href: str) -> str:
 
     if href.startswith("/"):
         return BASE_URL + href
@@ -46,34 +63,39 @@ def absolute_url(href):
     return href
 
 
-def slugify(url):
+def slugify(url: str) -> str:
 
     return url.rstrip("/").split("/")[-1]
 
 
-def add_row(
-    category,
-    series,
-    url,
-    vendor="",
-    chipset="",
+def create_row(
+    category: str,
+    series: str,
+    url: str,
+    vendor: str = "",
+    chipset: str = "",
 ):
 
-    rows.append({
+    return {
         "category": category,
         "series": series,
         "vendor": vendor,
         "chipset": chipset,
         "slug": slugify(url),
         "url": url,
-    })
+    }
 
 
-# ==========================================================
-# Desktop
-# ==========================================================
+# ==============================================================================
+# Desktop Discovery
+# ==============================================================================
 
-def discover_desktop(category, soup):
+def discover_desktop(
+    category: str,
+    soup: BeautifulSoup,
+):
+
+    rows = []
 
     cards = soup.select("div.uk-card")
 
@@ -103,20 +125,29 @@ def discover_desktop(category, soup):
             if "（" in text and "）" in text:
                 chipset = text.split("（")[1].split("）")[0]
 
-            add_row(
-                category,
-                series,
-                absolute_url(link["href"]),
-                vendor,
-                chipset,
+            rows.append(
+                create_row(
+                    category,
+                    series,
+                    absolute_url(link["href"]),
+                    vendor,
+                    chipset,
+                )
             )
 
+    return rows
 
-# ==========================================================
-# Notebook
-# ==========================================================
 
-def discover_notebook(category, soup):
+# ==============================================================================
+# Notebook Discovery
+# ==============================================================================
+
+def discover_notebook(
+    category: str,
+    soup: BeautifulSoup,
+):
+
+    rows = []
 
     cards = soup.select("div.uk-card")
 
@@ -130,25 +161,31 @@ def discover_notebook(category, soup):
         if title is None or link is None:
             continue
 
-        add_row(
-            category,
-            title.get_text(strip=True),
-            absolute_url(link["href"]),
+        rows.append(
+            create_row(
+                category,
+                title.get_text(strip=True),
+                absolute_url(link["href"]),
+            )
         )
 
+    return rows
 
-# ==========================================================
-# Discover
-# ==========================================================
+
+# ==============================================================================
+# Discovery
+# ==============================================================================
 
 def discover():
 
     trace_pipeline("DISCOVER")
 
+    rows = []
+
     documents = (
         AcquisitionDocument.objects
         .filter(
-            source_name="frontier",
+            source_name=SITE_NAME.lower(),
             document_type="seed",
         )
         .order_by("document_key")
@@ -158,9 +195,9 @@ def discover():
 
         category = document.document_key
 
-        print("=" * 60)
+        print("=" * 70)
         print(category)
-        print("=" * 60)
+        print("=" * 70)
 
         soup = BeautifulSoup(
             document.content,
@@ -168,9 +205,26 @@ def discover():
         )
 
         if category in DESKTOP:
-            discover_desktop(category, soup)
+
+            rows.extend(
+                discover_desktop(
+                    category,
+                    soup,
+                )
+            )
+
         else:
-            discover_notebook(category, soup)
+
+            rows.extend(
+                discover_notebook(
+                    category,
+                    soup,
+                )
+            )
+
+    rows.sort(
+        key=lambda row: row["slug"]
+    )
 
     with MODEL_LIST_TSV.open(
         "w",
@@ -180,14 +234,7 @@ def discover():
 
         writer = csv.DictWriter(
             f,
-            fieldnames=[
-                "category",
-                "series",
-                "vendor",
-                "chipset",
-                "slug",
-                "url",
-            ],
+            fieldnames=HEADERS,
             delimiter="\t",
         )
 
@@ -195,14 +242,20 @@ def discover():
         writer.writerows(rows)
 
     print()
-    print("=" * 60)
-    print("DISCOVERY COMPLETE")
-    print(f"Entries : {len(rows)}")
-    print(f"Saved   : {MODEL_LIST_TSV}")
-    print("=" * 60)
+    print("=" * 70)
+    print("RESULT")
+    print("=" * 70)
+    print(f"Models : {len(rows)}")
+    print(f"Saved  : {MODEL_LIST_TSV}")
+    print("=" * 70)
 
+
+# ==============================================================================
+# Entry Point
+# ==============================================================================
 
 def main():
+
     discover()
 
 

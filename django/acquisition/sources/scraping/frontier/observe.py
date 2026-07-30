@@ -1,23 +1,34 @@
 #!/usr/bin/env python3
 """
 ==============================================================================
-observe.py
-
 FRONTIER Observation Runtime
 
-AcquisitionDocument
+Acquire HTML
         │
         ▼
-Formatter Runtime (Memory)
+Formatter Runtime
         │
         ▼
-Observation
+Observation Runtime
         │
         ▼
 ObservationDocument
 
 Reality First
 Observation First
+==============================================================================
+
+Responsibilities
+
+- Observe Reality
+- Extract Evidence
+- Produce ObservationDocument
+
+Not Responsibilities
+
+- Semantic Mapping
+- Import Contract
+- Database Integration
 ==============================================================================
 """
 
@@ -41,23 +52,17 @@ from acquisition.common.trace.reality_trace import (
 from .formatter import normalize
 
 
-def observe(html: str):
+# ==============================================================================
+# Observation Factory
+# ==============================================================================
 
-    trace_pipeline("Observation")
+def create_observation() -> dict:
 
-    trace(
-        "Observation Input",
-        {
-            "html_length": len(html),
-        },
-    )
+    """
+    Create empty Observation Runtime object.
+    """
 
-    soup = BeautifulSoup(
-        html,
-        "html.parser",
-    )
-
-    result = {
+    return {
         "title": "",
         "url": "",
         "description": "",
@@ -67,16 +72,39 @@ def observe(html: str):
         "scripts": [],
     }
 
-    #
-    # Title
-    #
+
+# ==============================================================================
+# Title Observation
+# ==============================================================================
+
+def observe_title(
+    soup: BeautifulSoup,
+    observation: dict,
+):
+
+    """
+    Observe HTML Title.
+    """
 
     if soup.title:
-        result["title"] = soup.title.get_text(strip=True)
 
-    #
-    # Canonical URL
-    #
+        observation["title"] = soup.title.get_text(
+            strip=True,
+        )
+
+
+# ==============================================================================
+# Canonical URL Observation
+# ==============================================================================
+
+def observe_url(
+    soup: BeautifulSoup,
+    observation: dict,
+):
+
+    """
+    Observe Canonical URL.
+    """
 
     canonical = soup.find(
         "link",
@@ -85,30 +113,51 @@ def observe(html: str):
 
     if canonical:
 
-        result["url"] = canonical.get(
+        observation["url"] = canonical.get(
             "href",
             "",
         ).strip()
+        
+# ==============================================================================
+# Description Observation
+# ==============================================================================
 
-    #
-    # Description
-    #
+def observe_description(
+    soup: BeautifulSoup,
+    observation: dict,
+):
+
+    """
+    Observe Meta Description.
+    """
 
     meta = soup.find(
         "meta",
-        attrs={"name": "description"},
+        attrs={
+            "name": "description",
+        },
     )
 
     if meta:
 
-        result["description"] = meta.get(
+        observation["description"] = meta.get(
             "content",
             "",
-        )
+        ).strip()
 
-    #
-    # Images
-    #
+
+# ==============================================================================
+# Image Observation
+# ==============================================================================
+
+def observe_images(
+    soup: BeautifulSoup,
+    observation: dict,
+):
+
+    """
+    Observe Product Images.
+    """
 
     images = []
 
@@ -122,10 +171,10 @@ def observe(html: str):
             or ""
         ).strip()
 
-        if (
-            not src
-            or src.startswith("data:image")
-        ):
+        if not src:
+            continue
+
+        if src.startswith("data:image"):
             continue
 
         if src.startswith("//"):
@@ -134,23 +183,54 @@ def observe(html: str):
         if src not in images:
             images.append(src)
 
-    result["images"] = images
+    observation["images"] = images
 
     if images:
-        result["main_image"] = images[0]
 
-    #
-    # Tables
-    #
+        observation["main_image"] = images[0]
 
-    result["tables"] = [
-        table.get_text("\n", strip=True)
-        for table in soup.find_all("table")
-    ]
 
-    #
-    # JSON-LD
-    #
+# ==============================================================================
+# Table Observation
+# ==============================================================================
+
+def observe_tables(
+    soup: BeautifulSoup,
+    observation: dict,
+):
+
+    """
+    Observe HTML Tables.
+    """
+
+    tables = []
+
+    for table in soup.find_all("table"):
+
+        tables.append(
+            table.get_text(
+                "\n",
+                strip=True,
+            )
+        )
+
+    observation["tables"] = tables
+
+# ==============================================================================
+# JSON-LD Observation
+# ==============================================================================
+
+def observe_jsonld(
+    soup: BeautifulSoup,
+    observation: dict,
+):
+
+    """
+    Observe JSON-LD.
+
+    Store every JSON-LD script as Reality.
+    If Canonical URL is missing, supplement it from JSON-LD.
+    """
 
     for script in soup.find_all(
         "script",
@@ -160,69 +240,181 @@ def observe(html: str):
         if not script.string:
             continue
 
-        result["scripts"].append(
+        observation["scripts"].append(
             script.string
         )
 
-        if result["url"]:
+        #
+        # URL already observed
+        #
+
+        if observation["url"]:
             continue
 
         try:
 
-            data = json.loads(script.string)
+            data = json.loads(
+                script.string
+            )
 
         except Exception:
+
             continue
 
-        if isinstance(data, dict):
+        #
+        # Simple JSON-LD
+        #
 
-            if data.get("url"):
+        if isinstance(
+            data,
+            dict,
+        ):
 
-                result["url"] = data["url"]
+            url = data.get("url")
+
+            if url:
+
+                observation["url"] = url
+
                 continue
+
+            #
+            # @graph
+            #
 
             graph = data.get("@graph")
 
-            if isinstance(graph, list):
+            if isinstance(
+                graph,
+                list,
+            ):
 
                 for node in graph:
 
-                    if (
-                        isinstance(node, dict)
-                        and node.get("url")
+                    if not isinstance(
+                        node,
+                        dict,
                     ):
+                        continue
 
-                        result["url"] = node["url"]
+                    url = node.get("url")
+
+                    if url:
+
+                        observation["url"] = url
+
                         break
+
+
+# ==============================================================================
+# Observation Runtime
+# ==============================================================================
+
+def observe(
+    html: str,
+):
+
+    """
+    Observe Reality from HTML.
+    """
+
+    trace_pipeline(
+        "Observation",
+    )
+
+    trace(
+        "Observation Input",
+        {
+            "html_length": len(html),
+        },
+    )
+
+    soup = BeautifulSoup(
+        html,
+        "html.parser",
+    )
+
+    observation = create_observation()
+
+    #
+    # Observe Reality
+    #
+
+    observe_title(
+        soup,
+        observation,
+    )
+
+    observe_url(
+        soup,
+        observation,
+    )
+
+    observe_description(
+        soup,
+        observation,
+    )
+
+    observe_images(
+        soup,
+        observation,
+    )
+
+    observe_tables(
+        soup,
+        observation,
+    )
+
+    observe_jsonld(
+        soup,
+        observation,
+    )
 
     trace(
         "Observation Result",
         {
-            "title": result["title"],
-            "url": result["url"],
-            "description": bool(result["description"]),
-            "main_image": result["main_image"],
-            "images": len(result["images"]),
-            "tables": len(result["tables"]),
-            "jsonld": len(result["scripts"]),
+            "title": observation["title"],
+            "url": observation["url"],
+            "description": bool(
+                observation["description"]
+            ),
+            "main_image": observation["main_image"],
+            "images": len(
+                observation["images"]
+            ),
+            "tables": len(
+                observation["tables"]
+            ),
+            "jsonld": len(
+                observation["scripts"]
+            ),
         },
     )
 
-    return result
+    return observation
 
+# ==============================================================================
+# Runtime
+# ==============================================================================
 
 def run():
 
-    print("=" * 60)
+    print("=" * 70)
     print("👀 FRONTIER OBSERVATION")
-    print("=" * 60)
+    print("=" * 70)
 
-    trace_pipeline("Observation")
+    trace_pipeline(
+        "Observation",
+    )
 
-    documents = AcquisitionDocument.objects.filter(
-        source_name="frontier",
-        document_type="product",
-    ).iterator()
+    documents = (
+        AcquisitionDocument.objects
+        .filter(
+            source_name="frontier",
+            document_type="product",
+        )
+        .iterator()
+    )
 
     success = 0
 
@@ -235,21 +427,36 @@ def run():
             },
         )
 
-        normalized = normalize(
+        #
+        # Formatter Runtime
+        #
+
+        html = normalize(
             document.content,
         )
 
+        #
+        # Observation Runtime
+        #
+
         observation = observe(
-            normalized,
+            html,
         )
 
-        obj, _ = ObservationDocument.objects.update_or_create(
-            source_name=document.source_name,
-            document_type=document.document_type,
-            document_key=document.document_key,
-            defaults={
-                "observation": observation,
-            },
+        #
+        # Save ObservationDocument
+        #
+
+        obj, _ = (
+            ObservationDocument.objects
+            .update_or_create(
+                source_name=document.source_name,
+                document_type=document.document_type,
+                document_key=document.document_key,
+                defaults={
+                    "observation": observation,
+                },
+            )
         )
 
         trace_model(
@@ -259,10 +466,17 @@ def run():
 
         success += 1
 
-    print("=" * 60)
+    print()
+    print("=" * 70)
+    print("RESULT")
+    print("=" * 70)
     print(f"SUCCESS : {success}")
-    print("=" * 60)
+    print("=" * 70)
 
+
+# ==============================================================================
+# Entry Point
+# ==============================================================================
 
 def main():
 
@@ -271,3 +485,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    

@@ -1,20 +1,46 @@
 #!/usr/bin/env python3
 """
-FRONTIER Runtime Runner
+==============================================================================
+FRONTIER Runtime
+
+Entry Point
+
+Reality Source
+        │
+        ▼
+Pipeline
+        │
+        ▼
+Acquire Runtime
+        │
+        ▼
+Observation Runtime
+        │
+        ▼
+Mapper Runtime
+        │
+        ▼
+Integration Runtime
+==============================================================================
 """
 
 from __future__ import annotations
 
-from .pipeline import run
+from .pipeline import (
+    main as pipeline,
+)
 
 
-# ==========================================================
-# Main
-# ==========================================================
+# ==============================================================================
+# Entry Point
+# ==============================================================================
 
-def main(force: bool = False):
+def main() -> None:
+    """
+    Execute FRONTIER Runtime.
+    """
 
-    run(force=force)
+    pipeline()
 
 
 if __name__ == "__main__":

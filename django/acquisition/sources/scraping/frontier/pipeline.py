@@ -12,10 +12,13 @@ Acquire Runtime
 Observation Runtime
         │
         ▼
-Adapter Runtime
+Mapper Runtime
         │
         ▼
 Integration Runtime
+        │
+        ▼
+PCProduct
 
 Reality First
 Observation First
@@ -26,93 +29,129 @@ Semantic Later
 
 from __future__ import annotations
 
-from .fetch_list import fetch as fetch_seed
-from .fetch_products import fetch as fetch_products
+from acquisition.common.trace.reality_trace import (
+    trace_pipeline,
+)
 
-from .discover_models import discover as discover_models
-from .discover_series import discover as discover_series
-from .discover_products import discover as discover_products
+from .fetch_list import main as fetch_seed
+from .discover_series import main as discover_series
+from .discover_models import main as discover_models
+from .fetch_products import main as fetch_products
 
-from .observe import run as run_observe
+from .observe import main as observe
 
-from .formatter_list import format_products
 from .mapper import main as mapper
 
-from .integration import run as run_integration
+from .integration import main as integration
 
 
-# ==========================================================
+# ==============================================================================
 # Acquire Runtime
-# ==========================================================
+# ==============================================================================
 
-def run_acquire(force: bool = False) -> None:
+def run_acquire() -> None:
+    """
+    Execute Acquire Runtime.
+    """
 
-    fetch_seed(force=force)
-
-    discover_models()
-
-    fetch_products(force=force)
+    fetch_seed()
 
     discover_series()
 
-    discover_products()
+    discover_models()
+
+    fetch_products()
 
 
-# ==========================================================
+# ==============================================================================
 # Observation Runtime
-# ==========================================================
+# ==============================================================================
 
 def run_observation() -> None:
+    """
+    Execute Observation Runtime.
+    """
 
-    run_observe()
+    observe()
 
 
-# ==========================================================
-# Adapter Runtime
-# ==========================================================
+# ==============================================================================
+# Mapper Runtime
+# ==============================================================================
 
-def run_adapter() -> None:
-
-    #
-    # TSV → Observation Runtime の補助データ生成
-    #
-
-    format_products()
-
-    #
-    # ObservationDocument → ImportDocument
-    #
+def run_mapper() -> None:
+    """
+    Execute Mapper Runtime.
+    """
 
     mapper()
 
 
-# ==========================================================
+# ==============================================================================
 # Integration Runtime
-# ==========================================================
+# ==============================================================================
 
-def run_integration_runtime() -> None:
+def run_integration() -> None:
+    """
+    Execute Integration Runtime.
+    """
 
-    run_integration()
+    integration()
 
 
-# ==========================================================
+# ==============================================================================
 # Pipeline
-# ==========================================================
+# ==============================================================================
 
-def run(force: bool = False) -> None:
+def run() -> None:
+    """
+    Execute complete FRONTIER Runtime Pipeline.
+    """
 
-    run_acquire(force=force)
+    print()
+    print("=" * 70)
+    trace_pipeline("Acquire Runtime")
+    print("=" * 70)
+
+    run_acquire()
+
+    print()
+    print("=" * 70)
+    trace_pipeline("Observation Runtime")
+    print("=" * 70)
 
     run_observation()
 
-    run_adapter()
+    print()
+    print("=" * 70)
+    trace_pipeline("Mapper Runtime")
+    print("=" * 70)
 
-    run_integration_runtime()
+    run_mapper()
+
+    print()
+    print("=" * 70)
+    trace_pipeline("Integration Runtime")
+    print("=" * 70)
+
+    run_integration()
+
+    print()
+    print("=" * 70)
+    trace_pipeline("FRONTIER Runtime Complete")
+    print("=" * 70)
 
 
-def main(force: bool = False) -> None:
+# ==============================================================================
+# Entry Point
+# ==============================================================================
 
-    run(force=force)
+def main() -> None:
+    """
+    Runtime Entry Point.
+    """
+
+    run()
 
 
 if __name__ == "__main__":

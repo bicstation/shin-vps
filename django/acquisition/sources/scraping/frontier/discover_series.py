@@ -1,10 +1,16 @@
 #!/usr/bin/env python3
 """
+==============================================================================
 FRONTIER Series Discovery
 
-Mission:
-    Discover FRONTIER Series
-    Generate series_list.tsv
+Acquire Runtime
+
+AcquisitionDocument
+    ↓
+Discover Series
+    ↓
+Generate series_list.tsv
+==============================================================================
 """
 
 from __future__ import annotations
@@ -12,27 +18,33 @@ from __future__ import annotations
 import csv
 import re
 
-from bs4 import BeautifulSoup
-
 from api.models.acquisition_document import AcquisitionDocument
 
-from acquisition.common.trace.reality_trace import (
-    trace_pipeline,
-)
+from acquisition.common.trace.reality_trace import trace_pipeline
 
 from .settings import (
     SERIES_LIST_TSV,
+    SITE_NAME,
 )
 
-HEADERS = [
+
+# ==============================================================================
+# TSV
+# ==============================================================================
+
+HEADERS = (
     "model_slug",
     "brand",
     "category",
     "series",
-]
+)
 
 
-def detect_series(model_slug):
+# ==============================================================================
+# Series Resolution
+# ==============================================================================
+
+def detect_series(model_slug: str) -> str:
 
     slug = model_slug.lower()
 
@@ -75,7 +87,11 @@ def detect_series(model_slug):
     return ""
 
 
-def detect_category(series):
+# ==============================================================================
+# Category Resolution
+# ==============================================================================
+
+def detect_category(series: str) -> str:
 
     if series == "Creator":
         return "Creator Desktop"
@@ -85,6 +101,10 @@ def detect_category(series):
 
     return "Gaming Desktop"
 
+
+# ==============================================================================
+# Discovery
+# ==============================================================================
 
 def discover():
 
@@ -96,19 +116,23 @@ def discover():
     documents = (
         AcquisitionDocument.objects
         .filter(
-            source_name="frontier",
+            source_name=SITE_NAME.lower(),
             document_type="product",
         )
         .order_by("document_key")
     )
 
-    print("=" * 60)
-    print("DISCOVER SERIES")
-    print("=" * 60)
+    print("=" * 70)
+    print(f"{SITE_NAME} SERIES DISCOVERY")
+    print("=" * 70)
 
     for document in documents:
 
         model_slug = document.document_key
+
+        #
+        # Skip
+        #
 
         if re.fullmatch(r"g\d+", model_slug):
             continue
@@ -118,28 +142,31 @@ def discover():
 
         seen.add(model_slug)
 
-        BeautifulSoup(
-            document.content,
-            "html.parser",
-        )
-
         series = detect_series(model_slug)
 
         rows.append({
             "model_slug": model_slug,
-            "brand": "FRONTIER",
+            "brand": SITE_NAME,
             "category": detect_category(series),
             "series": series,
         })
 
-        print(f"{model_slug:20} -> {series}")
+        print(
+            f"{model_slug:20} -> {series}"
+        )
 
-    rows.sort(key=lambda x: x["model_slug"])
+    rows.sort(
+        key=lambda row: row["model_slug"]
+    )
+
+    #
+    # Save TSV
+    #
 
     with SERIES_LIST_TSV.open(
         "w",
-        newline="",
         encoding="utf-8",
+        newline="",
     ) as f:
 
         writer = csv.DictWriter(
@@ -152,14 +179,20 @@ def discover():
         writer.writerows(rows)
 
     print()
-    print("=" * 60)
+    print("=" * 70)
+    print("RESULT")
+    print("=" * 70)
     print(f"Series : {len(rows)}")
     print(f"Saved   : {SERIES_LIST_TSV}")
-    print("DONE")
-    print("=" * 60)
+    print("=" * 70)
 
+
+# ==============================================================================
+# Entry Point
+# ==============================================================================
 
 def main():
+
     discover()
 
 

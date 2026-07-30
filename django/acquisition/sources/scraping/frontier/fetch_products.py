@@ -1,15 +1,16 @@
-# /home/maya/shin-vps/django/acquisition/sources/scraping/frontier/fetch_products.py
 #!/usr/bin/env python3
 """
+==============================================================================
 FRONTIER Product Fetch
+
+Acquire Runtime
 
 Model List
     ↓
-Fetch Reality
+Fetch Product HTML
     ↓
-AcquisitionDocument
-
-Reality First
+Save AcquisitionDocument
+==============================================================================
 """
 
 from __future__ import annotations
@@ -24,8 +25,13 @@ from .settings import (
     MODEL_LIST_TSV,
     USER_AGENT,
     TIMEOUT,
+    SITE_NAME,
 )
 
+
+# ==============================================================================
+# Model List
+# ==============================================================================
 
 def load_models():
 
@@ -43,98 +49,161 @@ def load_models():
         )
 
 
-def fetch(force: bool = False):
+# ==============================================================================
+# Cache
+# ==============================================================================
+
+def exists(slug: str) -> bool:
+
+    return (
+        AcquisitionDocument.objects
+        .filter(
+            source_type="scraping",
+            source_name=SITE_NAME.lower(),
+            document_type="product",
+            document_key=slug,
+        )
+        .exists()
+    )
+
+
+# ==============================================================================
+# Acquisition
+# ==============================================================================
+
+def save_document(
+    slug: str,
+    url: str,
+    response: requests.Response,
+):
+
+    AcquisitionDocument.objects.update_or_create(
+        source_type="scraping",
+        source_name=SITE_NAME.lower(),
+        document_type="product",
+        document_key=slug,
+        defaults={
+            "source_url": url,
+            "content_type": response.headers.get(
+                "Content-Type",
+                "text/html",
+            ),
+            "content": response.text,
+        },
+    )
+
+
+# ==============================================================================
+# Runtime
+# ==============================================================================
+
+def fetch_products(
+    force: bool = False,
+):
 
     models = load_models()
 
-    print("=" * 60)
-    print("🌐 FRONTIER PRODUCT FETCH")
-    print("=" * 60)
-    print(f"Target : {len(models)} Products")
-    print("=" * 60)
-
-    session = requests.Session()
-
-    session.headers.update({
-        "User-Agent": USER_AGENT,
-    })
+    print("=" * 70)
+    print(f"🌐 {SITE_NAME} PRODUCT FETCH")
+    print("=" * 70)
+    print(f"Target : {len(models)}")
+    print("=" * 70)
 
     success = []
     failed = []
 
-    for index, row in enumerate(models, start=1):
+    with requests.Session() as session:
 
-        slug = row["slug"]
+        session.headers.update({
+            "User-Agent": USER_AGENT,
+        })
 
-        print(f"[{index}/{len(models)}] {slug}")
+        for index, row in enumerate(
+            models,
+            start=1,
+        ):
 
-        #
-        # Cache
-        #
+            slug = row["slug"]
+            url = row["url"]
 
-        if not force:
+            print(
+                f"[{index}/{len(models)}] {slug}"
+            )
 
-            exists = AcquisitionDocument.objects.filter(
-                source_name="frontier",
-                document_type="product",
-                document_key=slug,
-            ).exists()
+            #
+            # Cache
+            #
 
-            if exists:
+            if not force and exists(slug):
 
                 success.append(slug)
 
-                print("  Cache : HIT")
+                print("  Status : CACHE")
                 print()
 
                 continue
 
-        try:
+            #
+            # Fetch
+            #
 
-            response = session.get(
-                row["url"],
-                timeout=TIMEOUT,
-            )
+            try:
 
-            response.raise_for_status()
+                response = session.get(
+                    url,
+                    timeout=TIMEOUT,
+                )
 
-            AcquisitionDocument.objects.update_or_create(
-                source_type="scraping",
-                source_name="frontier",
-                document_type="product",
-                document_key=slug,
-                defaults={
-                    "source_url": row["url"],
-                    "content_type": response.headers.get(
-                        "Content-Type",
-                        "text/html",
-                    ),
-                    "content": response.text,
-                },
-            )
+                response.raise_for_status()
 
-            success.append(slug)
+                save_document(
+                    slug=slug,
+                    url=url,
+                    response=response,
+                )
 
-            print("  Cache : MISS")
-            print(f"  ✓ {response.status_code}")
-            print(f"  {len(response.content):,} bytes")
+                success.append(slug)
 
-        except Exception as e:
+                print(
+                    f"  Status : {response.status_code}"
+                )
+                print(
+                    f"  Size   : {len(response.content):,} bytes"
+                )
 
-            failed.append((slug, str(e)))
+            except Exception as e:
 
-            print(f"  ✗ {e}")
+                failed.append(
+                    (
+                        slug,
+                        str(e),
+                    )
+                )
 
-        print()
+                print("  Status : ERROR")
+                print(f"  Reason : {e}")
 
-    print("=" * 60)
+            print()
+
+    print("=" * 70)
+    print("RESULT")
+    print("=" * 70)
     print(f"SUCCESS : {len(success)}")
     print(f"FAILED  : {len(failed)}")
-    print("=" * 60)
+    print("=" * 70)
 
 
-def main(force: bool = False):
-    fetch(force=force)
+# ==============================================================================
+# Entry Point
+# ==============================================================================
+
+def main(
+    force: bool = False,
+):
+
+    fetch_products(
+        force=force,
+    )
 
 
 if __name__ == "__main__":
