@@ -1,54 +1,79 @@
-"""
-GEEKOM Importer Settings
-"""
+#!/usr/bin/env python3
+# ============================================================================
+# SHIN CORE LINX
+# LinkShare Runtime Settings
+# ============================================================================
 
-from pathlib import Path
+from __future__ import annotations
 
-# ==========================================================
+import os
+
+# ============================================================================
 # Site
-# ==========================================================
+# ============================================================================
 
-SITE_NAME = "geekom"
-DISPLAY_NAME = "GEEKOM"
-BASE_URL = "https://geekom.jp"
+SITE_NAME = "linkshare"
 
-# ==========================================================
-# Fetch
-# ==========================================================
+# ============================================================================
+# FTP
+# ============================================================================
 
-USER_AGENT = (
-    "Mozilla/5.0 "
-    "(Windows NT 10.0; Win64; x64) "
-    "AppleWebKit/537.36 "
-    "(KHTML, like Gecko) "
-    "Chrome/138.0.0.0 Safari/537.36"
+FTP_HOST = os.getenv("LINKSHARE_FTP_HOST", "")
+FTP_PORT = int(os.getenv("LINKSHARE_FTP_PORT", "21"))
+
+FTP_USER = os.getenv("LINKSHARE_BC_USER", "")
+FTP_PASS = os.getenv("LINKSHARE_BC_PASS", "")
+
+FTP_TIMEOUT = int(
+    os.getenv(
+        "LINKSHARE_FTP_TIMEOUT",
+        "180",
+    )
 )
 
-TIMEOUT = 30
 
-# ==========================================================
+
+# ============================================================================
 # Affiliate
-# ==========================================================
+# ============================================================================
 
 AFFILIATE = {
-    "enabled": True,
-    "provider": "a8",
-    "a8mat": "459XR1+CCSU76+5G4A+BW0YB",
+
+    "affiliate_name": "linkshare",
+
+    "base_url": "https://click.linksynergy.com/",
+
 }
 
-# ==========================================================
-# Runtime Cache
-# ==========================================================
+# ============================================================================
+# Merchant Mapping
+# ============================================================================
 
-BASE_DIR = Path(__file__).resolve().parent
+LINKSHARE_MID_MAP = {
 
-RUNTIME_DIR = (
-    BASE_DIR.parent.parent
-    / "runtime"
-    / SITE_NAME.lower()
-)
+    "35909": {
+        "maker": "hp",
+        "prefix": "HP",
+    },
 
-ROOT_TSV = RUNTIME_DIR / "root.tsv"
-COLLECTIONS_TSV = RUNTIME_DIR / "collections.tsv"
-LIST_TSV = RUNTIME_DIR / "list.tsv"
-PRODUCT_LIST_TSV = RUNTIME_DIR / "product_list.tsv"
+    "2557": {
+        "maker": "dell",
+        "prefix": "DELL",
+    },
+
+    "2543": {
+        "maker": "fujitsu",
+        "prefix": "FUJITSU",
+    },
+
+    "36508": {
+        "maker": "dynabook",
+        "prefix": "DYNABOOK",
+    },
+
+    "43708": {
+        "maker": "asus",
+        "prefix": "ASUS",
+    },
+
+}

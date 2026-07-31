@@ -1,62 +1,41 @@
-# /home/maya/shin-vps/django/api/management/commands/import_products.py
-
 from __future__ import annotations
+
+from importlib import import_module
 
 from django.core.management.base import (
     BaseCommand,
     CommandError,
 )
 
-from acquisition.sources.scraping.ark.run import (
-    main as ark_import,
-)
-
-# from acquisition.sources.scraping.tsukumo.run import (
-#     main as tsukumo_import,
-# )
-
-from acquisition.sources.scraping.frontier.run import (
-    main as frontier_import,
-)
-
-from acquisition.sources.scraping.ozgaming.run import (
-    main as ozgaming_import,
-)
-
-from acquisition.sources.scraping.geekom.run import (
-    main as geekom_import,
-)
-
-
 # ==========================================================
-# Acquisition Runtime Registry
+# Reality Runtime Registry
 # ==========================================================
 
-ACQUISITION_RUNTIMES = {
+REALITY_RUNTIMES = {
 
     "ark": (
         "ARK",
-        ark_import,
+        "acquisition.sources.scraping.ark.run",
     ),
-
-    # "tsukumo": (
-    #     "TSUKUMO",
-    #     tsukumo_import,
-    # ),
 
     "frontier": (
         "FRONTIER",
-        frontier_import,
+        "acquisition.sources.scraping.frontier.run",
     ),
 
     "ozgaming": (
         "OzGaming",
-        ozgaming_import,
+        "acquisition.sources.scraping.ozgaming.run",
     ),
 
     "geekom": (
         "GEEKOM",
-        geekom_import,
+        "acquisition.sources.scraping.geekom.run",
+    ),
+
+    "linkshare": (
+        "LinkShare",
+        "acquisition.sources.scraping.linkshare.run",
     ),
 
 }
@@ -66,11 +45,11 @@ class Command(BaseCommand):
     """
     SHIN CORE LINX
 
-    Execute Acquisition Runtime.
+    Execute Reality Runtime.
     """
 
     help = (
-        "Execute Acquisition Runtime "
+        "Execute Reality Runtime "
         "for supported Reality Sources."
     )
 
@@ -78,16 +57,32 @@ class Command(BaseCommand):
     # Arguments
     # ======================================================
 
-    def add_arguments(self, parser):
+    def add_arguments(
+        self,
+        parser,
+    ):
 
         parser.add_argument(
             "source",
             type=str,
+            help="Reality Source",
+        )
+
+        parser.add_argument(
+            "method",
+            nargs="?",
+            default="default",
             help=(
-                "Reality Source "
-                "(ark, tsukumo, frontier, "
-                "ozgaming, geekom)"
+                "Acquisition Method "
+                "(ftp, api, ...)"
             ),
+        )
+
+        parser.add_argument(
+            "mid",
+            nargs="?",
+            default=None,
+            help="Merchant ID",
         )
 
     # ======================================================
@@ -102,7 +97,7 @@ class Command(BaseCommand):
 
         source = options["source"].lower()
 
-        runtime = ACQUISITION_RUNTIMES.get(
+        runtime = REALITY_RUNTIMES.get(
             source,
         )
 
@@ -110,7 +105,7 @@ class Command(BaseCommand):
 
             available = ", ".join(
                 sorted(
-                    ACQUISITION_RUNTIMES.keys()
+                    REALITY_RUNTIMES.keys()
                 )
             )
 
@@ -119,16 +114,29 @@ class Command(BaseCommand):
                 f"Available: {available}"
             )
 
-        title, runner = runtime
+        title, module_path = runtime
+
+        #
+        # Lazy Import
+        #
+
+        module = import_module(
+            module_path,
+        )
+
+        runner = module.main
 
         self.stdout.write("")
         self.stdout.write(
             self.style.SUCCESS(
-                f"=== {title} Acquisition ==="
+                f"=== {title} ==="
             )
         )
 
-        runner()
+        runner(
+            method=options["method"],
+            mid=options["mid"],
+        )
 
         self.stdout.write("")
         self.stdout.write(

@@ -44,32 +44,56 @@ class IdentityBuilder:
     def build_unique_id(
         cls,
         maker: str,
+        sku: str,
         product_url: str,
         product_name: str,
         product_no: str,
     ) -> str:
 
-        prefix = maker.upper()
+        #
+        # SKU (Highest Priority)
+        #
+
+        if sku:
+            return (
+                f"{maker.lower()}_"
+                f"{cls.normalize_identifier(sku)}"
+            )
+
+        #
+        # Product URL
+        #
 
         handle = cls.extract_handle(product_url)
 
         if handle:
-            return f"{prefix}_{cls.normalize_identifier(handle)}"
+            return (
+                f"{maker.lower()}_"
+                f"{cls.normalize_identifier(handle)}"
+            )
+
+        #
+        # Product Number
+        #
 
         if product_no:
             return (
-                f"{prefix}_"
+                f"{maker.lower()}_"
                 f"{cls.normalize_identifier(product_name)}_"
                 f"{cls.normalize_identifier(product_no)}"
             )
 
+        #
+        # Product Name
+        #
+
         if product_name:
             return (
-                f"{prefix}_"
+                f"{maker.lower()}_"
                 f"{cls.normalize_identifier(product_name)}"
             )
 
-        return prefix
+        return maker.lower()
 
     @classmethod
     def build(
@@ -81,20 +105,24 @@ class IdentityBuilder:
         # Identity Contract
         # ==========================================================
 
-        identity_contract = contract.get("identity", {})
+        identity_contract = contract.get(
+            "identity",
+            {},
+        )
 
         # ==========================================================
         # Identity
-        # Priority:
-        # 1. Identity Contract
-        # 2. Top Level Contract
-        # 3. Site
         # ==========================================================
 
         maker = (
             identity_contract.get("maker")
             or contract.get("maker")
             or contract.get("site", "")
+        )
+
+        sku = identity_contract.get(
+            "sku",
+            "",
         )
 
         product_name = identity_contract.get(
@@ -117,12 +145,16 @@ class IdentityBuilder:
         # ==========================================================
 
         identity = classify_identity(
+
             maker=maker,
+
             product_name=product_name,
+
             description=contract.get(
                 "description",
                 "",
             ),
+
         )
 
         # ==========================================================
@@ -132,10 +164,17 @@ class IdentityBuilder:
         return {
 
             "unique_id": cls.build_unique_id(
+
                 maker=maker,
+
+                sku=sku,
+
                 product_url=product_url,
+
                 product_name=product_name,
+
                 product_no=product_no,
+
             ),
 
             "maker": maker,

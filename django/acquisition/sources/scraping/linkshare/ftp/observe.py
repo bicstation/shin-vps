@@ -1,64 +1,94 @@
-# /home/maya/shin-dev/shin-vps/django/acquisition/sources/scraping/linkshare/ftp/observe.py
-
-# /home/maya/shin-dev/shin-vps/django/acquisition/sources/scraping/linkshare/ftp/observe.py
+#!/usr/bin/env python3
 # ============================================================================
 # SHIN CORE LINX
 # LinkShare FTP Observation Runtime
 # ============================================================================
-#
-# Responsibilities
-#
-# - Observe Reality
-# - Normalize Observation
-# - Preserve Evidence
-#
-# NOT
-#
-# - AI Analysis
-# - Semantic Mapping
-# - Database
-# - Runtime Decision
-# ============================================================================
 
-import argparse
-from pprint import pprint
+from __future__ import annotations
 
-# from acquisition.sources.scraping.linkshare.ftp.formatter import (
-#     LinkShareFTPFormatterRuntime,
-# )
+from api.models.observation_document import ObservationDocument
 
-from formatter import LinkShareFTPFormatterRuntime
 
 class LinkShareFTPObservationRuntime:
+    """
+    LinkShare FTP Observation Runtime
+
+    Responsibilities
+
+    - Observe Reality
+    - Normalize Observation
+    - Persist Observation Document
+
+    MUST NOT
+
+    - Formatter
+    - Mapping
+    - Integration
+    - Semantic Analysis
+    """
 
     # ------------------------------------------------------------------
     # Observe One Record
     # ------------------------------------------------------------------
 
-    def observe(self, record):
+    def observe(
+        self,
+        record: dict,
+    ) -> dict:
 
-        manufacturer = (
-            record.get("manufacturer_name")
-            or record.get("manufacturer_name_fallback")
-            or ""
-        )
-
-        observation = {
+        return {
 
             # ----------------------------------------------------------
             # Identity
             # ----------------------------------------------------------
 
-            "sku": record.get("sku", ""),
-            "link_id": record.get("link_id", ""),
+            "sku": record.get(
+                "sku",
+                "",
+            ),
+
+            "link_id": record.get(
+                "link_id",
+                "",
+            ),
 
             # ----------------------------------------------------------
             # Product
             # ----------------------------------------------------------
 
-            "title": record.get("product_name_orig", ""),
-            "brand": record.get("brand_name", ""),
-            "manufacturer": manufacturer,
+            "product_name": record.get(
+                "product_name",
+                "",
+            ),
+
+            "brand_name": record.get(
+                "brand_name",
+                "",
+            ),
+
+            "manufacturer_name": record.get(
+                "manufacturer_name",
+                "",
+            ),
+
+            "manufacturer_part_number": record.get(
+                "manufacturer_part_number",
+                "",
+            ),
+
+            # ----------------------------------------------------------
+            # Category
+            # ----------------------------------------------------------
+
+            "primary_category": record.get(
+                "primary_category",
+                "",
+            ),
+
+            "secondary_category": record.get(
+                "secondary_category",
+                "",
+            ),
 
             # ----------------------------------------------------------
             # Content
@@ -71,11 +101,6 @@ class LinkShareFTPObservationRuntime:
 
             "description": record.get(
                 "description",
-                "",
-            ),
-
-            "category": record.get(
-                "primary_category",
                 "",
             ),
 
@@ -102,95 +127,91 @@ class LinkShareFTPObservationRuntime:
             # Commerce
             # ----------------------------------------------------------
 
-            "retail_price": record.get(
-                "retail_price",
-                "",
-            ),
-
             "sale_price": record.get(
                 "sale_price",
                 "",
             ),
 
+            "retail_price": record.get(
+                "retail_price",
+                "",
+            ),
+
+            "currency": record.get(
+                "currency",
+                "",
+            ),
+
+            "availability": record.get(
+                "availability",
+                "",
+            ),
+
             # ----------------------------------------------------------
-            # Raw Reality
+            # Reality
             # ----------------------------------------------------------
 
             "raw": record,
+
         }
 
-        return observation
-
     # ------------------------------------------------------------------
-    # Observe Many
+    # Runtime
     # ------------------------------------------------------------------
 
-    def observe_many(self, records):
+    def run(
+        self,
+        *,
+        records: list[dict],
+    ) -> list[ObservationDocument]:
 
-        observations = []
+        documents: list[ObservationDocument] = []
 
         for record in records:
 
-            observations.append(
-                self.observe(record)
+            observation = self.observe(
+                record,
             )
 
-        return observations
+            document, _ = ObservationDocument.objects.update_or_create(
+
+                source_name="linkshare",
+
+                document_type="product",
+
+                document_key=observation["link_id"],
+
+                defaults={
+                    "observation": observation,
+                },
+
+            )
+
+            documents.append(
+                document,
+            )
+
+        print(
+            f"✅ OBSERVATION : {len(documents):,}"
+        )
+
+        return documents
 
 
 # ============================================================================
-# Main
+# Runtime Entry Point
 # ============================================================================
 
-if __name__ == "__main__":
-
-    parser = argparse.ArgumentParser(
-        description="SHIN CORE LINX LinkShare FTP Observation Runtime"
-    )
-
-    parser.add_argument(
-        "--file",
-        type=str,
-        default="/tmp/linkshare/2557_3273700_mp.txt",
-        help="Observation対象TXT",
-    )
-
-    parser.add_argument(
-        "--limit",
-        type=int,
-        default=1,
-        help="表示件数",
-    )
-
-    args = parser.parse_args()
-
-    formatter = LinkShareFTPFormatterRuntime()
-
-    records = formatter.format(
-        args.file,
-    )
+def main(
+    *,
+    records: list[dict],
+) -> list[ObservationDocument]:
+    """
+    Execute LinkShare FTP Observation Runtime.
+    """
 
     runtime = LinkShareFTPObservationRuntime()
 
-    observations = runtime.observe_many(
-        records,
+    return runtime.run(
+        records=records,
     )
-
-    print()
-
-    for index, observation in enumerate(
-        observations[: args.limit],
-        start=1,
-    ):
-
-        print("=" * 80)
-        print(f"OBSERVATION {index}")
-        print("=" * 80)
-
-        pprint(
-            observation,
-            sort_dicts=False,
-        )
-
-    print()
-    print(f"TOTAL OBSERVATIONS : {len(observations):,}")

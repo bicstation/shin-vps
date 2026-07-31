@@ -2,33 +2,24 @@
 """
 ==============================================================================
 FILE:
-    acquisition/sources/scraping/geekom/run.py
+    acquisition/sources/scraping/linkshare/run.py
 
 SHIN CORE LINX
-GEEKOM Acquisition Runtime
+LinkShare Acquisition Runtime
 
 Entry Point
 
-Pipeline
-
-Reality Source
-        │
-        ▼
-pipeline.py
-        │
-        ▼
-PCProduct Payload
-==============================================================================
-
 Responsibilities
 
-- Execute Acquisition Pipeline
+- Execute LinkShare Acquisition Pipeline
+- Dispatch Acquisition Method
 
 NOT
 
-- HTML Parsing
+- Acquisition
+- Formatter
 - Observation
-- Adapter
+- Mapping
 - Integration
 - Business Logic
 ==============================================================================
@@ -36,16 +27,41 @@ NOT
 
 from __future__ import annotations
 
-from .pipeline import run
 
-
-def main() -> None:
+def main(
+    *,
+    method: str,
+    mid: str,
+) -> None:
     """
-    Execute Acquisition Pipeline.
+    Execute LinkShare Acquisition Pipeline.
     """
 
-    run()
+    match method:
+
+        case "ftp":
+
+            from .ftp.pipeline import main as pipeline_main
+
+            pipeline_main(
+                mid=mid,
+            )
+
+        case "api":
+
+            raise NotImplementedError(
+                "LinkShare API Runtime is not implemented."
+            )
+
+        case _:
+
+            raise ValueError(
+                f"Unsupported acquisition method: {method}"
+            )
 
 
 if __name__ == "__main__":
-    main()
+
+    raise SystemExit(
+        "This module is intended to be executed from import_products."
+    )

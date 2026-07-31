@@ -1,268 +1,165 @@
-# /home/maya/shin-dev/shin-vps/django/acquisition/sources/scraping/linkshare/ftp/acquire.py
+#!/usr/bin/env python3
 # ============================================================================
 # SHIN CORE LINX
 # LinkShare FTP Acquire Runtime
 # ============================================================================
 
-import argparse
+from __future__ import annotations
+
 import ftplib
 import gzip
-import os
-import re
-import io
-from pathlib import Path
 
-FTP_HOST = os.getenv("LINKSHARE_FTP_HOST")
-FTP_USER = os.getenv("LINKSHARE_BC_USER")
-FTP_PASS = os.getenv("LINKSHARE_BC_PASS")
+from api.models.acquisition_document import AcquisitionDocument
 
-FTP_PORT = 21
-FTP_TIMEOUT = 180
-
-FULL_DATA_PATTERN = re.compile(r"(\d+)_3273700_mp\.txt\.gz$")
-DELTA_DATA_PATTERN = re.compile(r"(\d+)_3273700_delta\.txt\.gz$")
+from ..settings import (
+    FTP_HOST,
+    FTP_PORT,
+    FTP_USER,
+    FTP_PASS,
+    FTP_TIMEOUT,
+)
 
 
 class LinkShareFTPAcquireRuntime:
+    """
+    LinkShare FTP Acquire Runtime
 
-    def __init__(self, download_dir: str):
-        self.download_dir = Path(download_dir)
-        self.download_dir.mkdir(parents=True, exist_ok=True)
+    Responsibilities
+
+    - Connect FTP
+    - Download Reality
+    - Decompress Transport
+    - Persist Acquisition Document
+
+    MUST NOT
+
+    - Formatter
+    - Observation
+    - Mapping
+    - Integration
+    """
 
     # ------------------------------------------------------------------
     # FTP
     # ------------------------------------------------------------------
 
-    def connect(self) -> ftplib.FTP:
+    def connect(
+        self,
+    ) -> ftplib.FTP:
 
         ftp = ftplib.FTP()
-        ftp.connect(FTP_HOST, FTP_PORT, FTP_TIMEOUT)
-        ftp.login(FTP_USER, FTP_PASS)
+
+        ftp.connect(
+            FTP_HOST,
+            FTP_PORT,
+            FTP_TIMEOUT,
+        )
+
+        ftp.login(
+            FTP_USER,
+            FTP_PASS,
+        )
+
         ftp.set_pasv(True)
 
         return ftp
 
     # ------------------------------------------------------------------
-    # List
-    # ------------------------------------------------------------------
-
-    def list_files(self, ftp, mid: str | None = None):
-
-        targets = []
-
-        for name, facts in ftp.mlsd():
-
-            if mid is not None and not name.startswith(f"{mid}_"):
-                continue
-
-            if FULL_DATA_PATTERN.match(name):
-                targets.append(name)
-
-            elif DELTA_DATA_PATTERN.match(name):
-                targets.append(name)
-
-        return sorted(targets)
-
-    # ------------------------------------------------------------------
     # Download
     # ------------------------------------------------------------------
 
-    def download(self, ftp, filename):
+    def download(
+        self,
+        ftp: ftplib.FTP,
+        *,
+        mid: str,
+    ) -> AcquisitionDocument:
 
-        gz_path = self.download_dir / filename
+        filename = f"{mid}_3273700_mp.txt.gz"
 
-        with open(gz_path, "wb") as fp:
-            ftp.retrbinary(
-                f"RETR {filename}",
-                fp.write,
-            )
+        buffer = bytearray()
 
-        return gz_path
+        ftp.retrbinary(
+            f"RETR {filename}",
+            buffer.extend,
+        )
+
+        # --------------------------------------------------------------
+        # Transport -> Reality
+        # --------------------------------------------------------------
+
+        raw = gzip.decompress(
+            bytes(buffer)
+        )
+
+        text = raw.decode(
+            "utf-8",
+            errors="replace",
+        )
+
+        document, _ = AcquisitionDocument.objects.update_or_create(
+
+            source_name="linkshare",
+
+            document_type="product",
+
+            document_key=filename,
+
+            defaults={
+
+                "source_type": "ftp",
+
+                "source_url": "",
+
+                "content_type": "text/plain",
+
+                "content": text,
+
+            },
+
+        )
+
+        return document
 
     # ------------------------------------------------------------------
-    # Extract
+    # Runtime
     # ------------------------------------------------------------------
 
-    def extract(self, gz_path: Path):
-
-        txt_path = gz_path.with_suffix("")
-
-        with gzip.open(gz_path, "rb") as src:
-            with open(txt_path, "wb") as dst:
-                dst.write(src.read())
-
-        return txt_path
-
-    # ------------------------------------------------------------------
-    # Run
-    # ------------------------------------------------------------------
-
-    def run(self, mid: str | None = None):
-
-        print("🚀 LinkShare FTP Acquire Runtime")
+    def run(
+        self,
+        *,
+        mid: str,
+    ) -> list[AcquisitionDocument]:
 
         ftp = self.connect()
 
         try:
 
-            files = self.list_files(
+            document = self.download(
                 ftp,
                 mid=mid,
             )
 
-            print(f"Found : {len(files)} files")
-
-            acquisitions = []
-
-            for filename in files:
-
-                print(f"↓ {filename}")
-
-                gz = self.download(ftp, filename)
-                txt = self.extract(gz)
-
-                acquisitions.append(txt)
-
-            return acquisitions
-
-        finally:
-
-            ftp.quit()
-    
-    # ------------------------------------------------------------------
-    # Advertiser
-    # ------------------------------------------------------------------
-
-    def peek_advertiser_name(self, filename):
-
-        name = "Unknown"
-
-        ftp = None
-
-        try:
-
-            ftp = self.connect()
-
-            header = []
-
-            def callback(data):
-
-                header.append(data)
-
-                if sum(len(x) for x in header) > 32768:
-                    raise Exception("Stop")
-
-            try:
-
-                ftp.retrbinary(
-                    f"RETR {filename}",
-                    callback,
-                )
-
-            except Exception:
-                pass
-
-            with gzip.GzipFile(
-                fileobj=io.BytesIO(b"".join(header))
-            ) as gz:
-
-                line = gz.readline().decode(
-                    "utf-8",
-                    errors="ignore",
-                )
-
-                if line.startswith("HDR"):
-
-                    cols = line.strip().split("|")
-
-                    if len(cols) > 2:
-                        name = cols[2]
-
-        finally:
-
-            if ftp:
-
-                try:
-                    ftp.quit()
-                except Exception:
-                    ftp.close()
-
-        return name
-
-
-# ============================================================================
-# Main
-# ============================================================================
-
-if __name__ == "__main__":
-
-    parser = argparse.ArgumentParser(
-        description="SHIN CORE LINX LinkShare FTP Acquire Runtime"
-    )
-
-    parser.add_argument(
-        "--mid",
-        type=str,
-        help="対象MIDのみ取得",
-    )
-
-    parser.add_argument(
-        "--list",
-        action="store_true",
-        help="取得対象ファイル一覧のみ表示",
-    )
-
-    args = parser.parse_args()
-
-    runtime = LinkShareFTPAcquireRuntime(
-        download_dir="/tmp/linkshare",
-    )
-
-    if args.list:
-
-        ftp = runtime.connect()
-
-        try:
-
-            files = runtime.list_files(
-                ftp,
-                mid=args.mid,
-            )
-
-            print()
-            print("MID      Advertiser")
-            print("-----------------------------------------------")
-
-            for filename in files:
-
-                mid = filename.split("_")[0]
-
-                advertiser = runtime.peek_advertiser_name(
-                    filename,
-                )
-
-                print(
-                    f"{mid:<8} {advertiser}"
-                )
-
-            print("-----------------------------------------------")
-            print(f"Total : {len(files)}")
-
-            print()
-            print("===== LinkShare FTP Files =====")
-
-            for filename in files:
-                print(filename)
-
-            print("--------------------------------")
-            print(f"Total : {len(files)}")
+            return [
+                document,
+            ]
 
         finally:
 
             ftp.quit()
 
-    else:
 
-        runtime.run(
-            mid=args.mid,
-        )
+# ============================================================================
+# Runtime Entry Point
+# ============================================================================
+
+def main(
+    *,
+    mid: str,
+) -> list[AcquisitionDocument]:
+
+    runtime = LinkShareFTPAcquireRuntime()
+
+    return runtime.run(
+        mid=mid,
+    )
