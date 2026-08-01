@@ -1,30 +1,13 @@
 #!/usr/bin/env python3
 """
 ==============================================================================
-FILE:
-    acquisition/sources/scraping/linkshare/api/acquire.py
-
-SHIN CORE LINX
 LinkShare API Acquire Runtime
-
-Responsibilities
-
-- Acquire LinkShare API Reality
-- Preserve Raw XML Reality
-- Persist AcquisitionDocument
-
-NOT
-
-- XML Parsing
-- Formatter
-- Observation
-- Mapping
-- Integration
-- PCProduct
 ==============================================================================
 """
 
 from __future__ import annotations
+
+import xml.etree.ElementTree as ET
 
 from api.models.acquisition_document import AcquisitionDocument
 
@@ -32,24 +15,15 @@ from .client import LinkShareAPIClient
 
 
 class LinkShareAPIAcquireRuntime:
-    """
-    ==========================================================================
-    LinkShare API Acquire Runtime
-    ==========================================================================
 
-    LinkShare API
-            ↓
-        Raw XML
-            ↓
-    AcquisitionDocument
-    """
-
-    def __init__(self) -> None:
+    def __init__(
+        self,
+    ) -> None:
 
         self.client = LinkShareAPIClient()
 
     # ------------------------------------------------------------------
-    # Runtime
+    # Acquire
     # ------------------------------------------------------------------
 
     def run(
@@ -62,15 +36,10 @@ class LinkShareAPIAcquireRuntime:
         pages = self.client.search_products(
 
             mid=mid,
-            keyword=None,
-            category=None,
             page_size=100,
             max_pages=0 if limit == 0 else limit,
 
         )
-
-        if not pages:
-            return []
 
         documents: list[AcquisitionDocument] = []
 
@@ -82,14 +51,19 @@ class LinkShareAPIAcquireRuntime:
             document, _ = AcquisitionDocument.objects.update_or_create(
 
                 source_name="linkshare",
+
                 document_type="product",
+
                 document_key=f"{mid}_page_{index}",
 
                 defaults={
 
                     "source_type": "api",
+
                     "source_url": page["url"],
+
                     "content_type": page["content_type"],
+
                     "content": page["content"],
 
                 },
@@ -109,7 +83,7 @@ class LinkShareAPIAcquireRuntime:
     # ------------------------------------------------------------------
     # Advertiser List
     # ------------------------------------------------------------------
-    
+
     def list_merchants(
         self,
         *,
@@ -120,12 +94,44 @@ class LinkShareAPIAcquireRuntime:
             merchant_name=merchant_name,
         )
 
+        root = ET.fromstring(
+            xml,
+        )
+
         print()
-        print("=" * 70)
-        print("LINKSHARE ADVERTISERS")
-        print("=" * 70)
-        print(xml)
-        print("=" * 70)
+        print("=" * 90)
+        print(
+            f"{'MID':<8}"
+            f"SITE"
+        )
+        print("=" * 90)
+
+        total = 0
+
+        for merchant in root.findall(".//merchant"):
+
+            mid = (
+                merchant.findtext("mid")
+                or ""
+            )
+
+            site = (
+                merchant.findtext("merchantname")
+                or ""
+            )
+
+            print(
+                f"{mid:<8}{site}"
+            )
+
+            total += 1
+
+        print("=" * 90)
+        print(
+            f"TOTAL ADVERTISERS : {total:,}"
+        )
+        print("=" * 90)
+
 
 # ============================================================================
 # Runtime Entry Point
@@ -140,8 +146,6 @@ def main(
     runtime = LinkShareAPIAcquireRuntime()
 
     return runtime.run(
-
         mid=mid,
         limit=limit,
-
     )

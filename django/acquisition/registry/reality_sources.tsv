@@ -1,0 +1,16 @@
+network	source_type	source_id	maker	site	acquire	scraping	priority	enabled
+linkshare	ftp	2557	dell	デル株式会社	true	true	1	true
+linkshare	ftp	35909	hp	HP Directplus	true	true	1	true
+linkshare	ftp	36508	dynabook	Dynabook Direct	true	true	1	true
+linkshare	ftp	37641	sofmap	ソフマップ・ドットコム	true	false	1	true
+linkshare	ftp	13993	kojima	Kojima.net	true	false	1	true
+linkshare	ftp	2543	fujitsu	FMV Store	true	true	1	true
+linkshare	ftp	3256	eizo	EIZOダイレクト	true	true	1	true
+linkshare	ftp	2633	sourcenext	ソースネクスト	true	false	1	true
+linkshare	ftp	24501	trendmicro	ウイルスバスター公式トレンドマイクロ・オンラインショップ	true	false	1	true
+linkshare	api	24172	iodata	ioPLAZA	true	false	2	true
+linkshare	api	2980	sony	ソニーストア	true	true	2	true
+linkshare	api	43708	asus	ASUS Store Online	true	true	2	true
+linkshare	api	24623	kingsoft	キングソフト	true	false	2	true
+linkshare	api	24732	norton	ノートンストア	true	false	2	true
+linkshare	api	25051	bookoff	ブックオフ公式オンラインストア	true	false	2	true

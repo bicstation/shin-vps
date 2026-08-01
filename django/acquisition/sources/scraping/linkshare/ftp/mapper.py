@@ -9,10 +9,9 @@ from __future__ import annotations
 from api.models.observation_document import ObservationDocument
 from api.models.import_document import ImportDocument
 
-from ..settings import (
-    LINKSHARE_MID_MAP,
+from acquisition.registry.registry import (
+    get_source,
 )
-
 
 class LinkShareFTPMappingRuntime:
     """
@@ -43,11 +42,9 @@ class LinkShareFTPMappingRuntime:
         mid: str,
     ) -> dict:
 
-        merchant = LINKSHARE_MID_MAP.get(
-            str(mid),
-            {},
-        )
-
+        merchant = get_source(mid)
+        maker = merchant["maker"]
+        
         return {
 
             # ----------------------------------------------------------
@@ -70,6 +67,7 @@ class LinkShareFTPMappingRuntime:
                     "maker",
                     "",
                 ),
+                
 
                 "product_name": observation.get(
                     "product_name",

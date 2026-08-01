@@ -10,10 +10,10 @@ import json
 
 from api.models.import_document import ImportDocument
 from api.models.observation_document import ObservationDocument
-from ..settings import (
-    LINKSHARE_MID_MAP,
-)
 
+from acquisition.registry.registry import (
+    get_source,
+)
 
 
 class LinkShareAPIMapperRuntime:
@@ -27,25 +27,8 @@ class LinkShareAPIMapperRuntime:
     LinkShare API Import Contract
             ↓
     ImportDocument
-
-    Responsibilities
-
-    - Read ObservationDocument
-    - Adapt Observation Runtime
-    - Build LinkShare API Import Contract
-    - Persist ImportDocument
-
-    MUST NOT
-
-    - Acquire
-    - Formatter
-    - Observation
-    - Integration
-    - Semantic
-    - PCProduct
     """
 
-    
     # ------------------------------------------------------------------
     # Map One Observation
     # ------------------------------------------------------------------
@@ -56,17 +39,29 @@ class LinkShareAPIMapperRuntime:
         *,
         mid: str,
     ) -> dict:
-        
-        merchant = LINKSHARE_MID_MAP.get(
+
+        # --------------------------------------------------------------
+        # Reality Source
+        # --------------------------------------------------------------
+
+        source = get_source(
             str(mid),
-            {},
         )
 
-        #
+        if source is None:
+
+            raise RuntimeError(
+                f"Reality Source Not Found : {mid}"
+            )
+
+        maker = source.get(
+            "maker",
+            "",
+        )
+
         # --------------------------------------------------------------
         # Category
         # --------------------------------------------------------------
-        #
 
         category = observation.get(
             "category",
@@ -78,23 +73,18 @@ class LinkShareAPIMapperRuntime:
 
         if "~~" in category:
 
-            parts = category.split(
+            primary, secondary = category.split(
                 "~~",
                 1,
             )
-
-            primary = parts[0]
-            secondary = parts[1]
 
         else:
 
             primary = category
 
-        #
         # --------------------------------------------------------------
         # Price
         # --------------------------------------------------------------
-        #
 
         price = observation.get(
             "price",
@@ -108,7 +98,7 @@ class LinkShareAPIMapperRuntime:
 
         if isinstance(price, dict):
 
-            retail_price_value = price.get(
+            retail_price = price.get(
                 "value",
                 "",
             )
@@ -120,69 +110,50 @@ class LinkShareAPIMapperRuntime:
 
         else:
 
-            retail_price_value = price
+            retail_price = price
             currency = ""
 
         if isinstance(sale_price, dict):
 
-            sale_price_value = sale_price.get(
+            sale_price = sale_price.get(
                 "value",
                 "",
             )
 
-        else:
-
-            sale_price_value = sale_price
-
-        #
-        # Prefer Sale Price
-        #
-
         price_value = (
 
-            sale_price_value
+            sale_price
 
-            or retail_price_value
+            or retail_price
 
             or ""
 
         )
 
-        #
         # --------------------------------------------------------------
         # Release Date
         # --------------------------------------------------------------
-        #
 
         created_on = observation.get(
             "createdon",
             "",
         )
 
-        release_date = ""
+        release_date = (
 
-        if created_on:
+            created_on[:10]
 
-            #
-            # ISO8601
-            # 2026-06-24T15:31:21.000Z
-            #      ↓
-            # 2026-06-24
-            #
+            if created_on
 
-            release_date = created_on[:10]
+            else ""
 
-        #
+        )
+
         # --------------------------------------------------------------
         # Import Contract
         # --------------------------------------------------------------
-        #
 
         return {
-
-            # ----------------------------------------------------------
-            # Identity
-            # ----------------------------------------------------------
 
             "identity": {
 
@@ -196,14 +167,7 @@ class LinkShareAPIMapperRuntime:
                     "",
                 ),
 
-                #
-                # API Reality
-                #
-
-                "maker": merchant.get(
-                    "maker",
-                    "",
-                ),
+                "maker": maker,
 
                 "product_name": observation.get(
                     "productname",
@@ -214,10 +178,6 @@ class LinkShareAPIMapperRuntime:
                     "producturl",
                     "",
                 ),
-
-                #
-                # Not Provided by API
-                #
 
                 "brand": "",
 
@@ -236,10 +196,6 @@ class LinkShareAPIMapperRuntime:
 
             },
 
-            # ----------------------------------------------------------
-            # Description
-            # ----------------------------------------------------------
-
             "description": observation.get(
                 "description_long",
                 "",
@@ -249,10 +205,6 @@ class LinkShareAPIMapperRuntime:
                 "description_short",
                 "",
             ),
-
-            # ----------------------------------------------------------
-            # Category
-            # ----------------------------------------------------------
 
             "category": {
 
@@ -267,17 +219,13 @@ class LinkShareAPIMapperRuntime:
 
             },
 
-            # ----------------------------------------------------------
-            # Commerce
-            # ----------------------------------------------------------
-
             "commerce": {
 
                 "price": price_value,
 
-                "sale_price": sale_price_value,
+                "sale_price": sale_price,
 
-                "retail_price": retail_price_value,
+                "retail_price": retail_price,
 
                 "currency": currency,
 
@@ -287,10 +235,6 @@ class LinkShareAPIMapperRuntime:
 
             },
 
-            # ----------------------------------------------------------
-            # Affiliate
-            # ----------------------------------------------------------
-
             "affiliate": {
 
                 "url": observation.get(
@@ -299,10 +243,6 @@ class LinkShareAPIMapperRuntime:
                 ),
 
             },
-
-            # ----------------------------------------------------------
-            # Media
-            # ----------------------------------------------------------
 
             "media": {
 
@@ -316,10 +256,6 @@ class LinkShareAPIMapperRuntime:
                 "tables": [],
 
             },
-
-            # ----------------------------------------------------------
-            # Preserve Reality
-            # ----------------------------------------------------------
 
             "observation": observation,
 
@@ -338,10 +274,6 @@ class LinkShareAPIMapperRuntime:
         imports: list[ImportDocument] = []
 
         for document in documents:
-
-            #
-            # LinkShare Merchant
-            #
 
             mid = document.observation.get(
                 "mid",
@@ -380,10 +312,6 @@ class LinkShareAPIMapperRuntime:
             f"✅ IMPORT MAPPING : {len(imports):,}"
         )
 
-        #
-        # Contract Check
-        #
-
         if imports:
 
             print()
@@ -401,8 +329,6 @@ class LinkShareAPIMapperRuntime:
                     ensure_ascii=False,
 
                     indent=4,
-
-                    sort_keys=False,
 
                 )
 
@@ -425,5 +351,7 @@ def main(
     runtime = LinkShareAPIMapperRuntime()
 
     return runtime.run(
+
         documents=documents,
+
     )

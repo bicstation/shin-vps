@@ -6,17 +6,19 @@
 
 from __future__ import annotations
 
+import csv
 import ftplib
 import gzip
+from pathlib import Path
 
 from api.models.acquisition_document import AcquisitionDocument
 
 from ..settings import (
     FTP_HOST,
-    FTP_PORT,
-    FTP_USER,
     FTP_PASS,
+    FTP_PORT,
     FTP_TIMEOUT,
+    FTP_USER,
 )
 
 
@@ -26,17 +28,10 @@ class LinkShareFTPAcquireRuntime:
 
     Responsibilities
 
-    - Connect FTP
+    - FTP Connection
     - Download Reality
-    - Decompress Transport
-    - Persist Acquisition Document
-
-    MUST NOT
-
-    - Formatter
-    - Observation
-    - Mapping
-    - Integration
+    - Persist AcquisitionDocument
+    - FTP File Listing
     """
 
     # ------------------------------------------------------------------
@@ -65,6 +60,42 @@ class LinkShareFTPAcquireRuntime:
         return ftp
 
     # ------------------------------------------------------------------
+    # Advertiser Master
+    # ------------------------------------------------------------------
+
+    def load_advertisers(
+        self,
+    ) -> dict[str, str]:
+
+        advertisers: dict[str, str] = {}
+
+        path = (
+            Path(__file__).parent
+            / "advertisers.tsv"
+        )
+
+        if not path.exists():
+            return advertisers
+
+        with path.open(
+            encoding="utf-8",
+            newline="",
+        ) as fp:
+
+            reader = csv.DictReader(
+                fp,
+                delimiter="\t",
+            )
+
+            for row in reader:
+
+                advertisers[
+                    row["mid"]
+                ] = row["site"]
+
+        return advertisers
+
+    # ------------------------------------------------------------------
     # Download
     # ------------------------------------------------------------------
 
@@ -84,12 +115,8 @@ class LinkShareFTPAcquireRuntime:
             buffer.extend,
         )
 
-        # --------------------------------------------------------------
-        # Transport -> Reality
-        # --------------------------------------------------------------
-
         raw = gzip.decompress(
-            bytes(buffer)
+            bytes(buffer),
         )
 
         text = raw.decode(
@@ -122,6 +149,89 @@ class LinkShareFTPAcquireRuntime:
         return document
 
     # ------------------------------------------------------------------
+    # FTP File List
+    # ------------------------------------------------------------------
+
+    def list_files(
+        self,
+    ) -> list[str]:
+
+        advertisers = self.load_advertisers()
+
+        ftp = self.connect()
+
+        try:
+
+            files = sorted(
+
+                filename
+
+                for filename in ftp.nlst()
+
+                if filename.endswith(
+                    "_mp.txt.gz",
+                )
+
+            )
+
+            print()
+
+            print("=" * 120)
+            print(
+                f"{'MID':<8}"
+                f"{'SITE':<45}"
+                f"{'SIZE':>12}  "
+                f"FILE"
+            )
+            print("=" * 120)
+
+            for filename in files:
+
+                mid = filename.split(
+                    "_",
+                    1,
+                )[0]
+
+                site = advertisers.get(
+                    mid,
+                    "",
+                )
+
+                try:
+
+                    size = ftp.size(
+                        filename,
+                    ) or 0
+
+                except Exception:
+
+                    size = 0
+
+                print(
+
+                    f"{mid:<8}"
+
+                    f"{site[:45]:<45}"
+
+                    f"{size / 1024 / 1024:10.1f} MB  "
+
+                    f"{filename}"
+
+                )
+
+            print("=" * 120)
+            print(
+                f"TOTAL PRODUCT FILES : {len(files):,}"
+            )
+            print("=" * 120)
+
+            return files
+
+        finally:
+
+            ftp.quit()
+
+    # ------------------------------------------------------------------
     # Runtime
     # ------------------------------------------------------------------
 
@@ -135,13 +245,13 @@ class LinkShareFTPAcquireRuntime:
 
         try:
 
-            document = self.download(
-                ftp,
-                mid=mid,
-            )
-
             return [
-                document,
+
+                self.download(
+                    ftp,
+                    mid=mid,
+                )
+
             ]
 
         finally:

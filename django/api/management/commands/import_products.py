@@ -32,6 +32,10 @@ REALITY_RUNTIMES = {
         "GEEKOM",
         "acquisition.sources.scraping.geekom.run",
     ),
+    "lavie": (
+        "NEC LAVIE",
+        "acquisition.sources.scraping.lavie.run",
+    ),
 
     "linkshare": (
         "LinkShare",
@@ -88,9 +92,8 @@ class Command(BaseCommand):
         parser.add_argument(
             "--list",
             action="store_true",
-            help="List LinkShare advertisers",
+            help="List advertisers (API) or FTP files (FTP)",
         )
-        
         
 
     # ======================================================

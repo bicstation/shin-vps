@@ -27,6 +27,24 @@ def main(
 
         case "ftp":
 
+            #
+            # FTP File List
+            #
+
+            if list_only:
+
+                from .ftp.acquire import LinkShareFTPAcquireRuntime
+
+                runtime = LinkShareFTPAcquireRuntime()
+
+                runtime.list_files()
+
+                return
+
+            #
+            # Product Pipeline
+            #
+
             from .ftp.pipeline import main as pipeline_main
 
             pipeline_main(

@@ -35,10 +35,6 @@ FTP_TIMEOUT = int(
 # API
 # ============================================================================
 
-#
-# Existing LinkShare OAuth Configuration
-#
-
 API_BASE_URL = "https://api.linksynergy.com/"
 
 API_CLIENT_ID = os.getenv(
@@ -51,18 +47,10 @@ API_CLIENT_SECRET = os.getenv(
     "",
 )
 
-#
-# Scope (SID)
-#
-
 API_ACCOUNT_ID = os.getenv(
     "LINKSHARE_BC_SID",
     "3273700",
 )
-
-#
-# Runtime
-#
 
 API_TIMEOUT = int(
     os.getenv(
@@ -101,38 +89,5 @@ AFFILIATE = {
     "affiliate_name": "linkshare",
 
     "base_url": "https://click.linksynergy.com/",
-
-}
-
-# ============================================================================
-# Merchant Mapping
-# ============================================================================
-
-LINKSHARE_MID_MAP = {
-
-    "35909": {
-        "maker": "hp",
-        "prefix": "HP",
-    },
-
-    "2557": {
-        "maker": "dell",
-        "prefix": "DELL",
-    },
-
-    "2543": {
-        "maker": "fujitsu",
-        "prefix": "FUJITSU",
-    },
-
-    "36508": {
-        "maker": "dynabook",
-        "prefix": "DYNABOOK",
-    },
-
-    "43708": {
-        "maker": "asus",
-        "prefix": "ASUS",
-    },
 
 }
