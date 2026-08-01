@@ -113,7 +113,7 @@ class LinkShareFTPMappingRuntime:
                 "short_description",
                 "",
             ),
-
+            
             # ----------------------------------------------------------
             # Category
             # ----------------------------------------------------------
@@ -130,7 +130,13 @@ class LinkShareFTPMappingRuntime:
                     "",
                 ),
 
+                "keywords": observation.get(
+                    "keywords",
+                    "",
+                ),
+
             },
+
 
             # ----------------------------------------------------------
             # Commerce

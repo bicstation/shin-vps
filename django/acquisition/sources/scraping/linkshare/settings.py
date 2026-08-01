@@ -31,7 +31,66 @@ FTP_TIMEOUT = int(
     )
 )
 
+# ============================================================================
+# API
+# ============================================================================
 
+#
+# Existing LinkShare OAuth Configuration
+#
+
+API_BASE_URL = "https://api.linksynergy.com/"
+
+API_CLIENT_ID = os.getenv(
+    "LS_CLIENT_ID",
+    "",
+)
+
+API_CLIENT_SECRET = os.getenv(
+    "LS_CLIENT_SECRET",
+    "",
+)
+
+#
+# Scope (SID)
+#
+
+API_ACCOUNT_ID = os.getenv(
+    "LINKSHARE_BC_SID",
+    "3273700",
+)
+
+#
+# Runtime
+#
+
+API_TIMEOUT = int(
+    os.getenv(
+        "LINKSHARE_API_TIMEOUT",
+        "30",
+    )
+)
+
+API_DEFAULT_PAGE_SIZE = int(
+    os.getenv(
+        "LINKSHARE_API_PAGE_SIZE",
+        "100",
+    )
+)
+
+API_DEFAULT_MAX_PAGES = int(
+    os.getenv(
+        "LINKSHARE_API_MAX_PAGES",
+        "0",
+    )
+)
+
+API_REQUEST_INTERVAL = float(
+    os.getenv(
+        "LINKSHARE_API_REQUEST_INTERVAL",
+        "0.6",
+    )
+)
 
 # ============================================================================
 # Affiliate

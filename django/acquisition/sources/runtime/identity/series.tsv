@@ -1,0 +1,62 @@
+maker	keyword	series	priority
+dell	alienware	Alienware	100
+dell	inspiron	Inspiron	100
+dell	latitude	Latitude	100
+dell	optiplex	OptiPlex	100
+dell	precision	Precision	100
+dell	pro	Pro	100
+dell	xps	XPS	100
+dell	vostro	Vostro	100
+dell	ultrasharp	UltraSharp	100
+dell	pシリーズ	P Series	200
+dell	sシリーズ	S Series	200
+dell	uシリーズ	U Series	200
+hp	elitebook	EliteBook	100
+hp	elitedesk	EliteDesk	100
+hp	eliteone	EliteOne	100
+hp	probook	ProBook	100
+hp	prodesk	ProDesk	100
+hp	zbook	ZBook	100
+hp	z	Z	100
+hp	omen	OMEN	100
+hp	victus	Victus	100
+hp	envy	ENVY	100
+hp	spectre	Spectre	100
+hp	pavilion	Pavilion	100
+hp	dragonfly	Dragonfly	100
+hp	all-in-one	All-in-One	100
+fujitsu	fmv	FMV	100
+fujitsu	lifebook	LIFEBOOK	100
+fujitsu	esprimo	ESPRIMO	100
+fujitsu	celsius	CELSIUS	100
+fujitsu	arrows	ARROWS	100
+fujitsu	uh	UH	100
+fujitsu	ah	AH	100
+fujitsu	ch	CH	100
+fujitsu	mh	MH	100
+fujitsu	fh	FH	100
+fujitsu	wd	WD	100
+fujitsu	wf	WF	100
+dynabook	pz/ma	PZ/MA	300
+dynabook	mz/ma	MZ/MA	300
+dynabook	xz/hy	XZ/HY	300
+dynabook	xz/hw	XZ/HW	300
+dynabook	xa/za	XA/ZA	300
+dynabook	cz/ma	CZ/MA	300
+dynabook	portégé	Portégé	250
+dynabook	portege	Portégé	250
+dynabook	tecra	Tecra	250
+dynabook	satellite	Satellite	250
+dynabook	kira	KIRA	250
+dynabook	gシリーズ	G Series	200
+dynabook	mシリーズ	M Series	200
+dynabook	pシリーズ	P Series	200
+dynabook	rシリーズ	R Series	200
+dynabook	xシリーズ	X Series	200
+dynabook	gz	GZ	100
+dynabook	mz	MZ	100
+dynabook	pz	PZ	100
+dynabook	az	AZ	100
+dynabook	cz	CZ	100
+dynabook	rz	RZ	100
+dynabook	xz	XZ	100

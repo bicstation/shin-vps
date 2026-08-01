@@ -13,7 +13,10 @@ from __future__ import annotations
 
 from urllib.parse import unquote, urlparse
 
-from acquisition.common.tsv.identity_classifier import classify_identity
+# from acquisition.common.tsv.identity_classifier import classify_identity
+from acquisition.sources.runtime.identity.identity_classifier import (
+    classify_identity,
+)
 
 
 class IdentityBuilder:

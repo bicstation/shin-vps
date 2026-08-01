@@ -84,6 +84,14 @@ class Command(BaseCommand):
             default=None,
             help="Merchant ID",
         )
+        
+        parser.add_argument(
+            "--list",
+            action="store_true",
+            help="List LinkShare advertisers",
+        )
+        
+        
 
     # ======================================================
     # Handle
@@ -136,6 +144,7 @@ class Command(BaseCommand):
         runner(
             method=options["method"],
             mid=options["mid"],
+            list_only=options["list"],
         )
 
         self.stdout.write("")

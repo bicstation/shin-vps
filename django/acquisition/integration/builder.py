@@ -49,6 +49,7 @@ from typing import Any
 from acquisition.common.affiliate.builder import AffiliateBuilder
 from acquisition.common.commerce.builder import CommerceBuilder
 from acquisition.common.identity.builder import IdentityBuilder
+from acquisition.common.genre.builder import GenreBuilder
 
 
 class ImportBuilder:
@@ -64,12 +65,14 @@ class ImportBuilder:
     def __init__(self) -> None:
 
         self.identity_builder = IdentityBuilder()
+        self.genre_builder = GenreBuilder()
         self.affiliate_builder = AffiliateBuilder()
         self.commerce_builder = CommerceBuilder()
 
     # =========================================================
     # Build
     # =========================================================
+
     def build(
         self,
         contract: dict[str, Any],
@@ -98,8 +101,17 @@ class ImportBuilder:
         commerce = self.commerce_builder.build(contract)
 
         #
+        # Genre Runtime
+        #
+        genre = self.genre_builder.build(
+            contract,
+        )
+
+        #
         # Builder Result
         #
+        
+        
 
         return {
 
@@ -125,7 +137,10 @@ class ImportBuilder:
             "description": contract.get("description", ""),
             "model": identity_contract.get("model", ""),
             "product_no": identity_contract.get("product_no", ""),
-            "release_date": commerce_contract.get("release_date", ""),
+            "release_date": commerce_contract.get(
+                "release_date",
+                "",
+            ),
 
             #
             # Commerce
@@ -133,6 +148,20 @@ class ImportBuilder:
 
             "commerce": commerce,
             "price": commerce.get("price", 0),
+
+            #
+            # Genre Runtime
+            #
+
+            "raw_genre": genre.get(
+                "raw_genre",
+                "",
+            ),
+
+            "unified_genre": genre.get(
+                "unified_genre",
+                "",
+            ),
 
             #
             # URLs
@@ -145,6 +174,7 @@ class ImportBuilder:
             #
 
             "affiliate": affiliate,
+
             "affiliate_url": affiliate.get(
                 "affiliate_url",
                 affiliate_contract.get("url", ""),
@@ -164,13 +194,11 @@ class ImportBuilder:
 
             "prefix": prefix,
         }
-    
 
 
 # =========================================================
 # FILE:
 # =========================================================
-
 class PCProductBuilder:
     """
     Build PCProduct Payload.
@@ -184,6 +212,7 @@ class PCProductBuilder:
 
     It does NOT perform persistence.
     """
+
     def build(
         self,
         normalized: dict[str, Any],
@@ -207,12 +236,11 @@ class PCProductBuilder:
             ),
 
             "site_prefix": prefix,
-           
+
             "maker": (
                 identity.get("maker")
                 or maker
             ),
-
 
             "brand": (
                 identity.get("brand")
@@ -271,15 +299,26 @@ class PCProductBuilder:
             "image_url": normalized["image_url"],
 
             # =====================================================
-            # Runtime Defaults
+            # Genre Runtime
             # =====================================================
 
-            "raw_genre": "PC",
+            "raw_genre": normalized.get(
+                "raw_genre",
+                "",
+            ),
 
-            "unified_genre": "PC",
+            "unified_genre": normalized.get(
+                "unified_genre",
+                "",
+            ),
+
+            # =====================================================
+            # Runtime Defaults
+            # =====================================================
 
             "stock_status": "在庫あり",
 
             "is_active": True,
 
         }
+

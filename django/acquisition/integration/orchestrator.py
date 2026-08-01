@@ -126,6 +126,17 @@ class ImportOrchestrator:
                     stage="MODEL_MAPPER",
                     data=payload,
                 )
+                
+                print("=" * 60)
+                print("MODEL MAPPER PAYLOAD")
+                print("=" * 60)
+
+                for key, value in payload.items():
+                    print(
+                        f"{key:<25}: {type(value).__name__} -> {value}"
+                    )
+
+                print("=" * 60)
 
                 #
                 # Repository

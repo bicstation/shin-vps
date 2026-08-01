@@ -1,0 +1,36 @@
+keyword	reason
+Office	Software
+Microsoft 365	Software
+Windows	OS
+Adobe	Software
+Acrobat	Software
+Photoshop	Software
+Illustrator	Software
+Premiere	Software
+After Effects	Software
+Creative Cloud	Software
+NVIDIA	Component
+GeForce	Component
+RTX	Component
+GTX	Component
+AMD	Component
+Ryzen	Component
+Intel	Component
+Core Ultra	Component
+Core i9	Component
+Core i7	Component
+Core i5	Component
+Core i3	Component
+Xeon	Component
+Threadripper	Component
+DDR5	Memory
+DDR4	Memory
+LPDDR5	Memory
+LPDDR5X	Memory
+SSD	Storage
+HDD	Storage
+NVMe	Storage
+USB	Type
+Thunderbolt	Type
+Wi-Fi	Feature
+Bluetooth	Feature

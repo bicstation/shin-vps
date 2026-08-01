@@ -100,14 +100,24 @@ class PCProductBuilder:
             # =====================================================
 
             "image_url": normalized["image_url"],
+            
+            # =====================================================
+            # Genre Runtime
+            # =====================================================
+
+            "raw_genre": normalized.get(
+                "raw_genre",
+                "",
+            ),
+
+            "unified_genre": normalized.get(
+                "unified_genre",
+                "",
+            ),
 
             # =====================================================
             # Runtime Defaults
             # =====================================================
-
-            "raw_genre": "PC",
-
-            "unified_genre": "PC",
 
             "stock_status": "在庫あり",
 

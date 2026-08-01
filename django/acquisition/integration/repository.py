@@ -1,4 +1,3 @@
-# /home/maya/shin-dev/shin-vps/django/acquisition/integration/repository.py
 #!/usr/bin/env python3
 """
 ==============================================================================
@@ -32,86 +31,79 @@ NOT
 - HTML
 - TSV
 - Semantic
+- Trace
 ==============================================================================
 """
 
-
 from __future__ import annotations
+
 from typing import Any
+
 from api.models import PCProduct
+
 
 class ImportRepository:
     """
-    Acquisition Integration Repository.
+    ==========================================================================
+    Acquisition Integration Repository
+    ==========================================================================
 
-    Responsibility
-    --------------
-    PCProduct Payload
-            ↓
-        PCProduct
+    Responsibilities
+
+    - Persist PCProduct Payload
+    - Update Existing Product
+    - Bulk Save
+
+    This repository is responsible only for persistence.
     """
 
-    # =========================================================
-    # Save
-    # =========================================================
+    # ------------------------------------------------------------------
+    # Save One
+    # ------------------------------------------------------------------
 
     def save(
         self,
         payload: dict[str, Any],
     ) -> tuple[PCProduct, bool]:
-        """
-        Persist a single PCProduct payload.
-        """
 
         unique_id = payload["unique_id"]
 
         defaults = payload.copy()
-        defaults.pop("unique_id", None)
-        
-        
-        product, created = PCProduct.objects.update_or_create(
-            unique_id=unique_id,
-            defaults=defaults,
+
+        defaults.pop(
+            "unique_id",
+            None,
         )
 
-        print("=" * 60)
-        print("💾 AFTER UPDATE_OR_CREATE")
-        print("=" * 60)
+        product, created = PCProduct.objects.update_or_create(
 
-        print("payload.price :", defaults.get("price"))
-        print("object.price  :", product.price)
+            unique_id=unique_id,
 
-        print("payload.maker :", defaults.get("maker"))
-        print("object.maker  :", product.maker)
+            defaults=defaults,
 
-        product.refresh_from_db()
-
-        print("db.price      :", product.price)
-        print("db.maker      :", product.maker)
-
-        print("=" * 60)
+        )
 
         return product, created
 
-
-    # =========================================================
+    # ------------------------------------------------------------------
     # Save Many
-    # =========================================================
+    # ------------------------------------------------------------------
 
     def save_many(
         self,
         payloads: list[dict[str, Any]],
     ) -> list[PCProduct]:
-        """
-        Persist multiple PCProduct payloads.
-        """
 
         products: list[PCProduct] = []
 
         for payload in payloads:
 
-            product, _ = self.save(payload)
+            product, _ = self.save(
+                payload,
+            )
 
-            products.append(product)
+            products.append(
+                product,
+            )
 
         return products

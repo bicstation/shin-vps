@@ -3,25 +3,6 @@
 ==============================================================================
 FILE:
     acquisition/sources/scraping/linkshare/run.py
-
-SHIN CORE LINX
-LinkShare Acquisition Runtime
-
-Entry Point
-
-Responsibilities
-
-- Execute LinkShare Acquisition Pipeline
-- Dispatch Acquisition Method
-
-NOT
-
-- Acquisition
-- Formatter
-- Observation
-- Mapping
-- Integration
-- Business Logic
 ==============================================================================
 """
 
@@ -31,13 +12,18 @@ from __future__ import annotations
 def main(
     *,
     method: str,
-    mid: str,
+    mid: str | None = None,
+    list_only: bool = False,
 ) -> None:
     """
     Execute LinkShare Acquisition Pipeline.
     """
 
     match method:
+
+        # ==========================================================
+        # FTP Runtime
+        # ==========================================================
 
         case "ftp":
 
@@ -47,11 +33,39 @@ def main(
                 mid=mid,
             )
 
+        # ==========================================================
+        # API Runtime
+        # ==========================================================
+
         case "api":
 
-            raise NotImplementedError(
-                "LinkShare API Runtime is not implemented."
+            #
+            # Advertiser List
+            #
+
+            if list_only:
+
+                from .api.acquire import LinkShareAPIAcquireRuntime
+
+                runtime = LinkShareAPIAcquireRuntime()
+
+                runtime.list_merchants()
+
+                return
+
+            #
+            # Product Pipeline
+            #
+
+            from .api.pipeline import main as pipeline_main
+
+            pipeline_main(
+                mid=mid,
             )
+
+        # ==========================================================
+        # Unsupported
+        # ==========================================================
 
         case _:
 

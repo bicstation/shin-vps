@@ -1,0 +1,7 @@
+unified_genre	raw_genre	is_active
+pc	パソコン	1
+monitor	モニター	1
+laptop	ノートパソコン	1
+desktop	デスクトップ	1
+mini_pc	ミニPC	1
+workstation	ワークステーション	1

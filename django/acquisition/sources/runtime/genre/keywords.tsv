@@ -1,0 +1,118 @@
+keyword	raw_genre	unified_genre
+ゲーミング ノートパソコン	デバイス	device
+ノートパソコン	デバイス	device
+デスクトップパソコン	デバイス	device
+デスクトップ	デバイス	device
+ミニPC	デバイス	device
+ワークステーション	デバイス	device
+オールインワン	デバイス	device
+液晶一体型	デバイス	device
+モニター	モニター	monitor
+ディスプレイ	モニター	monitor
+ゲーミング モニター	モニター	monitor
+曲面モニター	モニター	monitor
+4Kモニター	モニター	monitor
+ウルトラワイド	モニター	monitor
+キーボード	デバイス	device
+マウス	デバイス	device
+ヘッドセット	デバイス	device
+Webカメラ	デバイス	device
+ドッキングステーション	デバイス	device
+Thunderboltドック	デバイス	device
+USBハブ	デバイス	device
+SSD	ストレージ	storage
+外付けSSD	ストレージ	storage
+HDD	ストレージ	storage
+外付けHDD	ストレージ	storage
+NAS	ストレージ	storage
+GPU	GPU	gpu
+グラフィックスカード	GPU	gpu
+ビデオカード	GPU	gpu
+GeForce	GPU	gpu
+RTX	GPU	gpu
+GTX	GPU	gpu
+Radeon	GPU	gpu
+RX	GPU	gpu
+Intel Arc	GPU	gpu
+CPU	CPU	cpu
+Core	CPU	cpu
+Core Ultra	CPU	cpu
+Core i9	CPU	cpu
+Core i7	CPU	cpu
+Core i5	CPU	cpu
+Core i3	CPU	cpu
+Ryzen	CPU	cpu
+Ryzen AI	CPU	cpu
+Xeon	CPU	cpu
+Threadripper	CPU	cpu
+メモリ	メモリ	memory
+RAM	メモリ	memory
+DDR5	メモリ	memory
+DDR4	メモリ	memory
+LPDDR5	メモリ	memory
+LPDDR5X	メモリ	memory
+プリンター	デバイス	device
+インク	デバイス	device
+トナー	デバイス	device
+ルーター	デバイス	device
+アクセスポイント	デバイス	device
+ゲーミング	用途	usage
+ゲーム	用途	usage
+クリエイター	用途	usage
+クリエイティブ	用途	usage
+ビジネス	用途	usage
+法人	用途	usage
+生成AI	用途	usage
+AI	用途	usage
+デスク	デバイス	device
+ノート	デバイス	device
+デスクトップPC	デバイス	device
+液晶デスクトップ	デバイス	device
+デスクトップ本体	デバイス	device
+デスクトップタワー	デバイス	device
+一体型デスクトップ	デバイス	device
+Desktop	デバイス	device
+Desktop F	デバイス	device
+Laptop	デバイス	device
+Notebook	デバイス	device
+FMV	デバイス	device
+ThinkPad	デバイス	device
+ThinkCentre	デバイス	device
+IdeaPad	デバイス	device
+IdeaCentre	デバイス	device
+Legion	デバイス	device
+Inspiron	デバイス	device
+Latitude	デバイス	device
+OptiPlex	デバイス	device
+Precision	デバイス	device
+XPS	デバイス	device
+Alienware	デバイス	device
+EliteBook	デバイス	device
+ProBook	デバイス	device
+ZBook	デバイス	device
+Victus	デバイス	device
+OMEN	デバイス	device
+Pavilion	デバイス	device
+ENVY	デバイス	device
+ROG	デバイス	device
+Zenbook	デバイス	device
+Vivobook	デバイス	device
+ExpertBook	デバイス	device
+TUF	デバイス	device
+VAIO	デバイス	device
+dynabook	デバイス	device
+LAVIE	デバイス	device
+mouse	デバイス	device
+G-Tune	デバイス	device
+NEXTGEAR	デバイス	device
+パソコン	デバイス	device
+パソコン本体	デバイス	device
+PC	デバイス	device
+AI PC	デバイス	device
+EliteBook	デバイス	device
+EliteDesk	デバイス	device
+ProBook	デバイス	device
+ProDesk	デバイス	device
+OMEN	デバイス	device
+Victus	デバイス	device
+ZBook	デバイス	device
