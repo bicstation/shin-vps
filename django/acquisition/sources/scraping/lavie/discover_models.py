@@ -1,21 +1,43 @@
 #!/usr/bin/env python3
 """
 ==============================================================================
-FRONTIER Model Discovery
+SHIN CORE LINX
+
+LAVIE Model Discovery
 
 Acquire Runtime
 
 AcquisitionDocument (Seed)
-        ↓
-Discover Models
-        ↓
-Generate model_list.tsv
+        │
+        ▼
+Discover Product Cards
+        │
+        ▼
+model_list.tsv
+
+Reality First
+Observation First
+
+Responsibilities
+
+- Observe Product Cards
+- Observe Product URL
+- Observe Product ID
+- Observe Product Code
+- Produce model_list.tsv
+
+Not Responsibilities
+
+- Semantic Mapping
+- Series Classification
+- Brand Detection
 ==============================================================================
 """
 
 from __future__ import annotations
 
 import csv
+from urllib.parse import urlparse
 
 from bs4 import BeautifulSoup
 
@@ -29,159 +51,92 @@ from .settings import (
     SITE_NAME,
 )
 
+# ==============================================================================
+# TSV
+# ==============================================================================
+
+HEADERS = (
+    "category",
+    "series_slug",
+    "raw_title",
+    "product_id",
+    "product_code",
+    "model_slug",
+    "url",
+)
+
+# ==============================================================================
+# Helpers
+# ==============================================================================
+def absolute_url(url: str) -> str:
+
+    if not url:
+        return ""
+
+    #
+    # Protocol Relative URL
+    #
+    if url.startswith("//"):
+        return "https:" + url
+
+    #
+    # Relative URL
+    #
+    if url.startswith("/"):
+        return BASE_URL + url
+
+    #
+    # Absolute URL
+    #
+    return url
+
+def observe_series_slug(url: str) -> str:
+    """
+    Observe series slug from URL.
+    Reality only.
+    """
+
+    if not url:
+        return ""
+
+    path = urlparse(url).path.strip("/")
+
+    parts = path.split("/")
+
+    if not parts:
+        return ""
+
+    if parts[0] == "cart":
+        return ""
+
+    if parts[-1] == "index.html":
+        parts.pop()
+
+    if not parts:
+        return ""
+
+    if parts[-1].endswith(".html"):
+        parts[-1] = parts[-1][:-5]
+
+    if len(parts) >= 3:
+        return parts[-1].lower()
+
+    return ""
+
 
 # ==============================================================================
 # Runtime
 # ==============================================================================
 
-HEADERS = (
-    "category",
-    "series_text",
-    "vendor_text",
-    "chipset_text",
-    "model_slug",
-    "url",
-)
-
-DESKTOP = {
-    "full",
-    "middle",
-    "mini",
-    "slim",
-}
-
-
-# ==============================================================================
-# Helpers
-# ==============================================================================
-
-def absolute_url(href: str) -> str:
-
-    if href.startswith("/"):
-        return BASE_URL + href
-
-    return href
-
-
-def slugify(url: str) -> str:
-
-    return url.rstrip("/").split("/")[-1]
-
-
-def create_row(
-    category: str,
-    series_text: str,
-    url: str,
-    vendor_text: str = "",
-    chipset_text: str = "",
-):
-
-    return {
-        "category": category,
-        "series_text": series_text,
-        "vendor_text": vendor_text,
-        "chipset_text": chipset_text,
-        "model_slug": slugify(url),
-        "url": url,
-    }
-
-
-
-# ==============================================================================
-# Desktop Discovery
-# ==============================================================================
-
-def discover_desktop(
-    category: str,
-    soup: BeautifulSoup,
-):
-
-    rows = []
-
-    cards = soup.select("div.uk-card")
-
-    print(f"Series : {len(cards)}")
-
-    for card in cards:
-
-        title = card.select_one("h3")
-
-        if title is None:
-            continue
-
-        series = title.get_text(strip=True)
-
-        for link in card.select("a[href]"):
-            
-            series_text = title.get_text(strip=True)
-
-            vendor_text = ""
-            chipset_text = ""
-
-            if "Intel" in text:
-                vendor_text = "Intel"
-            elif "AMD" in text:
-                vendor_text = "AMD"
-
-            if "（" in text and "）" in text:
-                chipset_text = text.split("（")[1].split("）")[0]
-
-            rows.append(
-                create_row(
-                    category,
-                    series_text,
-                    absolute_url(link["href"]),
-                    vendor_text,
-                    chipset_text,
-                )
-            )
-
-    return rows
-
-
-# ==============================================================================
-# Notebook Discovery
-# ==============================================================================
-
-def discover_notebook(
-    category: str,
-    soup: BeautifulSoup,
-):
-
-    rows = []
-
-    cards = soup.select("div.uk-card")
-
-    print(f"Products : {len(cards)}")
-
-    for card in cards:
-
-        title = card.select_one("h3")
-        link = card.select_one("a[href]")
-
-        if title is None or link is None:
-            continue
-
-        rows.append(
-            create_row(
-                category,
-                title.get_text(strip=True),
-                absolute_url(link["href"]),
-            )
-        )
-
-    return rows
-
-
-# ==============================================================================
-# Discovery
-# ==============================================================================
-
 def discover():
 
-    trace_pipeline("DISCOVER")
+    trace_pipeline(
+        "MODEL DISCOVERY",
+    )
 
     rows = []
+
+    seen = set()
 
     documents = (
         AcquisitionDocument.objects
@@ -189,60 +144,162 @@ def discover():
             source_name=SITE_NAME.lower(),
             document_type="seed",
         )
-        .order_by("document_key")
+        .order_by(
+            "document_key",
+        )
     )
+
+    print("=" * 70)
+    print(f"{SITE_NAME} MODEL DISCOVERY")
+    print("=" * 70)
 
     for document in documents:
 
         category = document.document_key
-
-        print("=" * 70)
-        print(category)
-        print("=" * 70)
 
         soup = BeautifulSoup(
             document.content,
             "html.parser",
         )
 
-        if category in DESKTOP:
+        cards = soup.select(
+            ".dlp-products-card",
+        )
 
-            rows.extend(
-                discover_desktop(
-                    category,
-                    soup,
-                )
+        print(
+            f"{category} : {len(cards)} cards"
+        )
+
+        for card in cards:
+
+            title = card.select_one("h3")
+
+            if title is None:
+                continue
+
+            raw_title = title.get_text(
+                " ",
+                strip=True,
             )
 
-        else:
+            image = card.select_one(
+                "[data-id]",
+            )
 
-            rows.extend(
-                discover_notebook(
-                    category,
-                    soup,
+            if image is None:
+                continue
+
+            product_id = image.get(
+                "data-id",
+                "",
+            )
+
+            product_code = image.get(
+                "data-productcode",
+                "",
+            )
+
+            link = card.select_one(
+                "a[href]",
+            )
+            
+            #
+            # URL
+            #
+
+            url = ""
+
+            for a in card.select("a[href]"):
+
+                href = absolute_url(
+                    a.get(
+                        "href",
+                        "",
+                    )
                 )
+
+                #
+                # Ignore PDF
+                #
+
+                if href.lower().endswith(".pdf"):
+                    continue
+
+                #
+                # Prefer Product Page
+                #
+
+                if "nec-lavie.jp/products/" in href:
+
+                    url = href
+
+                    break
+
+                #
+                # Fallback Cart
+                #
+
+                if "/cart/" in href and not url:
+
+                    url = href
+
+            #
+            # Skip if URL not found
+            #
+
+            if not url:
+                continue
+
+
+            model_slug = product_id.lower()
+
+            series_slug = observe_series_slug(
+                url,
+            )
+
+            if model_slug in seen:
+                continue
+
+            seen.add(
+                model_slug,
+            )
+
+            rows.append(
+                {
+                    "category": category,
+                    "series_slug": series_slug,
+                    "raw_title": raw_title,
+                    "product_id": product_id,
+                    "product_code": product_code,
+                    "model_slug": model_slug,
+                    "url": url,
+                }
             )
 
     rows.sort(
-        key=lambda row: row["slug"]
+        key=lambda row: row["model_slug"],
     )
 
     with MODEL_LIST_TSV.open(
         "w",
         encoding="utf-8",
         newline="",
-    ) as f:
+    ) as fp:
 
         writer = csv.DictWriter(
-            f,
+            fp,
             fieldnames=HEADERS,
             delimiter="\t",
         )
 
         writer.writeheader()
-        writer.writerows(rows)
+
+        writer.writerows(
+            rows,
+        )
 
     print()
+
     print("=" * 70)
     print("RESULT")
     print("=" * 70)

@@ -14,3 +14,4 @@ linkshare	api	43708	asus	ASUS Store Online	true	true	2	true
 linkshare	api	24623	kingsoft	キングソフト	true	false	2	true
 linkshare	api	24732	norton	ノートンストア	true	false	2	true
 linkshare	api	25051	bookoff	ブックオフ公式オンラインストア	true	false	2	true
+direct	scraping	lavie	nec	NEC LAVIE	true	true	1	true

@@ -3,20 +3,25 @@
 ==============================================================================
 SHIN CORE LINX
 
-LAVIE Product Fetch
+LAVIE Browser Reality Fetch
 
-Acquire Runtime
+Research Runtime
 
-model_list.tsv
-        │
-        ▼
+Seed TSV
+    ↓
 Playwright
-        │
-        ▼
-Reality Product HTML
-        │
-        ▼
-AcquisitionDocument(product)
+    ↓
+JavaScript Execution
+    ↓
+Reality HTML
+    ↓
+AcquisitionDocument
+
+Purpose
+
+Validate Browser Acquire Runtime.
+
+This Runtime intentionally does NOT use requests.
 
 Reality First
 ==============================================================================
@@ -25,23 +30,65 @@ Reality First
 from __future__ import annotations
 
 import csv
+import os
+import sys
+from pathlib import Path
+
+from dotenv import load_dotenv
+
+# ==============================================================================
+# Django Bootstrap
+# ==============================================================================
+
+#
+# /usr/src/app
+#
+
+DJANGO_DIR = Path(__file__).resolve().parents[4]
+
+sys.path.insert(
+    0,
+    str(DJANGO_DIR),
+)
+
+#
+# Same as manage.py
+#
+
+load_dotenv(
+    DJANGO_DIR / ".env",
+)
+
+os.environ.setdefault(
+    "DJANGO_SETTINGS_MODULE",
+    "tiper_api.settings",
+)
+
+import django
+
+django.setup()
+
+# ==============================================================================
+# Imports
+# ==============================================================================
 
 from playwright.sync_api import sync_playwright
 
 from api.models.acquisition_document import AcquisitionDocument
 
-from .settings import (
-    MODEL_LIST_TSV,
+from acquisition.sources.scraping.lavie.settings import (
+    SEED_TSV,
     SITE_NAME,
 )
 
 # ==============================================================================
-# Model List
+# Seed
 # ==============================================================================
 
-def load_models():
 
-    with MODEL_LIST_TSV.open(
+def load_seeds():
+
+    with SEED_TSV.open(
         "r",
         encoding="utf-8",
         newline="",
@@ -55,13 +102,12 @@ def load_models():
         )
 
 
-
 # ==============================================================================
 # Save
 # ==============================================================================
 
+
 def save_document(
-    *,
     slug: str,
     url: str,
     html: str,
@@ -73,7 +119,7 @@ def save_document(
 
         source_name=SITE_NAME.lower(),
 
-        document_type="product",
+        document_type="seed",
 
         document_key=slug,
 
@@ -95,45 +141,26 @@ def save_document(
 # Runtime
 # ==============================================================================
 
-def fetch_products(
-    force: bool = False,
-):
+def fetch_browser():
 
-    models = load_models()
-    
-    cached = set(
-        AcquisitionDocument.objects.filter(
-            source_type="scraping",
-            source_name=SITE_NAME.lower(),
-            document_type="product",
-        ).values_list(
-            "document_key",
-            flat=True,
-        )
-    )
+    seeds = load_seeds()
 
     print("=" * 70)
-    print(f"🌐 {SITE_NAME} PRODUCT FETCH")
+    print(f"🌐 {SITE_NAME} PLAYWRIGHT REALITY FETCH")
     print("=" * 70)
-    print(f"Target : {len(models)}")
+    print(f"Target : {len(seeds)}")
     print("=" * 70)
+
+    success = 0
+    failed = 0
+
+    #
+    # Browser Results
+    #
 
     results = []
-    success = []
-    failed = []
-
-    #
-    # Playwright
-    #
 
     with sync_playwright() as p:
-        
-        targets = [
-            row for row in models
-            if force or row["model_slug"] not in cached
-        ]
-        
-        print(f"Target : {len(targets)}")
 
         browser = p.chromium.launch(
             headless=True,
@@ -142,36 +169,33 @@ def fetch_products(
         page = browser.new_page()
 
         for index, row in enumerate(
-            models,
+            seeds,
             start=1,
         ):
 
-            slug = row["model_slug"]
+            slug = row["slug"]
+            category = row["category"]
             url = row["url"]
 
-            print(f"[{index}/{len(models)}] {slug}")
-            
-            if not force and slug in cached:
-
-                success.append(slug)
-
-                print("  Status : CACHE")
-                print()
-
-                continue
+            print(f"[{index}/{len(seeds)}] {category}")
 
             try:
+
                 page.goto(
                     url,
-                    wait_until="load",
+                    wait_until="domcontentloaded",
                     timeout=60000,
                 )
 
-                page.wait_for_timeout(
-                    1000,
+                page.wait_for_load_state(
+                    "networkidle",
                 )
 
                 html = page.content()
+
+                #
+                # Save Later
+                #
 
                 results.append(
                     {
@@ -181,28 +205,25 @@ def fetch_products(
                     }
                 )
 
-                success.append(slug)
+                print(f"  HTML     : {len(html):,} chars")
 
                 print(
-                    f"  HTML   : {len(html):,} chars"
+                    f"  Products : {'YES' if 'dlp-products-card' in html else 'NO'}"
                 )
+
+                success += 1
 
             except Exception as e:
 
-                failed.append(
-                    (
-                        slug,
-                        str(e),
-                    )
-                )
+                failed += 1
 
-                print("  Status : ERROR")
-                print(f"  Reason : {e}")
+                print("  ERROR")
+                print(f"  {e}")
 
             print()
 
         browser.close()
-    
+
     #
     # Persist
     #
@@ -213,14 +234,11 @@ def fetch_products(
 
     for item in results:
 
-        _, created = save_document(
+        document, created = save_document(
 
             slug=item["slug"],
-
             url=item["url"],
-
             html=item["html"],
-
         )
 
         print(
@@ -230,8 +248,8 @@ def fetch_products(
     print("=" * 70)
     print("RESULT")
     print("=" * 70)
-    print(f"SUCCESS : {len(success)}")
-    print(f"FAILED  : {len(failed)}")
+    print(f"SUCCESS : {success}")
+    print(f"FAILED  : {failed}")
     print("=" * 70)
 
 
@@ -239,15 +257,11 @@ def fetch_products(
 # Entry Point
 # ==============================================================================
 
-def main(
-    force: bool = False,
-):
 
-    fetch_products(
-        force=force,
-    )
+def main():
+
+    fetch_browser()
 
 
 if __name__ == "__main__":
-
     main()

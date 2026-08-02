@@ -5,13 +5,15 @@ SHIN CORE LINX
 
 LAVIE Reality Seed Fetch
 
-Acquire Runtime
+Acquire Runtime V2
 
 Seed TSV
     ↓
-Fetch HTML
+Playwright
     ↓
-Save AcquisitionDocument
+Reality HTML
+    ↓
+AcquisitionDocument
 
 Reality First
 ==============================================================================
@@ -22,14 +24,12 @@ from __future__ import annotations
 import csv
 import time
 
-import requests
+from playwright.sync_api import sync_playwright
 
 from api.models.acquisition_document import AcquisitionDocument
 
 from .settings import (
     SEED_TSV,
-    USER_AGENT,
-    TIMEOUT,
     SITE_NAME,
 )
 
@@ -88,7 +88,7 @@ def save_document(
     *,
     slug: str,
     url: str,
-    response: requests.Response,
+    html: str,
 ):
 
     document, created = AcquisitionDocument.objects.update_or_create(
@@ -105,12 +105,9 @@ def save_document(
 
             "source_url": url,
 
-            "content_type": response.headers.get(
-                "Content-Type",
-                "text/html",
-            ),
+            "content_type": "text/html",
 
-            "content": response.text,
+            "content": html,
 
         },
 
@@ -139,100 +136,122 @@ def fetch_seed(
     print("=" * 70)
 
     success: list[str] = []
-
     failed: list[tuple[str, str]] = []
 
-    with requests.Session() as session:
+    # --------------------------------------------------------------------------
+    # Cache Runtime
+    # --------------------------------------------------------------------------
 
-        session.headers.update({
+    targets: list[dict] = []
 
-            "User-Agent": USER_AGENT,
+    for row in seeds:
 
-        })
+        slug = row["slug"]
+
+        if not force and exists(slug):
+
+            success.append(slug)
+
+            print(f"[CACHE] {slug}")
+
+            continue
+
+        targets.append(row)
+
+    # --------------------------------------------------------------------------
+    # Acquire Runtime
+    # --------------------------------------------------------------------------
+
+    results: list[dict] = []
+
+    with sync_playwright() as p:
+
+        browser = p.chromium.launch(
+            headless=True,
+        )
+
+        page = browser.new_page()
 
         for index, row in enumerate(
-
-            seeds,
-
+            targets,
             start=1,
-
         ):
 
             slug = row["slug"]
-
             category = row["category"]
-
             url = row["url"]
 
-            print(f"[{index}/{len(seeds)}] {category}")
-
-            #
-            # Cache
-            #
-
-            if not force and exists(slug):
-
-                success.append(slug)
-
-                print("  Status : SKIP (CACHE)")
-                print()
-
-                continue
-
-            #
-            # Fetch
-            #
+            print(f"[{index}/{len(targets)}] {category}")
 
             try:
 
-                response = session.get(
-
+                page.goto(
                     url,
-
-                    timeout=TIMEOUT,
-
+                    wait_until="domcontentloaded",
+                    timeout=60000,
                 )
 
-                response.raise_for_status()
+                page.wait_for_load_state(
+                    "networkidle",
+                )
 
-                _, created = save_document(
+                html = page.content()
 
-                    slug=slug,
-
-                    url=url,
-
-                    response=response,
-
+                results.append(
+                    {
+                        "slug": slug,
+                        "url": url,
+                        "html": html,
+                    }
                 )
 
                 success.append(slug)
 
-                print(f"  HTTP   : {response.status_code}")
+                print(f"  HTML     : {len(html):,} chars")
 
                 print(
-                    f"  Size   : {len(response.content):,} bytes"
-                )
-
-                print(
-                    f"  Saved  : {'CREATED' if created else 'UPDATED'}"
+                    f"  Products : {'YES' if 'dlp-products-card' in html else 'NO'}"
                 )
 
             except Exception as e:
 
                 failed.append(
-
                     (
                         slug,
                         str(e),
                     )
-
                 )
 
                 print("  Status : ERROR")
-
                 print(f"  Reason : {e}")
 
             print()
+
+        browser.close()
+
+    # --------------------------------------------------------------------------
+    # Persist Runtime
+    # --------------------------------------------------------------------------
+
+    print("=" * 70)
+    print("SAVE DOCUMENT")
+    print("=" * 70)
+
+    for item in results:
+
+        _, created = save_document(
+
+            slug=item["slug"],
+
+            url=item["url"],
+
+            html=item["html"],
+
+        )
+
+        print(
+            f"{item['slug']} : {'CREATED' if created else 'UPDATED'}"
+        )
 
     elapsed = time.perf_counter() - started
 

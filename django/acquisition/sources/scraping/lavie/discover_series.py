@@ -1,33 +1,39 @@
 #!/usr/bin/env python3
 """
 ==============================================================================
-FRONTIER Model Token Observation
+SHIN CORE LINX
+
+LAVIE Series Observation
 
 Acquire Runtime
 
-AcquisitionDocument
+AcquisitionDocument(seed)
         │
         ▼
-Observe Model Tokens
+Reality HTML
         │
         ▼
-model_token_list.tsv
+Observe Product Cards
+        │
+        ▼
+series_list.tsv
 
 Reality First
 Observation First
 
 Responsibilities
 
-- Observe Model Slug
-- Observe Raw Tokens
+- Observe Product Cards
+- Observe Raw Title
+- Observe Product ID
 - Produce Observation TSV
 
 Not Responsibilities
 
-- Series Classification
+- Semantic Classification
+- Series Mapping
 - Brand Detection
-- Category Detection
-- Semantic Mapping
+- AI Inference
 ==============================================================================
 """
 
@@ -35,6 +41,8 @@ from __future__ import annotations
 
 import csv
 import re
+
+from bs4 import BeautifulSoup
 
 from api.models.acquisition_document import AcquisitionDocument
 
@@ -50,30 +58,55 @@ from .settings import (
 # ==============================================================================
 
 HEADERS = (
-    "model_slug",
-    "raw_slug",
-    "raw_tokens",
+    "series_slug",
+    "raw_title",
+    "product_id",
 )
 
 # ==============================================================================
 # Observation
 # ==============================================================================
 
-def observe_tokens(
-    model_slug: str,
-) -> str:
+def observe_series_slug(title: str) -> str:
     """
-    Observe slug tokens.
+    Reality observation only.
 
-    No semantic classification.
+    Example
+
+    N15(R) (標準ソフト)
+        ↓
+    n15-r
     """
 
-    tokens = re.findall(
-        r"[A-Za-z]+|\d+",
-        model_slug,
+    title = title.strip()
+
+    m = re.match(r"([A-Za-z0-9()\-]+)", title)
+
+    if not m:
+        return ""
+
+    slug = m.group(1)
+
+    slug = slug.lower()
+
+    slug = slug.replace("(", "-")
+
+    slug = slug.replace(")", "")
+
+    slug = re.sub(
+        r"[^a-z0-9\-]+",
+        "-",
+        slug,
     )
 
-    return " ".join(tokens)
+    slug = re.sub(
+        "-+",
+        "-",
+        slug,
+    ).strip("-")
+
+    return slug
+
 
 # ==============================================================================
 # Runtime
@@ -82,70 +115,129 @@ def observe_tokens(
 def discover():
 
     trace_pipeline(
-        "TOKEN OBSERVATION",
+        "SERIES OBSERVATION",
     )
 
     rows = []
+
     seen = set()
 
     documents = (
+
         AcquisitionDocument.objects
+
         .filter(
+
             source_name=SITE_NAME.lower(),
-            document_type="product",
+
+            document_type="seed",
+
         )
+
         .order_by("document_key")
+
     )
 
     print("=" * 70)
-    print(f"{SITE_NAME} TOKEN OBSERVATION")
+    print(f"{SITE_NAME} SERIES OBSERVATION")
     print("=" * 70)
 
     for document in documents:
 
-        model_slug = document.document_key
-
-        if model_slug in seen:
-            continue
-
-        seen.add(model_slug)
-
-        rows.append(
-            {
-                "model_slug": model_slug,
-                "raw_slug": model_slug,
-                "raw_tokens": observe_tokens(
-                    model_slug,
-                ),
-            }
+        soup = BeautifulSoup(
+            document.content,
+            "html.parser",
         )
 
+        cards = soup.select(
+            ".dlp-products-card"
+        )
+
+        print(
+            f"{document.document_key} : {len(cards)} cards"
+        )
+
+        for card in cards:
+
+            h3 = card.select_one("h3")
+
+            image = card.select_one(
+                "[data-id]"
+            )
+
+            if h3 is None or image is None:
+                continue
+
+            raw_title = h3.get_text(
+                " ",
+                strip=True,
+            )
+
+            product_id = image.get(
+                "data-id",
+                "",
+            )
+
+            series_slug = observe_series_slug(
+                raw_title,
+            )
+
+            key = (
+                series_slug,
+                product_id,
+            )
+
+            if key in seen:
+                continue
+
+            seen.add(key)
+
+            rows.append(
+
+                {
+
+                    "series_slug": series_slug,
+
+                    "raw_title": raw_title,
+
+                    "product_id": product_id,
+
+                }
+
+            )
+
     rows.sort(
-        key=lambda row: row["model_slug"]
+        key=lambda row: (
+            row["series_slug"],
+            row["product_id"],
+        )
     )
 
     with SERIES_LIST_TSV.open(
         "w",
         encoding="utf-8",
         newline="",
-    ) as f:
+    ) as fp:
 
         writer = csv.DictWriter(
-            f,
+            fp,
             fieldnames=HEADERS,
             delimiter="\t",
         )
 
         writer.writeheader()
+
         writer.writerows(rows)
 
     print()
+
     print("=" * 70)
     print("RESULT")
     print("=" * 70)
     print(f"Observed : {len(rows)}")
     print(f"Saved    : {SERIES_LIST_TSV}")
     print("=" * 70)
+
 
 # ==============================================================================
 # Entry Point

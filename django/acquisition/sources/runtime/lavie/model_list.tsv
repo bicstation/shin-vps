@@ -1,65 +1,264 @@
-category	series	vendor	chipset	slug	url
-full	MFPシリーズ	AMD		ej-msi	https://www.frontier-direct.jp/direct/e/ej-msi/
-full	MFGシリーズ	Intel		ej-msi	https://www.frontier-direct.jp/direct/e/ej-msi/
-full	MFGシリーズ	AMD		ej-msi	https://www.frontier-direct.jp/direct/e/ej-msi/
-mini	AFPシリーズ	AMD	B850	ejAsusPc	https://www.frontier-direct.jp/direct/e/ejAsusPc/
-mini	AFシリーズ	Intel	B860	ejAsusPc	https://www.frontier-direct.jp/direct/e/ejAsusPc/
-mini	AFシリーズ	AMD	B850	ejAsusPc	https://www.frontier-direct.jp/direct/e/ejAsusPc/
-full	CRシリーズ	AMD	B650	ejCrB650	https://www.frontier-direct.jp/direct/e/ejCrB650/
-full	CRシリーズ	Intel	Z890	ejCrZ890	https://www.frontier-direct.jp/direct/e/ejCrZ890/
-slim	CSシリーズ	Intel	H610	ejCsH610P	https://www.frontier-direct.jp/direct/e/ejCsH610P/
-slim	CSシリーズ	Intel	H810	ejCsH810	https://www.frontier-direct.jp/direct/e/ejCsH810/
-middle	GAシリーズ	AMD	A620	ejGamA620	https://www.frontier-direct.jp/direct/e/ejGamA620/
-middle	GAシリーズ	AMD	B550	ejGamB550	https://www.frontier-direct.jp/direct/e/ejGamB550/
-middle	GAシリーズ	Intel	B860	ejGamB860	https://www.frontier-direct.jp/direct/e/ejGamB860/
-full	GBシリーズ	Intel	Z890	ejGbZ890	https://www.frontier-direct.jp/direct/e/ejGbZ890/
-full	GBLシリーズ	AMD	B650	ejGblB650	https://www.frontier-direct.jp/direct/e/ejGblB650/
-full	GHLシリーズ	AMD	B550	ejGhlB550	https://www.frontier-direct.jp/direct/e/ejGhlB550/
-full	GHLシリーズ	AMD	B650	ejGhlB6m	https://www.frontier-direct.jp/direct/e/ejGhlB6m/
-full	GHLシリーズ	Intel	B860	ejGhlB860	https://www.frontier-direct.jp/direct/e/ejGhlB860/
-mini	GKシリーズ	AMD	A620	ejGkA62m	https://www.frontier-direct.jp/direct/e/ejGkA62m/
-mini	GKシリーズ	AMD	B550	ejGkB550	https://www.frontier-direct.jp/direct/e/ejGkB550/
-mini	GKシリーズ	Intel	B860	ejGkB860	https://www.frontier-direct.jp/direct/e/ejGkB860/
-full	GPLシリーズ	AMD	B650	ejGplB6m	https://www.frontier-direct.jp/direct/e/ejGplB6m/
-full	GPLシリーズ	Intel	B860	ejGplB860	https://www.frontier-direct.jp/direct/e/ejGplB860/
-mini	Xシリーズ	AMD	B850	ejXaB850	https://www.frontier-direct.jp/direct/e/ejXaB850/
-mini	Xシリーズ	Intel	B860	ejXaB860	https://www.frontier-direct.jp/direct/e/ejXaB860/
-full	Zシリーズ	AMD	B550	ejZaB550	https://www.frontier-direct.jp/direct/e/ejZaB550/
-full	Zシリーズ	AMD	B650	ejZaB650	https://www.frontier-direct.jp/direct/e/ejZaB650/
-full	Zシリーズ	AMD	B850	ejZaB850	https://www.frontier-direct.jp/direct/e/ejZaB850/
-full	Zシリーズ	Intel	B860	ejZaB860	https://www.frontier-direct.jp/direct/e/ejZaB860/
-full	Zシリーズ	Intel	Z890	ejZaZ890	https://www.frontier-direct.jp/direct/e/ejZaZ890/
-notebook15	FRNLA313			g115048	https://www.frontier-direct.jp/direct/g/g115048/
-notebook15	FRNLA513			g115049	https://www.frontier-direct.jp/direct/g/g115049/
-notebook15	FRNLA713			g115050	https://www.frontier-direct.jp/direct/g/g115050/
-notebook14	FRNSM515/A			g120008	https://www.frontier-direct.jp/direct/g/g120008/
-notebook14	FRNSM715/C			g120010	https://www.frontier-direct.jp/direct/g/g120010/
-2in1	FRT300P 2in1 タブレット 着脱式キーボード搭載 Windows11 Pro			g121729	https://www.frontier-direct.jp/direct/g/g121729/
-gaming-notebook	FRXNC715/A			g122466	https://www.frontier-direct.jp/direct/g/g122466/
-notebook15	FRXNC715/A			g122466	https://www.frontier-direct.jp/direct/g/g122466/
-gaming-notebook	FRXNC715/B			g122467	https://www.frontier-direct.jp/direct/g/g122467/
-notebook15	FRXNC715/B			g122467	https://www.frontier-direct.jp/direct/g/g122467/
-gaming-notebook	FRXNC715/C			g122468	https://www.frontier-direct.jp/direct/g/g122468/
-notebook15	FRXNC715/C			g122468	https://www.frontier-direct.jp/direct/g/g122468/
-gaming-notebook	FRVNC715/A			g122565	https://www.frontier-direct.jp/direct/g/g122565/
-notebook15	FRVNC715/A			g122565	https://www.frontier-direct.jp/direct/g/g122565/
-gaming-notebook	FRVNC715/B			g122566	https://www.frontier-direct.jp/direct/g/g122566/
-notebook15	FRVNC715/B			g122566	https://www.frontier-direct.jp/direct/g/g122566/
-gaming-notebook	FRVNC715/C			g122567	https://www.frontier-direct.jp/direct/g/g122567/
-notebook15	FRVNC715/C			g122567	https://www.frontier-direct.jp/direct/g/g122567/
-gaming-notebook	FRAXN735/A			g122805	https://www.frontier-direct.jp/direct/g/g122805/
-notebook15	FRAXN735/A			g122805	https://www.frontier-direct.jp/direct/g/g122805/
-gaming-notebook	FRAXN735/B			g122806	https://www.frontier-direct.jp/direct/g/g122806/
-notebook15	FRAXN735/B			g122806	https://www.frontier-direct.jp/direct/g/g122806/
-gaming-notebook	FRAXN735/C			g122807	https://www.frontier-direct.jp/direct/g/g122807/
-notebook15	FRAXN735/C			g122807	https://www.frontier-direct.jp/direct/g/g122807/
-gaming-notebook	FRAVN735/A			g122845	https://www.frontier-direct.jp/direct/g/g122845/
-notebook15	FRAVN735/A			g122845	https://www.frontier-direct.jp/direct/g/g122845/
-gaming-notebook	FRAVN735/B			g122846	https://www.frontier-direct.jp/direct/g/g122846/
-notebook15	FRAVN735/B			g122846	https://www.frontier-direct.jp/direct/g/g122846/
-gaming-notebook	FRAVN735/C			g122847	https://www.frontier-direct.jp/direct/g/g122847/
-notebook15	FRAVN735/C			g122847	https://www.frontier-direct.jp/direct/g/g122847/
-2in1	FRT280P 2in1 タブレット 着脱式キーボード搭載 Windows11 Pro			g123062	https://www.frontier-direct.jp/direct/g/g123062/
-notebook14	FRNSP525/A			g123915	https://www.frontier-direct.jp/direct/g/g123915/
-notebook14	FRNSP755/A			g123916	https://www.frontier-direct.jp/direct/g/g123916/
-notebook14	FRNSP755/B			g123917	https://www.frontier-direct.jp/direct/g/g123917/
+category	series_slug	raw_title	product_id	product_code	model_slug	url
+tablet-smalllight		LAVIE Tab T12発表記念セット (PC-TAB12Q01+ガラス保護フィルム)	NSLCB168T2QZ1S	10011513	nslcb168t2qz1s	https://cart.nec-lavie.jp/cart/config.html?materialNumber=NSLCB168T2QZ1S
+all-entry	n16	N16 (ホワイト) インターネットやメールに最適なコストパフォーマンスモデル	PC-GE123AC5YAD3HVYAA	10010329	pc-ge123ac5yad3hvyaa	https://www.nec-lavie.jp/products/notebook/n16/
+all-entry	n15	N15 (標準ソフト) インターネットやメールに最適なコストパフォーマンスモデル	PC-GE123AD5YAD3HVYAA	10010341	pc-ge123ad5yad3hvyaa	https://www.nec-lavie.jp/products/notebook/n15/
+all-entry	n15	N15 (ミニマムソフト) インターネットやメールに最適なコストパフォーマンスモデル	PC-GE123AD6YAD3HVYAA	10010883	pc-ge123ad6yad3hvyaa	https://www.nec-lavie.jp/products/notebook/n15/
+all-entry	n16	N16 (ブラック) アプリの操作が快適なおすすめモデル	PC-GE123BC5YAD3HVYAA	10010332	pc-ge123bc5yad3hvyaa	https://www.nec-lavie.jp/products/notebook/n16/
+all-entry	n16	N16 (グリーン) インターネットやメールに最適なコストパフォーマンスモデル	PC-GE123CC5YAD3HVYAA	10010667	pc-ge123cc5yad3hvyaa	https://www.nec-lavie.jp/products/notebook/n16/
+all-entry	n16	N16 (ブルー) インターネットやメールに最適なコストパフォーマンスモデル	PC-GE123DC5YAD3HVYAA	10010669	pc-ge123dc5yad3hvyaa	https://www.nec-lavie.jp/products/notebook/n16/
+all-entry	n15	N15 (標準ソフト) U300搭載エントリーモデル	PC-GE12ZAD5YAD3HVYAA	10010340	pc-ge12zad5yad3hvyaa	https://www.nec-lavie.jp/products/notebook/n15/
+all-entry	n15	N15 (ミニマムソフト) U300搭載エントリーモデル	PC-GE12ZAD6YAD3HVYAA	10010882	pc-ge12zad6yad3hvyaa	https://www.nec-lavie.jp/products/notebook/n15/
+all-entry	direct-sol	SOL(シルバー)Office搭載、快適に使えるおすすめモデル	PC-GE135631YAD3H2YAA	10010355	pc-ge135631yad3h2yaa	https://www.nec-lavie.jp/products/notebook/direct-sol/
+all-entry	direct-sol	SOL(シルバー)アプリの操作が快適なおすすめモデル	PC-GE135635YAD3H2YAA	10010284	pc-ge135635yad3h2yaa	https://www.nec-lavie.jp/products/notebook/direct-sol/
+all-entry	direct-sol	SOL(シルバー)4年保証付き、アプリの操作が快適なおすすめモデル	PC-GE135635YAD3H2YAG	10011069	pc-ge135635yad3h2yag	https://www.nec-lavie.jp/products/notebook/direct-sol/
+all-entry	direct-sol	SOL(シルバー、ミニマムソフト)アプリの操作が快適なおすすめモデル	PC-GE135636YAD3H2YAA	10010307	pc-ge135636yad3h2yaa	https://www.nec-lavie.jp/products/notebook/direct-sol/
+all-entry	direct-sol	SOL(シルバー、ミニマムソフト)アプリの操作が快適なおすすめモデル	PC-GE13563DYAD3H2YAA	10009705	pc-ge13563dyad3h2yaa	https://www.nec-lavie.jp/products/notebook/direct-sol/
+all-entry	direct-sol	SOL(ブラック)アプリの操作が快適なおすすめモデル	PC-GE135735YAD3H2YAA	10010710	pc-ge135735yad3h2yaa	https://www.nec-lavie.jp/products/notebook/direct-sol/
+all-entry	direct-sol	SOL(ブラック、ミニマムソフト)アプリの操作が快適なおすすめモデル	PC-GE135736YAD3H2YAA	10010708	pc-ge135736yad3h2yaa	https://www.nec-lavie.jp/products/notebook/direct-sol/
+all-entry	n16	N16 (ホワイト) Office搭載で快適に操作できるおすすめモデル	PC-GE135AC1YAD3HVYAA	10010331	pc-ge135ac1yad3hvyaa	https://www.nec-lavie.jp/products/notebook/n16/
+all-entry	n16	N16 (ホワイト) アプリの操作が快適なおすすめモデル	PC-GE135AC5YAD3HVYAA	10010330	pc-ge135ac5yad3hvyaa	https://www.nec-lavie.jp/products/notebook/n16/
+all-entry	n15	N15 (標準ソフト) Office搭載で快適に操作できるおすすめモデル	PC-GE135AD1YAD3HVYAA	10010344	pc-ge135ad1yad3hvyaa	https://www.nec-lavie.jp/products/notebook/n15/
+all-entry	n15	N15 (標準ソフト) アプリの操作が快適なおすすめモデル	PC-GE135AD5YAD3HVYAA	10010342	pc-ge135ad5yad3hvyaa	https://www.nec-lavie.jp/products/notebook/n15/
+all-entry	n16	N16 (ブラック) アプリの操作が快適なおすすめモデル	PC-GE135BC5YAD3HVYAA	10010866	pc-ge135bc5yad3hvyaa	https://www.nec-lavie.jp/products/notebook/n16/
+all-entry	n16	N16 (ブルー) アプリの操作が快適なおすすめモデル	PC-GE135DC5YAD3HVYAA	10010670	pc-ge135dc5yad3hvyaa	https://www.nec-lavie.jp/products/notebook/n16/
+all-entry	direct-sol	SOL(シルバー)動画の編集も快適なハイスペックモデル	PC-GE177625YAD3HYYAA	10010375	pc-ge177625yad3hyyaa	https://www.nec-lavie.jp/products/notebook/direct-sol/
+all-entry	direct-sol	SOL(シルバー、ミニマムソフト)動画の編集も快適なハイスペックモデル	PC-GE177626YAD3HYYAA	10010302	pc-ge177626yad3hyyaa	https://www.nec-lavie.jp/products/notebook/direct-sol/
+all-entry	direct-sol	SOL(シルバー)4年保証付き、動画の編集も快適なハイスペックモデル	PC-GE177635YAC3H2YAG	10011394	pc-ge177635yac3h2yag	https://www.nec-lavie.jp/products/notebook/direct-sol/
+all-entry	direct-sol	SOL(シルバー)動画の編集も快適なハイスペックモデル	PC-GE177635YAD3H2YAA	10010815	pc-ge177635yad3h2yaa	https://www.nec-lavie.jp/products/notebook/direct-sol/
+all-entry	direct-sol	SOL(ブラック)動画の編集も快適なハイスペックモデル	PC-GE177725YAD3HYYAA	10010830	pc-ge177725yad3hyyaa	https://www.nec-lavie.jp/products/notebook/direct-sol/
+all-entry	direct-sol	SOL(ブラック)4年保証付き、動画の編集も快適なハイスペックモデル	PC-GE177735YAC3H2YAG	10010283	pc-ge177735yac3h2yag	https://www.nec-lavie.jp/products/notebook/direct-sol/
+all-entry	direct-sol	SOL(パープル)動画の編集も快適なハイスペックモデル	PC-GE177825YAD3HYYAA	10010831	pc-ge177825yad3hyyaa	https://www.nec-lavie.jp/products/notebook/direct-sol/
+all-entry	direct-sol	SOL(パープル)動画の編集も快適なハイスペックモデル	PC-GE177835YAD3H2YAA	10010817	pc-ge177835yad3h2yaa	https://www.nec-lavie.jp/products/notebook/direct-sol/
+all-entry	n16	N16 (ホワイト) 動画の編集も快適なハイスペックモデル	PC-GE177AC5YAD3HVYAA	10010867	pc-ge177ac5yad3hvyaa	https://www.nec-lavie.jp/products/notebook/n16/
+all-entry	n15	N15 (標準ソフト) 動画の編集も快適なハイスペックモデル	PC-GE177AD5YAD3HVYAA	10010343	pc-ge177ad5yad3hvyaa	https://www.nec-lavie.jp/products/notebook/n15/
+all-entry	n16	N16 (ブラック) 動画の編集も快適なハイスペックモデル	PC-GE177BC5YAD3HVYAA	10010333	pc-ge177bc5yad3hvyaa	https://www.nec-lavie.jp/products/notebook/n16/
+all-entry	n16	N16 (グリーン) 動画の編集も快適なハイスペックモデル	PC-GE177CC5YAD3HVYAA	10010869	pc-ge177cc5yad3hvyaa	https://www.nec-lavie.jp/products/notebook/n16/
+all-entry	n16	N16 (ブルー) 動画の編集も快適なハイスペックモデル	PC-GE177DC5YAD3HVYAA	10010868	pc-ge177dc5yad3hvyaa	https://www.nec-lavie.jp/products/notebook/n16/
+all-entry	direct-sol	SOL(シルバー)アプリの操作が快適なおすすめモデル	PC-GE21V635YAD3H2YAA	10010377	pc-ge21v635yad3h2yaa	https://www.nec-lavie.jp/products/notebook/direct-sol/
+all-entry	direct-sol	SOL(シルバー)アプリの操作が快適なおすすめモデル	PC-GE21V636YAD3H2YAA	10010304	pc-ge21v636yad3h2yaa	https://www.nec-lavie.jp/products/notebook/direct-sol/
+all-entry	direct-sol	SOL(ブラック)アプリの操作が快適なおすすめモデル	PC-GE21V725YAD3HYYAA	10010938	pc-ge21v725yad3hyyaa	https://www.nec-lavie.jp/products/notebook/direct-sol/
+all-entry	direct-sol	SOL(ブラック)アプリの操作が快適なおすすめモデル	PC-GE21V735YAD3H2YAA	10010282	pc-ge21v735yad3h2yaa	https://www.nec-lavie.jp/products/notebook/direct-sol/
+all-entry	direct-sol	SOL(パープル)アプリの操作が快適なおすすめモデル	PC-GE21V835YAD3H2YAA	10010832	pc-ge21v835yad3h2yaa	https://www.nec-lavie.jp/products/notebook/direct-sol/
+all-entry	nx13	NEXTREME アプリの操作が快適なおすすめモデル	PC-GE21WYT5YAD2H2ZAA	10010274	pc-ge21wyt5yad2h2zaa	https://www.nec-lavie.jp/products/notebook/nx13/index.html
+all-entry	nx13	NEXTREME(ミニマムソフト)アプリの操作が快適なおすすめモデル	PC-GE21WYT6YAD2H2ZAA	10010311	pc-ge21wyt6yad2h2zaa	https://www.nec-lavie.jp/products/notebook/nx13/index.html
+all-entry	n16	N16 (ブラック) 動画の編集も快適なハイスペックモデル	PC-GE227BB5YAD3HVYAA	10010334	pc-ge227bb5yad3hvyaa	https://www.nec-lavie.jp/products/notebook/n16/
+all-entry	direct-sol	SOL(シルバー)動画の編集も快適なハイスペックモデル	PC-GE22S625YAD3HYYAA	10010940	pc-ge22s625yad3hyyaa	https://www.nec-lavie.jp/products/notebook/direct-sol/
+all-entry	direct-sol	SOL(ブラック)動画の編集も快適なハイスペックモデル	PC-GE22S735YAD3H2YAA	10010833	pc-ge22s735yad3h2yaa	https://www.nec-lavie.jp/products/notebook/direct-sol/
+all-entry	nx13	NEXTREME 動画の編集も快適な大容量メモリのハイスペックモデル	PC-GE22SYT5YAD2HYZAA	10010276	pc-ge22syt5yad2hyzaa	https://www.nec-lavie.jp/products/notebook/nx13/index.html
+all-entry	nx13	NEXTREME(ミニマムソフト)動画の編集も快適な大容量メモリのハイスペックモデル	PC-GE22SYT6YAD2HYZAA	10010312	pc-ge22syt6yad2hyzaa	https://www.nec-lavie.jp/products/notebook/nx13/index.html
+all-entry	nx13	NEXTREME Office搭載で快適に使えるおすすめモデル	PC-GE22TYT1YAD2H2ZAA	10010352	pc-ge22tyt1yad2h2zaa	https://www.nec-lavie.jp/products/notebook/nx13/index.html
+all-entry	nx13	NEXTREME 動画の編集も快適なハイスペックモデル	PC-GE22TYT5YAD2H2ZAA	10010275	pc-ge22tyt5yad2h2zaa	https://www.nec-lavie.jp/products/notebook/nx13/index.html
+all-entry	n16	N16(R) (ホワイト) 動画の編集も快適なハイスペックモデル	PC-GE27BAC5YAD3HVYAA	10010336	pc-ge27bac5yad3hvyaa	https://www.nec-lavie.jp/products/notebook/n16/
+all-entry	n15	N15(R) (標準ソフト) 動画の編集も快適なハイスペックモデル	PC-GE27BAD5YAD3HVYAA	10010347	pc-ge27bad5yad3hvyaa	https://www.nec-lavie.jp/products/notebook/n15/
+all-entry	n16	N16(R) (ブラック) 動画の編集も快適なハイスペックモデル	PC-GE27BBC5YAD3HVYAA	10010877	pc-ge27bbc5yad3hvyaa	https://www.nec-lavie.jp/products/notebook/n16/
+all-entry	n16	N16(R) (グリーン) 動画の編集も快適なハイスペックモデル	PC-GE27BCC5YAD3HVYAA	10010879	pc-ge27bcc5yad3hvyaa	https://www.nec-lavie.jp/products/notebook/n16/
+all-entry	n16	N16(R) (ブルー) 動画の編集も快適なハイスペックモデル	PC-GE27BDC5YAD3HVYAA	10010878	pc-ge27bdc5yad3hvyaa	https://www.nec-lavie.jp/products/notebook/n16/
+all-entry	n16	N16(R) (ホワイト) Office搭載で快適に使えるおすすめモデル	PC-GE29EAC1YAD3HVYAA	10010337	pc-ge29eac1yad3hvyaa	https://www.nec-lavie.jp/products/notebook/n16/
+all-entry	n16	N16(R) (ホワイト) アプリの操作が快適なおすすめモデル	PC-GE29EAC5YAD3HVYAA	10010880	pc-ge29eac5yad3hvyaa	https://www.nec-lavie.jp/products/notebook/n16/
+all-entry	n15	N15(R) (標準ソフト) Office搭載で快適に使えるおすすめモデル	PC-GE29EAD1YAD3HVYAA	10010348	pc-ge29ead1yad3hvyaa	https://www.nec-lavie.jp/products/notebook/n15/
+all-entry	n15	N15(R) (標準ソフト) アプリの操作が快適なおすすめモデル	PC-GE29EAD5YAD3HVYAA	10010346	pc-ge29ead5yad3hvyaa	https://www.nec-lavie.jp/products/notebook/n15/
+all-entry	n15	N15(R) (ミニマムソフト) アプリの操作が快適なおすすめモデル	PC-GE29EAD6YAD3HVYAA	10010885	pc-ge29ead6yad3hvyaa	https://www.nec-lavie.jp/products/notebook/n15/
+all-entry	n16	N16(R) (ブラック) アプリの操作が快適なおすすめモデル	PC-GE29EBC5YAD3HVYAA	10010339	pc-ge29ebc5yad3hvyaa	https://www.nec-lavie.jp/products/notebook/n16/
+all-entry	n16	N16(R) (グリーン) アプリの操作が快適なおすすめモデル	PC-GE29ECC5YAD3HVYAA	10010380	pc-ge29ecc5yad3hvyaa	https://www.nec-lavie.jp/products/notebook/n16/
+all-entry	n16	N16(R) (ブルー) アプリの操作が快適なおすすめモデル	PC-GE29EDC5YAD3HVYAA	10010881	pc-ge29edc5yad3hvyaa	https://www.nec-lavie.jp/products/notebook/n16/
+all-entry	n16	N16(R) (ホワイト) インターネットやメールに最適なコストパフォーマンスモデル	PC-GE30GAC5YAD3HVYAA	10010335	pc-ge30gac5yad3hvyaa	https://www.nec-lavie.jp/products/notebook/n16/
+all-entry	n16	N16(R) (ミニマムソフト、ホワイト) インターネットやメールに最適なコストパフォーマンスモデル	PC-GE30GAC6YAD3HVYAA	10010870	pc-ge30gac6yad3hvyaa	https://www.nec-lavie.jp/products/notebook/n16/
+all-entry	n15	N15(R) (標準ソフト) インターネットやメールに最適なコストパフォーマンスモデル	PC-GE30GAD5YAD3HVYAA	10010345	pc-ge30gad5yad3hvyaa	https://www.nec-lavie.jp/products/notebook/n15/
+all-entry	n15	N15(R) (ミニマムソフト) インターネットやメールに最適なコストパフォーマンスモデル	PC-GE30GAD6YAD3HVYAA	10010884	pc-ge30gad6yad3hvyaa	https://www.nec-lavie.jp/products/notebook/n15/
+all-entry	n16	N16(R) (ブラック) インターネットやメールに最適なコストパフォーマンスモデル	PC-GE30GBC5YAD3HVYAA	10010338	pc-ge30gbc5yad3hvyaa	https://www.nec-lavie.jp/products/notebook/n16/
+all-entry	n16	N16(R) (ミニマムソフト、ブラック) インターネットやメールに最適なコストパフォーマンスモデル	PC-GE30GBC6YAD3HVYAA	10010871	pc-ge30gbc6yad3hvyaa	https://www.nec-lavie.jp/products/notebook/n16/
+all-entry	direct-n13slim	N13 Slim(シルバー)動画の編集も快適なハイスペックモデル	PC-GE32B485YAD3H21AA	10010872	pc-ge32b485yad3h21aa	https://www.nec-lavie.jp/products/notebook/direct-n13slim/
+all-entry	n15slim	N15 Slim (グレー)動画の編集も快適なハイスペックモデル	PC-GE32BJY5YAD2H4YAA	10010263	pc-ge32bjy5yad2h4yaa	https://www.nec-lavie.jp/products/notebook/n15slim/index.html
+all-entry	n15slim	N15 Slim (ブルー)動画の編集も快適なハイスペックモデル	PC-GE32BLY5YAD2H4YAA	10011395	pc-ge32bly5yad2h4yaa	https://www.nec-lavie.jp/products/notebook/n15slim/index.html
+all-entry	n14slim	N14 Slim クリエイティブな作業に対応するハイスペックモデル	PC-GE33ARN5YAD2HSYAA	10010278	pc-ge33arn5yad2hsyaa	https://www.nec-lavie.jp/products/notebook/n14slim/index.html
+all-entry	direct-n13slim	N13 Slim(ブルー)Office搭載で快適に操作できるおすすめモデル	PC-GE33E391YAD3H41AA	10010356	pc-ge33e391yad3h41aa	https://www.nec-lavie.jp/products/notebook/direct-n13slim/
+all-entry	direct-n13slim	N13 Slim(ブルー)アプリの操作が快適なおすすめモデル	PC-GE33E395YAD3H41AA	10010665	pc-ge33e395yad3h41aa	https://www.nec-lavie.jp/products/notebook/direct-n13slim/
+all-entry	direct-n13slim	N13 Slim(ブルー、ミニマムソフト)アプリの操作が快適なおすすめモデル	PC-GE33E396YAD3H41AA	10010698	pc-ge33e396yad3h41aa	https://www.nec-lavie.jp/products/notebook/direct-n13slim/
+all-entry	direct-n13slim	N13 Slim(シルバー)4年保証付き、アプリの操作が快適なおすすめモデル	PC-GE33E495YAC3H41AG	10010678	pc-ge33e495yac3h41ag	https://www.nec-lavie.jp/products/notebook/direct-n13slim/
+all-entry	direct-n13slim	N13 Slim(シルバー)アプリの操作が快適なおすすめモデル	PC-GE33E495YAD3H41AA	10010287	pc-ge33e495yad3h41aa	https://www.nec-lavie.jp/products/notebook/direct-n13slim/
+all-entry	direct-n13slim	N13 Slim(シルバー、ミニマムソフト)アプリの操作が快適なおすすめモデル	PC-GE33E496YAD3H41AA	10010308	pc-ge33e496yad3h41aa	https://www.nec-lavie.jp/products/notebook/direct-n13slim/
+all-entry	n15slim	N15 Slim (グレー)アプリの操作が快適なおすすめモデル	PC-GE33ETY5YAD2H2YAA	10011308	pc-ge33ety5yad2h2yaa	https://www.nec-lavie.jp/products/notebook/n15slim/index.html
+all-entry	n15slim	N15 Slim (グレー、ミニマムソフト)アプリの操作が快適なおすすめモデル	PC-GE33ETY6YAD2H2YAA	10011257	pc-ge33ety6yad2h2yaa	https://www.nec-lavie.jp/products/notebook/n15slim/index.html
+all-entry	n15slim	N15 Slim (ブルー)アプリの操作が快適なおすすめモデル	PC-GE33EUY5YAD2H2YAA	10011258	pc-ge33euy5yad2h2yaa	https://www.nec-lavie.jp/products/notebook/n15slim/index.html
+all-entry	n15slim	N15 Slim (ブルー、ミニマムソフト)アプリの操作が快適なおすすめモデル	PC-GE33EUY6YAD2H2YAA	10011263	pc-ge33euy6yad2h2yaa	https://www.nec-lavie.jp/products/notebook/n15slim/index.html
+all-entry	n14slim	N14 Slim タッチパネル搭載、快適にアプリを操作できるおすすめモデル	PC-GE35DRL5YAD2HSYAA	10010280	pc-ge35drl5yad2hsyaa	https://www.nec-lavie.jp/products/notebook/n14slim/index.html
+all-entry	n14slim	N14 Slim(ミニマムソフト)タッチパネル搭載、快適にアプリを操作できるおすすめモデル	PC-GE35DRL6YAD2HSYAA	10010313	pc-ge35drl6yad2hsyaa	https://www.nec-lavie.jp/products/notebook/n14slim/index.html
+all-entry	n14slim	N14 Slim Office搭載、快適に操作できるおすすめモデル	PC-GE35DRN1YAD2HSYAA	10010353	pc-ge35drn1yad2hsyaa	https://www.nec-lavie.jp/products/notebook/n14slim/index.html
+all-entry	n14slim	N14 Slim 快適にアプリを操作できるおすすめモデル	PC-GE35DRN5YAD2HSYAA	10010277	pc-ge35drn5yad2hsyaa	https://www.nec-lavie.jp/products/notebook/n14slim/index.html
+all-entry	n14slim	N14 Slim 4年保証付き、快適に操作できるおすすめモデル	PC-GE35DRN5YAD2HSYAG	10010279	pc-ge35drn5yad2hsyag	https://www.nec-lavie.jp/products/notebook/n14slim/index.html
+all-aio	a23	A23 インターネットやメールに最適な一体型	PC-GJ122CC5T3D3AUAAA	10010321	pc-gj122cc5t3d3auaaa	https://www.nec-lavie.jp/products/desktop/a23/
+all-aio	a23	A23 (ミニマムソフト) インターネットやメールに最適な一体型	PC-GJ122CC6T3D3AUAAA	10010569	pc-gj122cc6t3d3auaaa	https://www.nec-lavie.jp/products/desktop/a23/
+all-aio	a23	A23 ExcelやWordが使えるOffice搭載、快適に操作できるおすすめモデル	PC-GJ134CC1T3D3AUAAA	10010323	pc-gj134cc1t3d3auaaa	https://www.nec-lavie.jp/products/desktop/a23/
+all-aio	a23	A23 快適にアプリを操作できるおすすめモデル	PC-GJ134CC5T3D3AUAAA	10010322	pc-gj134cc5t3d3auaaa	https://www.nec-lavie.jp/products/desktop/a23/
+all-aio	a23	A23 (ミニマムソフト) 快適にアプリを操作できるおすすめモデル	PC-GJ134CC6T3D3AUAAA	10010570	pc-gj134cc6t3d3auaaa	https://www.nec-lavie.jp/products/desktop/a23/
+all-aio	a27	A27 ExcelやWordが使えるOffice搭載、快適に操作できるおすすめモデル	PC-GJ134CE1T3D3AUAAA	10010326	pc-gj134ce1t3d3auaaa	https://www.nec-lavie.jp/products/desktop/a27/
+all-aio	a27	A27 快適にアプリを操作できる大画面一体型	PC-GJ134CE5T3D3AUAAA	10010325	pc-gj134ce5t3d3auaaa	https://www.nec-lavie.jp/products/desktop/a27/
+all-aio	a27	A27(ミニマムソフト) 快適にアプリを操作できる大画面一体型	PC-GJ134CE6T3D3AUAAA	10010573	pc-gj134ce6t3d3auaaa	https://www.nec-lavie.jp/products/desktop/a27/
+all-aio	dts	DT Slim 24型ディスプレイの背面装着、クリエイティブな作業に対応するハイスペック	PC-GJ138Y26Z5D1AUAAA	10010900	pc-gj138y26z5d1auaaa	https://www.nec-lavie.jp/products/desktop/dts/
+all-aio	dts	DT Slim クリエイティブな作業に対応するハイスペックのコンパクトデスクトップ	PC-GJ138YZ6Z5D1AUAAA	10010255	pc-gj138yz6z5d1auaaa	https://www.nec-lavie.jp/products/desktop/dts/
+all-aio	dts	DT Slim 24型ディスプレイの背面にブラケットで装着、快適にアプリを操作できるコンパクトデスクトップ	PC-GJ176Y2625D1AUAAA	10010899	pc-gj176y2625d1auaaa	https://www.nec-lavie.jp/products/desktop/dts/
+all-aio	dts	DT Slim ExcelやWordが使えるOffice搭載コンパクトデスクトップ	PC-GJ176YZ2Z5D1AUAAA	10010889	pc-gj176yz2z5d1auaaa	https://www.nec-lavie.jp/products/desktop/dts/
+all-aio	dts	DT Slim 快適にアプリを操作できるコンパクトデスクトップ	PC-GJ176YZ6Z5D1AUAAA	10010254	pc-gj176yz6z5d1auaaa	https://www.nec-lavie.jp/products/desktop/dts/
+all-aio	a23	A23 写真や動画の編集も快適なハイスペック一体型	PC-GJ177CC5T3D3AUAAA	10010324	pc-gj177cc5t3d3auaaa	https://www.nec-lavie.jp/products/desktop/a23/
+all-aio	a23	A23 (ミニマムソフト) 写真や動画の編集も快適なハイスペック一体型	PC-GJ177CC6T3D3AUAAA	10010571	pc-gj177cc6t3d3auaaa	https://www.nec-lavie.jp/products/desktop/a23/
+all-aio	a27	A27 大容量メモリとストレージ、Office搭載の5年あんしん保証のハイスペックモデル	PC-GJ177CE1T3A3ARADN	10010572	pc-gj177ce1t3a3aradn	https://www.nec-lavie.jp/products/desktop/a27/
+all-aio	a27	A27 写真や動画の編集も快適なハイスペック大画面一体型	PC-GJ177CE5T3D3AUAAA	10010327	pc-gj177ce5t3d3auaaa	https://www.nec-lavie.jp/products/desktop/a27/
+all-aio	a27	A27(ミニマムソフト) 写真や動画の編集も快適なハイスペック大画面一体型	PC-GJ177CE6T3D3AUAAA	10010574	pc-gj177ce6t3d3auaaa	https://www.nec-lavie.jp/products/desktop/a27/
+all-aio	251q01	DT Core i9搭載ハイエンドデスクトップ	PC-GJ209ZZ5T5D1A2AAA	10011210	pc-gj209zz5t5d1a2aaa	https://www.nec-lavie.jp/products/desktop/dt/251q01.html
+all-aio	251q01	DT クリエイティブな作業に対応するハイスペックのデスクトップ	PC-GJ218ZZ5T5D1A2AAA	10011209	pc-gj218zz5t5d1a2aaa	https://www.nec-lavie.jp/products/desktop/dt/251q01.html
+all-aio	dt	DT 24型ディスプレイ付き、動画の編集も快適なハイスペックモデル	PC-GJ248W25T5D2A2AAA	10011238	pc-gj248w25t5d2a2aaa	https://www.nec-lavie.jp/products/desktop/dt/index.html
+all-aio	dt	DT 24型ディスプレイ付き、動画の編集も快適なハイスペックモデル	PC-GJ248W25T5D2A6AAA	10010483	pc-gj248w25t5d2a6aaa	https://www.nec-lavie.jp/products/desktop/dt/index.html
+all-aio	dt	DT 動画の編集も快適なハイスペックモデル	PC-GJ248WZ5T5D2A2AAA	10011237	pc-gj248wz5t5d2a2aaa	https://www.nec-lavie.jp/products/desktop/dt/index.html
+all-aio	dt	DT 動画の編集も快適なハイスペックモデル	PC-GJ248WZ5T5D2A6AAA	10010382	pc-gj248wz5t5d2a6aaa	https://www.nec-lavie.jp/products/desktop/dt/index.html
+all-aio	dt	DT クリエイティブな作業、動画編集、3Dレンダリングに対応するハイスペックモデル	PC-GJ259WZ5T5D2A2AAA	10011239	pc-gj259wz5t5d2a2aaa	https://www.nec-lavie.jp/products/desktop/dt/index.html
+all-aio	dt	DT クリエイティブな作業、動画編集、3Dレンダリングに対応するハイスペックモデル	PC-GJ259WZ5T5D2A6AAA	10010383	pc-gj259wz5t5d2a6aaa	https://www.nec-lavie.jp/products/desktop/dt/index.html
+all-aio	251q01	DT 快適にアプリを操作できるデスクトップ	PC-GJ266ZZ5T5D1A2AAA	10011208	pc-gj266zz5t5d1a2aaa	https://www.nec-lavie.jp/products/desktop/dt/251q01.html
+all-aio	251q01	DT  快適にアプリを操作できるデスクトップ	PC-GJ266ZZAT5D1A4AAA	10010228	pc-gj266zzat5d1a4aaa	https://www.nec-lavie.jp/products/desktop/dt/251q01.html
+all-aio	251q01	DT  快適にアプリを操作できるデスクトップ(ミニマムソフト）	PC-GJ266ZZDT5D1A4AAA	10010227	pc-gj266zzdt5d1a4aaa	https://www.nec-lavie.jp/products/desktop/dt/251q01.html
+all-aio	dts	DT Slim ExcelやWordが使えるOffice搭載コンパクトデスクトップ	PC-GJ273YZ2Z5D1ASAAA	10010350	pc-gj273yz2z5d1asaaa	https://www.nec-lavie.jp/products/desktop/dts/
+all-aio	dts	DT Slim インターネットやメールに最適なコンパクトデスクトップ	PC-GJ273YZ6Z5D1AUAAA	10010253	pc-gj273yz6z5d1auaaa	https://www.nec-lavie.jp/products/desktop/dts/
+all-aio	dt	DT ExcelやWordが使えるOffice搭載 快適に操作できるデスクトップ	PC-GJ336WZ1T5D2A2AAA	10011236	pc-gj336wz1t5d2a2aaa	https://www.nec-lavie.jp/products/desktop/dt/index.html
+all-aio	dt	DT ExcelやWordが使えるOffice搭載 快適に操作できるデスクトップ	PC-GJ336WZ1T5D2A4AAA	10010354	pc-gj336wz1t5d2a4aaa	https://www.nec-lavie.jp/products/desktop/dt/index.html
+all-aio	dt	DT ExcelやWordが使えるOffice搭載 快適に操作できるデスクトップ	PC-GJ336WZ1T5D2A6AAA	10011207	pc-gj336wz1t5d2a6aaa	https://www.nec-lavie.jp/products/desktop/dt/index.html
+all-aio	dt	DT 快適にアプリを操作できるデスクトップ	PC-GJ336WZ5T5D2A2AAA	10011235	pc-gj336wz5t5d2a2aaa	https://www.nec-lavie.jp/products/desktop/dt/index.html
+all-aio	dt	DT 快適にアプリを操作できるデスクトップ	PC-GJ336WZ5T5D2A4AAA	10010258	pc-gj336wz5t5d2a4aaa	https://www.nec-lavie.jp/products/desktop/dt/index.html
+all-aio	dt	DT 快適にアプリを操作できるデスクトップ	PC-GJ336WZ5T5D2A6AAA	10010381	pc-gj336wz5t5d2a6aaa	https://www.nec-lavie.jp/products/desktop/dt/index.html
+all-aio	dt	DT(ミニマムソフト) 快適にアプリを操作できるデスクトップ	PC-GJ336WZ6T5D2A2AAA	10011240	pc-gj336wz6t5d2a2aaa	https://www.nec-lavie.jp/products/desktop/dt/index.html
+all-aio	dt	DT(ミニマムソフト)快適にアプリを操作できるデスクトップ	PC-GJ336WZ6T5D2A6AAA	10010309	pc-gj336wz6t5d2a6aaa	https://www.nec-lavie.jp/products/desktop/dt/index.html
+all-aio	dts	DT Slim 24型ディスプレイ背面に装着で省スペース	PC-GJ34EY2625D1AUAAA	10010888	pc-gj34ey2625d1auaaa	https://www.nec-lavie.jp/products/desktop/dts/
+all-aio	dts	DT Slim エントリーモデル	PC-GJ34EYZ6Z5D1ASAAA	10010315	pc-gj34eyz6z5d1asaaa	https://www.nec-lavie.jp/products/desktop/dts/
+all-aio	dts	DT Slim エントリーモデル	PC-GJ34EYZ6Z5D1AUAAA	10010252	pc-gj34eyz6z5d1auaaa	https://www.nec-lavie.jp/products/desktop/dts/
+all-aio	251q01	DT 24型ディスプレイ添付、インターネットやメールに最適なデスクトップ	PC-GJ353Z25T5D1A2AAA	10011241	pc-gj353z25t5d1a2aaa	https://www.nec-lavie.jp/products/desktop/dt/251q01.html
+all-aio	251q01	DT インターネットやメールに最適なデスクトップ	PC-GJ353ZZ5T5D1A2AAA	10010721	pc-gj353zz5t5d1a2aaa	https://www.nec-lavie.jp/products/desktop/dt/251q01.html
+all-aio	251q01	DT インターネットやメールに最適なデスクトップ	PC-GJ353ZZAT5D1A4AAA	10010226	pc-gj353zzat5d1a4aaa	https://www.nec-lavie.jp/products/desktop/dt/251q01.html
+all-aio	251q01	DT インターネットやメールに最適なデスクトップ(ミニマムソフト）	PC-GJ353ZZDT5D1A4AAA	10010225	pc-gj353zzdt5d1a4aaa	https://www.nec-lavie.jp/products/desktop/dt/251q01.html
+all-aio	251q01	DTエントリーモデル	PC-GJ39EZZ5T5D1A2AAA	10010379	pc-gj39ezz5t5d1a2aaa	https://www.nec-lavie.jp/products/desktop/dt/251q01.html
+all-aio	251q01	DT(ミニマムモデル)エントリーモデル	PC-GJ39EZZ6T5D1A2AAA	10011243	pc-gj39ezz6t5d1a2aaa	https://www.nec-lavie.jp/products/desktop/dt/251q01.html
+all-aio	251q01	DT エントリーモデル	PC-GJ39EZZAT5D1A4AAA	10010224	pc-gj39ezzat5d1a4aaa	https://www.nec-lavie.jp/products/desktop/dt/251q01.html
+all-aio	251q01	DT エントリーモデル(ミニマムソフト）	PC-GJ39EZZDT5D1A4AAA	10010223	pc-gj39ezzdt5d1a4aaa	https://www.nec-lavie.jp/products/desktop/dt/251q01.html
+bizpc-mate	mb-r	vPro対応 用途に応じて構成可能なスタンダードデスクトップPC	PC-M2H52BZGJ8KRN4SZZ	10010547	pc-m2h52bzgj8krn4szz	https://www.nec-lavie.jp/products/bizpc/mate/mb-r/
+bizpc-mate	mb-r	用途に応じて構成可能なスタンダードデスクトップPC	PC-M2H52BZGJ8KRNRSZZ	10010590	pc-m2h52bzgj8krnrszz	https://www.nec-lavie.jp/products/bizpc/mate/mb-r/
+bizpc-mate	me-r	vPro対応 豊富なBTOで業務を強力にサポートするハイエンドデスクトップPC	PC-M2H52EZGJ8KRN4SZZ	10010550	pc-m2h52ezgj8krn4szz	https://www.nec-lavie.jp/products/bizpc/mate/me-r/
+bizpc-mate	me-r	豊富なBTOで業務を強力にサポートするハイエンドデスクトップPC	PC-M2H52EZGJ8KRNRSZZ	10010593	pc-m2h52ezgj8krnrszz	https://www.nec-lavie.jp/products/bizpc/mate/me-r/
+bizpc-mate	mc-s	第14世代インテル® Core™ プロセッサーを選択可能なスモールPC	PC-M2J44CZGH4KSMJSZZ	10010190	pc-m2j44czgh4ksmjszz	https://www.nec-lavie.jp/products/bizpc/mate/mc-s/
+bizpc-mate	mb-s	14世代インテル® Core™ プロセッサーを選択可能なスタンダードPC（24型液晶セット）	PC-M2J47BYGJ8KSNRSZZ	10011380	pc-m2j47bygj8ksnrszz	https://www.nec-lavie.jp/products/bizpc/mate/mb-s/
+bizpc-mate	mb-m	グラフィック処理の多い業務におすすめ(Core™ i3)	PC-M2J47BZGJ8KMN4SZZ	10010540	pc-m2j47bzgj8kmn4szz	https://www.nec-lavie.jp/products/bizpc/mate/mb-m/
+bizpc-mate	mb-s	14世代インテル® Core™ プロセッサーを選択可能なスタンダードPC（24型液晶セット）	PC-M2J47BZGJ8KSNRSZZ	10010554	pc-m2j47bzgj8ksnrszz	https://www.nec-lavie.jp/products/bizpc/mate/mb-s/
+bizpc-mate	me-s	第14世代インテル® Core™ プロセッサーを選択可能なハイエンドPC（24型液晶セット）	PC-M2J47EYGJ8KSNRSZZ	10011381	pc-m2j47eygj8ksnrszz	https://www.nec-lavie.jp/products/bizpc/mate/me-s/
+bizpc-mate	me-s	第14世代インテル® Core™ プロセッサーを選択可能なハイエンドPC	PC-M2J47EZGJ8KSNRSZZ	10010560	pc-m2j47ezgj8ksnrszz	https://www.nec-lavie.jp/products/bizpc/mate/me-s/
+bizpc-mate	ml-r	エントリーモデルとして十分な性能を備えたコストパフォーマンスPC(24型液晶セット、Windows 11 Pro モデル)	PC-M2L47LYGM8KRMRSZZ	10011379	pc-m2l47lygm8krmrszz	https://www.nec-lavie.jp/products/bizpc/mate/ml-r/
+bizpc-mate	ml-r	エントリーモデルとして十分な性能を備えたコストパフォーマンスPC（Windows 11 Pro モデル）	PC-M2L47LZGM8KRM4SZZ	10010551	pc-m2l47lzgm8krm4szz	https://www.nec-lavie.jp/products/bizpc/mate/ml-r/
+bizpc-mate	ml-r	エントリーモデルとして十分な性能を備えたコストパフォーマンスPC(Windows 11 Pro モデル)	PC-M2L47LZGM8KRMRSZZ	10010594	pc-m2l47lzgm8krmrszz	https://www.nec-lavie.jp/products/bizpc/mate/ml-r/
+bizpc-mate	mb-r	vPro対応 用途に応じて構成可能なスタンダードデスクトップPC	PC-M2M50BZGJ8KRN4SZZ	10010546	pc-m2m50bzgj8krn4szz	https://www.nec-lavie.jp/products/bizpc/mate/mb-r/
+bizpc-mate	mb-r	用途に応じて構成可能なスタンダードデスクトップPC	PC-M2M50BZGJ8KRNRSZZ	10010589	pc-m2m50bzgj8krnrszz	https://www.nec-lavie.jp/products/bizpc/mate/mb-r/
+bizpc-mate	me-r	vPro対応 豊富なBTOで業務を強力にサポートするハイエンドデスクトップPC	PC-M2M50EZGJ8KRN4SZZ	10010549	pc-m2m50ezgj8krn4szz	https://www.nec-lavie.jp/products/bizpc/mate/me-r/
+bizpc-mate	me-r	豊富なBTOで業務を強力にサポートするハイエンドデスクトップPC	PC-M2M50EZGJ8KRNRSZZ	10010592	pc-m2m50ezgj8krnrszz	https://www.nec-lavie.jp/products/bizpc/mate/me-r/
+bizpc-mate	mb-m	グラフィック処理の多い業務におすすめ(Core™ i5)	PC-M2P50BZGJ8KMN4SZZ	10010541	pc-m2p50bzgj8kmn4szz	https://www.nec-lavie.jp/products/bizpc/mate/mb-m/
+bizpc-mate	mb-s	14世代インテル® Core™ プロセッサーを選択可能なスタンダードPC（24型液晶セット）	PC-M2P50BZGJ8KSNRSZZ	10010555	pc-m2p50bzgj8ksnrszz	https://www.nec-lavie.jp/products/bizpc/mate/mb-s/
+bizpc-mate	me-s	第14世代インテル® Core™ プロセッサーを選択可能なハイエンドPC	PC-M2P50EZGJ8KSNRSZZ	10010561	pc-m2p50ezgj8ksnrszz	https://www.nec-lavie.jp/products/bizpc/mate/me-s/
+bizpc-mate	mc-s	vPro対応 第14世代インテル® Core™ プロセッサーを選択可能なスモールPC	PC-M2Q48CZGH4KSMJSZZ	10010197	pc-m2q48czgh4ksmjszz	https://www.nec-lavie.jp/products/bizpc/mate/mc-s/
+bizpc-mate	mb-m	vPro対応 グラフィック処理の多い業務におすすめ(Core™ i5)	PC-M2Q50BZGJ8KMN4SZZ	10010297	pc-m2q50bzgj8kmn4szz	https://www.nec-lavie.jp/products/bizpc/mate/mb-m/
+bizpc-mate	mb-s	vPro対応 14世代インテル® Core™ プロセッサーを選択可能なスタンダードPC	PC-M2Q50BZGJ8KSNRSZZ	10010300	pc-m2q50bzgj8ksnrszz	https://www.nec-lavie.jp/products/bizpc/mate/mb-s/
+bizpc-mate	me-s	vPro対応 第14世代インテル® Core™ プロセッサーを選択可能なハイエンドPC	PC-M2Q50EZGJ8KSNRSZZ	10010299	pc-m2q50ezgj8ksnrszz	https://www.nec-lavie.jp/products/bizpc/mate/me-s/
+bizpc-mate	ml-r	エントリーモデルとして十分な性能を備えたコストパフォーマンスPC（Windows 11 Pro モデル）	PC-M2T47LZGM8KRM4SZZ	10010552	pc-m2t47lzgm8krm4szz	https://www.nec-lavie.jp/products/bizpc/mate/ml-r/
+bizpc-mate	ml-r	エントリーモデルとして十分な性能を備えたコストパフォーマンスPC(Windows 11 Pro モデル)	PC-M2T47LZGM8KRMRSZZ	10010595	pc-m2t47lzgm8krmrszz	https://www.nec-lavie.jp/products/bizpc/mate/ml-r/
+bizpc-mate	mb-r	用途に応じて構成可能なスタンダードデスクトップPC(24型液晶セット）	PC-M2T49BYGJ8KRNRSZZ	10011382	pc-m2t49bygj8krnrszz	https://www.nec-lavie.jp/products/bizpc/mate/mb-r/
+bizpc-mate	mb-r	用途に応じて構成可能なスタンダードデスクトップPC	PC-M2T49BZGJ8KRN4SZZ	10010243	pc-m2t49bzgj8krn4szz	https://www.nec-lavie.jp/products/bizpc/mate/mb-r/
+bizpc-mate	mb-r	用途に応じて構成可能なスタンダードデスクトップPC	PC-M2T49BZGJ8KRNRSZZ	10010602	pc-m2t49bzgj8krnrszz	https://www.nec-lavie.jp/products/bizpc/mate/mb-r/
+bizpc-mate	me-r	豊富なBTOで業務を強力にサポートするハイエンドデスクトップPC(24型液晶セット）	PC-M2T49EYGJ8KRNRSZZ	10011383	pc-m2t49eygj8krnrszz	https://www.nec-lavie.jp/products/bizpc/mate/me-r/
+bizpc-mate	me-r	豊富なBTOで業務を強力にサポートするハイエンドデスクトップPC	PC-M2T49EZGJ8KRN4SZZ	10010242	pc-m2t49ezgj8krn4szz	https://www.nec-lavie.jp/products/bizpc/mate/me-r/
+bizpc-mate	me-r	豊富なBTOで業務を強力にサポートするハイエンドデスクトップPC	PC-M2T49EZGJ8KRNRSZZ	10010601	pc-m2t49ezgj8krnrszz	https://www.nec-lavie.jp/products/bizpc/mate/me-r/
+bizpc-mate	mc-s	第14世代インテル® Core™ プロセッサーを選択可能なスモールPC（24型液晶セット）	PC-M2Z34CYGH4KSMJ2ZZ	10011376	pc-m2z34cygh4ksmj2zz	https://www.nec-lavie.jp/products/bizpc/mate/mc-s/
+bizpc-mate	mc-s	第14世代インテル® Core™ プロセッサーを選択可能なスモールPC	PC-M2Z34CZGH4KSMJSZZ	10010189	pc-m2z34czgh4ksmjszz	https://www.nec-lavie.jp/products/bizpc/mate/mc-s/
+bizpc-mate	mc-s	第14世代インテル® Core™ プロセッサーを選択可能なスモールPC	PC-M2Z34CZGH4KSMRSZZ	10010239	pc-m2z34czgh4ksmrszz	https://www.nec-lavie.jp/products/bizpc/mate/mc-s/
+bizpc-mate	mb-m	グラフィック処理の多い業務におすすめ	PC-M2Z39BZGJ8KMN4SZZ	10010248	pc-m2z39bzgj8kmn4szz	https://www.nec-lavie.jp/products/bizpc/mate/mb-m/
+bizpc-mate	mb-s	14世代インテル® Core™ プロセッサーを選択可能なスタンダードPC	PC-M2Z39BZGJ8KSNRSZZ	10010240	pc-m2z39bzgj8ksnrszz	https://www.nec-lavie.jp/products/bizpc/mate/mb-s/
+bizpc-mate	me-s	第14世代インテル® Core™ プロセッサーを選択可能なハイエンドPC	PC-M2Z39EZGJ8KSNRSZZ	10010238	pc-m2z39ezgj8ksnrszz	https://www.nec-lavie.jp/products/bizpc/mate/me-s/
+bizpc-mate	ml-r	エントリーモデルとして十分な性能を備えたコストパフォーマンスPC(Windows 11 Pro モデル)	PC-M2Z39LZGM8KRM4SZZ	10010298	pc-m2z39lzgm8krm4szz	https://www.nec-lavie.jp/products/bizpc/mate/ml-r/
+bizpc-mate	ml-r	エントリーモデルとして十分な性能を備えたコストパフォーマンスPC(Windows 11 Pro モデル)	PC-M2Z39LZGM8KRMRSZZ	10010600	pc-m2z39lzgm8krmrszz	https://www.nec-lavie.jp/products/bizpc/mate/ml-r/
+bizpc-mate	ml-r	エントリーモデルとして十分な性能を備えたコストパフォーマンスPC(Windows 11 Home モデル)	PC-M2Z39LZXM8KRM4SZZ	10010241	pc-m2z39lzxm8krm4szz	https://www.nec-lavie.jp/products/bizpc/mate/ml-r/
+bizpc-mate	ml-r	エントリーモデルとして十分な性能を備えたコストパフォーマンスPC(Windows 11 Home モデル)	PC-M2Z39LZXM8KRMRSZZ	10010599	pc-m2z39lzxm8krmrszz	https://www.nec-lavie.jp/products/bizpc/mate/ml-r/
+bizpc-mate		Mate J タイプML [Windows 11 Pro、Core i5、16GBメモリ、256GB SSD、モニタなし、OfficeH&B、１年標準保証]	PC-MJT46LR97HZM	897022	pc-mjt46lr97hzm	https://cart.nec-lavie.jp/cart/config.html?materialNumber=PC-MJT46LR97HZM
+tablet-smalllight	t8	LAVIE Tab T8(PC-T0855KAS)(ルナグレー)	PC-T0855KAS	897848	pc-t0855kas	https://www.nec-lavie.jp/products/tablet/t8/index.html
+tablet-smalllight	t10	LAVIE Tab T10(PC-T1055KAS)(ルナグレー)	PC-T1055KAS	897573	pc-t1055kas	https://www.nec-lavie.jp/products/tablet/t10/
+tablet-smalllight	direct-t11n	LAVIE Tab T11N(PC-T1175LAC)(サンドローズ)	PC-T1175LAC	898343	pc-t1175lac	https://www.nec-lavie.jp/products/tablet/direct-t11n/
+tablet-smalllight	direct-t11n	LAVIE Tab T11N(PC-T1175LAS)(ルナグレー)	PC-T1175LAS	898344	pc-t1175las	https://www.nec-lavie.jp/products/tablet/direct-t11n/
+tablet-smalllight	t12n	LAVIE Tab T12N(PC-T1275LAS)(クラウドグレー)	PC-T1275LAS	898872	pc-t1275las	https://www.nec-lavie.jp/products/tablet/t12n/
+tablet-smalllight	t8	LAVIE Tab T8(PC-TAB08H05)(ルナグレー)	PC-TAB08H05	897849	pc-tab08h05	https://www.nec-lavie.jp/products/tablet/t8/index.html
+tablet-smalllight	t10	LAVIE Tab T10(PC-TAB10F03)(ルナグレー)	PC-TAB10F03	897574	pc-tab10f03	https://www.nec-lavie.jp/products/tablet/t10/index.html
+tablet-smalllight	ex	LAVIE Tab EX(PC-TAB11301)(シーシェル)	PC-TAB11301	898873	pc-tab11301	https://www.nec-lavie.jp/products/tablet/ex/
+tablet-smalllight	direct-t11n	LAVIE Tab T11N(PC-TAB11Q02)(ルナグレー)	PC-TAB11Q02	898345	pc-tab11q02	https://www.nec-lavie.jp/products/tablet/direct-t11n/
+tablet-smalllight	t12	LAVIE Tab T12(PC-TAB12Q01)(クラウドグレー)	PC-TAB12Q01	899074	pc-tab12q01	https://www.nec-lavie.jp/products/tablet/t12/
+tablet-smalllight	ex	LAVIE Tab EX(PC-TX117LAS)(シーシェル)	PC-TX117LAS	898874	pc-tx117las	https://www.nec-lavie.jp/products/tablet/ex/
+bizpc-versapro	vc-m	コンパクト、軽量、Webミーティングモードでテレワーク支援	PC-V2545CXGHC8MZ4YZY	10008524	pc-v2545cxghc8mz4yzy	https://www.nec-lavie.jp/products/bizpc/versapro/vc-m/
+bizpc-versapro	vw-s	一般業務に適した機能性を備えたエントリーPC	PC-V2545WDGMC5SZKYZY	10010179	pc-v2545wdgmc5szkyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vw-s/
+bizpc-versapro	vw-s	一般業務に適した機能性を備えたエントリーPC	PC-V2545WDGMC7SZGYZY	10010178	pc-v2545wdgmc7szgyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vw-s/
+bizpc-versapro	vw-s	一般業務に適した機能性を備えたエントリーPC	PC-V2545WDGMC9SZEYZY	10010177	pc-v2545wdgmc9szeyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vw-s/
+bizpc-versapro	vm-r	AI搭載で高速処理＆高速通信が可能なモバイルノート (タッチパネル液晶)	PC-V2549M6GHC8RZEYZY	10009397	pc-v2549m6ghc8rzeyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vm-r/
+bizpc-versapro	vm-r	AI搭載で高速処理＆高速通信が可能なモバイルノート	PC-V2549MNGHL6RZGYZY	10011331	pc-v2549mnghl6rzgyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vm-r/
+bizpc-versapro	vm-r	AI搭載で高速処理＆高速通信が可能なモバイルノート(LTE モデル)	PC-V2549MNGHL8RZEYZY	10009398	pc-v2549mnghl8rzeyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vm-r/
+bizpc-versapro	t	AMD Ryzen AI搭載の 16型スタンダードノートPC	PC-V25N5CAHMC4TZYYZY	10011429	pc-v25n5cahmc4tzyyzy	https://www.nec-lavie.jp/products/bizpc/notebook/bn56r/t/index.html
+bizpc-versapro	t	AMD Ryzen AI搭載の 16型スタンダードノートPC	PC-V25N5CAHMC6TZWYZY	10011428	pc-v25n5cahmc6tzwyzy	https://www.nec-lavie.jp/products/bizpc/notebook/bn56r/t/index.html
+bizpc-versapro	t	AMD Ryzen AI搭載の 16型スタンダードノートPC	PC-V25N5CAHMC8TZDYZY	10011427	pc-v25n5cahmc8tzdyzy	https://www.nec-lavie.jp/products/bizpc/notebook/bn56r/t/index.html
+bizpc-versapro	vm-r	AI搭載で高速処理＆高速通信が可能なモバイルノート	PC-V2649MMGHC6RZGYZY	10011332	pc-v2649mmghc6rzgyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vm-r/
+bizpc-versapro	vm-r	AI搭載で高速処理＆高速通信が可能なモバイルノート	PC-V2649MMGHC8RZEYZY	10011330	pc-v2649mmghc8rzeyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vm-r/
+bizpc-versapro	vz-n	様々なAI搭載機能でWebミーティングなどの幅広い業務をサポート	PC-V2950ZMGHC8NZKAZY	10008532	pc-v2950zmghc8nzkazy	https://www.nec-lavie.jp/products/bizpc/versapro/vz-n/
+bizpc-versapro	vm-r	デスクワークもモバイルも軽快にこなせる14型ノートPC	PC-V2C49M2GHF4RZKYZY	10010170	pc-v2c49m2ghf4rzkyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vm-r/
+bizpc-versapro	vm-r	デスクワークもモバイルも軽快にこなせる14型ノートPC	PC-V2C49M2GHF6RZGYZY	10010169	pc-v2c49m2ghf6rzgyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vm-r/
+bizpc-versapro	vm-r	デスクワークもモバイルも軽快にこなせる14型ノートPC	PC-V2C49M2GHF8RZEYZY	10010168	pc-v2c49m2ghf8rzeyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vm-r/
+bizpc-versapro	vd-p	高負荷なデータ管理業務や基幹業務などにおすすめ	PC-V2H52DBGBC8PZEYZY	10009820	pc-v2h52dbgbc8pzeyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vd-p/
+bizpc-versapro	vd-p	高負荷なデータ管理業務や基幹業務などにおすすめ	PC-V2H52DDGBC8PZEYZY	10009821	pc-v2h52ddgbc8pzeyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vd-p/
+bizpc-versapro	vx-p	幅広い構成から用途に応じたスペックを選びたい方におすすめ	PC-V2H52XDGBC8PZEYZY	10009815	pc-v2h52xdgbc8pzeyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vx-p/
+bizpc-versapro	vx-r	NPU搭載の先進CPU、Wi-Fi 7を採用したスタンダードノートPC	PC-V2H53XDGHC4RZKYZY	10009879	pc-v2h53xdghc4rzkyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vx-r/
+bizpc-versapro	vx-r	NPU搭載の先進CPU、Wi-Fi 7を採用したスタンダードノートPC	PC-V2H53XDGHC6RZGYZY	10009878	pc-v2h53xdghc6rzgyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vx-r/
+bizpc-versapro	t	高性能×拡張性でビジネスを加速 16型AIノートPC	PC-V2HN7AAHMCRTZYYZY	10011420	pc-v2hn7aahmcrtzyyzy	https://www.nec-lavie.jp/products/bizpc/notebook/bn76c/t/index.html
+bizpc-versapro	t	高性能×拡張性でビジネスを加速 15.6型AIノートPC	PC-V2HN7ACHMC4TZYYZY	10011416	pc-v2hn7achmc4tzyyzy	https://www.nec-lavie.jp/products/bizpc/notebook/bn76c/t/index.html
+bizpc-versapro	t	日常業務を安定して支える、16型スタンダードノートPC	PC-V2LN5BAGMC8TZAYZY	10011449	pc-v2ln5bagmc8tzayzy	https://www.nec-lavie.jp/products/bizpc/notebook/bn56c/t/index.html
+bizpc-versapro	t	日常業務を安定して支える、15.6型スタンダードノートPC	PC-V2LN5BCGMC8TZAYZY	10011481	pc-v2ln5bcgmc8tzayzy	https://www.nec-lavie.jp/products/bizpc/notebook/bn56c/t/index.html
+bizpc-versapro	vd-p	高負荷なデータ管理業務や基幹業務などにおすすめ	PC-V2M47DBGBC8PZEYZY	10009271	pc-v2m47dbgbc8pzeyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vd-p/
+bizpc-versapro	vd-p	高負荷なデータ管理業務や基幹業務などにおすすめ(フルHD液晶)	PC-V2M47DDGBC8PZEYZY	10011340	pc-v2m47ddgbc8pzeyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vd-p/
+bizpc-versapro	vs-s	第13世代インテル® Core™ プロセッサー搭載タブレットPC	PC-V2M47S4G8C8SZGYZY	10010174	pc-v2m47s4g8c8szgyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vs-s/
+bizpc-versapro	vx-n	オフィス業務、据え置きPCの決定版	PC-V2M47XBGBC8NZEYZY	10009823	pc-v2m47xbgbc8nzeyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vx-n/
+bizpc-versapro	vx-p	幅広い構成から用途に応じたスペックを選びたい方におすすめ	PC-V2M47XBGBC8PZEYZY	10009814	pc-v2m47xbgbc8pzeyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vx-p/
+bizpc-versapro	vx-r	NPU搭載の先進CPU、Wi-Fi 7を採用したスタンダードノートPC	PC-V2M49XBGHC8RZGYZY	10009876	pc-v2m49xbghc8rzgyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vx-r/
+bizpc-versapro	vx-r	NPU搭載の先進CPU、Wi-Fi 7を採用したスタンダードノートPC	PC-V2M49XDGHC8RZGYZY	10009877	pc-v2m49xdghc8rzgyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vx-r/
+bizpc-versapro	vb-r	ビジネスに必要な性能と持ち運びやすさのエントリーモバイルPC	PC-V2M50BUGHC6RZGAZY	10010154	pc-v2m50bughc6rzgazy	https://www.nec-lavie.jp/products/bizpc/versapro/vb-r/
+bizpc-versapro	vb-r	ビジネスに必要な性能と持ち運びやすさのエントリーモバイルPC	PC-V2M50BUGHC6RZKAZY	10010155	pc-v2m50bughc6rzkazy	https://www.nec-lavie.jp/products/bizpc/versapro/vb-r/
+bizpc-versapro	vb-r	ビジネスに必須の性能やインターフェイスを備えた エントリーモバイルPC	PC-V2M50BUGHC8RZEAZY	10009395	pc-v2m50bughc8rzeazy	https://www.nec-lavie.jp/products/bizpc/versapro/vb-r/
+bizpc-versapro	t	超長持ちバッテリー&軽量筐体、プレミアム14型モバイル(タッチパネル、LTE搭載）	PC-V2MM7EPHHL8TZDYZY	10011432	pc-v2mm7ephhl8tzdyzy	https://www.nec-lavie.jp/products/bizpc/notebook/bm74c/t/index.html
+bizpc-versapro	t	高性能×拡張性でビジネスを加速 16型AIノートPC	PC-V2MN7AAHMC6TZDYZY	10011419	pc-v2mn7aahmc6tzdyzy	https://www.nec-lavie.jp/products/bizpc/notebook/bn76c/t/index.html
+bizpc-versapro	t	高性能×拡張性でビジネスを加速 15.6型AIノートPC	PC-V2MN7ACHMC6TZDYZY	10011415	pc-v2mn7achmc6tzdyzy	https://www.nec-lavie.jp/products/bizpc/notebook/bn76c/t/index.html
+bizpc-versapro	t	柔軟な働き方を実現する、即応型タブレット（Core Ultra 5 プロセッサー搭載）	PC-V2MT5HEH8C8TZDYZY	10011467	pc-v2mt5heh8c8tzdyzy	https://www.nec-lavie.jp/products/bizpc/notebook/bt53c/t/index.html
+bizpc-versapro	t	柔軟な働き方を実現する、即応型タブレット（Core Ultra 5 プロセッサー 335、5G搭載モデル）	PC-V2MT5HGH858TZDYZY	10011450	pc-v2mt5hgh858tzdyzy	https://www.nec-lavie.jp/products/bizpc/notebook/bt53c/t/index.html
+bizpc-versapro	t	柔軟な働き方を実現する、即応型タブレット（Core Ultra 5 プロセッサー 322搭載モデル）	PC-V2NT5HAH8C8TZDYZY	10011473	pc-v2nt5hah8c8tzdyzy	https://www.nec-lavie.jp/products/bizpc/notebook/bt53c/t/index.html
+bizpc-versapro	t	柔軟な働き方を実現する、即応型タブレット（Core Ultra 5 プロセッサー 322 、5G搭載モデル)	PC-V2NT5HCH858TZDYZY	10011462	pc-v2nt5hch858tzdyzy	https://www.nec-lavie.jp/products/bizpc/notebook/bt53c/t/index.html
+bizpc-versapro	vf-p	第13世代インテル® Core™ プロセッサー 搭載バリューPC	PC-V2T46FBGMC8PZGYZY	10009872	pc-v2t46fbgmc8pzgyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vf-p/index.html
+bizpc-versapro	vf-p	第13世代インテル® Core™ プロセッサー 搭載バリューPC	PC-V2T46FDGMC8PZGYZY	10009873	pc-v2t46fdgmc8pzgyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vf-p/index.html
+bizpc-versapro	vn-s	第13世代インテル® Core™ プロセッサー搭載セキュアモバイル	PC-V2T46NUGHC4SZYYZY	10010173	pc-v2t46nughc4szyyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vn-s
+bizpc-versapro	vn-s	第13世代インテル® Core™ プロセッサー搭載セキュアモバイル	PC-V2T46NUGHC6SZPYZY	10010172	pc-v2t46nughc6szpyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vn-s
+bizpc-versapro	vn-s	第13世代インテル® Core™ プロセッサー搭載セキュアモバイル	PC-V2T46NUGHC8SZPYZY	10011512	pc-v2t46nughc8szpyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vn-s
+bizpc-versapro	vs-s	vPro対応 第13世代インテル® Core™ プロセッサー搭載タブレットPC	PC-V2T46S4G8C8SZHYZY	10011511	pc-v2t46s4g8c8szhyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vs-s/
+bizpc-versapro	vx-n	オフィス業務、据え置きPCの決定版	PC-V2T46XBGBC8NZEYZY	10009822	pc-v2t46xbgbc8nzeyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vx-n/
+bizpc-versapro	vx-r	NPU搭載の先進CPU、Wi-Fi 7を採用したスタンダードノートPC	PC-V2T48XBGHC8RZEYZY	10009911	pc-v2t48xbghc8rzeyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vx-r/
+bizpc-versapro	t	大幅にモバイル性能を強化したスタンダード14型モバイル	PC-V2TM5FDGHC8TZDYZY	10011475	pc-v2tm5fdghc8tzdyzy	https://www.nec-lavie.jp/products/bizpc/notebook/bm54c/t/index.html
+bizpc-versapro	t	大幅にモバイル性能を強化したスタンダード14型モバイル(タッチパネルモデル)	PC-V2TM5FJGHC8TZDYZY	10011453	pc-v2tm5fjghc8tzdyzy	https://www.nec-lavie.jp/products/bizpc/notebook/bm54c/t/index.html
+bizpc-versapro	t	大幅にモバイル性能を強化したスタンダード14型モバイル(タッチパネル、LTE搭載モデル）	PC-V2TM5FJGHL8TZDYZY	10011435	pc-v2tm5fjghl8tzdyzy	https://www.nec-lavie.jp/products/bizpc/notebook/bm54c/t/index.html
+bizpc-versapro	t	日常業務を安定して支える、16型スタンダードノートPC	PC-V2TN5BAGMC6TZDYZY	10011425	pc-v2tn5bagmc6tzdyzy	https://www.nec-lavie.jp/products/bizpc/notebook/bn56c/t/index.html
+bizpc-versapro	t	日常業務を安定して支える、15.6型スタンダードノートPC	PC-V2TN5BCGMC6TZDYZY	10011422	pc-v2tn5bcgmc6tzdyzy	https://www.nec-lavie.jp/products/bizpc/notebook/bn56c/t/index.html
+bizpc-versapro	t	高性能×拡張性でビジネスを加速 16型AIノートPC	PC-V2TN7AAHMC8TZDYZY	10011418	pc-v2tn7aahmc8tzdyzy	https://www.nec-lavie.jp/products/bizpc/notebook/bn76c/t/index.html
+bizpc-versapro	t	高性能×拡張性でビジネスを加速 15.6型AIノートPC	PC-V2TN7ACHMC8TZDYZY	10011414	pc-v2tn7achmc8tzdyzy	https://www.nec-lavie.jp/products/bizpc/notebook/bn76c/t/index.html
+bizpc-versapro	t	超長持ちバッテリー&軽量筐体、プレミアム14型モバイル	PC-V2UM7EAHHC8TZDYZY	10011456	pc-v2um7eahhc8tzdyzy	https://www.nec-lavie.jp/products/bizpc/notebook/bm74c/t/index.html
+bizpc-versapro	t	超長持ちバッテリー&軽量筐体、プレミアム14型モバイル(タッチパネル)	PC-V2UM7EJHHC8TZDYZY	10011458	pc-v2um7ejhhc8tzdyzy	https://www.nec-lavie.jp/products/bizpc/notebook/bm74c/t/index.html
+bizpc-versapro	t	長時間バッテリー＆軽量筐体、ハイエンド14型モバイル	PC-V2UM9DAHHC9TZDYZY	10011448	pc-v2um9dahhc9tzdyzy	https://www.nec-lavie.jp/products/bizpc/notebook/bm94c/t/index.html
+bizpc-versapro	t	長時間バッテリー＆軽量筐体、ハイエンド14型モバイル	PC-V2UM9DBHHC7TZVYZY	10011430	pc-v2um9dbhhc7tzvyzy	https://www.nec-lavie.jp/products/bizpc/notebook/bm94c/t/index.html
+bizpc-versapro	t	長時間バッテリー＆軽量筐体、ハイエンド14型モバイル	PC-V2UM9DBHHC9TZVYZY	10011452	pc-v2um9dbhhc9tzvyzy	https://www.nec-lavie.jp/products/bizpc/notebook/bm94c/t/index.html
+bizpc-versapro	t	高性能×拡張性でビジネスを加速 16型AIノートPC	PC-V2UN7AAHMC8TZDYZY	10011417	pc-v2un7aahmc8tzdyzy	https://www.nec-lavie.jp/products/bizpc/notebook/bn76c/t/index.html
+bizpc-versapro	t	高性能×拡張性でビジネスを加速 15.6型AIノートPC	PC-V2UN7ACHMC8TZDYZY	10011413	pc-v2un7achmc8tzdyzy	https://www.nec-lavie.jp/products/bizpc/notebook/bn76c/t/index.html
+bizpc-versapro	vf-p	第13世代インテル® Core™ プロセッサー 搭載バリューPC	PC-V2V50FDGMC4PZKYZY	10009875	pc-v2v50fdgmc4pzkyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vf-p/index.html
+bizpc-versapro	vf-p	第13世代インテル® Core™ プロセッサー 搭載バリューPC	PC-V2V50FDGMC6PZGYZY	10009874	pc-v2v50fdgmc6pzgyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vf-p/index.html
+bizpc-versapro	t	超長持ちバッテリー&軽量筐体、プレミアム14型モバイル(Core™ Ultra 7、タッチパネル搭載)	PC-V2VM7ETHHC8TZDYZY	10011479	pc-v2vm7ethhc8tzdyzy	https://www.nec-lavie.jp/products/bizpc/notebook/bm74c/t/index.html
+bizpc-versapro	t	超長持ちバッテリー&軽量筐体、プレミアム14型モバイル(Core™ Ultra 7、タッチパネル、LTE搭載)	PC-V2VM7ETHHL8TZDYZY	10011433	pc-v2vm7ethhl8tzdyzy	https://www.nec-lavie.jp/products/bizpc/notebook/bm74c/t/index.html
+bizpc-versapro	t	日常業務を安定して支える、16型スタンダードノートPC	PC-V2VN5BAGMC4TZVYZY	10011426	pc-v2vn5bagmc4tzvyzy	https://www.nec-lavie.jp/products/bizpc/notebook/bn56c/t/index.html
+bizpc-versapro	t	日常業務を安定して支える、15.6型スタンダードノートPC	PC-V2VN5BCGMC4TZVYZY	10011423	pc-v2vn5bcgmc4tzvyzy	https://www.nec-lavie.jp/products/bizpc/notebook/bn56c/t/index.html
+bizpc-versapro		VersaPro J タイプVF [Windows 11 Pro、Core i5、16GBメモリ、256GB SSD、OfficeH&B、１年標準保証]	PC-VJT46FR9CBGM	897023	pc-vjt46fr9cbgm	https://cart.nec-lavie.jp/cart/config.html?materialNumber=PC-VJT46FR9CBGM
+bizpc-versapro		VersaPro J UltraLite タイプVN [Windows 11 Pro、Core i5、16GBメモリ、256GB SSD、OfficeH&B、１年標準保証]	PC-VJT46NR9LEGM	897024	pc-vjt46nr9legm	https://cart.nec-lavie.jp/cart/config.html?materialNumber=PC-VJT46NR9LEGM

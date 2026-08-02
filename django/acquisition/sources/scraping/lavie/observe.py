@@ -1,88 +1,405 @@
-#!/usr/bin/env python3
-"""
-==============================================================================
-FRONTIER Observation Runtime
-
-Acquire Runtime
-        │
-        ▼
-Formatter Runtime
-        │
-        ▼
-Observation Runtime
-        │
-        ▼
-ObservationDocument
-
-Reality First
-Observation First
-
-Overview
-
-Observe Reality exactly as published.
-
-This Runtime extracts observable evidence from HTML and stores it
-without interpretation or semantic classification.
-
-Responsibilities
-
-- Observe Reality
-- Extract Observable Evidence
-- Produce ObservationDocument
-- Preserve Reality
-
-Not Responsibilities
-
-- Semantic Classification
-- Identity Resolution
-- AI Processing
-- Import Contract Generation
-- Database Integration
-==============================================================================
-
-ObservationDocument
-
-{
-    "html_title": "...",
-    "canonical_url": "...",
-    "meta_description": "...",
-
-    "main_image": "...",
-    "images": [...],
-
-    "tables": [
-        {
-            "text": "...",
-            "html": "..."
-        }
-    ],
-
-    "jsonld_scripts": [
-        "{...}"
-    ]
-}
-==============================================================================
-"""
-
 from __future__ import annotations
-
 import json
-
 from bs4 import BeautifulSoup
+from api.models.acquisition_document import AcquisitionDocument
+from acquisition.common.trace.reality_trace import trace_pipeline
+from .settings import (    SITE_NAME,    BASE_URL,)
 
-from api.models import (
-    AcquisitionDocument,
-    ObservationDocument,
-)
 
-from acquisition.common.trace.reality_trace import (
-    trace,
-    trace_model,
-    trace_pipeline,
-)
+# ==============================================================================
+# Table Fallback Runtime
+# ==============================================================================
 
-from .formatter_product import normalize
+def observe_table_specs(
+    observation: dict,
+) -> None:
+    """
+    Observe Specifications from observed tables.
 
+    Reality Only.
+
+    Table
+        ↓
+    Observable Dictionary
+
+    No semantic.
+    No inference.
+    """
+
+    #
+    # Already observed
+    #
+
+    if observation.get(
+        "specs",
+    ):
+        return
+
+    #
+    # Search Tables
+    #
+
+    for table in observation.get(
+        "tables",
+        [],
+    ):
+
+        specs = {}
+
+        for row in table:
+
+            if len(row) != 2:
+                continue
+
+            key = row[0].strip()
+
+            value = row[1].strip()
+
+            if not key:
+                continue
+
+            specs[key] = value
+
+        if specs:
+
+            observation["specs"] = specs
+
+            return
+
+# ==============================================================================
+# Product Code
+# ==============================================================================
+
+import re
+
+
+def extract_product_code(
+    text: str,
+) -> str:
+    """
+    Extract Product Code from published text.
+
+    Preserve Reality.
+    """
+
+    if not text:
+
+        return ""
+
+    #
+    # BN56C〈BN56C-T〉
+    #
+
+    m = re.search(
+        r"([A-Z]{1,8}[0-9]{1,8}[A-Z0-9\-]*)",
+        text,
+    )
+
+    if m:
+
+        return m.group(1)
+
+    return ""
+
+# ==============================================================================
+# Identity Observation Helpers
+# ==============================================================================
+
+def first_text(
+    *values: str,
+) -> str:
+    """
+    Return first non-empty text.
+    """
+
+    for value in values:
+
+        if not value:
+            continue
+
+        value = value.strip()
+
+        if value:
+
+            return value
+
+    return ""
+
+
+def find_product_jsonld(
+    observation: dict,
+) -> dict:
+    """
+    Return first Product JSON-LD.
+    """
+
+    for item in observation.get(
+        "jsonld_scripts",
+        [],
+    ):
+
+        if not isinstance(
+            item,
+            dict,
+        ):
+            continue
+
+        if item.get("@type") == "Product":
+
+            return item
+
+    return {}
+
+# ==============================================================================
+# Product Identity Runtime
+# ==============================================================================
+
+def observe_product_identity(
+    soup: BeautifulSoup,
+    observation: dict,
+) -> None:
+    """
+    Observe Product Identity.
+
+    Priority
+
+        JSON-LD
+            ↓
+        Meta
+            ↓
+        Specification
+            ↓
+        Table
+    """
+
+    observe_jsonld_identity(
+        observation,
+    )
+
+    observe_meta_identity(
+        soup,
+        observation,
+    )
+
+    observe_spec_identity(
+        observation,
+    )
+
+    observe_table_identity(
+        observation,
+    )
+
+
+    product = find_product_jsonld(
+        observation,
+    )
+
+    #
+    # H1
+    #
+
+    h1 = ""
+
+    node = soup.select_one("h1")
+
+    if node:
+
+        h1 = node.get_text(
+            " ",
+            strip=True,
+        )
+
+    #
+    # Product Name
+    #
+
+    observation["product_name"] = normalize_product_name(
+
+        first_text(
+            product.get(
+                "name",
+                "",
+            ),
+
+            h1,
+
+            observation.get(
+                "html_title",
+                "",
+            ),
+
+        )
+
+    )
+
+    #
+    # Series
+    #
+
+    series = product.get(
+        "name",
+        "",
+    ).strip()
+
+    if not series:
+
+        url = observation.get(
+            "canonical_url",
+            "",
+        )
+
+        if "/products/" in url:
+
+            try:
+
+                series = (
+
+                    url.rstrip("/")
+
+                    .split("/")[-1]
+
+                    .upper()
+
+                )
+
+            except Exception:
+
+                series = ""
+
+    observation["series_name"] = series
+    
+    #
+    # Product Code
+    #
+
+    specs = observation.get(
+        "specs",
+        {},
+    )
+
+    product_code = first_text(
+
+        specs.get(
+            "型名",
+            "",
+        ),
+
+        specs.get(
+            "型番",
+            "",
+        ),
+
+    )
+
+    #
+    # JSON-LD
+    #
+
+    if not product_code:
+
+        product_code = extract_product_code(
+
+            product.get(
+                "name",
+                "",
+            )
+
+        )
+
+    #
+    # Title
+    #
+
+    if not product_code:
+
+        product_code = extract_product_code(
+
+            observation.get(
+                "html_title",
+                "",
+            )
+
+        )
+
+    observation["product_code"] = product_code
+
+# ==============================================================================
+# Identity Normalize
+# ==============================================================================
+
+def normalize_product_name(
+    name: str,
+) -> str:
+    """
+    Normalize Product Name.
+
+    Preserve published identity.
+    """
+
+    if not name:
+
+        return ""
+
+    name = (
+        name
+        .replace("｜NEC LAVIE公式サイト", "")
+        .replace("| NEC LAVIE公式サイト", "")
+        .replace("｜NEC VersaPro公式サイト", "")
+        .replace("| NEC VersaPro公式サイト", "")
+        .strip()
+    )
+
+    return name
+
+# ==============================================================================
+# JSON-LD Observation
+# ==============================================================================
+
+
+def observe_jsonld(
+    soup: BeautifulSoup,
+    observation: dict,
+):
+    """
+    Observe JSON-LD.
+
+    Reality only.
+    """
+
+    scripts = []
+
+    for node in soup.select(
+        'script[type="application/ld+json"]',
+    ):
+
+        text = node.string
+
+        if not text:
+
+            text = node.get_text(
+                strip=True,
+            )
+
+        if not text:
+            continue
+
+        try:
+
+            scripts.append(
+                json.loads(
+                    text,
+                )
+            )
+
+        except Exception:
+
+            scripts.append(
+                {
+                    "raw": text,
+                }
+            )
+
+    observation["jsonld_scripts"] = scripts
 
 # ==============================================================================
 # Observation Factory
@@ -90,17 +407,18 @@ from .formatter_product import normalize
 
 def create_observation() -> dict:
     """
-    Create an empty ObservationDocument.
+    Create empty ObservationDocument.
 
-    Every field represents directly observable Reality.
+    Observation only.
 
-    No semantic meaning should be generated here.
+    No semantic.
+    No formatting.
     """
 
     return {
 
         #
-        # HTML Observation
+        # HTML
         #
 
         "html_title": "",
@@ -110,7 +428,15 @@ def create_observation() -> dict:
         "meta_description": "",
 
         #
-        # Media Observation
+        # Product
+        #
+
+        "product_name": "",
+
+        "series_name": "",
+
+        #
+        # Media
         #
 
         "main_image": "",
@@ -118,22 +444,27 @@ def create_observation() -> dict:
         "images": [],
 
         #
-        # Structure Observation
+        # Specification
+        #
+
+        "specs": {},
+
+        #
+        # HTML Structure
         #
 
         "tables": [],
 
         #
-        # Structured Data Observation
+        # Structured Data
         #
 
         "jsonld_scripts": [],
 
     }
 
-
 # ==============================================================================
-# HTML Title Observation
+# Basic Observation
 # ==============================================================================
 
 def observe_title(
@@ -141,146 +472,753 @@ def observe_title(
     observation: dict,
 ):
     """
-    Observe HTML <title>.
-
-    This is the raw document title published
-    by the source website.
+    Observe HTML title.
     """
 
-    if not soup.title:
+    if soup.title is None:
         return
 
     observation["html_title"] = soup.title.get_text(
+        " ",
         strip=True,
     )
-# ==============================================================================
-# Canonical URL Observation
-# ==============================================================================
+
 
 def observe_url(
     soup: BeautifulSoup,
     observation: dict,
 ):
     """
-    Observe Canonical URL.
-
-    The canonical URL is treated as the primary
-    identity URL published by the source website.
-
-    No inference is performed.
+    Observe canonical URL.
     """
 
-    canonical = soup.find(
-        "link",
-        rel="canonical",
+    canonical = soup.select_one(
+        'link[rel="canonical"]',
     )
 
-    if not canonical:
+    if canonical is None:
         return
 
-    observation["canonical_url"] = (
-        canonical.get(
-            "href",
-            "",
-        ).strip()
+    observation["canonical_url"] = canonical.get(
+        "href",
+        "",
     )
 
-
-# ==============================================================================
-# Meta Description Observation
-# ==============================================================================
 
 def observe_description(
     soup: BeautifulSoup,
     observation: dict,
 ):
     """
-    Observe HTML Meta Description.
-
-    Only the published meta description
-    is preserved.
+    Observe meta description.
     """
 
-    meta = soup.find(
-        "meta",
-        attrs={
-            "name": "description",
-        },
+    meta = soup.select_one(
+        'meta[name="description"]',
     )
 
-    if not meta:
+    if meta is None:
         return
 
-    observation["meta_description"] = (
-        meta.get(
-            "content",
-            "",
-        ).strip()
+    observation["meta_description"] = meta.get(
+        "content",
+        "",
     )
 
+# ==============================================================================
+# JSON-LD Identity Runtime
+# ==============================================================================
+
+def observe_jsonld_identity(
+    observation: dict,
+) -> None:
+    """
+    Observe Product Identity from JSON-LD.
+
+    Reality Only.
+
+    Product JSON-LD
+        ↓
+    Observation Runtime
+
+    No semantic.
+    No inference.
+    """
+
+    product = find_product_jsonld(
+        observation,
+    )
+
+    if not product:
+
+        return
+
+    #
+    # Product Name
+    #
+
+    if not observation.get(
+        "product_name",
+    ):
+
+        observation["product_name"] = first_text(
+
+            product.get(
+                "name",
+                "",
+            ),
+
+        )
+
+    #
+    # Series
+    #
+
+    if not observation.get(
+        "series_name",
+    ):
+
+        observation["series_name"] = first_text(
+
+            product.get(
+                "category",
+                "",
+            ),
+
+        )
+
+    #
+    # Product Code
+    #
+
+    if not observation.get(
+        "product_code",
+    ):
+
+        observation["product_code"] = extract_product_code(
+
+            product.get(
+                "name",
+                "",
+            ),
+
+        )
 
 # ==============================================================================
-# Product Image Observation
+# Meta Identity Runtime
 # ==============================================================================
+
+def observe_meta_identity(
+    soup: BeautifulSoup,
+    observation: dict,
+) -> None:
+    """
+    Observe Product Identity from Meta.
+
+    Reality Only.
+
+    Meta
+        ↓
+    Observation Runtime
+
+    No semantic.
+    No inference.
+    """
+
+    #
+    # Product Name
+    #
+
+    if not observation.get(
+        "product_name",
+    ):
+
+        observation["product_name"] = first_text(
+
+            observation.get(
+                "html_title",
+                "",
+            ),
+
+        )
+
+    #
+    # Canonical URL
+    #
+
+    if not observation.get(
+        "canonical_url",
+    ):
+
+        observe_url(
+            soup,
+            observation,
+        )
+
+# ==============================================================================
+# Specification Identity Runtime
+# ==============================================================================
+
+def observe_spec_identity(
+    observation: dict,
+) -> None:
+    """
+    Observe Product Identity from Specifications.
+
+    Reality Only.
+
+    Specifications
+        ↓
+    Observation Runtime
+
+    No semantic.
+    No inference.
+    """
+
+    specs = observation.get(
+        "specs",
+        {},
+    )
+
+    #
+    # Product Name
+    #
+
+    if not observation.get(
+        "product_name",
+    ):
+
+        observation["product_name"] = first_text(
+
+            specs.get(
+                "製品名",
+                "",
+            ),
+
+            specs.get(
+                "商品名",
+                "",
+            ),
+
+            specs.get(
+                "名称",
+                "",
+            ),
+
+        )
+
+    #
+    # Series
+    #
+
+    if not observation.get(
+        "series_name",
+    ):
+
+        observation["series_name"] = first_text(
+
+            specs.get(
+                "シリーズ",
+                "",
+            ),
+
+            specs.get(
+                "シリーズ名",
+                "",
+            ),
+
+            specs.get(
+                "タイプ",
+                "",
+            ),
+
+        )
+
+    #
+    # Product Code
+    #
+
+    if not observation.get(
+        "product_code",
+    ):
+
+        observation["product_code"] = first_text(
+
+            specs.get(
+                "型番",
+                "",
+            ),
+
+            specs.get(
+                "型名",
+                "",
+            ),
+
+            specs.get(
+                "製品型番",
+                "",
+            ),
+
+        )
+
+
+# ==============================================================================
+# Image Observation
+# ==============================================================================
+
+IMAGE_SKIP_KEYWORDS = (
+
+    #
+    # SNS
+    #
+
+    "facebook",
+    "twitter",
+    "line",
+
+    #
+    # Analytics
+    #
+
+    "analytics",
+    "tracking",
+    "gtm",
+    "google",
+
+    #
+    # UI
+    #
+
+    "logo",
+    "icon",
+    "sprite",
+    "banner",
+    "loading",
+    "spacer",
+    "blank",
+
+)
+
 
 def observe_images(
     soup: BeautifulSoup,
     observation: dict,
-):
+) -> None:
     """
     Observe Product Images.
 
-    Responsibilities
+    Preserve Reality.
 
-    - Collect published product images
-    - Preserve published image order
-    - Ignore inline data images
-
-    No image classification is performed.
+    Remove obvious UI / Tracking Images.
     """
 
     images = []
 
-    for img in soup.select(
-        '.product-gallery__media[data-media-type="image"] img'
-    ):
+    seen = set()
 
-        src = (
-            img.get("src")
-            or img.get("data-src")
-            or ""
+    for img in soup.select("img[src]"):
+
+        src = img.get(
+            "src",
+            "",
         ).strip()
 
         if not src:
+
+            continue
+
+        lower = src.lower()
+
+        #
+        # Skip obvious noise
+        #
+
+        if any(
+            keyword in lower
+            for keyword in IMAGE_SKIP_KEYWORDS
+        ):
             continue
 
         #
-        # Ignore inline images
-        #
-
-        if src.startswith("data:image"):
-            continue
-
-        #
-        # Normalize protocol-relative URL
+        # Relative URL
         #
 
         if src.startswith("//"):
+
             src = "https:" + src
 
+        elif src.startswith("/"):
+
+            src = BASE_URL + src
+
         #
-        # Preserve unique images only
+        # Unique
         #
 
-        if src in images:
+        if src in seen:
+
             continue
 
-        images.append(src)
+        seen.add(
+            src,
+        )
+
+        images.append(
+            src,
+        )
 
     observation["images"] = images
 
-    if images:
-        observation["main_image"] = images[0]
+# ==============================================================================
+# Main Image Observation
+# ==============================================================================
+
+def observe_main_image(
+    soup: BeautifulSoup,
+    observation: dict,
+) -> None:
+    """
+    Observe Main Product Image.
+
+    Priority
+
+        Product JSON-LD
+            ↓
+        og:image
+            ↓
+        First Product Image
+            ↓
+        First Observed Image
+    """
+
+    #
+    # Product JSON-LD
+    #
+
+    product = find_product_jsonld(
+        observation,
+    )
+
+    image = product.get(
+        "image",
+        "",
+    )
+
+    if isinstance(
+        image,
+        list,
+    ):
+
+        image = image[0] if image else ""
+
+    if image:
+
+        observation["main_image"] = image
+
+        return
+
+    #
+    # Open Graph
+    #
+
+    node = soup.select_one(
+        'meta[property="og:image"]'
+    )
+
+    if node:
+
+        image = node.get(
+            "content",
+            "",
+        ).strip()
+
+        if image:
+
+            observation["main_image"] = image
+
+            return
+
+    #
+    # Product Image
+    #
+
+    for img in soup.select("img[src]"):
+
+        src = img.get(
+            "src",
+            "",
+        ).strip()
+
+        if not src:
+
+            continue
+
+        lower = src.lower()
+
+        if any(
+            keyword in lower
+            for keyword in (
+                "logo",
+                "icon",
+                "line",
+                "facebook",
+                "twitter",
+                "banner",
+                "tracking",
+                "analytics",
+            )
+        ):
+            continue
+
+        observation["main_image"] = src
+
+        return
+
+    #
+    # Fallback
+    #
+
+    images = observation.get(
+        "images",
+        [],
+    )
+
+    observation["main_image"] = (
+
+        images[0]
+
+        if images
+
+        else ""
+
+    )
+
+# ==============================================================================
+# Specification Observation
+# ==============================================================================
+
+def observe_consumer_specs(
+    soup: BeautifulSoup,
+    observation: dict,
+):
+    """
+    Observe consumer specifications.
+
+    Reality Source
+
+        table.table_spec
+    """
+
+    specs = {}
+
+    table = soup.select_one(
+        "table.table_spec",
+    )
+
+    if table is None:
+        return
+
+    for tr in table.select("tr"):
+
+        th = tr.select_one("th")
+        td = tr.select_one("td")
+
+        if th is None or td is None:
+            continue
+
+        key = th.get_text(
+            " ",
+            strip=True,
+        )
+
+        value = td.get_text(
+            " ",
+            strip=True,
+        )
+
+        if not key:
+            continue
+
+        specs[key] = value
+
+    observation["specs"] = specs
+
+
+def observe_business_specs(
+    soup: BeautifulSoup,
+    observation: dict,
+):
+    """
+    Observe business specifications.
+
+    Reality Source
+
+        dl.spec-detail
+    """
+
+    specs = {}
+
+    for row in soup.select(
+        "dl.spec-detail div.inner",
+    ):
+
+        dt = row.select_one("dt")
+        dd = row.select_one("dd")
+
+        if dt is None or dd is None:
+            continue
+
+        key = dt.get_text(
+            " ",
+            strip=True,
+        )
+
+        value = dd.get_text(
+            " ",
+            strip=True,
+        )
+
+        if not key:
+            continue
+
+        specs[key] = value
+
+    observation["specs"] = specs
+
+# ==============================================================================
+# Specification Observation
+# ==============================================================================
+
+def observe_specs(
+    soup: BeautifulSoup,
+    observation: dict,
+):
+    """
+    Observe Specifications.
+
+    Priority
+
+        Consumer
+            ↓
+        Business
+            ↓
+        Table Fallback
+    """
+
+    #
+    # Consumer
+    #
+
+    if soup.select_one(
+        "table.table_spec",
+    ):
+
+        observe_consumer_specs(
+            soup,
+            observation,
+        )
+
+    #
+    # Business
+    #
+
+    elif soup.select_one(
+        "dl.spec-detail",
+    ):
+
+        observe_business_specs(
+            soup,
+            observation,
+        )
+
+    #
+    # Table Fallback
+    #
+
+    observe_table_specs(
+        observation,
+    )
+
+
+# ==============================================================================
+# Table Identity Runtime
+# ==============================================================================
+
+def observe_table_identity(
+    observation: dict,
+) -> None:
+    """
+    Observe Product Identity from observed tables.
+
+    Reality Only.
+
+    Table
+        ↓
+    Product Identity
+
+    No semantic.
+    No inference.
+    """
+
+    specs = observation.get(
+        "specs",
+        {},
+    )
+
+    #
+    # Product Code
+    #
+
+    if not observation.get(
+        "product_code",
+    ):
+
+        observation["product_code"] = first_text(
+
+            specs.get(
+                "型名",
+                "",
+            ),
+
+            specs.get(
+                "型番",
+                "",
+            ),
+
+            specs.get(
+                "製品型番",
+                "",
+            ),
+
+        )
+
+    #
+    # Series
+    #
+
+    if not observation.get(
+        "series_name",
+    ):
+
+        observation["series_name"] = first_text(
+
+            specs.get(
+                "シリーズ",
+                "",
+            ),
+
+            specs.get(
+                "タイプ",
+                "",
+            ),
+
+            specs.get(
+                "シリーズ名",
+                "",
+            ),
+
+        )
+
 
 # ==============================================================================
 # Table Observation
@@ -291,170 +1229,61 @@ def observe_tables(
     observation: dict,
 ):
     """
-    Observe HTML Tables.
+    Observe HTML tables.
 
-    Every published HTML table is preserved as Reality.
-
-    Both rendered text and original HTML are stored.
-
-    This enables future AI Runtime to analyze either
-    human-readable content or original document structure.
+    Reality only.
     """
 
     tables = []
 
-    for table in soup.find_all("table"):
+    for table in soup.select("table"):
 
-        tables.append(
+        rows = []
 
-            {
+        for tr in table.select("tr"):
 
-                #
-                # Human-readable text
-                #
+            cells = []
 
-                "text": table.get_text(
-                    "\n",
+            for cell in tr.select("th, td"):
+
+                text = cell.get_text(
+                    " ",
                     strip=True,
-                ),
+                )
 
-                #
-                # Original HTML
-                #
+                cells.append(
+                    text,
+                )
 
-                "html": str(table),
+            if cells:
 
-            }
+                rows.append(
+                    cells,
+                )
 
-        )
+        if rows:
+
+            tables.append(
+                rows,
+            )
 
     observation["tables"] = tables
 
-
 # ==============================================================================
-# JSON-LD Observation
-# ==============================================================================
-
-def observe_jsonld(
-    soup: BeautifulSoup,
-    observation: dict,
-):
-    """
-    Observe JSON-LD.
-
-    Responsibilities
-
-    - Preserve every JSON-LD block
-    - Supplement Canonical URL when absent
-
-    JSON-LD itself is treated as published Reality.
-
-    No semantic interpretation is performed.
-    """
-
-    for script in soup.find_all(
-        "script",
-        type="application/ld+json",
-    ):
-
-        if not script.string:
-            continue
-
-        #
-        # Preserve raw JSON-LD
-        #
-
-        observation["jsonld_scripts"].append(
-            script.string
-        )
-
-        #
-        # Canonical URL already observed
-        #
-
-        if observation["canonical_url"]:
-            continue
-
-        try:
-
-            data = json.loads(
-                script.string
-            )
-
-        except Exception:
-
-            continue
-
-        #
-        # Simple JSON-LD
-        #
-
-        if isinstance(
-            data,
-            dict,
-        ):
-
-            url = data.get("url")
-
-            if url:
-
-                observation["canonical_url"] = url
-
-                continue
-
-            #
-            # JSON-LD Graph
-            #
-
-            graph = data.get("@graph")
-
-            if not isinstance(
-                graph,
-                list,
-            ):
-                continue
-
-            for node in graph:
-
-                if not isinstance(
-                    node,
-                    dict,
-                ):
-                    continue
-
-                url = node.get("url")
-
-                if url:
-
-                    observation["canonical_url"] = url
-
-                    break
-
-# ==============================================================================
-# Observation Runtime
+# Observation
 # ==============================================================================
 
 def observe(
     html: str,
 ) -> dict:
     """
-    Observe Reality from normalized HTML.
+    Observe HTML.
 
-    Observation Runtime performs no semantic analysis.
+    Reality only.
 
-    It only preserves observable evidence.
+    No formatting.
+    No semantic.
     """
-
-    trace_pipeline(
-        "Observation",
-    )
-
-    trace(
-        "Observation Input",
-        {
-            "html_length": len(html),
-        },
-    )
 
     soup = BeautifulSoup(
         html,
@@ -464,7 +1293,7 @@ def observe(
     observation = create_observation()
 
     #
-    # Observe Reality
+    # Basic
     #
 
     observe_title(
@@ -482,7 +1311,34 @@ def observe(
         observation,
     )
 
+    #
+    # Structured Data
+    #
+
+    observe_jsonld(
+        soup,
+        observation,
+    )
+
+    #
+    # Media
+    #
+
     observe_images(
+        soup,
+        observation,
+    )
+
+    observe_main_image(
+        soup,
+        observation,
+    )
+
+    #
+    # Specifications
+    #
+
+    observe_specs(
         soup,
         observation,
     )
@@ -492,52 +1348,89 @@ def observe(
         observation,
     )
 
-    observe_jsonld(
+    #
+    # Product Identity
+    #
+
+    observe_product_identity(
         soup,
         observation,
     )
 
-    trace(
-        "Observation Result",
-        {
+    observe_table_identity(
+        observation,
+    )
+    
+    #
+    # Validation
+    #
 
-            "html_title":
-                observation["html_title"],
-
-            "canonical_url":
-                observation["canonical_url"],
-
-            "meta_description":
-                bool(
-                    observation["meta_description"]
-                ),
-
-            "main_image":
-                observation["main_image"],
-
-            "images":
-                len(
-                    observation["images"]
-                ),
-
-            "tables":
-                len(
-                    observation["tables"]
-                ),
-
-            "jsonld_scripts":
-                len(
-                    observation["jsonld_scripts"]
-                ),
-
-        },
+    validate_observation(
+        observation,
     )
 
     return observation
 
 
 # ==============================================================================
-# ObservationDocument Persistence
+# Observation Validation
+# ==============================================================================
+
+def validate_observation(
+    observation: dict,
+) -> None:
+    """
+    Validate Observation Runtime.
+
+    Reality only.
+
+    No semantic.
+    No inference.
+    """
+
+    print()
+
+    print("=" * 70)
+    print("OBSERVATION SUMMARY")
+    print("=" * 70)
+
+    print(
+        f"Product : {observation.get('product_name') or '-'}"
+    )
+
+    print(
+        f"Series  : {observation.get('series_name') or '-'}"
+    )
+
+    print(
+        f"Code    : {observation.get('product_code') or '-'}"
+    )
+
+    print(
+        f"URL     : {observation.get('canonical_url') or '-'}"
+    )
+
+    print(
+        f"Specs   : {len(observation.get('specs', {}))}"
+    )
+
+    print(
+        f"Tables  : {len(observation.get('tables', []))}"
+    )
+
+    print(
+        f"Images  : {len(observation.get('images', []))}"
+    )
+
+    print(
+        f"JSONLD  : {len(observation.get('jsonld_scripts', []))}"
+    )
+
+    print("=" * 70)
+
+
+# ==============================================================================
+# Persistence
 # ==============================================================================
 
 def save_observation_document(
@@ -546,33 +1439,32 @@ def save_observation_document(
     observation: dict,
 ):
     """
-    Persist ObservationDocument.
-
-    ObservationDocument is the canonical
-    Reality representation for downstream runtimes.
+    Save ObservationDocument.
     """
 
-    obj, created = (
-        ObservationDocument.objects
-        .update_or_create(
+    obj, created = AcquisitionDocument.objects.update_or_create(
 
-            source_name=document.source_name,
+        source_type=document.source_type,
+        source_name=document.source_name,
+        document_type="observation",
+        document_key=document.document_key,
+        defaults={
 
-            document_type=document.document_type,
+            "source_url": document.source_url,
+            "content_type": "application/json",
+            "content": json.dumps(
 
-            document_key=document.document_key,
+                observation,
+                ensure_ascii=False,
+                indent=2,
 
-            defaults={
+            ),
 
-                "observation": observation,
+        },
 
-            },
-
-        )
     )
 
     return obj, created
-
 
 # ==============================================================================
 # Runtime
@@ -580,108 +1472,95 @@ def save_observation_document(
 
 def run():
     """
-    Execute Observation Runtime.
+    Observation Runtime.
     """
 
     print("=" * 70)
-    print("👀 FRONTIER OBSERVATION RUNTIME")
+    print(f"👀 {SITE_NAME} OBSERVATION")
     print("=" * 70)
 
-    trace_pipeline(
-        "Observation",
-    )
-
     documents = (
-
         AcquisitionDocument.objects
-
         .filter(
-
-            source_name="frontier",
-
+            source_name=SITE_NAME.lower(),
             document_type="product",
-
         )
-
         .order_by(
             "document_key",
         )
-
         .iterator()
-
     )
 
     success = 0
+    failed = 0
 
     for document in documents:
 
-        trace(
-            "Observation Document",
-            {
-                "document_key":
-                    document.document_key,
-            },
-        )
+        print(document.document_key)
 
-        #
-        # Formatter Runtime
-        #
+        try:
 
-        html = normalize(
-            document.content,
-        )
+            observation = observe(
+                document.content,
+            )
 
-        #
-        # Observation Runtime
-        #
+            _, created = save_observation_document(
+                document=document,
+                observation=observation,
+            )
 
-        observation = observe(
-            html,
-        )
+            success += 1
 
-        #
-        # Persist ObservationDocument
-        #
+            print(
+                f"  Specs  : {len(observation['specs'])}"
+            )
 
-        obj, created = save_observation_document(
+            print(
+                f"  Tables : {len(observation['tables'])}"
+            )
 
-            document=document,
+            print(
+                f"  Images : {len(observation['images'])}"
+            )
 
-            observation=observation,
+            print(
+                f"  Saved  : {'CREATED' if created else 'UPDATED'}"
+            )
 
-        )
+        except Exception as e:
 
-        trace_model(
-            "ObservationDocument",
-            obj,
-        )
+            failed += 1
 
-        success += 1
+            print("  Status : ERROR")
+            print(f"  Reason : {e}")
 
-    print()
+        print()
 
     print("=" * 70)
     print("RESULT")
     print("=" * 70)
-
-    print(
-        f"SUCCESS : {success}"
-    )
-
+    print(f"SUCCESS : {success}")
+    print(f"FAILED  : {failed}")
     print("=" * 70)
-
-
+    
+    print( f"  Product: {observation['product_name'] or '-'}")
+    print( f"  Series : {observation['series_name'] or '-'}" )
+    print( f"  Code   : {observation['product_code'] or '-'}" )
+    print( f"  Specs  : {len(observation['specs'])}" )
+    print( f"  Tables : {len(observation['tables'])}" )
+    print( f"  Images : {len(observation['images'])}" )
+    print( f"  JSONLD : {len(observation['jsonld_scripts'])}"  )
+    print( f"  Saved  : {'CREATED' if created else 'UPDATED'}" )
+    
 # ==============================================================================
 # Entry Point
 # ==============================================================================
 
 def main():
-    """
-    Runtime Entry Point.
-    """
 
     run()
 
 
 if __name__ == "__main__":
+
     main()
