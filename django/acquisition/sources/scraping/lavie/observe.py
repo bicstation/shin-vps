@@ -460,8 +460,38 @@ def create_observation() -> dict:
         #
 
         "jsonld_scripts": [],
+        
+        #
+        # Commerce
+        #
+
+        "price": "",
+        "stock_status": "",
 
     }
+
+def observe_price(
+    soup: BeautifulSoup,
+    observation: dict,
+) -> None:
+    """
+    Observe Published Price.
+
+    Reality Only.
+    """
+
+    node = soup.select_one(
+        ".lavie_newprice"
+    )
+
+    if node is None:
+        return
+
+    price = node.get_text(
+        strip=True,
+    )
+
+    observation["price"] = price
 
 # ==============================================================================
 # Basic Observation
@@ -482,6 +512,12 @@ def observe_title(
         " ",
         strip=True,
     )
+    
+    observe_price(
+        soup,
+        observation,
+    )
+    
 
 
 def observe_url(
@@ -880,15 +916,13 @@ def observe_main_image(
     """
     Observe Main Product Image.
 
-    Priority
+    Reality Only.
 
-        Product JSON-LD
-            ↓
-        og:image
-            ↓
-        First Product Image
-            ↓
-        First Observed Image
+    Observe only images that are explicitly presented
+    as the product visual.
+
+    No semantic.
+    No guessing.
     """
 
     #
@@ -939,59 +973,40 @@ def observe_main_image(
             return
 
     #
-    # Product Image
+    # LAVIE Product Visual
     #
 
-    for img in soup.select("img[src]"):
+    node = soup.select_one(
+        ".lavie_categoryMv__visual img"
+    )
 
-        src = img.get(
+    if node:
+
+        src = node.get(
             "src",
             "",
         ).strip()
 
-        if not src:
+        if src:
 
-            continue
+            if src.startswith("//"):
 
-        lower = src.lower()
+                src = "https:" + src
 
-        if any(
-            keyword in lower
-            for keyword in (
-                "logo",
-                "icon",
-                "line",
-                "facebook",
-                "twitter",
-                "banner",
-                "tracking",
-                "analytics",
-            )
-        ):
-            continue
+            elif src.startswith("/"):
 
-        observation["main_image"] = src
+                src = BASE_URL + src
 
-        return
+            observation["main_image"] = src
+
+            return
 
     #
-    # Fallback
+    # No Product Image
     #
 
-    images = observation.get(
-        "images",
-        [],
-    )
+    observation["main_image"] = ""
 
-    observation["main_image"] = (
-
-        images[0]
-
-        if images
-
-        else ""
-
-    )
 
 # ==============================================================================
 # Specification Observation
@@ -1397,6 +1412,11 @@ def validate_observation(
     print(
         f"Product : {observation.get('product_name') or '-'}"
     )
+    
+    print(
+        f"Price   : {observation.get('price') or '-'}"
+    )
+    
 
     print(
         f"Series  : {observation.get('series_name') or '-'}"

@@ -4,5 +4,7 @@ category	brand	seed	slug	url
 エントリーモデル	LAVIE	LargeScreen	all-entry	https://www.nec-lavie.jp/products/notebook/search/all-entry/
 オールインワン	LAVIE	LargeScreen	all-aio	https://www.nec-lavie.jp/products/desktop/search/all-aio/
 デスクトップ	LAVIE	LargeScreen	all-tower	https://www.nec-lavie.jp/products/desktop/search/all-tower/
+MATEシリーズ	LAVIE	LargeScreen	bizpc-mate	https://www.nec-lavie.jp/products/bizpc/mate/
+VersaProシリーズ	LAVIE	LargeScreen	bizpc-versapro	https://www.nec-lavie.jp/products/bizpc/versapro/
 小型タブレット	LAVIE	LargeScreen	tablet-smalllight	https://www.nec-lavie.jp/products/tablet/search/smalllight/
 大画面タブレット	LAVIE	LargeScreen	tablet-standard	https://www.nec-lavie.jp/products/tablet/search/standard/
