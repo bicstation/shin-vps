@@ -53,22 +53,23 @@ IMAGE_CACHE_LIMIT=0
 RAKUTEN_ENABLED=1
 RAKUTEN_FETCH_ALL=1
 
-RAKUTEN_SHOPS=(
-  "lenovopc"
-  "asus-store"
-  "microsoft-store"
-  "nec-direct"
-  "msistore"
-  "fujitsu-fmv"
-  "pckoubou"
-  "dospara-r"
-  "mousecomputer"
-  "dynabook"
-  "pcshop-best"
-  "gmktecdirect"
-  "minisforum"
-  "geekom"
-)
+# RAKUTEN_SHOPS=(
+#   "lenovopc"
+#   "asus-store"
+#   "microsoft-store"
+#   "nec-direct"
+#   "msistore"
+#   "fujitsu-fmv"
+#   "pckoubou"
+#   "dospara-r"
+#   "mousecomputer"
+#   "dynabook"
+#   "pcshop-best"
+#   "gmktecdirect"
+#   "minisforum"
+#   "geekom"
+# )
+
 LINKSHARE_SHOPS=(
   "fujitsu"
   "dell"
@@ -81,8 +82,9 @@ SCRAPER_SHOPS=(
   "ark"
   "tsukumo"
   "frontier"
-  "OZ GAMING"
+  "ozgaming"
   "geekom"
+  "lavie"
 )
 
 # ==========================================================
@@ -305,6 +307,16 @@ check_api() {
 
 log "🚀 START SHIN CORE LINX SEMANTIC PIPELINE 12 Components"
 
+
+# ==========================================================
+# ② 02 Reset Stock
+# ==========================================================
+
+log "🧹 (02/12) Reset Product Stock"
+
+run_django reset_pc_stock
+
+
 # ==========================================================
 # ①  01 Import Raw API Data
 # ==========================================================
@@ -321,59 +333,20 @@ log "📡 (01/12) Import Linkshare API"
 # run_django import_linkshare_api --mid 2557
 # run_django import_linkshare_api --mid 2543
 # run_django import_linkshare_api --mid 36508
-run_django import_linkshare_api --mid 43708
+run_django import_products linkshare api 43708
 
-run_django import_linkshare_data --mid 2543
-run_django import_linkshare_data --mid 2557
-run_django import_linkshare_data --mid 35909
-run_django import_linkshare_data --mid 36508
-
-
-if [ "$RAKUTEN_ENABLED" -eq 1 ]; then
-
-    log "🛒 (00/13) Rakuten Reality Research"
-
-    for SHOP in "${RAKUTEN_SHOPS[@]}"
-    do
-
-        log "📦 Shop : $SHOP"
-
-        CMD=(
-            python
-            research/rakuten_reality/scripts/fetch_rakuten.py
-            --shop "$SHOP"
-        )
-
-        if [ "$RAKUTEN_FETCH_ALL" -eq 1 ]; then
-            CMD+=(--all)
-        fi
-
-        run_django_raw "${CMD[@]}"
-
-        log "✅ Shop Completed : $SHOP"
-
-    done
-
-fi
+run_django import_products linkshare ftp 2543
+run_django import_products linkshare api 2557
+run_django import_products linkshare api 35909
+run_django import_products linkshare api 36508
 
 
+run_django import_products linkshare lavie
+run_django import_products linkshare frontier
+run_django import_products linkshare geekom
+run_django import_products linkshare ark
+run_django import_products linkshare ozgmaing
 
-
-# ==========================================================
-# ② 02 Reset Stock
-# ==========================================================
-
-log "🧹 (02/12) Reset Product Stock"
-
-run_django reset_pc_stock
-
-# ==========================================================
-# ③ 03 Transform → PCProduct
-# ==========================================================
-
-log "🔄 (03/12) Transform Raw → PCProduct"
-
-run_django import_linkshare_pc --all
 
 # ==========================================================
 # ④ 04-1 AI SPEC COMPLETION
@@ -397,15 +370,15 @@ do
 
 done
 
-for SHOP in "${RAKUTEN_SHOPS[@]}"
-do
-    log "🤖 AI Spec : $SHOP"
+# for SHOP in "${RAKUTEN_SHOPS[@]}"
+# do
+#     log "🤖 AI Spec : $SHOP"
 
-    run_django compile_spec_runtime \
-        --maker "$SHOP" \
-        --limit "$AI_SPEC_LIMIT"
+#     run_django compile_spec_runtime \
+#         --maker "$SHOP" \
+#         --limit "$AI_SPEC_LIMIT"
 
-done
+# done
 
 for SHOP in "${SCRAPER_SHOPS[@]}"
 do

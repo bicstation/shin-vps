@@ -36,6 +36,10 @@ REALITY_RUNTIMES = {
         "NEC LAVIE",
         "acquisition.sources.scraping.lavie.run",
     ),
+    "tsukumo": (
+        "TSUKUMO",
+        "acquisition.sources.scraping.tsukumo.run",
+    ),
 
     "linkshare": (
         "LinkShare",
