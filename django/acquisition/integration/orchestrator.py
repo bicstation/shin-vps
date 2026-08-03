@@ -122,6 +122,18 @@ class ImportOrchestrator:
                     builder_result,
                     semantic_result,
                 )
+                
+                # if payload["unique_id"] == "LAVIE_PC-TAB08H05":
+
+                #     print("=" * 70)
+                #     print("🎯 DEBUG TARGET")
+                #     print("=" * 70)
+                #     print("unique_id :", payload["unique_id"])
+                #     print("price     :", payload.get("price"))
+                #     print("=" * 70)
+
+                #     raise SystemExit("DEBUG STOP")
+                
                 trace(
                     stage="MODEL_MAPPER",
                     data=payload,

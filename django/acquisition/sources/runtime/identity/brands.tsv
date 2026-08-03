@@ -23,7 +23,6 @@ lenovo	thinkstation	ThinkStation	200
 lenovo	ideapad	IdeaPad	200
 lenovo	legion	Legion	200
 lenovo	yoga	Yoga	200
-
 asus	asus	ASUS	100
 asus	rog	ROG	200
 asus	tuf	TUF	200
@@ -40,7 +39,6 @@ asus	proart	ProArt	200
 asus	expertbook	ExpertBook	200
 asus	expertcenter	ExpertCenter	200
 asus	nuc	NUC	200
-
 msi	msi	MSI	100
 msi	stealth	Stealth	200
 msi	katana	Katana	200
@@ -51,3 +49,7 @@ msi	cyborg	Cyborg	200
 msi	prestige	Prestige	200
 gigabyte	gigabyte	GIGABYTE	100
 gigabyte	aorus	AORUS	200
+lavie	lavie	LAVIE	100
+lavie	nec	NEC	50
+lavie	mate	Mate	200
+lavie	versapro	VersaPro	200

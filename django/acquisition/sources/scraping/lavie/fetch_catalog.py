@@ -3,19 +3,38 @@
 ==============================================================================
 SHIN CORE LINX
 
-LAVIE Reality Seed Fetch
+LAVIE Catalog Fetch
 
-Acquire Runtime V2
+Catalog Runtime
 
-Seed TSV
-    ↓
+catalog.tsv
+        │
+        ▼
 Playwright
-    ↓
-Reality HTML
-    ↓
+        │
+        ▼
+Catalog HTML
+        │
+        ▼
 AcquisitionDocument
 
 Reality First
+
+Responsibilities
+
+- Load Catalog Runtime TSV
+- Fetch Catalog HTML
+- Persist Catalog HTML
+- Produce AcquisitionDocument
+
+Not Responsibilities
+
+- Catalog Discovery
+- Card Discovery
+- Observation
+- Formatter
+- Mapping
+- Integration
 ==============================================================================
 """
 
@@ -29,18 +48,18 @@ from playwright.sync_api import sync_playwright
 from api.models.acquisition_document import AcquisitionDocument
 
 from .settings import (
-    SEED_TSV,
+    CATALOG_TSV,
     SITE_NAME,
 )
 
 
 # ==============================================================================
-# Seed
+# Catalog
 # ==============================================================================
 
-def load_seeds() -> list[dict]:
+def load_catalog() -> list[dict]:
 
-    with SEED_TSV.open(
+    with CATALOG_TSV.open(
         "r",
         encoding="utf-8",
         newline="",
@@ -73,7 +92,7 @@ def exists(
 
         source_name=SITE_NAME.lower(),
 
-        document_type="seed",
+        document_type="catalog",
 
         document_key=slug,
 
@@ -84,7 +103,7 @@ def exists(
 # Acquisition
 # ==============================================================================
 
-def save_document(
+def save_catalog(
     *,
     slug: str,
     url: str,
@@ -97,7 +116,7 @@ def save_document(
 
         source_name=SITE_NAME.lower(),
 
-        document_type="seed",
+        document_type="catalog",
 
         document_key=slug,
 
@@ -120,31 +139,27 @@ def save_document(
 # Runtime
 # ==============================================================================
 
-def fetch_seed(
+def fetch_catalog(
     *,
     force: bool = False,
 ) -> None:
 
     started = time.perf_counter()
 
-    seeds = load_seeds()
+    catalog = load_catalog()
 
     print("=" * 70)
-    print(f"🌐 {SITE_NAME} REALITY SEED FETCH")
+    print(f"🌐 {SITE_NAME} CATALOG FETCH")
     print("=" * 70)
-    print(f"Target : {len(seeds)}")
+    print(f"Target : {len(catalog)}")
     print("=" * 70)
 
     success: list[str] = []
     failed: list[tuple[str, str]] = []
 
-    # --------------------------------------------------------------------------
-    # Cache Runtime
-    # --------------------------------------------------------------------------
-
     targets: list[dict] = []
 
-    for row in seeds:
+    for row in catalog:
 
         slug = row["slug"]
 
@@ -158,12 +173,8 @@ def fetch_seed(
 
         targets.append(row)
 
-    # --------------------------------------------------------------------------
-    # Acquire Runtime
-    # --------------------------------------------------------------------------
-
     results: list[dict] = []
-
+    
     with sync_playwright() as p:
 
         browser = p.chromium.launch(
@@ -208,10 +219,7 @@ def fetch_seed(
                 success.append(slug)
 
                 print(f"  HTML     : {len(html):,} chars")
-
-                print(
-                    f"  Products : {'YES' if 'dlp-products-card' in html else 'NO'}"
-                )
+                print(f"  Products : {'YES' if 'dlp-products-card' in html else 'NO'}")
 
             except Exception as e:
 
@@ -228,18 +236,14 @@ def fetch_seed(
             print()
 
         browser.close()
-
-    # --------------------------------------------------------------------------
-    # Persist Runtime
-    # --------------------------------------------------------------------------
-
+    
     print("=" * 70)
     print("SAVE DOCUMENT")
     print("=" * 70)
 
     for item in results:
 
-        _, created = save_document(
+        _, created = save_catalog(
 
             slug=item["slug"],
 
@@ -273,10 +277,8 @@ def main(
     force: bool = False,
 ) -> None:
 
-    fetch_seed(
-
+    fetch_catalog(
         force=force,
-
     )
 
 

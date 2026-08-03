@@ -3,34 +3,38 @@
 ==============================================================================
 SHIN CORE LINX
 
-LAVIE Model Discovery
+LAVIE Card Discovery
 
 Acquire Runtime
 
-AcquisitionDocument (Seed)
+AcquisitionDocument(catalog)
+        │
+        ▼
+Catalog HTML
         │
         ▼
 Discover Product Cards
         │
         ▼
-model_list.tsv
+cards.tsv
 
 Reality First
-Observation First
 
 Responsibilities
 
-- Observe Product Cards
-- Observe Product URL
-- Observe Product ID
-- Observe Product Code
-- Produce model_list.tsv
+- Discover Product Cards
+- Discover Product URL
+- Discover Product ID
+- Discover Product Code
+- Produce Cards TSV
 
 Not Responsibilities
 
-- Semantic Mapping
-- Series Classification
-- Brand Detection
+- Observation
+- Formatter
+- Mapping
+- Semantic
+- AI Inference
 ==============================================================================
 """
 
@@ -46,8 +50,8 @@ from api.models.acquisition_document import AcquisitionDocument
 from acquisition.common.trace.reality_trace import trace_pipeline
 
 from .settings import (
-    MODEL_LIST_TSV,
     BASE_URL,
+    CARDS_TSV,
     SITE_NAME,
 )
 
@@ -61,45 +65,40 @@ HEADERS = (
     "raw_title",
     "product_id",
     "product_code",
-    "model_slug",
+    "product_slug",
     "url",
 )
 
+
 # ==============================================================================
-# Helpers
+# URL
 # ==============================================================================
+
 def absolute_url(url: str) -> str:
 
     if not url:
         return ""
 
-    #
-    # Protocol Relative URL
-    #
     if url.startswith("//"):
         return "https:" + url
 
-    #
-    # Relative URL
-    #
     if url.startswith("/"):
         return BASE_URL + url
 
-    #
-    # Absolute URL
-    #
     return url
 
-def observe_series_slug(url: str) -> str:
+
+def build_series_slug(url: str) -> str:
     """
-    Observe series slug from URL.
-    Reality only.
+    Build Series Slug from Product URL.
     """
 
     if not url:
         return ""
 
-    path = urlparse(url).path.strip("/")
+    path = urlparse(
+        url,
+    ).path.strip("/")
 
     parts = path.split("/")
 
@@ -131,7 +130,7 @@ def observe_series_slug(url: str) -> str:
 def discover():
 
     trace_pipeline(
-        "MODEL DISCOVERY",
+        "CARD DISCOVERY",
     )
 
     rows = []
@@ -139,18 +138,25 @@ def discover():
     seen = set()
 
     documents = (
+
         AcquisitionDocument.objects
+
         .filter(
+
             source_name=SITE_NAME.lower(),
-            document_type="seed",
+
+            document_type="catalog",
+
         )
+
         .order_by(
             "document_key",
         )
+
     )
 
     print("=" * 70)
-    print(f"{SITE_NAME} MODEL DISCOVERY")
+    print(f"{SITE_NAME} CARD DISCOVERY")
     print("=" * 70)
 
     for document in documents:
@@ -172,7 +178,9 @@ def discover():
 
         for card in cards:
 
-            title = card.select_one("h3")
+            title = card.select_one(
+                "h3",
+            )
 
             if title is None:
                 continue
@@ -199,17 +207,11 @@ def discover():
                 "",
             )
 
-            link = card.select_one(
-                "a[href]",
-            )
-            
-            #
-            # URL
-            #
-
             url = ""
 
-            for a in card.select("a[href]"):
+            for a in card.select(
+                "a[href]",
+            ):
 
                 href = absolute_url(
                     a.get(
@@ -218,16 +220,10 @@ def discover():
                     )
                 )
 
-                #
-                # Ignore PDF
-                #
-
-                if href.lower().endswith(".pdf"):
+                if href.lower().endswith(
+                    ".pdf",
+                ):
                     continue
-
-                #
-                # Prefer Product Page
-                #
 
                 if "nec-lavie.jp/products/" in href:
 
@@ -235,61 +231,72 @@ def discover():
 
                     break
 
-                #
-                # Fallback Cart
-                #
-
                 if "/cart/" in href and not url:
 
                     url = href
 
-            #
-            # Skip if URL not found
-            #
-
             if not url:
                 continue
 
+            product_slug = product_id.lower()
 
-            model_slug = product_id.lower()
-
-            series_slug = observe_series_slug(
+            series_slug = build_series_slug(
                 url,
             )
 
-            if model_slug in seen:
+            if product_slug in seen:
                 continue
 
             seen.add(
-                model_slug,
+                product_slug,
             )
 
             rows.append(
+
                 {
+
                     "category": category,
+
                     "series_slug": series_slug,
+
                     "raw_title": raw_title,
+
                     "product_id": product_id,
+
                     "product_code": product_code,
-                    "model_slug": model_slug,
+
+                    "product_slug": product_slug,
+
                     "url": url,
+
                 }
+
             )
 
     rows.sort(
-        key=lambda row: row["model_slug"],
+
+        key=lambda row: row["product_slug"],
+
     )
 
-    with MODEL_LIST_TSV.open(
+    with CARDS_TSV.open(
+
         "w",
+
         encoding="utf-8",
+
         newline="",
+
     ) as fp:
 
         writer = csv.DictWriter(
+
             fp,
+
             fieldnames=HEADERS,
+
             delimiter="\t",
+
         )
 
         writer.writeheader()
@@ -303,8 +310,8 @@ def discover():
     print("=" * 70)
     print("RESULT")
     print("=" * 70)
-    print(f"Models : {len(rows)}")
-    print(f"Saved  : {MODEL_LIST_TSV}")
+    print(f"Cards : {len(rows)}")
+    print(f"Saved : {CARDS_TSV}")
     print("=" * 70)
 
 
@@ -318,4 +325,5 @@ def main():
 
 
 if __name__ == "__main__":
+
     main()

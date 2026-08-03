@@ -3,36 +3,37 @@
 ==============================================================================
 SHIN CORE LINX
 
-LAVIE Series Observation
+LAVIE Catalog Discovery
 
 Acquire Runtime
 
-AcquisitionDocument(seed)
+AcquisitionDocument(catalog)
         │
         ▼
-Reality HTML
+Catalog HTML
         │
         ▼
-Observe Product Cards
+Discover Series
         │
         ▼
-series_list.tsv
+series.tsv
 
 Reality First
 Observation First
 
 Responsibilities
 
-- Observe Product Cards
-- Observe Raw Title
-- Observe Product ID
-- Produce Observation TSV
+- Discover Series
+- Discover Raw Title
+- Discover Product ID
+- Produce Series TSV
 
 Not Responsibilities
 
-- Semantic Classification
-- Series Mapping
-- Brand Detection
+- Card Discovery
+- Observation
+- Formatter
+- Semantic
 - AI Inference
 ==============================================================================
 """
@@ -49,7 +50,7 @@ from api.models.acquisition_document import AcquisitionDocument
 from acquisition.common.trace.reality_trace import trace_pipeline
 
 from .settings import (
-    SERIES_LIST_TSV,
+    SERIES_TSV,
     SITE_NAME,
 )
 
@@ -64,12 +65,12 @@ HEADERS = (
 )
 
 # ==============================================================================
-# Observation
+# Series
 # ==============================================================================
 
-def observe_series_slug(title: str) -> str:
+def build_series_slug(title: str) -> str:
     """
-    Reality observation only.
+    Build Series Slug.
 
     Example
 
@@ -80,7 +81,10 @@ def observe_series_slug(title: str) -> str:
 
     title = title.strip()
 
-    m = re.match(r"([A-Za-z0-9()\-]+)", title)
+    m = re.match(
+        r"([A-Za-z0-9()\-]+)",
+        title,
+    )
 
     if not m:
         return ""
@@ -89,9 +93,15 @@ def observe_series_slug(title: str) -> str:
 
     slug = slug.lower()
 
-    slug = slug.replace("(", "-")
+    slug = slug.replace(
+        "(",
+        "-",
+    )
 
-    slug = slug.replace(")", "")
+    slug = slug.replace(
+        ")",
+        "",
+    )
 
     slug = re.sub(
         r"[^a-z0-9\-]+",
@@ -115,7 +125,7 @@ def observe_series_slug(title: str) -> str:
 def discover():
 
     trace_pipeline(
-        "SERIES OBSERVATION",
+        "SERIES DISCOVERY",
     )
 
     rows = []
@@ -130,16 +140,18 @@ def discover():
 
             source_name=SITE_NAME.lower(),
 
-            document_type="seed",
+            document_type="catalog",
 
         )
 
-        .order_by("document_key")
+        .order_by(
+            "document_key",
+        )
 
     )
 
     print("=" * 70)
-    print(f"{SITE_NAME} SERIES OBSERVATION")
+    print(f"{SITE_NAME} SERIES DISCOVERY")
     print("=" * 70)
 
     for document in documents:
@@ -150,7 +162,7 @@ def discover():
         )
 
         cards = soup.select(
-            ".dlp-products-card"
+            ".dlp-products-card",
         )
 
         print(
@@ -159,10 +171,12 @@ def discover():
 
         for card in cards:
 
-            h3 = card.select_one("h3")
+            h3 = card.select_one(
+                "h3",
+            )
 
             image = card.select_one(
-                "[data-id]"
+                "[data-id]",
             )
 
             if h3 is None or image is None:
@@ -178,7 +192,7 @@ def discover():
                 "",
             )
 
-            series_slug = observe_series_slug(
+            series_slug = build_series_slug(
                 raw_title,
             )
 
@@ -190,7 +204,9 @@ def discover():
             if key in seen:
                 continue
 
-            seen.add(key)
+            seen.add(
+                key,
+            )
 
             rows.append(
 
@@ -207,27 +223,42 @@ def discover():
             )
 
     rows.sort(
+
         key=lambda row: (
+
             row["series_slug"],
+
             row["product_id"],
+
         )
+
     )
 
-    with SERIES_LIST_TSV.open(
+    with SERIES_TSV.open(
+
         "w",
+
         encoding="utf-8",
+
         newline="",
+
     ) as fp:
 
         writer = csv.DictWriter(
+
             fp,
+
             fieldnames=HEADERS,
+
             delimiter="\t",
+
         )
 
         writer.writeheader()
 
-        writer.writerows(rows)
+        writer.writerows(
+            rows,
+        )
 
     print()
 
@@ -235,7 +266,7 @@ def discover():
     print("RESULT")
     print("=" * 70)
     print(f"Observed : {len(rows)}")
-    print(f"Saved    : {SERIES_LIST_TSV}")
+    print(f"Saved    : {SERIES_TSV}")
     print("=" * 70)
 
 
