@@ -1,0 +1,6 @@
+source	category	maker	maker_id	url	enabled	priority
+tsukumo	desktop	ex.computer	7274	https://shop.tsukumo.co.jp/search/c10/?maker_id[]=7274&end_of_sales=0	true	1
+tsukumo	desktop	msi	7089	https://shop.tsukumo.co.jp/search/c10:1005:1005100/?maker_id[]=7089&end_of_sales=0	true	1
+tsukumo	notebook	msi	7089	https://shop.tsukumo.co.jp/search/c10:1005:1005200/?maker_id[]=7089&end_of_sales=0	true	1
+tsukumo	desktop	asus	1694	https://shop.tsukumo.co.jp/search/c10:1005:1005100/?maker_id[]=1694&end_of_sales=0	true	1
+ark	desktop	asus	1694	https://www.ark-pc.co.jp/...	true	1

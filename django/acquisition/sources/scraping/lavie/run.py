@@ -38,7 +38,11 @@ from .pipeline import (
 # ==============================================================================
 
 def main(
-    **kwargs,
+    *,
+    method: str = "default",
+    mid: str | None = None,
+    list_only: bool = False,
+    force: bool = False,
 ) -> None:
     """
     Execute LAVIE Runtime.

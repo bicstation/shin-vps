@@ -35,7 +35,13 @@ from .pipeline import (
 # Entry Point
 # ==============================================================================
 
-def main() -> None:
+def main(
+    *,
+    method: str = "default",
+    mid: str | None = None,
+    list_only: bool = False,
+    force: bool = False,
+) -> None:
     """
     Execute FRONTIER Runtime.
     """

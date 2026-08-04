@@ -14,6 +14,7 @@ def main(
     method: str,
     mid: str | None = None,
     list_only: bool = False,
+    force: bool = False,
 ) -> None:
     """
     Execute LinkShare Acquisition Pipeline.

@@ -1,0 +1,8 @@
+source	network	source_type	source_id	site	enabled	priority
+lavie	direct	scraping	lavie	NEC LAVIE	true	1
+tsukumo	direct	scraping	tsukumo	TSUKUMO	true	1
+ark	direct	scraping	ark	ARK	true	1
+linkshare	linkshare	ftp	2557	DELL	true	1
+linkshare	linkshare	api	43708	ASUS Store Online	true	2
+amazon	amazon	api	jp	Amazon.co.jp	true	3
+yahoo	yahoo	api	pc	Yahoo!ショッピング	true	3

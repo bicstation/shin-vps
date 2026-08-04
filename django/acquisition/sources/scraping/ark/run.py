@@ -8,8 +8,13 @@ from __future__ import annotations
 from .pipeline import run
 
 
-def main():
-
+def main(
+    *,
+    method: str = "default",
+    mid: str | None = None,
+    list_only: bool = False,
+    force: bool = False,
+):
     run()
 
 
