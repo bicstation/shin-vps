@@ -3,17 +3,17 @@
 ==============================================================================
 SHIN CORE LINX
 
-LAVIE Formatter
+TSUKUMO Formatter
 
 Formatter Runtime
 
-AcquisitionDocument (Observation)
+AcquisitionDocument (observation)
         │
         ▼
 Formatter Runtime
         │
         ▼
-AcquisitionDocument (Formatter)
+AcquisitionDocument (formatter)
 
 Reality First
 Normalization First
@@ -40,7 +40,9 @@ from __future__ import annotations
 
 import json
 
-from api.models.acquisition_document import AcquisitionDocument
+from api.models.acquisition_document import (
+    AcquisitionDocument,
+)
 
 from acquisition.common.trace.reality_trace import (
     trace_pipeline,
@@ -51,34 +53,36 @@ from .settings import (
 )
 
 # ==============================================================================
-# Formatter Contract
+# Runtime
 # ==============================================================================
 
 DOCUMENT_INPUT = "observation"
 
 DOCUMENT_OUTPUT = "formatter"
 
+# ==============================================================================
+# Formatter Contract
+# ==============================================================================
+
 CARD_FIELDS = (
+
+    "document_key",
 
     "category",
 
     "raw_title",
 
-    "product_id",
+    "raw_price",
 
-    "product_code",
+    "raw_image",
 
-    "price",
+    "raw_detail_url",
 
-    "image_url",
+    "raw_specs",
 
-    "detail_url",
+    "raw_labels",
 
-    "specs",
-
-    "release",
-
-    "labels",
+    "raw_html",
 
 )
 
@@ -99,10 +103,6 @@ def normalize_text(
     if not value:
         return ""
 
-    #
-    # New Line
-    #
-
     value = value.replace(
         "\r\n",
         "\n",
@@ -111,24 +111,17 @@ def normalize_text(
         "\n",
     )
 
-    #
-    # Full-width Space
-    #
-
     value = value.replace(
         "\u3000",
         " ",
     )
-
-    #
-    # Consecutive Spaces
-    #
 
     value = " ".join(
         value.split(),
     )
 
     return value.strip()
+
 
 # ==============================================================================
 # List Normalizer
@@ -173,7 +166,6 @@ def normalize_list(
 
     return results
 
-
 # ==============================================================================
 # Card Formatter
 # ==============================================================================
@@ -182,7 +174,7 @@ def normalize_card(
     card: dict,
 ) -> dict:
     """
-    Normalize card.
+    Normalize Card Runtime.
 
     Preserve Reality.
     Never generate meaning.
@@ -190,87 +182,103 @@ def normalize_card(
 
     return {
 
+        "document_key": normalize_text(
+
+            card.get(
+                "document_key",
+                "",
+            )
+
+        ),
+
         "category": normalize_text(
+
             card.get(
                 "category",
                 "",
             )
+
         ),
 
         "raw_title": normalize_text(
+
             card.get(
                 "raw_title",
                 "",
             )
+
         ),
 
-        "product_id": normalize_text(
+        "raw_price": normalize_text(
+
             card.get(
-                "product_id",
+                "raw_price",
                 "",
             )
+
         ),
 
-        "product_code": normalize_text(
+        "raw_image": normalize_text(
+
             card.get(
-                "product_code",
+                "raw_image",
                 "",
             )
+
         ),
 
-        "price": normalize_text(
+        "raw_detail_url": normalize_text(
+
             card.get(
-                "price",
+                "raw_detail_url",
                 "",
             )
+
         ),
 
-        "image_url": normalize_text(
-            card.get(
-                "image_url",
-                "",
-            )
-        ),
+        "raw_specs": normalize_list(
 
-        "detail_url": normalize_text(
             card.get(
-                "detail_url",
-                "",
-            )
-        ),
-
-        "specs": normalize_list(
-            card.get(
-                "specs",
+                "raw_specs",
                 [],
             )
+
         ),
 
-        "release": normalize_text(
-            card.get(
-                "release",
-                "",
-            )
-        ),
+        "raw_labels": normalize_list(
 
-        "labels": normalize_list(
             card.get(
-                "labels",
+                "raw_labels",
                 [],
             )
+
+        ),
+
+        #
+        # HTML Reality
+        # Preserve As-Is
+        #
+
+        "raw_html": card.get(
+
+            "raw_html",
+
+            "",
+
         ),
 
     }
+
 
 # ==============================================================================
 # Observation Formatter
 # ==============================================================================
 
 def format_observation(
-    observation: list[dict],
+    cards: list[dict],
 ) -> list[dict]:
     """
-    Format Observation Runtime.
+    Normalize Observation Runtime.
 
     Preserve Reality.
     Never generate meaning.
@@ -278,12 +286,14 @@ def format_observation(
 
     formatter = []
 
-    for card in observation:
+    for card in cards:
 
         formatter.append(
 
             normalize_card(
+
                 card,
+
             )
 
         )
@@ -291,16 +301,14 @@ def format_observation(
     return formatter
 
 # ==============================================================================
-# Persistence Runtime
+# Persistence
 # ==============================================================================
 
 def save_formatter(
-    formatter: list[dict],
-) -> None:
-
-    print("=" * 70)
-    print("SAVE FORMATTER")
-    print("=" * 70)
+    *,
+    document_key: str,
+    formatter: dict,
+):
 
     document, created = AcquisitionDocument.objects.update_or_create(
 
@@ -310,7 +318,7 @@ def save_formatter(
 
         document_type=DOCUMENT_OUTPUT,
 
-        document_key="catalog",
+        document_key=document_key,
 
         defaults={
 
@@ -330,72 +338,165 @@ def save_formatter(
 
     )
 
-    print(
+    return document, created
 
-        "Formatter :",
 
-        "CREATED" if created else "UPDATED",
-
-    )
-
-    print("=" * 70)
-    
 # ==============================================================================
 # Runtime
 # ==============================================================================
 
-def run() -> None:
+def run(
+    *,
+    force: bool = False,
+) -> None:
 
     trace_pipeline(
         "FORMATTER",
     )
 
     print("=" * 70)
-    print(f"{SITE_NAME} FORMATTER")
+    print(f"🧹 {SITE_NAME} FORMATTER")
     print("=" * 70)
 
-    document = AcquisitionDocument.objects.get(
+    documents = (
 
-        source_type="scraping",
+        AcquisitionDocument.objects
 
-        source_name=SITE_NAME.lower(),
+        .filter(
 
-        document_type=DOCUMENT_INPUT,
+            source_type="scraping",
 
-        document_key="catalog",
+            source_name=SITE_NAME.lower(),
 
-    )
+            document_type=DOCUMENT_INPUT,
 
-    observation = json.loads(
+        )
 
-        document.content,
+        .order_by(
 
-    )
+            "document_key",
 
-    formatter = format_observation(
-
-        observation,
+        )
 
     )
 
-    print(f"Cards : {len(formatter)}")
+    success: list[str] = []
 
-    print()
+    failed: list[tuple[str, str]] = []
 
-    save_formatter(
+    for document in documents:
 
-        formatter,
+        document_key = document.document_key
 
-    )
+        print(document_key)
+
+        try:
+
+            runtime = json.loads(
+
+                document.content,
+
+            )
+
+            formatter = format_observation(
+
+                runtime.get(
+
+                    "cards",
+
+                    [],
+
+                )
+
+            )
+
+            _, created = save_formatter(
+
+                document_key=document_key,
+
+                formatter={
+
+                    "document_key": document_key,
+
+                    "cards": formatter,
+
+                },
+
+            )
+
+            success.append(
+
+                document_key,
+
+            )
+
+            print(
+
+                f"  Cards : {len(formatter)}"
+
+            )
+
+            print(
+
+                f"  Saved : {'CREATED' if created else 'UPDATED'}"
+
+            )
+
+        except Exception as e:
+
+            failed.append(
+
+                (
+
+                    document_key,
+
+                    str(e),
+
+                )
+
+            )
+
+            print(
+
+                "  Status : ERROR"
+
+            )
+
+            print(
+
+                f"  Reason : {e}"
+
+            )
+
+        print()
+
+    print("=" * 70)
+    print("RESULT")
+    print("=" * 70)
+    print(f"SUCCESS : {len(success)}")
+    print(f"FAILED  : {len(failed)}")
+    print("=" * 70)
 
 
 # ==============================================================================
 # Entry Point
 # ==============================================================================
 
-def main() -> None:
+def main(
+    **kwargs,
+) -> None:
 
-    run()
+    run(
+
+        force=kwargs.get(
+
+            "force",
+
+            False,
+
+        ),
+
+    )
 
 
 if __name__ == "__main__":

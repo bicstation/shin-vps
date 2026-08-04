@@ -1,5 +1,3 @@
-# /home/maya/shin-vps/django/acquisition/sources/scraping/tsukumo/pipeline.py
-
 #!/usr/bin/env python3
 # ==============================================================================
 # SHIN CORE LINX
@@ -8,11 +6,11 @@
 #
 # Catalog
 #     ↓
-# Series Discovery
+# Catalog Discovery
 #     ↓
 # Card Discovery
 #     ↓
-# Observation
+# Card Observation
 #     ↓
 # Formatter
 #     ↓
@@ -28,7 +26,7 @@ from acquisition.common.trace.reality_trace import trace_pipeline
 from .fetch_catalog import main as fetch_catalog
 from .discover_catalog import main as discover_catalog
 from .discover_cards import main as discover_cards
-from .observe import main as observe
+from .observe_cards import main as observe_cards
 from .formatter import main as formatter
 from .mapper import main as mapper
 from .integration import main as integration
@@ -41,7 +39,7 @@ from .integration import main as integration
 BREAKPOINT = "cards"
 
 # BREAKPOINT = "catalog"
-# BREAKPOINT = "series"
+# BREAKPOINT = "discover_catalog"
 # BREAKPOINT = "cards"
 # BREAKPOINT = "observation"
 # BREAKPOINT = "formatter"
@@ -54,12 +52,17 @@ BREAKPOINT = "cards"
 # ==============================================================================
 
 PIPELINE_CATALOG = "Catalog Runtime"
-PIPELINE_SERIES = "Series Runtime"
-PIPELINE_CARD = "Card Runtime"
 
-PIPELINE_OBSERVATION = "Observation Runtime"
+PIPELINE_DISCOVER_CATALOG = "Catalog Discovery Runtime"
+
+PIPELINE_DISCOVER_CARDS = "Card Discovery Runtime"
+
+PIPELINE_OBSERVATION = "Card Observation Runtime"
+
 PIPELINE_FORMATTER = "Formatter Runtime"
+
 PIPELINE_MAPPER = "Mapper Runtime"
+
 PIPELINE_INTEGRATION = "Integration Runtime"
 
 PIPELINE_COMPLETE = "TSUKUMO Runtime Complete"
@@ -69,14 +72,21 @@ PIPELINE_COMPLETE = "TSUKUMO Runtime Complete"
 # Breakpoint
 # ==============================================================================
 
-def checkpoint(name: str) -> bool:
+def checkpoint(
+    name: str,
+) -> bool:
 
     if BREAKPOINT != name:
         return False
 
     print()
+
     print("=" * 70)
-    print(f"🛑 BREAKPOINT : {name}")
+
+    print(
+        f"🛑 BREAKPOINT : {name}"
+    )
+
     print("=" * 70)
 
     return True
@@ -92,6 +102,7 @@ def run_stage(
 ) -> None:
 
     print()
+
     print("=" * 70)
 
     trace_pipeline(
@@ -113,30 +124,30 @@ def run_catalog() -> None:
 
 
 # ==============================================================================
-# Series Runtime
+# Catalog Discovery Runtime
 # ==============================================================================
 
-def run_series() -> None:
+def run_discover_catalog() -> None:
 
     discover_catalog()
 
 
 # ==============================================================================
-# Card Runtime
+# Card Discovery Runtime
 # ==============================================================================
 
-def run_cards() -> None:
+def run_discover_cards() -> None:
 
     discover_cards()
 
 
 # ==============================================================================
-# Observation Runtime
+# Card Observation Runtime
 # ==============================================================================
 
 def run_observation() -> None:
 
-    observe()
+    observe_cards()
 
 
 # ==============================================================================
@@ -181,16 +192,16 @@ def run() -> None:
         return
 
     run_stage(
-        PIPELINE_SERIES,
-        run_series,
+        PIPELINE_DISCOVER_CATALOG,
+        run_discover_catalog,
     )
 
-    if checkpoint("series"):
+    if checkpoint("discover_catalog"):
         return
 
     run_stage(
-        PIPELINE_CARD,
-        run_cards,
+        PIPELINE_DISCOVER_CARDS,
+        run_discover_cards,
     )
 
     if checkpoint("cards"):
@@ -229,6 +240,7 @@ def run() -> None:
         return
 
     print()
+
     print("=" * 70)
 
     trace_pipeline(

@@ -3,7 +3,7 @@
 ==============================================================================
 SHIN CORE LINX
 
-LAVIE Integration
+TSUKUMO Integration
 
 Integration Runtime
 
@@ -31,12 +31,14 @@ Not Responsibilities
 - Formatter
 - Mapping
 - Semantic
-============================================================================== 
+==============================================================================
 """
 
 from __future__ import annotations
 
-from api.models import ImportDocument
+from api.models import (
+    ImportDocument,
+)
 
 from acquisition.common.trace.reality_trace import (
     trace_model,
@@ -63,7 +65,7 @@ def run() -> None:
     )
 
     print("=" * 70)
-    print(f"{SITE_NAME} INTEGRATION")
+    print(f"📦 {SITE_NAME} INTEGRATION")
     print("=" * 70)
 
     documents = (
@@ -113,19 +115,39 @@ def run() -> None:
     print("=" * 70)
     print("RESULT")
     print("=" * 70)
-    print(f"Loaded  : {results.loaded}")
-    print(f"Created : {results.created}")
-    print(f"Updated : {results.updated}")
 
-    if hasattr(results, "skipped"):
-        print(f"Skipped : {results.skipped}")
+    print(
+        f"Loaded  : {results.loaded}"
+    )
 
-    if hasattr(results, "failed"):
-        print(f"Failed  : {results.failed}")
+    print(
+        f"Created : {results.created}"
+    )
+
+    print(
+        f"Updated : {results.updated}"
+    )
+
+    if hasattr(
+        results,
+        "skipped",
+    ):
+
+        print(
+            f"Skipped : {results.skipped}"
+        )
+
+    if hasattr(
+        results,
+        "failed",
+    ):
+
+        print(
+            f"Failed  : {results.failed}"
+        )
 
     print("=" * 70)
-
-
+    
 # ==============================================================================
 # Entry Point
 # ==============================================================================

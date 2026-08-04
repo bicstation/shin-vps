@@ -5,27 +5,24 @@ SHIN CORE LINX
 
 TSUKUMO Catalog Discovery
 
-Acquire Runtime
+Catalog Runtime
 
 AcquisitionDocument (catalog)
         │
         ▼
-Catalog HTML
+Catalog Runtime
         │
         ▼
-Series Discovery
-        │
-        ▼
-AcquisitionDocument (series)
+AcquisitionDocument (catalog_runtime)
 
 Reality First
 Observation First
 
 Responsibilities
 
-- Discover Published Series
-- Preserve Reality
-- Produce Series AcquisitionDocument
+- Discover Catalog Reality
+- Preserve Catalog Runtime
+- Produce Catalog AcquisitionDocument
 
 Not Responsibilities
 
@@ -41,8 +38,6 @@ from __future__ import annotations
 
 import json
 
-from bs4 import BeautifulSoup
-
 from api.models.acquisition_document import (
     AcquisitionDocument,
 )
@@ -55,14 +50,13 @@ from .settings import (
     SITE_NAME,
 )
 
-
 # ==============================================================================
-# Acquisition
+# Runtime
 # ==============================================================================
 
 DOCUMENT_INPUT = "catalog"
 
-DOCUMENT_OUTPUT = "series"
+DOCUMENT_OUTPUT = "catalog_runtime"
 
 
 # ==============================================================================
@@ -70,7 +64,7 @@ DOCUMENT_OUTPUT = "series"
 # ==============================================================================
 
 def exists(
-    slug: str,
+    document_key: str,
 ) -> bool:
 
     return AcquisitionDocument.objects.filter(
@@ -81,7 +75,7 @@ def exists(
 
         document_type=DOCUMENT_OUTPUT,
 
-        document_key=slug,
+        document_key=document_key,
 
     ).exists()
 
@@ -90,11 +84,11 @@ def exists(
 # Persistence
 # ==============================================================================
 
-def save_series(
+def save_catalog_runtime(
     *,
-    slug: str,
-    observation: dict,
-) -> tuple[AcquisitionDocument, bool]:
+    document_key: str,
+    runtime: dict,
+):
 
     document, created = AcquisitionDocument.objects.update_or_create(
 
@@ -104,7 +98,7 @@ def save_series(
 
         document_type=DOCUMENT_OUTPUT,
 
-        document_key=slug,
+        document_key=document_key,
 
         defaults={
 
@@ -112,7 +106,7 @@ def save_series(
 
             "content": json.dumps(
 
-                observation,
+                runtime,
 
                 ensure_ascii=False,
 
@@ -126,7 +120,6 @@ def save_series(
 
     return document, created
 
-
 # ==============================================================================
 # Runtime
 # ==============================================================================
@@ -137,11 +130,11 @@ def discover(
 ) -> None:
 
     trace_pipeline(
-        "SERIES DISCOVERY",
+        "CATALOG DISCOVERY",
     )
 
     print("=" * 70)
-    print(f"🔎 {SITE_NAME} SERIES DISCOVERY")
+    print(f"📚 {SITE_NAME} CATALOG DISCOVERY")
     print("=" * 70)
 
     documents = (
@@ -172,81 +165,94 @@ def discover(
 
     for document in documents:
 
-        slug = document.document_key
+        document_key = document.document_key
 
-        if not force and exists(slug):
+        if (
 
-            success.append(slug)
+            not force
 
-            print(f"[CACHE] {slug}")
+            and exists(
+                document_key,
+            )
+
+        ):
+
+            success.append(
+                document_key,
+            )
+
+            print(
+                f"[CACHE] {document_key}"
+            )
 
             continue
 
-        print(slug)
+        print(
+            document_key,
+        )
 
         try:
 
-            soup = BeautifulSoup(
+            #
+            # Reality
+            #
 
-                document.content,
+            runtime = {
 
-                "html.parser",
+                "document_key": document_key,
 
-            )
+                "source_url": document.source_url,
 
-            observation = {
+                "content_type": document.content_type,
 
-                "slug": slug,
-
-                "title": soup.title.get_text(
-                    strip=True,
-                ) if soup.title else "",
-
-                "html_length": len(
-                    document.content,
-                ),
+                "html": document.content,
 
             }
 
-            _, created = save_series(
+            _, created = save_catalog_runtime(
 
-                slug=slug,
+                document_key=document_key,
 
-                observation=observation,
+                runtime=runtime,
 
             )
 
             success.append(
-                slug,
+
+                document_key,
+
             )
 
             print(
-                f"  Title : {observation['title']}"
-            )
 
-            print(
-                f"  HTML  : {observation['html_length']:,} chars"
-            )
-
-            print(
                 f"  Saved : {'CREATED' if created else 'UPDATED'}"
-            )
 
+            )
+            
         except Exception as e:
 
             failed.append(
+
                 (
-                    slug,
+
+                    document_key,
+
                     str(e),
+
                 )
+
             )
 
             print(
+
                 "  Status : ERROR"
+
             )
 
             print(
+
                 f"  Reason : {e}"
+
             )
 
         print()
@@ -254,8 +260,10 @@ def discover(
     print("=" * 70)
     print("RESULT")
     print("=" * 70)
+
     print(f"SUCCESS : {len(success)}")
     print(f"FAILED  : {len(failed)}")
+
     print("=" * 70)
 
 
@@ -268,10 +276,15 @@ def main(
 ) -> None:
 
     discover(
+
         force=kwargs.get(
+
             "force",
+
             False,
+
         ),
+
     )
 
 

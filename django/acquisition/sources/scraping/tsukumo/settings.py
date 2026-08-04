@@ -15,7 +15,7 @@ from pathlib import Path
 
 SITE_NAME = "TSUKUMO"
 
-BASE_URL = "https://www.tsukumo.co.jp"
+BASE_URL = "https://shop.tsukumo.co.jp"
 
 # ==============================================================================
 # Runtime
@@ -33,6 +33,11 @@ RUNTIME_DIR.mkdir(
     parents=True,
     exist_ok=True,
 )
+
+# ==============================================================================
+# Catalog
+# Reality Catalog Index
+# ==============================================================================
 
 CATALOG_TSV = RUNTIME_DIR / "catalog.tsv"
 
