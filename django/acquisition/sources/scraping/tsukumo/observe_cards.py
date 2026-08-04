@@ -555,15 +555,46 @@ def observe(
 
     )
 
-    success: list[str] = []
 
+    success: list[str] = []
     failed: list[tuple[str, str]] = []
+
 
     for document in documents:
 
         document_key = document.document_key
 
-        print(document_key)
+        if (
+
+            not force
+
+            and exists(
+
+                document_key,
+
+            )
+
+        ):
+
+            success.append(
+
+                document_key,
+
+            )
+
+            print(
+
+                f"[CACHE] {document_key}"
+
+            )
+
+            continue
+
+        print(
+
+            document_key,
+
+        )
 
         runtime = json.loads(
 
@@ -667,23 +698,35 @@ def observe(
     print("=" * 70)
 
 
+def exists(
+    document_key: str,
+) -> bool:
+
+    return AcquisitionDocument.objects.filter(
+
+        source_type="scraping",
+
+        source_name=SITE_NAME.lower(),
+
+        document_type=DOCUMENT_OUTPUT,
+
+        document_key=document_key,
+
+    ).exists()
+
+
 # ==============================================================================
 # Entry Point
 # ==============================================================================
 
 def main(
-    **kwargs,
+    *,
+    force: bool = False,
 ) -> None:
 
     observe(
 
-        force=kwargs.get(
-
-            "force",
-
-            False,
-
-        ),
+        force=force,
 
     )
 
@@ -691,3 +734,4 @@ def main(
 if __name__ == "__main__":
 
     main()
+

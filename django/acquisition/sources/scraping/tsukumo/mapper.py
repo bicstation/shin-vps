@@ -91,6 +91,25 @@ CONTRACT_FIELDS = (
     "observation_runtime",
 
 )
+
+# ==============================================================================
+# Cache
+# ==============================================================================
+
+def exists(
+    document_key: str,
+) -> bool:
+
+    return ImportDocument.objects.filter(
+
+        source_name=SITE_NAME.lower(),
+
+        document_type=DOCUMENT_OUTPUT,
+
+        document_key=document_key,
+
+    ).exists()
+
 # ==============================================================================
 # URL Helper
 # ==============================================================================
@@ -114,7 +133,6 @@ def absolute_url(
         return BASE_URL + url
 
     return url
-
 
 # ==============================================================================
 # Price Helper
@@ -146,7 +164,6 @@ def normalize_price(
         return 0
 
     return int(digits)
-
 
 # ==============================================================================
 # Identity Builder
@@ -233,11 +250,13 @@ def build_identity(
         )
 
     )
-    
+
     return {
 
         "unique_id": build_unique_id(
+
             formatter,
+
         ),
 
         "maker": SITE_NAME,
@@ -251,10 +270,6 @@ def build_identity(
         "model": "",
 
         "product_no": "",
-
-        #
-        # Framework Contract
-        #
 
         "sku": formatter.get(
 
@@ -275,7 +290,7 @@ def build_identity(
         "product_url": detail_url,
 
     }
-
+    
 
 # ==============================================================================
 # Commerce Builder
@@ -398,15 +413,11 @@ def build_contract(
     Preserve Reality.
     """
 
-    #
-    # Observation Runtime
-    #
-
     observation_runtime = {
 
-        #
+        # ==================================================
         # Category
-        #
+        # ==================================================
 
         "category": formatter.get(
 
@@ -416,9 +427,9 @@ def build_contract(
 
         ),
 
-        #
+        # ==================================================
         # Product
-        #
+        # ==================================================
 
         "raw_title": formatter.get(
 
@@ -452,9 +463,9 @@ def build_contract(
 
         ),
 
-        #
+        # ==================================================
         # Commerce
-        #
+        # ==================================================
 
         "raw_price": formatter.get(
 
@@ -488,9 +499,9 @@ def build_contract(
 
         ),
 
-        #
+        # ==================================================
         # Media
-        #
+        # ==================================================
 
         "raw_image": formatter.get(
 
@@ -508,9 +519,9 @@ def build_contract(
 
         ),
 
-        #
+        # ==================================================
         # Observation
-        #
+        # ==================================================
 
         "raw_specs": list(
 
@@ -536,9 +547,9 @@ def build_contract(
 
         ),
 
-        #
+        # ==================================================
         # Reality
-        #
+        # ==================================================
 
         "raw_html": formatter.get(
 
@@ -549,10 +560,6 @@ def build_contract(
         ),
 
     }
-    
-    #
-    # Import Contract
-    #
 
     return {
 
@@ -604,6 +611,7 @@ def build_contract(
 
     }
 
+
 # ==============================================================================
 # Persistence Runtime
 # ==============================================================================
@@ -621,21 +629,29 @@ def save_contract(
     """
 
     identity = contract.get(
+
         "identity",
+
         {},
+
     )
-    
+
     document_key = identity.get(
+
         "sku",
+
         "",
+
     )
-    
 
     document, created = ImportDocument.objects.update_or_create(
 
         source_name=SITE_NAME.lower(),
+
         document_type=DOCUMENT_OUTPUT,
+
         document_key=document_key,
+
         defaults={
 
             "contract": contract,
@@ -657,10 +673,15 @@ def save_contract(
 # Runtime
 # ==============================================================================
 
-def run() -> None:
+def run(
+    *,
+    force: bool = False,
+) -> None:
 
     trace_pipeline(
+
         "MAPPER",
+
     )
 
     print("=" * 70)
@@ -697,7 +718,31 @@ def run() -> None:
 
         document_key = document.document_key
 
-        print(document_key)
+        if (
+
+            not force
+
+            and exists(
+
+                document_key,
+
+            )
+
+        ):
+
+            print(
+
+                f"[CACHE] {document_key}"
+
+            )
+
+            continue
+
+        print(
+
+            document_key,
+
+        )
 
         try:
 
@@ -716,7 +761,9 @@ def run() -> None:
             )
 
             print(
+
                 f"  Cards : {len(cards)}"
+
             )
 
             for card in cards:
@@ -779,9 +826,16 @@ def run() -> None:
 # Entry Point
 # ==============================================================================
 
-def main() -> None:
+def main(
+    *,
+    force: bool = False,
+) -> None:
 
-    run()
+    run(
+
+        force=force,
+
+    )
 
 
 if __name__ == "__main__":

@@ -1,3 +1,5 @@
+# /home/maya/shin-vps/django/api/management/commands/import_products.py
+
 from __future__ import annotations
 
 from importlib import import_module
@@ -32,10 +34,12 @@ REALITY_RUNTIMES = {
         "GEEKOM",
         "acquisition.sources.scraping.geekom.run",
     ),
+
     "lavie": (
         "NEC LAVIE",
         "acquisition.sources.scraping.lavie.run",
     ),
+
     "tsukumo": (
         "TSUKUMO",
         "acquisition.sources.scraping.tsukumo.run",
@@ -92,13 +96,18 @@ class Command(BaseCommand):
             default=None,
             help="Merchant ID",
         )
-        
+
         parser.add_argument(
             "--list",
             action="store_true",
             help="List advertisers (API) or FTP files (FTP)",
         )
-        
+
+        parser.add_argument(
+            "--force",
+            action="store_true",
+            help="Ignore cache and rebuild runtime.",
+        )
 
     # ======================================================
     # Handle
@@ -152,6 +161,7 @@ class Command(BaseCommand):
             method=options["method"],
             mid=options["mid"],
             list_only=options["list"],
+            force=options["force"],
         )
 
         self.stdout.write("")

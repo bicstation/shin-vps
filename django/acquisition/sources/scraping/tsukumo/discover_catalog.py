@@ -50,6 +50,7 @@ from .settings import (
     SITE_NAME,
 )
 
+
 # ==============================================================================
 # Runtime
 # ==============================================================================
@@ -120,6 +121,7 @@ def save_catalog_runtime(
 
     return document, created
 
+
 # ==============================================================================
 # Runtime
 # ==============================================================================
@@ -172,30 +174,34 @@ def discover(
             not force
 
             and exists(
+
                 document_key,
+
             )
 
         ):
 
             success.append(
+
                 document_key,
+
             )
 
             print(
+
                 f"[CACHE] {document_key}"
+
             )
 
             continue
 
         print(
+
             document_key,
+
         )
 
         try:
-
-            #
-            # Reality
-            #
 
             runtime = {
 
@@ -228,7 +234,7 @@ def discover(
                 f"  Saved : {'CREATED' if created else 'UPDATED'}"
 
             )
-            
+
         except Exception as e:
 
             failed.append(
@@ -272,18 +278,13 @@ def discover(
 # ==============================================================================
 
 def main(
-    **kwargs,
+    *,
+    force: bool = False,
 ) -> None:
 
     discover(
 
-        force=kwargs.get(
-
-            "force",
-
-            False,
-
-        ),
+        force=force,
 
     )
 

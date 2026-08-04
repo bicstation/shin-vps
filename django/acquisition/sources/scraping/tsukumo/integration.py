@@ -152,11 +152,9 @@ def run() -> None:
 # Entry Point
 # ==============================================================================
 
-def main() -> None:
+def main(
+    *,
+    force: bool = False,
+) -> None:
 
     run()
-
-
-if __name__ == "__main__":
-
-    main()

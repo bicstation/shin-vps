@@ -37,6 +37,7 @@ from .pipeline import (
 # Entry Point
 # ==============================================================================
 
+
 def main(
     **kwargs,
 ) -> None:
@@ -44,7 +45,12 @@ def main(
     Execute LAVIE Runtime.
     """
 
-    pipeline()
+    pipeline(
+        force=kwargs.get(
+            "force",
+            False,
+        ),
+    )
 
 
 if __name__ == "__main__":

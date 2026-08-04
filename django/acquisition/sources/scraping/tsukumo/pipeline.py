@@ -36,7 +36,7 @@ from .integration import main as integration
 # Breakpoint
 # ==============================================================================
 
-BREAKPOINT = "cards"
+BREAKPOINT = "integration"
 
 # BREAKPOINT = "catalog"
 # BREAKPOINT = "discover_catalog"
@@ -99,6 +99,7 @@ def checkpoint(
 def run_stage(
     title: str,
     runtime,
+    **kwargs,
 ) -> None:
 
     print()
@@ -111,81 +112,114 @@ def run_stage(
 
     print("=" * 70)
 
-    runtime()
+    runtime(
+        **kwargs,
+    )
 
 
 # ==============================================================================
 # Catalog Runtime
 # ==============================================================================
 
-def run_catalog() -> None:
+def run_catalog(
+    **kwargs,
+) -> None:
 
-    fetch_catalog()
+    fetch_catalog(
+        **kwargs,
+    )
 
 
 # ==============================================================================
 # Catalog Discovery Runtime
 # ==============================================================================
 
-def run_discover_catalog() -> None:
+def run_discover_catalog(
+    **kwargs,
+) -> None:
 
-    discover_catalog()
+    discover_catalog(
+        **kwargs,
+    )
 
 
 # ==============================================================================
 # Card Discovery Runtime
 # ==============================================================================
 
-def run_discover_cards() -> None:
+def run_discover_cards(
+    **kwargs,
+) -> None:
 
-    discover_cards()
+    discover_cards(
+        **kwargs,
+    )
 
 
 # ==============================================================================
 # Card Observation Runtime
 # ==============================================================================
 
-def run_observation() -> None:
+def run_observation(
+    **kwargs,
+) -> None:
 
-    observe_cards()
+    observe_cards(
+        **kwargs,
+    )
 
 
 # ==============================================================================
 # Formatter Runtime
 # ==============================================================================
 
-def run_formatter() -> None:
+def run_formatter(
+    **kwargs,
+) -> None:
 
-    formatter()
+    formatter(
+        **kwargs,
+    )
 
 
 # ==============================================================================
 # Mapper Runtime
 # ==============================================================================
 
-def run_mapper() -> None:
+def run_mapper(
+    **kwargs,
+) -> None:
 
-    mapper()
+    mapper(
+        **kwargs,
+    )
 
 
 # ==============================================================================
 # Integration Runtime
 # ==============================================================================
 
-def run_integration() -> None:
+def run_integration(
+    **kwargs,
+) -> None:
 
-    integration()
+    integration(
+        **kwargs,
+    )
 
 
 # ==============================================================================
 # Pipeline
 # ==============================================================================
 
-def run() -> None:
+def run(
+    **kwargs,
+) -> None:
 
     run_stage(
         PIPELINE_CATALOG,
         run_catalog,
+        **kwargs,
     )
 
     if checkpoint("catalog"):
@@ -194,6 +228,7 @@ def run() -> None:
     run_stage(
         PIPELINE_DISCOVER_CATALOG,
         run_discover_catalog,
+        **kwargs,
     )
 
     if checkpoint("discover_catalog"):
@@ -202,6 +237,7 @@ def run() -> None:
     run_stage(
         PIPELINE_DISCOVER_CARDS,
         run_discover_cards,
+        **kwargs,
     )
 
     if checkpoint("cards"):
@@ -210,6 +246,7 @@ def run() -> None:
     run_stage(
         PIPELINE_OBSERVATION,
         run_observation,
+        **kwargs,
     )
 
     if checkpoint("observation"):
@@ -218,6 +255,7 @@ def run() -> None:
     run_stage(
         PIPELINE_FORMATTER,
         run_formatter,
+        **kwargs,
     )
 
     if checkpoint("formatter"):
@@ -226,6 +264,7 @@ def run() -> None:
     run_stage(
         PIPELINE_MAPPER,
         run_mapper,
+        **kwargs,
     )
 
     if checkpoint("mapper"):
@@ -234,6 +273,7 @@ def run() -> None:
     run_stage(
         PIPELINE_INTEGRATION,
         run_integration,
+        **kwargs,
     )
 
     if checkpoint("integration"):
@@ -254,9 +294,13 @@ def run() -> None:
 # Entry Point
 # ==============================================================================
 
-def main() -> None:
+def main(
+    **kwargs,
+) -> None:
 
-    run()
+    run(
+        **kwargs,
+    )
 
 
 if __name__ == "__main__":

@@ -72,7 +72,19 @@ CARD_FIELDS = (
 
     "raw_title",
 
+    "raw_description",
+
+    "raw_maker",
+
+    "raw_sku",
+
     "raw_price",
+
+    "raw_stock",
+
+    "raw_shipping",
+
+    "raw_availability",
 
     "raw_image",
 
@@ -85,6 +97,26 @@ CARD_FIELDS = (
     "raw_html",
 
 )
+
+# ==============================================================================
+# Cache
+# ==============================================================================
+
+def exists(
+    document_key: str,
+) -> bool:
+
+    return AcquisitionDocument.objects.filter(
+
+        source_type="scraping",
+
+        source_name=SITE_NAME.lower(),
+
+        document_type=DOCUMENT_OUTPUT,
+
+        document_key=document_key,
+
+    ).exists()
 
 # ==============================================================================
 # Text Normalizer
@@ -121,7 +153,6 @@ def normalize_text(
     )
 
     return value.strip()
-
 
 # ==============================================================================
 # List Normalizer
@@ -209,10 +240,64 @@ def normalize_card(
 
         ),
 
+        "raw_description": normalize_text(
+
+            card.get(
+                "raw_description",
+                "",
+            )
+
+        ),
+
+        "raw_maker": normalize_text(
+
+            card.get(
+                "raw_maker",
+                "",
+            )
+
+        ),
+
+        "raw_sku": normalize_text(
+
+            card.get(
+                "raw_sku",
+                "",
+            )
+
+        ),
+
         "raw_price": normalize_text(
 
             card.get(
                 "raw_price",
+                "",
+            )
+
+        ),
+
+        "raw_stock": normalize_text(
+
+            card.get(
+                "raw_stock",
+                "",
+            )
+
+        ),
+
+        "raw_shipping": normalize_text(
+
+            card.get(
+                "raw_shipping",
+                "",
+            )
+
+        ),
+
+        "raw_availability": normalize_text(
+
+            card.get(
+                "raw_availability",
                 "",
             )
 
@@ -268,8 +353,7 @@ def normalize_card(
         ),
 
     }
-
-
+    
 # ==============================================================================
 # Observation Formatter
 # ==============================================================================
@@ -340,7 +424,6 @@ def save_formatter(
 
     return document, created
 
-
 # ==============================================================================
 # Runtime
 # ==============================================================================
@@ -388,7 +471,37 @@ def run(
 
         document_key = document.document_key
 
-        print(document_key)
+        if (
+
+            not force
+
+            and exists(
+
+                document_key,
+
+            )
+
+        ):
+
+            success.append(
+
+                document_key,
+
+            )
+
+            print(
+
+                f"[CACHE] {document_key}"
+
+            )
+
+            continue
+
+        print(
+
+            document_key,
+
+        )
 
         try:
 
@@ -469,12 +582,14 @@ def run(
             )
 
         print()
-
+        
     print("=" * 70)
     print("RESULT")
     print("=" * 70)
+
     print(f"SUCCESS : {len(success)}")
     print(f"FAILED  : {len(failed)}")
+
     print("=" * 70)
 
 
@@ -483,18 +598,13 @@ def run(
 # ==============================================================================
 
 def main(
-    **kwargs,
+    *,
+    force: bool = False,
 ) -> None:
 
     run(
 
-        force=kwargs.get(
-
-            "force",
-
-            False,
-
-        ),
+        force=force,
 
     )
 
