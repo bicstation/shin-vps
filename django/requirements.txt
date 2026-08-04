@@ -51,3 +51,8 @@ firebase-admin==7.4.0
 markdown
 
 djangorestframework-simplejwt==5.3.1
+
+# 🌐 API 通信 & HTTP クライアント
+requests==2.31.0
+urllib3==2.1.0
+curl_cffi
