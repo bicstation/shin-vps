@@ -5,20 +5,46 @@ SHIN CORE LINX
 
 ARK Acquisition Pipeline
 
+Reality First Pipeline
+
+(Local)
+
 Catalog
-    ↓
+    │
+    ▼
 Fetch Catalog Runtime
-    ↓
+    │
+    ▼
+Export Reality Runtime
+    │
+    ▼
+Git
+
+------------------------------------------------------------
+
+(VPS)
+
+Git
+    │
+    ▼
+Import Reality Runtime
+    │
+    ▼
 Catalog Discovery Runtime
-    ↓
+    │
+    ▼
 Card Discovery Runtime
-    ↓
+    │
+    ▼
 Card Observation Runtime
-    ↓
+    │
+    ▼
 Formatter Runtime
-    ↓
+    │
+    ▼
 Mapper Runtime
-    ↓
+    │
+    ▼
 Integration Runtime
 
 ==============================================================================
@@ -31,6 +57,8 @@ from acquisition.common.trace.reality_trace import (
 )
 
 from .fetch_catalog import main as fetch_catalog
+from .export_reality import main as export_reality
+from .import_reality import main as import_reality
 from .discover_catalog import main as discover_catalog
 from .discover_cards import main as discover_cards
 from .observe_cards import main as observe_cards
@@ -40,12 +68,24 @@ from .integration import main as integration
 
 
 # ==============================================================================
+# Runtime Mode
+# ==============================================================================
+
+LOCAL_REALITY = True
+
+# VPSでは False
+# LOCAL_REALITY = False
+
+
+# ==============================================================================
 # Breakpoint
 # ==============================================================================
 
 BREAKPOINT = "integration"
 
 # BREAKPOINT = "fetch_catalog"
+# BREAKPOINT = "export_reality"
+# BREAKPOINT = "import_reality"
 # BREAKPOINT = "discover_catalog"
 # BREAKPOINT = "discover_cards"
 # BREAKPOINT = "observe_cards"
@@ -59,6 +99,10 @@ BREAKPOINT = "integration"
 # ==============================================================================
 
 PIPELINE_FETCH_CATALOG = "Fetch Catalog Runtime"
+
+PIPELINE_EXPORT_REALITY = "Export Reality Runtime"
+
+PIPELINE_IMPORT_REALITY = "Import Reality Runtime"
 
 PIPELINE_DISCOVER_CATALOG = "Catalog Discovery Runtime"
 
@@ -84,6 +128,7 @@ def checkpoint(
 ) -> bool:
 
     if BREAKPOINT != name:
+
         return False
 
     print()
@@ -91,7 +136,9 @@ def checkpoint(
     print("=" * 70)
 
     print(
+
         f"🛑 BREAKPOINT : {name}"
+
     )
 
     print("=" * 70)
@@ -133,6 +180,24 @@ def run_fetch_catalog(
 ) -> None:
 
     fetch_catalog(
+        **kwargs,
+    )
+
+
+def run_export_reality(
+    **kwargs,
+) -> None:
+
+    export_reality(
+        **kwargs,
+    )
+
+
+def run_import_reality(
+    **kwargs,
+) -> None:
+
+    import_reality(
         **kwargs,
     )
 
@@ -199,14 +264,36 @@ def run(
     **kwargs,
 ) -> None:
 
-    run_stage(
-        PIPELINE_FETCH_CATALOG,
-        run_fetch_catalog,
-        **kwargs,
-    )
+    if LOCAL_REALITY:
 
-    if checkpoint("fetch_catalog"):
-        return
+        run_stage(
+            PIPELINE_FETCH_CATALOG,
+            run_fetch_catalog,
+            **kwargs,
+        )
+
+        if checkpoint("fetch_catalog"):
+            return
+
+        run_stage(
+            PIPELINE_EXPORT_REALITY,
+            run_export_reality,
+            **kwargs,
+        )
+
+        if checkpoint("export_reality"):
+            return
+
+    else:
+
+        run_stage(
+            PIPELINE_IMPORT_REALITY,
+            run_import_reality,
+            **kwargs,
+        )
+
+        if checkpoint("import_reality"):
+            return
 
     run_stage(
         PIPELINE_DISCOVER_CATALOG,

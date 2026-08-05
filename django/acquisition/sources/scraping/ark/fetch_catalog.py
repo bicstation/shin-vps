@@ -37,8 +37,8 @@ from .settings import (
     USER_AGENT,
     TIMEOUT,
     CATALOG_FILE,
+    REALITY_MODE,
 )
-
 
 # ==============================================================================
 # Runtime
@@ -65,7 +65,6 @@ def load_catalogs() -> list[dict]:
         )
 
         return list(reader)
-
 
 # ==============================================================================
 # Fetch
@@ -117,13 +116,31 @@ def fetch_catalog_html(
 
             )
 
+            print(
+
+                f"  URL   : {url}"
+
+            )
+
             page.goto(
 
                 url,
 
-                wait_until="networkidle",
+                wait_until="domcontentloaded",
 
                 timeout=TIMEOUT * 1000,
+
+            )
+
+            page.wait_for_timeout(
+
+                3000,
+
+            )
+
+            print(
+
+                f"  Title : {page.title()}"
 
             )
 
@@ -131,9 +148,17 @@ def fetch_catalog_html(
 
             print(
 
-                f"  HTML : {len(html):,} chars"
+                f"  HTML  : {len(html):,} chars"
 
             )
+
+            if "Cloudflare" in page.title():
+
+                print(
+
+                    "  ⚠ Cloudflare Detected"
+
+                )
 
             results.append(
 
@@ -159,7 +184,6 @@ def fetch_catalog_html(
 # ==============================================================================
 # Runtime
 # ==============================================================================
-
 def main(
     *,
     method: str = "default",
@@ -176,9 +200,35 @@ def main(
 
     print("=" * 70)
 
+    # --------------------------------------------------------------------------
+    # Reality Mode
+    # --------------------------------------------------------------------------
+
+    if REALITY_MODE == "import":
+
+        print("Reality Mode : IMPORT")
+
+        print("Fetch Runtime Skipped")
+
+        print("=" * 70)
+
+        return
+
+    # --------------------------------------------------------------------------
+    # Fetch Runtime
+    # --------------------------------------------------------------------------
+
+    print("Reality Mode : EXPORT")
+
+    print()
+
     catalogs = load_catalogs()
 
-    print(f"Catalogs : {len(catalogs)}")
+    print(
+
+        f"Catalogs : {len(catalogs)}"
+
+    )
 
     print()
 
@@ -219,6 +269,7 @@ def main(
     print("✅ CATALOG FETCH COMPLETE")
 
     print("=" * 70)
+    
 
 
 # ==============================================================================

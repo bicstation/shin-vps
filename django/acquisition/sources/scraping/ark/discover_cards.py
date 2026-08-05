@@ -5,9 +5,7 @@ SHIN CORE LINX
 
 ARK Card Discovery Runtime
 
-Catalog Runtime
-
-AcquisitionDocument (catalog_runtime)
+Catalog
         │
         ▼
 Card Discovery Runtime
@@ -17,6 +15,21 @@ AcquisitionDocument (cards)
 
 Reality First
 Observation First
+
+Responsibilities
+
+- Discover Product Cards
+- Preserve Card Reality
+- Produce Card Runtime
+
+Not Responsibilities
+
+- Fetch
+- Observation
+- Formatter
+- Mapper
+- Integration
+
 ==============================================================================
 """
 
@@ -25,7 +38,6 @@ from __future__ import annotations
 import json
 
 from bs4 import BeautifulSoup
-from playwright.sync_api import sync_playwright
 
 from api.models.acquisition_document import AcquisitionDocument
 
@@ -35,36 +47,17 @@ from acquisition.common.trace.reality_trace import (
 
 from .settings import (
     SITE_NAME,
-    USER_AGENT,
-    TIMEOUT,
 )
+
+# ==============================================================================
+# Runtime
+# ==============================================================================
 
 SOURCE_TYPE = "scraping"
 
-DOCUMENT_INPUT = "catalog_runtime"
+DOCUMENT_INPUT = "catalog"
 
 DOCUMENT_OUTPUT = "cards"
-
-
-# ==============================================================================
-# Cache
-# ==============================================================================
-
-def exists(
-    document_key: str,
-) -> bool:
-
-    return AcquisitionDocument.objects.filter(
-
-        source_type=SOURCE_TYPE,
-
-        source_name=SITE_NAME,
-
-        document_type=DOCUMENT_OUTPUT,
-
-        document_key=document_key,
-
-    ).exists()
 
 
 # ==============================================================================
@@ -120,13 +113,16 @@ def discover(
     )
 
     print()
-    print("=" * 70)
-    print(f"🃏 {SITE_NAME.upper()} CARD DISCOVERY")
+
     print("=" * 70)
 
-    # ----------------------------------------------------------
-    # ORMはPlaywrightの前に完了
-    # ----------------------------------------------------------
+    print(f"🃏 {SITE_NAME.upper()} CARD DISCOVERY")
+
+    print("=" * 70)
+
+    # --------------------------------------------------------------------------
+    # ORM (READ ONLY)
+    # --------------------------------------------------------------------------
 
     documents = list(
 
@@ -150,175 +146,173 @@ def discover(
 
     )
 
-    success = []
+    existing_keys = set(
 
-    failed = []
+        AcquisitionDocument.objects
 
-    runtimes = []
+        .filter(
 
-    with sync_playwright() as p:
+            source_type=SOURCE_TYPE,
 
-        browser = p.chromium.launch(
+            source_name=SITE_NAME,
 
-            headless=True,
-
-        )
-
-        context = browser.new_context(
-
-            user_agent=USER_AGENT,
-
-            locale="ja-JP",
+            document_type=DOCUMENT_OUTPUT,
 
         )
 
-        page = context.new_page()
+        .values_list(
 
-        for document in documents:
+            "document_key",
 
-            document_key = document.document_key
+            flat=True,
 
-            if (
+        )
 
-                not force
+    )
 
-                and exists(
+    success: list[str] = []
 
-                    document_key,
+    failed: list[tuple[str, str]] = []
 
-                )
+    runtimes: list[dict] = []
 
-            ):
+    # --------------------------------------------------------------------------
+    # Parse
+    # --------------------------------------------------------------------------
 
-                print(
+    for document in documents:
 
-                    f"[CACHE] {document_key}"
+        document_key = document.document_key
 
-                )
+        if (
 
-                success.append(
+            not force
 
-                    document_key,
+            and document_key in existing_keys
 
-                )
-
-                continue
+        ):
 
             print(
+
+                f"[CACHE] {document_key}"
+
+            )
+
+            success.append(
 
                 document_key,
 
             )
 
-            try:
+            continue
 
-                catalog_runtime = json.loads(
+        print(
 
-                    document.content,
+            document_key,
+
+        )
+
+        try:
+
+            soup = BeautifulSoup(
+
+                document.content,
+
+                "html.parser",
+
+            )
+
+            page_cards = soup.select(
+
+                ".mdl-card",
+
+            )
+
+            print(
+
+                f"  HTML Cards : {len(page_cards)}"
+
+            )
+
+            if (
+
+                document_key == "full"
+
+            ):
+
+                print(
+
+                    f"  HTML Size  : {len(document.content):,}"
 
                 )
 
-                cards = []
+            cards = []
 
-                for page_runtime in catalog_runtime["pages"]:
+            for card in page_cards:
 
-                    page.goto(
-
-                        page_runtime["url"],
-
-                        wait_until="networkidle",
-
-                        timeout=TIMEOUT * 1000,
-
-                    )
-
-                    html = page.content()
-
-                    soup = BeautifulSoup(
-
-                        html,
-
-                        "html.parser",
-
-                    )
-
-                    page_cards = soup.select(
-
-                        ".mdl-card",
-
-                    )
-
-                    print(
-
-                        f"  Page {page_runtime['page']:>2} : {len(page_cards)} cards"
-
-                    )
-
-                    for card in page_cards:
-
-                        cards.append(
-
-                            {
-
-                                "page": page_runtime["page"],
-
-                                "source_url": page_runtime["url"],
-
-                                "html": str(card),
-
-                            }
-
-                        )
-
-                runtimes.append(
+                cards.append(
 
                     {
 
-                        "document_key": document_key,
+                        "source_url": document.source_url,
 
-                        "runtime": {
-
-                            "document_key": document_key,
-
-                            "card_count": len(cards),
-
-                            "cards": cards,
-
-                        },
+                        "html": str(card),
 
                     }
 
                 )
 
-            except Exception as e:
+            print(
 
-                failed.append(
+                f"  Cards      : {len(cards)}"
 
-                    (
+            )
 
-                        document_key,
+            runtimes.append(
 
-                        str(e),
+                {
 
-                    )
+                    "document_key": document_key,
+
+                    "runtime": {
+
+                        "document_key": document_key,
+
+                        "card_count": len(cards),
+
+                        "cards": cards,
+
+                    },
+
+                }
+
+            )
+
+        except Exception as e:
+
+            failed.append(
+
+                (
+
+                    document_key,
+
+                    str(e),
 
                 )
 
-                print(
+            )
 
-                    f"  ERROR : {e}"
+            print(
 
-                )
+                f"  ERROR : {e}"
 
-            print()
+            )
 
-        context.close()
+        print()
 
-        browser.close()
-
-    # ----------------------------------------------------------
-    # ORMはPlaywright終了後
-    # ----------------------------------------------------------
+    # --------------------------------------------------------------------------
+    # ORM (WRITE ONLY)
+    # --------------------------------------------------------------------------
 
     for item in runtimes:
 
@@ -332,7 +326,9 @@ def discover(
 
         print(
 
-            f"{item['document_key']} : {'CREATED' if created else 'UPDATED'}"
+            f"{item['document_key']} : "
+
+            f"{'CREATED' if created else 'UPDATED'}"
 
         )
 
@@ -348,9 +344,17 @@ def discover(
 
     print("=" * 70)
 
-    print(f"SUCCESS : {len(success)}")
+    print(
 
-    print(f"FAILED  : {len(failed)}")
+        f"SUCCESS : {len(success)}"
+
+    )
+
+    print(
+
+        f"FAILED  : {len(failed)}"
+
+    )
 
     print("=" * 70)
 

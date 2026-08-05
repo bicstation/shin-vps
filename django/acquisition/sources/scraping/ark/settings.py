@@ -30,6 +30,8 @@ Reality Catalog
 
 from __future__ import annotations
 
+import platform
+
 from pathlib import Path
 
 # ==============================================================================
@@ -69,6 +71,46 @@ USER_AGENT = (
 )
 
 TIMEOUT = 30
+
+# ==============================================================================
+# Reality Runtime
+# ==============================================================================
+
+SYSTEM = platform.system()
+
+IS_WINDOWS = SYSTEM == "Windows"
+
+IS_LINUX = SYSTEM == "Linux"
+
+# ------------------------------------------------------------------------------
+# Reality Mode
+# ------------------------------------------------------------------------------
+
+if IS_WINDOWS:
+
+    REALITY_MODE = "export"
+
+elif IS_LINUX:
+
+    REALITY_MODE = "import"
+
+else:
+
+    REALITY_MODE = "export"
+
+print()
+
+print("=" * 70)
+
+print("🌍 REALITY MODE")
+
+print("=" * 70)
+
+print(f"Platform : {SYSTEM}")
+
+print(f"Mode     : {REALITY_MODE}")
+
+print("=" * 70)
 
 # ==============================================================================
 # Affiliate Runtime
