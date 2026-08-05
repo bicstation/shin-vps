@@ -18,6 +18,11 @@ class PCSpecPrompt:
             product.description
             or ""
         )[:2000]
+        
+        observation = (
+                    product.observation_runtime
+                    or ""
+                )[:2000]
 
         return f"""
 PC製品仕様を抽出してください。
@@ -39,6 +44,9 @@ URL:
 
 DESCRIPTION:
 {description}
+
+OBSERVATION:
+{observation}
 
 商品名・型番・メーカーを用いて、
 一意に特定できるメーカー公開仕様を採用してください。
