@@ -11,6 +11,7 @@ Responsibilities
 
 - Runtime Configuration
 - Fetch Runtime Configuration
+- Reality Runtime Configuration
 - Affiliate Runtime Configuration
 - Runtime Constants
 
@@ -37,6 +38,64 @@ from pathlib import Path
 # ==============================================================================
 
 BASE_DIR = Path(__file__).parent
+
+# ==============================================================================
+# Environment
+# ==============================================================================
+
+#
+# Marya Development
+#
+#     /home/maya/shin-vps
+#
+# Production Container
+#
+#     /usr/src/app
+#
+
+PROJECT_ROOT = Path(__file__).resolve()
+
+if "/usr/src/app" in str(PROJECT_ROOT):
+
+    RUNTIME = "vps"
+
+else:
+
+    RUNTIME = "local"
+
+# ==============================================================================
+# Reality Runtime
+# ==============================================================================
+
+if RUNTIME == "local":
+
+    REALITY_MODE = "export"
+
+elif RUNTIME == "vps":
+
+    REALITY_MODE = "import"
+
+else:
+
+    raise RuntimeError(
+
+        f"Unknown Runtime : {RUNTIME}"
+
+    )
+
+print()
+
+print("=" * 70)
+
+print("🌍 REALITY MODE")
+
+print("=" * 70)
+
+print(f"Runtime  : {RUNTIME}")
+
+print(f"Mode     : {REALITY_MODE}")
+
+print("=" * 70)
 
 # ==============================================================================
 # Site
