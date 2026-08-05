@@ -17,20 +17,6 @@ AcquisitionDocument (cards)
 
 Reality First
 Observation First
-
-Responsibilities
-
-- Discover Published Product Cards
-- Preserve Card Reality
-- Produce Card Runtime
-
-Not Responsibilities
-
-- Observation
-- Formatter
-- Mapper
-- Integration
-
 ==============================================================================
 """
 
@@ -38,8 +24,8 @@ from __future__ import annotations
 
 import json
 
-import requests
 from bs4 import BeautifulSoup
+from playwright.sync_api import sync_playwright
 
 from api.models.acquisition_document import AcquisitionDocument
 
@@ -52,10 +38,6 @@ from .settings import (
     USER_AGENT,
     TIMEOUT,
 )
-
-# ==============================================================================
-# Runtime
-# ==============================================================================
 
 SOURCE_TYPE = "scraping"
 
@@ -142,13 +124,11 @@ def discover(
     print(f"🃏 {SITE_NAME.upper()} CARD DISCOVERY")
     print("=" * 70)
 
-    headers = {
+    # ----------------------------------------------------------
+    # ORMはPlaywrightの前に完了
+    # ----------------------------------------------------------
 
-        "User-Agent": USER_AGENT,
-
-    }
-
-    documents = (
+    documents = list(
 
         AcquisitionDocument.objects
 
@@ -174,147 +154,198 @@ def discover(
 
     failed = []
 
-    for document in documents:
+    runtimes = []
 
-        document_key = document.document_key
+    with sync_playwright() as p:
 
-        if (
+        browser = p.chromium.launch(
 
-            not force
+            headless=True,
 
-            and exists(
-                document_key,
-            )
+        )
 
-        ):
+        context = browser.new_context(
+
+            user_agent=USER_AGENT,
+
+            locale="ja-JP",
+
+        )
+
+        page = context.new_page()
+
+        for document in documents:
+
+            document_key = document.document_key
+
+            if (
+
+                not force
+
+                and exists(
+
+                    document_key,
+
+                )
+
+            ):
+
+                print(
+
+                    f"[CACHE] {document_key}"
+
+                )
+
+                success.append(
+
+                    document_key,
+
+                )
+
+                continue
 
             print(
-                f"[CACHE] {document_key}",
-            )
 
-            success.append(
                 document_key,
-            )
-
-            continue
-
-        print(document_key)
-
-        try:
-
-            catalog_runtime = json.loads(
-
-                document.content,
 
             )
 
-            cards = []
+            try:
 
-            for page in catalog_runtime["pages"]:
+                catalog_runtime = json.loads(
 
-                response = requests.get(
-
-                    page["url"],
-
-                    headers=headers,
-
-                    timeout=TIMEOUT,
+                    document.content,
 
                 )
 
-                response.raise_for_status()
+                cards = []
 
-                soup = BeautifulSoup(
+                for page_runtime in catalog_runtime["pages"]:
 
-                    response.text,
+                    page.goto(
 
-                    "html.parser",
+                        page_runtime["url"],
+
+                        wait_until="networkidle",
+
+                        timeout=TIMEOUT * 1000,
+
+                    )
+
+                    html = page.content()
+
+                    soup = BeautifulSoup(
+
+                        html,
+
+                        "html.parser",
+
+                    )
+
+                    page_cards = soup.select(
+
+                        ".mdl-card",
+
+                    )
+
+                    print(
+
+                        f"  Page {page_runtime['page']:>2} : {len(page_cards)} cards"
+
+                    )
+
+                    for card in page_cards:
+
+                        cards.append(
+
+                            {
+
+                                "page": page_runtime["page"],
+
+                                "source_url": page_runtime["url"],
+
+                                "html": str(card),
+
+                            }
+
+                        )
+
+                runtimes.append(
+
+                    {
+
+                        "document_key": document_key,
+
+                        "runtime": {
+
+                            "document_key": document_key,
+
+                            "card_count": len(cards),
+
+                            "cards": cards,
+
+                        },
+
+                    }
 
                 )
 
-                page_cards = soup.select(
+            except Exception as e:
 
-                    ".mdl-card",
+                failed.append(
+
+                    (
+
+                        document_key,
+
+                        str(e),
+
+                    )
 
                 )
 
                 print(
 
-                    f"  Page {page['page']:>2} : {len(page_cards)} cards"
+                    f"  ERROR : {e}"
 
                 )
 
-                for card in page_cards:
+            print()
 
-                    cards.append(
+        context.close()
 
-                        {
+        browser.close()
 
-                            "page": page["page"],
+    # ----------------------------------------------------------
+    # ORMはPlaywright終了後
+    # ----------------------------------------------------------
 
-                            "source_url": page["url"],
+    for item in runtimes:
 
-                            "html": str(card),
+        _, created = save_cards(
 
-                        }
+            document_key=item["document_key"],
 
-                    )
+            runtime=item["runtime"],
 
-            runtime = {
+        )
 
-                "document_key": document_key,
+        print(
 
-                "card_count": len(cards),
+            f"{item['document_key']} : {'CREATED' if created else 'UPDATED'}"
 
-                "cards": cards,
+        )
 
-            }
+        success.append(
 
-            _, created = save_cards(
+            item["document_key"],
 
-                document_key=document_key,
-
-                runtime=runtime,
-
-            )
-
-            print(
-
-                f"  Total : {len(cards)} cards"
-
-            )
-
-            print(
-
-                f"  Saved : {'CREATED' if created else 'UPDATED'}"
-
-            )
-
-            success.append(
-                document_key,
-            )
-
-        except Exception as e:
-
-            failed.append(
-
-                (
-                    document_key,
-                    str(e),
-                )
-
-            )
-
-            print(
-
-                f"  ERROR : {e}"
-
-            )
-
-        print()
+        )
 
     print("=" * 70)
+
     print("RESULT")
+
     print("=" * 70)
 
     print(f"SUCCESS : {len(success)}")

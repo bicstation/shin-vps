@@ -27,7 +27,7 @@ from __future__ import annotations
 
 import csv
 
-import requests
+from playwright.sync_api import sync_playwright
 
 from api.models import AcquisitionDocument
 
@@ -68,6 +68,95 @@ def load_catalogs() -> list[dict]:
 
 
 # ==============================================================================
+# Fetch
+# ==============================================================================
+
+def fetch_catalog_html(
+    catalogs: list[dict],
+) -> list[dict]:
+
+    results: list[dict] = []
+
+    with sync_playwright() as p:
+
+        browser = p.chromium.launch(
+
+            headless=True,
+
+        )
+
+        context = browser.new_context(
+
+            user_agent=USER_AGENT,
+
+            locale="ja-JP",
+
+        )
+
+        page = context.new_page()
+
+        for index, catalog in enumerate(
+
+            catalogs,
+
+            start=1,
+
+        ):
+
+            category = catalog["category"]
+
+            slug = catalog["slug"]
+
+            url = catalog["url"]
+
+            print(
+
+                f"[{index}/{len(catalogs)}] "
+
+                f"{category}"
+
+            )
+
+            page.goto(
+
+                url,
+
+                wait_until="networkidle",
+
+                timeout=TIMEOUT * 1000,
+
+            )
+
+            html = page.content()
+
+            print(
+
+                f"  HTML : {len(html):,} chars"
+
+            )
+
+            results.append(
+
+                {
+
+                    "slug": slug,
+
+                    "url": url,
+
+                    "html": html,
+
+                }
+
+            )
+
+        context.close()
+
+        browser.close()
+
+    return results
+
+
+# ==============================================================================
 # Runtime
 # ==============================================================================
 
@@ -93,47 +182,13 @@ def main(
 
     print()
 
-    headers = {
-
-        "User-Agent": USER_AGENT,
-
-    }
-
-    for index, catalog in enumerate(
+    results = fetch_catalog_html(
 
         catalogs,
 
-        start=1,
+    )
 
-    ):
-
-        category = catalog["category"]
-
-        slug = catalog["slug"]
-
-        url = catalog["url"]
-
-        print(
-
-            f"[{index}/{len(catalogs)}] "
-
-            f"{category}"
-
-        )
-
-        response = requests.get(
-
-            url,
-
-            headers=headers,
-
-            timeout=TIMEOUT,
-
-        )
-
-        response.raise_for_status()
-
-        html = response.text
+    for result in results:
 
         AcquisitionDocument.objects.update_or_create(
 
@@ -143,23 +198,17 @@ def main(
 
             document_type=DOCUMENT_TYPE,
 
-            document_key=slug,
+            document_key=result["slug"],
 
             defaults={
 
-                "source_url": url,
+                "source_url": result["url"],
 
                 "content_type": "text/html",
 
-                "content": html,
+                "content": result["html"],
 
             },
-
-        )
-
-        print(
-
-            f"  HTML : {len(html):,} chars"
 
         )
 
