@@ -44,16 +44,24 @@ BASE_DIR = Path(__file__).parent
 # ==============================================================================
 
 #
-# local
-#     Marya Development
+# Marya Development
 #
-# vps
-#     Production Runtime
+#     /home/maya/shin-vps
+#
+# Production Container
+#
+#     /usr/src/app
 #
 
-RUNTIME = "local"
+PROJECT_ROOT = Path(__file__).resolve()
 
-# RUNTIME = "vps"
+if "/usr/src/app" in str(PROJECT_ROOT):
+
+    RUNTIME = "vps"
+
+else:
+
+    RUNTIME = "local"
 
 # ==============================================================================
 # Reality Runtime
