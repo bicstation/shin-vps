@@ -81,7 +81,7 @@ def import_reality(
 
     files = sorted(
 
-        REALITY_DIR.glob("*.json")
+        REALITY_DIR.glob("page*.json")
 
     )
 

@@ -8,7 +8,8 @@ ARK Fetch Catalog Runtime
 Responsibilities
 
 - Load Reality Catalog
-- Fetch Catalog HTML
+- Discover Pagination
+- Fetch All Catalog Pages
 - Persist Catalog AcquisitionDocument
 
 Not Responsibilities
@@ -26,8 +27,10 @@ Not Responsibilities
 from __future__ import annotations
 
 import csv
+import re
 
-from playwright.sync_api import sync_playwright
+import requests
+from bs4 import BeautifulSoup
 
 from api.models import AcquisitionDocument
 
@@ -45,7 +48,6 @@ from .settings import (
 # ==============================================================================
 
 DOCUMENT_TYPE = "catalog"
-
 
 # ==============================================================================
 # Catalog
@@ -66,8 +68,86 @@ def load_catalogs() -> list[dict]:
 
         return list(reader)
 
+
 # ==============================================================================
 # Fetch
+# ==============================================================================
+
+def fetch_html(
+    session: requests.Session,
+    url: str,
+) -> tuple[str, BeautifulSoup]:
+
+    response = session.get(
+
+        url,
+
+        timeout=TIMEOUT,
+
+    )
+
+    html = response.text
+
+    soup = BeautifulSoup(
+
+        html,
+
+        "html.parser",
+
+    )
+
+    return html, soup
+
+
+# ==============================================================================
+# Pagination
+# ==============================================================================
+
+def discover_pages(
+    soup: BeautifulSoup,
+) -> int:
+
+    pages = {1}
+
+    for link in soup.select(
+
+        "a[href]",
+
+    ):
+
+        href = link.get(
+
+            "href",
+
+            "",
+
+        )
+
+        match = re.search(
+
+            r"[?&]page=(\d+)",
+
+            href,
+
+        )
+
+        if match:
+
+            pages.add(
+
+                int(
+
+                    match.group(1)
+
+                )
+
+            )
+
+    return max(pages)
+
+
+# ==============================================================================
+# Fetch Runtime
 # ==============================================================================
 
 def fetch_catalog_html(
@@ -76,83 +156,163 @@ def fetch_catalog_html(
 
     results: list[dict] = []
 
-    with sync_playwright() as p:
+    session = requests.Session()
 
-        browser = p.chromium.launch(
+    session.headers.update(
 
-            headless=True,
+        {
+
+            "User-Agent": USER_AGENT,
+
+        }
+
+    )
+
+    for catalog in catalogs:
+
+        category = catalog["category"]
+
+        url = catalog["url"]
+
+        print(
+
+            f"Category : {category}"
 
         )
 
-        context = browser.new_context(
+        print(
 
-            user_agent=USER_AGENT,
-
-            locale="ja-JP",
+            f"Entry URL: {url}"
 
         )
 
-        page = context.new_page()
+        print()
 
-        for index, catalog in enumerate(
+        # ----------------------------------------------------------------------
+        # First Page
+        # ----------------------------------------------------------------------
 
-            catalogs,
+        html, soup = fetch_html(
 
-            start=1,
+            session,
+
+            url,
+
+        )
+
+        title = (
+
+            soup.title.get_text(
+
+                strip=True,
+
+            )
+
+            if soup.title
+
+            else "(No Title)"
+
+        )
+
+        page_count = discover_pages(
+
+            soup,
+
+        )
+
+        print(
+
+            f"Title : {title}"
+
+        )
+
+        print(
+
+            f"Pages : {page_count}"
+
+        )
+
+        print()
+
+        # ----------------------------------------------------------------------
+        # Fetch All Pages
+        # ----------------------------------------------------------------------
+
+        for page in range(
+
+            1,
+
+            page_count + 1,
 
         ):
 
-            category = catalog["category"]
+            if page == 1:
 
-            slug = catalog["slug"]
+                page_url = url
 
-            url = catalog["url"]
+            else:
 
-            print(
+                separator = "&" if "?" in url else "?"
 
-                f"[{index}/{len(catalogs)}] "
+                page_url = (
 
-                f"{category}"
+                    f"{url}{separator}page={page}"
+
+                )
+
+            html, soup = fetch_html(
+
+                session,
+
+                page_url,
+
+            )
+
+            title = (
+
+                soup.title.get_text(
+
+                    strip=True,
+
+                )
+
+                if soup.title
+
+                else "(No Title)"
 
             )
 
             print(
 
-                f"  URL   : {url}"
-
-            )
-
-            page.goto(
-
-                url,
-
-                wait_until="domcontentloaded",
-
-                timeout=TIMEOUT * 1000,
-
-            )
-
-            page.wait_for_timeout(
-
-                3000,
+                f"[{page}/{page_count}]"
 
             )
 
             print(
 
-                f"  Title : {page.title()}"
+                f"  URL    : {page_url}"
 
             )
-
-            html = page.content()
 
             print(
 
-                f"  HTML  : {len(html):,} chars"
+                f"  Title  : {title}"
 
             )
 
-            if "Cloudflare" in page.title():
+            print(
+
+                f"  HTML   : {len(html):,} chars"
+
+            )
+
+            if (
+
+                "Cloudflare" in title
+
+                or "Attention Required" in title
+
+            ):
 
                 print(
 
@@ -164,9 +324,9 @@ def fetch_catalog_html(
 
                 {
 
-                    "slug": slug,
+                    "slug": f"page{page}",
 
-                    "url": url,
+                    "url": page_url,
 
                     "html": html,
 
@@ -174,9 +334,7 @@ def fetch_catalog_html(
 
             )
 
-        context.close()
-
-        browser.close()
+            print()
 
     return results
 
@@ -184,6 +342,7 @@ def fetch_catalog_html(
 # ==============================================================================
 # Runtime
 # ==============================================================================
+
 def main(
     *,
     method: str = "default",
@@ -206,31 +365,31 @@ def main(
 
     if REALITY_MODE == "import":
 
-        print("Reality Mode : IMPORT")
+        print(
 
-        print("Fetch Runtime Skipped")
+            "Reality Mode : IMPORT"
+
+        )
+
+        print(
+
+            "Fetch Runtime Skipped"
+
+        )
 
         print("=" * 70)
 
         return
 
-    # --------------------------------------------------------------------------
-    # Fetch Runtime
-    # --------------------------------------------------------------------------
-
-    print("Reality Mode : EXPORT")
-
-    print()
-
-    catalogs = load_catalogs()
-
     print(
 
-        f"Catalogs : {len(catalogs)}"
+        "Reality Mode : EXPORT"
 
     )
 
     print()
+
+    catalogs = load_catalogs()
 
     results = fetch_catalog_html(
 
@@ -269,7 +428,6 @@ def main(
     print("✅ CATALOG FETCH COMPLETE")
 
     print("=" * 70)
-    
 
 
 # ==============================================================================

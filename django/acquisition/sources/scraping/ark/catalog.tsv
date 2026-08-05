@@ -1,6 +1,2 @@
 category	brand	slug	url
-ゲーミングデスクトップ	ark	full	https://www.ark-pc.co.jp/bto/list/?list_tag=&sort_para=st_new
-ゲーミングノート	ark	sc_g_note	https://www.ark-pc.co.jp/bto/list/?list_tag=sc_g_note&sort_para=st_new
-デスクトップ	ark	sc_desktop	https://www.ark-pc.co.jp/bto/list/?list_tag=sc_desktop&sort_para=st_new
-ノート	ark	sc_note	https://www.ark-pc.co.jp/bto/list/?list_tag=sc_note&sort_para=st_new
-ワークステーション	ark	sc_workstation	https://www.ark-pc.co.jp/bto/list/?list_tag=sc_workstation&sort_para=st_new
+list	ark	page1	https://www.ark-pc.co.jp/bto/list/
