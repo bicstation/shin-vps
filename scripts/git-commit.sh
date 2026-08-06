@@ -540,6 +540,11 @@ sleep 3
 echo "Waiting GitHub Actions..."
 echo ""
 
+CURRENT_SHA="$(git rev-parse HEAD)"
+SHORT_SHA="$(git rev-parse --short HEAD)"
+
+echo "HEAD : ${SHORT_SHA}"
+
 RUN_ID=""
 
 for ((i=1; i<=MAX_WAIT; i++))
