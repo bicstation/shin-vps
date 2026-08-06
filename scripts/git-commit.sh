@@ -1,164 +1,630 @@
 #!/bin/bash
-# /home/maya/dev/shin-vps/scripts/git-commit.sh
-# ===================================================================
-# 🚀 SHIN-VPS v3 Git 統合デプロイスクリプト（完全版）
-# ===================================================================
+# ============================================================================
+# FILE:
+# scripts/git-commit.sh
+#
+# SHIN CORE LINX
+# Git Runtime
+#
+# Responsibilities
+#
+# - Git Commit
+# - Git Push
+# - Tag Deploy
+# - GitHub Actions Runtime
+# - Deploy Monitor
+# - Health Check
+#
+# Local Development Only
+# ============================================================================
 
-# --- [設定] 実行環境 ---
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-CURRENT_HOST=$(hostname)
-CURRENT_USER=$USER
+set -euo pipefail
 
-# プロジェクトルートの動的決定
-if [ -d "./.git" ]; then
-    PROJECT_ROOT="$(pwd)"
-elif [[ -d "/home/$CURRENT_USER/dev/shin-vps" ]]; then
-    PROJECT_ROOT="/home/$CURRENT_USER/dev/shin-vps"
-elif [[ -d "/home/$CURRENT_USER/shin-dev/shin-vps" ]]; then
-    PROJECT_ROOT="/home/$CURRENT_USER/shin-dev/shin-vps"
-else
-    echo "❌ プロジェクトルートが見つかりません。git initされているか確認してください。"
-    exit 1
-fi
+# ============================================================================
+# Runtime Constants
+# ============================================================================
 
-# --- [関数] ヘルプ表示 ---
-show_help() {
-    echo -e "\n\e[36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\e[0m"
-    echo -e "📖 \e[1mSHIN-VPS v3 デプロイ管理ツール\e[0m"
-    echo -e "\e[36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\e[0m"
-    echo -e "\n\e[33m【運用ルール】\e[0m"
-    echo "1. 修正はローカル（WSL2等）で行い、このスクリプトで push します。"
-    echo "2. タグ(v*)を打つことで GitHub Actions が VPS へデプロイします。"
-    echo "3. shared/ 等の変更も一括で管理可能です。"
-    echo -e "\n\e[32m【使用方法】\e[0m"
-    echo "  ./git-commit.sh            : コミット・タグ打ち開始"
-    echo "  ./git-commit.sh -h         : ヘルプ表示"
-    echo "  ./git-commit.sh rollback   : 過去タグでロールバック"
-    echo "  ./git-commit.sh -t v1.0.123 : 指定タグでデプロイ"
-    echo -e "\e[36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\e[0m\n"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+CURRENT_HOST="$(hostname)"
+CURRENT_USER="$USER"
+
+PROJECT_NAME="shin-vps"
+
+DEFAULT_BRANCH="main"
+
+WORKFLOW_NAME="SHIN CORE LINX｜Production Deploy"
+
+# ============================================================================
+# Runtime Colors
+# ============================================================================
+
+RED="\033[31m"
+GREEN="\033[32m"
+YELLOW="\033[33m"
+CYAN="\033[36m"
+BOLD="\033[1m"
+RESET="\033[0m"
+
+# ============================================================================
+# Banner
+# ============================================================================
+
+banner() {
+
+echo
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "🌌 SHIN CORE LINX"
+echo "Git Deploy Runtime"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo
+
 }
 
-if [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]]; then
-    show_help; exit 0
-fi
+# ============================================================================
+# Error
+# ============================================================================
 
-# --- VPS上での誤実行防止 ---
+die() {
+
+echo
+echo -e "${RED}❌ $1${RESET}"
+echo
+
+exit 1
+
+}
+
+# ============================================================================
+# Success
+# ============================================================================
+
+success() {
+
+echo
+echo -e "${GREEN}✅ $1${RESET}"
+echo
+
+}
+
+# ============================================================================
+# Warning
+# ============================================================================
+
+warning() {
+
+echo
+echo -e "${YELLOW}⚠ $1${RESET}"
+echo
+
+}
+
+# ============================================================================
+# Runtime Banner
+# ============================================================================
+
+banner
+
+# ============================================================================
+# Prevent Production Execution
+# ============================================================================
+
 if [[ "$CURRENT_HOST" == *"x162-43"* ]]; then
-    echo "❌ 警告: VPS (本番環境) です。ローカルから実行してください。"
-    exit 1
+
+die "Production VPS detected.
+Run this script from your development machine."
+
 fi
 
-cd "$PROJECT_ROOT" || { echo "❌ ディレクトリ $PROJECT_ROOT が見つかりません。"; exit 1; }
+# ============================================================================
+# Locate Project
+# ============================================================================
 
-# --- SSHエージェント起動 ---
-if ! ssh-add -l > /dev/null 2>&1; then
-    eval "$(ssh-agent -s)" > /dev/null 2>&1
-    [ -f "$HOME/.ssh/id_ed25519" ] && ssh-add "$HOME/.ssh/id_ed25519"
+if [[ -d "./.git" ]]; then
+
+PROJECT_ROOT="$(pwd)"
+
+elif [[ -d "/home/$CURRENT_USER/shin-dev/shin-vps/.git" ]]; then
+
+PROJECT_ROOT="/home/$CURRENT_USER/shin-dev/shin-vps"
+
+elif [[ -d "/home/$CURRENT_USER/dev/shin-vps/.git" ]]; then
+
+PROJECT_ROOT="/home/$CURRENT_USER/dev/shin-vps"
+
+else
+
+die "Unable to locate Git project."
+
 fi
 
-# --- タグ管理 ---
+cd "$PROJECT_ROOT"
+
+# ============================================================================
+# Runtime Checks
+# ============================================================================
+
+command -v git >/dev/null \
+    || die "Git not installed."
+
+command -v ssh >/dev/null \
+    || die "SSH not installed."
+
+command -v gh >/dev/null \
+    || die "GitHub CLI not installed."
+
+# ============================================================================
+# SSH Runtime
+# ============================================================================
+
+if ! ssh-add -l >/dev/null 2>&1
+then
+
+    eval "$(ssh-agent -s)" >/dev/null
+
+    if [[ -f "$HOME/.ssh/id_ed25519" ]]
+    then
+        ssh-add "$HOME/.ssh/id_ed25519"
+    fi
+
+fi
+
+# ============================================================================
+# Branch
+# ============================================================================
+
+BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+
+# ============================================================================
+# Tag Runtime
+# ============================================================================
+
 refresh_tag() {
-    git fetch --tags -f > /dev/null 2>&1
-    LATEST_TAG=$(git tag -l "v*" | sort -V | tail -n1)
-    [ -z "$LATEST_TAG" ] && LATEST_TAG="v3.0.0"
-    MAJOR_MINOR=$(echo "$LATEST_TAG" | cut -d. -f1-2)
-    PATCH=$(echo "$LATEST_TAG" | cut -d. -f3)
-    SUGGESTED_TAG="${MAJOR_MINOR}.$((PATCH + 1))"
+
+git fetch --tags -f >/dev/null 2>&1
+
+LATEST_TAG="$(git tag -l "v*" | sort -V | tail -n1)"
+
+if [[ -z "$LATEST_TAG" ]]
+then
+
+    LATEST_TAG="v1.0.0"
+
+fi
+
+MAJOR_MINOR="$(echo "$LATEST_TAG" | cut -d. -f1-2)"
+
+PATCH="$(echo "$LATEST_TAG" | cut -d. -f3)"
+
+SUGGESTED_TAG="${MAJOR_MINOR}.$((PATCH + 1))"
+
 }
 
 refresh_tag
-BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
 
-echo "---------------------------------------"
-echo "💻 実行環境: $CURRENT_HOST"
-echo "📂 プロジェクト: $PROJECT_ROOT"
-echo "🌿 ブランチ: $BRANCH | 現在: $LATEST_TAG"
-echo "🚀 推奨次回タグ: $SUGGESTED_TAG"
-echo "---------------------------------------"
+# ============================================================================
+# Runtime Information
+# ============================================================================
 
-# --- ロールバック処理 ---
-if [[ "$1" == "rollback" ]]; then
-    echo "🔄 過去タグでロールバックする場合はタグ名を指定:"
-    git tag -l "v*" | sort -V
-    read -p "タグ名: " R_TAG
-    if [[ -z "$R_TAG" ]]; then
-        echo "❌ タグが指定されませんでした。終了します。"
-        exit 1
-    fi
-    echo "⚡ ロールバック: $R_TAG"
-    git checkout "$R_TAG"
-    echo "✅ チェックアウト完了: $R_TAG"
-    exit 0
-fi
+echo "Environment : $CURRENT_HOST"
+echo "Project     : $PROJECT_NAME"
+echo "Directory   : $PROJECT_ROOT"
+echo "Branch      : $BRANCH"
 
-# --- タグ指定オプション ---
-if [[ "$1" == "-t" ]] && [[ -n "$2" ]]; then
-    SUGGESTED_TAG="$2"
-fi
+echo
 
-# --- 変更コミット ---
-if [ -z "$(git status --porcelain)" ]; then
-    echo "✨ 差分なし。タグ確認へ進みます。"
+echo "Current Tag : $LATEST_TAG"
+echo "Next Tag    : $SUGGESTED_TAG"
+
+echo
+# ============================================================================
+# Git Status
+# ============================================================================
+
+STATUS="$(git status --porcelain)"
+
+# ============================================================================
+# Commit Runtime
+# ============================================================================
+
+if [[ -z "$STATUS" ]]
+then
+
+echo "✨ No modified files."
+
 else
-    echo "📝 変更種別を選択:"
-    echo "1) feat : 新機能"
-    echo "2) fix  : 修正"
-    echo "3) infra: 基盤"
-    echo "4) chore: 雑用"
-    read -p "番号 (1-4): " TYPE_NUM
 
-    case $TYPE_NUM in
-        1) TYPE="feat" ;;
-        2) TYPE="fix" ;;
-        3) TYPE="infra" ;;
-        *) TYPE="chore" ;;
-    esac
+echo
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "📝 Commit Type"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-    echo -e "\n💬 メッセージを選択:"
-    echo "1) SHIN-VPS v3 環境構築とスクリプトの強化"
-    echo "2) Shared Library のパス調整と疎通確認"
-    echo "3) 自由入力"
-    read -p "選択 (1-3): " MSG_CHOICE
+echo "1) feat"
+echo "2) fix"
+echo "3) infra"
+echo "4) chore"
 
-    case $MSG_CHOICE in
-        1) USER_MSG="SHIN-VPS v3 環境構築とスクリプトの強化" ;;
-        2) USER_MSG="Shared Library のパス調整と疎通確認" ;;
-        *) read -p "メッセージ入力: " USER_MSG ;;
-    esac
+echo
 
-    refresh_tag
-    FULL_MESSAGE="[$SUGGESTED_TAG] $TYPE: $USER_MSG"
+read -rp "Select (1-4): " TYPE_NUMBER
 
-    echo "💾 Git Push 実行中..."
-    git add -A
-    git commit -m "$FULL_MESSAGE"
-    git push origin "$BRANCH"
+case "$TYPE_NUMBER" in
+
+1)
+TYPE="feat"
+;;
+
+2)
+TYPE="fix"
+;;
+
+3)
+TYPE="infra"
+;;
+
+*)
+TYPE="chore"
+;;
+
+esac
+
+echo
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "💬 Commit Message"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+echo "1) SHIN-VPS v3 環境構築とスクリプトの強化"
+
+echo "2) Shared Library の改善"
+
+echo "3) Deploy Runtime 改善"
+
+echo "4) Custom"
+
+echo
+
+read -rp "Select (1-4): " MESSAGE_NUMBER
+
+case "$MESSAGE_NUMBER" in
+
+1)
+
+MESSAGE="SHIN-VPS v3 環境構築とスクリプトの強化"
+
+;;
+
+2)
+
+MESSAGE="Shared Library の改善"
+
+;;
+
+3)
+
+MESSAGE="Deploy Runtime 改善"
+
+;;
+
+*)
+
+read -rp "Message : " MESSAGE
+
+;;
+
+esac
+
+refresh_tag
+
+COMMIT_MESSAGE="[$SUGGESTED_TAG] $TYPE: $MESSAGE"
+
+echo
+echo "Commit"
+echo "------"
+echo "$COMMIT_MESSAGE"
+echo
+
+git add -A
+
+git commit \
+    -m "$COMMIT_MESSAGE"
+
+git push \
+    origin \
+    "$BRANCH"
+
+success "Git Push Complete."
+
 fi
 
-# --- デプロイ ---
-if [[ "$BRANCH" == "main" || "$BRANCH" == "master" ]]; then
-    echo -e "\n🚀 デプロイ実行確認: $SUGGESTED_TAG"
-    read -p "GitHub Actions を起動して VPS へデプロイしますか？ (y/N): " DEPLOY_CONFIRM
-    
-    if [[ "$DEPLOY_CONFIRM" =~ ^[yY]$ ]]; then
-        git tag "$SUGGESTED_TAG"
-        if git push origin "$SUGGESTED_TAG"; then
-            echo "✅ タグ $SUGGESTED_TAG を送信しました。"
-            
-            if command -v gh &> /dev/null; then
-                echo "📡 Actions の進捗を監視します..."
-                sleep 3
-                gh run watch --exit-status
-                [ $? -eq 0 ] && echo "🎉 デプロイ成功！VPS側が更新されました。"
-            else
-                echo "💡 GitHub Actions でデプロイが開始されました。"
-            fi
-        else
-            echo "❌ タグ送信に失敗しました。"
-        fi
-    else
-        echo "☕ 終了します（コミットのみ完了）。"
-    fi  
+# ============================================================================
+# Deploy Confirmation
+# ============================================================================
+
+echo
+
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "🚀 Deploy"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+echo
+
+echo "Tag : $SUGGESTED_TAG"
+
+echo
+
+read -rp "Deploy to Production? (y/N): " DEPLOY
+
+if [[ ! "$DEPLOY" =~ ^[Yy]$ ]]
+then
+
+echo
+echo "Deployment skipped."
+echo
+
+exit 0
+
 fi
 
-echo -e "\n✅ スクリプト終了"
+# ============================================================================
+# Tag Runtime
+# ============================================================================
+
+if git rev-parse "$SUGGESTED_TAG" >/dev/null 2>&1
+then
+
+die "Tag already exists."
+
+fi
+
+git tag \
+    -a "$SUGGESTED_TAG" \
+    -m "$COMMIT_MESSAGE"
+
+git push \
+    origin \
+    "$SUGGESTED_TAG"
+
+success "Tag pushed."
+# ============================================================================
+# GitHub Actions Runtime
+# ============================================================================
+
+echo
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "📡 GitHub Actions Runtime"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo
+
+echo "Waiting GitHub Actions..."
+
+sleep 5
+
+# ============================================================================
+# Locate Workflow Run
+# ============================================================================
+
+RUN_ID=""
+
+for i in {1..12}
+do
+
+    RUN_ID="$(
+        gh run list \
+            --workflow "$WORKFLOW_NAME" \
+            --branch "$BRANCH" \
+            --limit 1 \
+            --json databaseId \
+            --jq '.[0].databaseId'
+    )"
+
+    if [[ -n "$RUN_ID" && "$RUN_ID" != "null" ]]
+    then
+        break
+    fi
+
+    echo "Waiting Workflow... ($i/12)"
+
+    sleep 5
+
+done
+
+# ============================================================================
+# Validation
+# ============================================================================
+
+if [[ -z "$RUN_ID" || "$RUN_ID" == "null" ]]
+then
+
+    die "Unable to locate GitHub Actions workflow."
+
+fi
+
+echo
+echo "Workflow Found"
+
+echo "Run ID : $RUN_ID"
+
+echo
+
+# ============================================================================
+# Watch Runtime
+# ============================================================================
+
+echo "Watching deployment..."
+echo
+
+if gh run watch "$RUN_ID" --exit-status
+then
+
+    success "GitHub Actions completed successfully."
+
+else
+
+    die "GitHub Actions failed."
+
+fi
+
+# ============================================================================
+# Workflow Summary
+# ============================================================================
+
+echo
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "📊 Workflow Summary"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo
+
+gh run view \
+    "$RUN_ID" \
+    --json \
+    status,\
+    conclusion,\
+    createdAt,\
+    updatedAt,\
+    displayTitle
+
+echo
+
+# ============================================================================
+# Commit Information
+# ============================================================================
+
+CURRENT_COMMIT="$(
+git rev-parse --short HEAD
+)"
+
+echo "Commit : $CURRENT_COMMIT"
+
+echo "Branch : $BRANCH"
+
+echo "Tag    : $SUGGESTED_TAG"
+
+echo
+
+# ============================================================================
+# Deploy Runtime Complete
+# ============================================================================
+
+success "Deployment Runtime Complete."
+
+# ============================================================================
+# GitHub Actions Runtime
+# ============================================================================
+
+echo
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "📡 GitHub Actions Runtime"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo
+
+echo "Waiting GitHub Actions..."
+
+sleep 5
+
+# ============================================================================
+# Locate Workflow Run
+# ============================================================================
+
+RUN_ID=""
+
+for i in {1..12}
+do
+
+    RUN_ID="$(
+        gh run list \
+            --workflow "$WORKFLOW_NAME" \
+            --branch "$BRANCH" \
+            --limit 1 \
+            --json databaseId \
+            --jq '.[0].databaseId'
+    )"
+
+    if [[ -n "$RUN_ID" && "$RUN_ID" != "null" ]]
+    then
+        break
+    fi
+
+    echo "Waiting Workflow... ($i/12)"
+
+    sleep 5
+
+done
+
+# ============================================================================
+# Validation
+# ============================================================================
+
+if [[ -z "$RUN_ID" || "$RUN_ID" == "null" ]]
+then
+
+    die "Unable to locate GitHub Actions workflow."
+
+fi
+
+echo
+echo "Workflow Found"
+
+echo "Run ID : $RUN_ID"
+
+echo
+
+# ============================================================================
+# Watch Runtime
+# ============================================================================
+
+echo "Watching deployment..."
+echo
+
+if gh run watch "$RUN_ID" --exit-status
+then
+
+    success "GitHub Actions completed successfully."
+
+else
+
+    die "GitHub Actions failed."
+
+fi
+
+# ============================================================================
+# Workflow Summary
+# ============================================================================
+
+echo
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "📊 Workflow Summary"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo
+
+gh run view \
+    "$RUN_ID" \
+    --json \
+    status,\
+    conclusion,\
+    createdAt,\
+    updatedAt,\
+    displayTitle
+
+echo
+
+# ============================================================================
+# Commit Information
+# ============================================================================
+
+CURRENT_COMMIT="$(
+git rev-parse --short HEAD
+)"
+
+echo "Commit : $CURRENT_COMMIT"
+
+echo "Branch : $BRANCH"
+
+echo "Tag    : $SUGGESTED_TAG"
+
+echo
+
+# ============================================================================
+# Deploy Runtime Complete
+# ============================================================================
+
+success "Deployment Runtime Complete."
