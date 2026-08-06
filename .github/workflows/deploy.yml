@@ -82,7 +82,7 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          # passphrase: ${{ secrets.SSH_PASSPHRASE }}
           port: 2222
           command_timeout: 90m
 
@@ -296,5 +296,5 @@ jobs:
             echo ""
             echo "=================================================="
             echo "✅ SHIN CORE LINX DEPLOY SUCCESS"
-            echo "=================================================="ontainer Status
+            echo "=================================================="
             echo ""
