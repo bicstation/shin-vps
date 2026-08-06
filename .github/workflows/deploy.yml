@@ -1,11 +1,8 @@
 name: SHIN CORE LINX｜Production Deploy
 
 on:
-
   push:
-
     tags:
-
       - 'v*'
 
 jobs:
@@ -17,13 +14,10 @@ jobs:
     timeout-minutes: 90
 
     env:
-
       PROJECT_NAME: shin-prod
-
       DEPLOY_PATH: /home/maya/shin-vps
 
       BASE_COMPOSE: docker-compose.yml
-
       PROD_COMPOSE: docker-compose.prod.yml
 
       ENV_FILE: .env.production
@@ -31,18 +25,15 @@ jobs:
     steps:
 
       # ==========================================================
-      # 📥 Checkout Repository
+      # 📥 Checkout
       # ==========================================================
-
       - name: 📥 Checkout Repository
-
         uses: actions/checkout@v4
 
       # ==========================================================
       # 🧹 Cleanup Local Artifacts
       # ==========================================================
-
-      - name: 🧹 Cleanup Local Artifacts
+      - name: 🧹 Cleanup Unnecessary Files
 
         run: |
 
@@ -58,49 +49,7 @@ jobs:
             */dist \
             */build
 
-          echo "✅ Local Cleanup Complete"
-
-      # ==========================================================
-      # 🧹 Cleanup VPS Source
-      # ==========================================================
-
-      - name: 🧹 Cleanup VPS Source
-
-        uses: appleboy/ssh-action@v1.0.3
-
-        with:
-
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          passphrase: ${{ secrets.SSH_PASSPHRASE }}
-          port: 2222
-
-          script: |
-
-            set -e
-
-            cd "${DEPLOY_PATH}"
-
-            echo ""
-            echo "=================================================="
-            echo "🧹 CLEANUP VPS SOURCE"
-            echo "=================================================="
-
-            find . \
-              -mindepth 1 \
-              -maxdepth 1 \
-              \
-              ! -name ".env.production" \
-              ! -name "postgres_data" \
-              ! -name "vps-data" \
-              ! -name "letsencrypt" \
-              ! -name "logs" \
-              \
-              -exec rm -rf {} +
-
-            echo ""
-            echo "✅ VPS Source Cleanup Complete"
+          echo "✅ Cleanup Complete"
 
       # ==========================================================
       # 🚀 Upload Source
@@ -116,13 +65,9 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           port: 2222
-
           source: "."
-
-          target: "${{ env.DEPLOY_PATH }}"
-
+          target: "/home/maya/shin-vps"
           strip_components: 0
-
           overwrite: true
 
       # ==========================================================
@@ -139,14 +84,13 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           port: 2222
-
           command_timeout: 90m
 
           script: |
 
             set -e
 
-            cd "${DEPLOY_PATH}"
+            cd /home/maya/shin-vps
 
             echo ""
             echo "=================================================="
@@ -161,7 +105,7 @@ jobs:
             echo "🌐 Preparing Shared Network..."
 
             docker network inspect shared-proxy >/dev/null 2>&1 || \
-              docker network create shared-proxy
+            docker network create shared-proxy
 
             echo "✅ Shared Network Ready"
 
@@ -172,9 +116,7 @@ jobs:
             echo ""
             echo "🧹 Cleaning Runtime Cache..."
 
-            find . \
-              -type d \
-              -name ".next" \
+            find . -type d -name ".next" \
               ! -path "./postgres_data/*" \
               ! -path "./vps-data/*" \
               -exec rm -rf {} + \
@@ -190,10 +132,10 @@ jobs:
             echo "📦 Building Containers..."
 
             docker compose \
-              -p "${PROJECT_NAME}" \
-              --env-file "${ENV_FILE}" \
-              -f "${BASE_COMPOSE}" \
-              -f "${PROD_COMPOSE}" \
+              -p shin-prod \
+              --env-file .env.production \
+              -f docker-compose.yml \
+              -f docker-compose.prod.yml \
               build \
               --parallel \
               --no-cache
@@ -208,16 +150,16 @@ jobs:
             echo "🚀 Starting Containers..."
 
             docker compose \
-              -p "${PROJECT_NAME}" \
-              --env-file "${ENV_FILE}" \
-              -f "${BASE_COMPOSE}" \
-              -f "${PROD_COMPOSE}" \
+              -p shin-prod \
+              --env-file .env.production \
+              -f docker-compose.yml \
+              -f docker-compose.prod.yml \
               up -d \
               --remove-orphans \
               --wait
 
             echo "✅ Containers Started"
-      
+
             # ==================================================
             # 📦 Django Migration
             # ==================================================
@@ -226,10 +168,10 @@ jobs:
             echo "📦 Running Migrations..."
 
             docker compose \
-              -p "${PROJECT_NAME}" \
-              --env-file "${ENV_FILE}" \
-              -f "${BASE_COMPOSE}" \
-              -f "${PROD_COMPOSE}" \
+              -p shin-prod \
+              --env-file .env.production \
+              -f docker-compose.yml \
+              -f docker-compose.prod.yml \
               exec -T django-v3 \
               python manage.py migrate --noinput
 
@@ -243,14 +185,25 @@ jobs:
             echo "🎨 Collecting Static..."
 
             docker compose \
-              -p "${PROJECT_NAME}" \
-              --env-file "${ENV_FILE}" \
-              -f "${BASE_COMPOSE}" \
-              -f "${PROD_COMPOSE}" \
+              -p shin-prod \
+              --env-file .env.production \
+              -f docker-compose.yml \
+              -f docker-compose.prod.yml \
               exec -T django-v3 \
               python manage.py collectstatic --noinput
 
             echo "✅ Static Complete"
+
+            # ==================================================
+            # 🩺 Health Check
+            # ==================================================
+
+            echo ""
+            echo "🩺 Running Health Checks..."
+
+            curl -k -f https://api.bicstation.com/admin/ || exit 1
+
+            echo "✅ Django Admin OK"
 
             # ==================================================
             # 🩺 Health Checks
@@ -274,6 +227,8 @@ jobs:
             curl -fsS https://bic-saving.com/ > /dev/null
             echo "✅ BIC SAVING OK"
 
+
+
             # ==================================================
             # 📊 Container Status
             # ==================================================
@@ -282,11 +237,12 @@ jobs:
             echo "📊 Container Status"
 
             docker compose \
-              -p "${PROJECT_NAME}" \
-              --env-file "${ENV_FILE}" \
-              -f "${BASE_COMPOSE}" \
-              -f "${PROD_COMPOSE}" \
+              -p shin-prod \
+              --env-file .env.production \
+              -f docker-compose.yml \
+              -f docker-compose.prod.yml \
               ps
+
 
             # ==================================================
             # 📄 Runtime Logs
@@ -296,51 +252,49 @@ jobs:
             echo "📄 Django Logs"
 
             docker compose \
-              -p "${PROJECT_NAME}" \
-              --env-file "${ENV_FILE}" \
-              -f "${BASE_COMPOSE}" \
-              -f "${PROD_COMPOSE}" \
+              -p shin-prod \
+              --env-file .env.production \
+              -f docker-compose.yml \
+              -f docker-compose.prod.yml \
               logs --tail=20 django-v3 || true
 
             echo ""
-            echo "📄 BIC STATION Logs"
+            echo "📄 Next.js Logs"
 
             docker compose \
-              -p "${PROJECT_NAME}" \
-              --env-file "${ENV_FILE}" \
-              -f "${BASE_COMPOSE}" \
-              -f "${PROD_COMPOSE}" \
-              logs --tail=20 next-bicstation-v3 || true
+              -p shin-prod \
+              --env-file .env.production \
+              -f docker-compose.yml \
+              -f docker-compose.prod.yml \
+              logs --tail=20 shoin-prod-next-bicstation-v3-1 || true
 
             echo ""
             echo "📄 Traefik Logs"
 
             docker compose \
-              -p "${PROJECT_NAME}" \
-              --env-file "${ENV_FILE}" \
-              -f "${BASE_COMPOSE}" \
-              -f "${PROD_COMPOSE}" \
+              -p shin-prod \
+              --env-file .env.production \
+              -f docker-compose.yml \
+              -f docker-compose.prod.yml \
               logs --tail=20 traefik || true
 
             # ==================================================
-            # 🧹 Docker Cleanup (Optional)
+            # 🧹 Docker Cleanup
             # ==================================================
 
             # echo ""
             # echo "🧹 Docker Cleanup"
-
             # docker image prune -af || true
             # docker builder prune -af || true
             # docker container prune -f || true
-
-            # echo "✅ Docker Cleanup Complete"
+            # echo "✅ Cleanup Complete"
 
             # ==================================================
-            # 🎉 Complete
+            # 🎉 Done
             # ==================================================
 
             echo ""
             echo "=================================================="
             echo "✅ SHIN CORE LINX DEPLOY SUCCESS"
-            echo "=================================================="
-
+            echo "=================================================="ontainer Status
+            echo ""
