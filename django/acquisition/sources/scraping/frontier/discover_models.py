@@ -113,7 +113,12 @@ def discover_desktop(
 
         for link in card.select("a[href]"):
             
+            link = card.select_one("a[href]")
+            if link is None:
+                continue
+            
             series_text = title.get_text(strip=True)
+            text = series_text
 
             vendor_text = ""
             chipset_text = ""
@@ -224,7 +229,7 @@ def discover():
             )
 
     rows.sort(
-        key=lambda row: row["slug"]
+        key=lambda row: row["model_slug"]
     )
 
     with MODEL_LIST_TSV.open(

@@ -342,9 +342,9 @@ run_django import_products linkshare api 36508
 
 
 run_django import_products lavie
-# run_django import_products ark
-# run_django import_products frontier
-run_django import_products geekom
+run_django import_products ark
+run_django import_products frontier
+# run_django import_products geekom
 run_django import_products tsukumo
 run_django import_products ozgaming
 
