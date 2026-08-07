@@ -1,39 +1,42 @@
 #!/usr/bin/env python3
 """
 ==============================================================================
-FRONTIER Runtime Pipeline
+FILE:
+    acquisition/sources/scraping/frontier/pipeline.py
 
-Reality Source
-        │
-        ▼
-Acquire Runtime
-        │
-        ▼
-Formatter Runtime
-        │
-        ▼
-Observation Runtime
-        │
-        ▼
-Mapper Runtime
-        │
-        ▼
-Integration Runtime
-        │
-        ▼
-PCProduct
+SHIN CORE LINX
+
+FRONTIER Acquisition Pipeline
+
+Reality Acquisition Framework
+
+                    Reality
+                       │
+                       ▼
+                 Fetch Runtime
+                       │
+                       ▼
+                Acquire Runtime
+                       │
+                       ▼
+             Observation Runtime
+                       │
+                       ▼
+               Formatter Runtime
+                       │
+                       ▼
+                 Mapper Runtime
+                       │
+                       ▼
+              Integration Runtime
+                       │
+                       ▼
+                   PCProduct
 
 Reality First
 Observation First
 Translation Authority
 Semantic Later
-
-Overview
-
-Execute the complete FRONTIER Runtime Pipeline.
-
-Each Runtime is responsible for exactly one stage
-of the acquisition lifecycle.
 
 Responsibilities
 
@@ -41,13 +44,14 @@ Responsibilities
 - Preserve Runtime Order
 - Coordinate Runtime Flow
 
-Not Responsibilities
+NOT Responsibilities
 
 - HTML Parsing
 - Reality Observation
 - Mapping
 - Product Building
 - Semantic Processing
+
 ==============================================================================
 """
 
@@ -57,20 +61,12 @@ from acquisition.common.trace.reality_trace import (
     trace_pipeline,
 )
 
-from .fetch_list import (
-    main as fetch_seed,
+from .discover_seed import (
+    main as discover_seed,
 )
 
-from .discover_series import (
-    main as discover_series,
-)
-
-from .discover_models import (
-    main as discover_models,
-)
-
-from .fetch_products import (
-    main as fetch_products,
+from .acquire_listing import (
+    main as acquire_listing,
 )
 
 from .observe import (
@@ -85,20 +81,61 @@ from .integration import (
     main as integration,
 )
 
+# ==============================================================================
+# Breakpoint
+# ==============================================================================
+
+BREAKPOINT = "acquire"
+
+# BREAKPOINT = "fetch"
+# BREAKPOINT = "acquire"
+# BREAKPOINT = "observation"
+# BREAKPOINT = "formatter"
+# BREAKPOINT = "mapper"
+# BREAKPOINT = "integration"
 
 # ==============================================================================
-# Pipeline Stage
+# Runtime Names
 # ==============================================================================
+
+PIPELINE_FETCH = "Fetch Runtime"
 
 PIPELINE_ACQUIRE = "Acquire Runtime"
 
 PIPELINE_OBSERVATION = "Observation Runtime"
+
+PIPELINE_FORMATTER = "Formatter Runtime"
 
 PIPELINE_MAPPER = "Mapper Runtime"
 
 PIPELINE_INTEGRATION = "Integration Runtime"
 
 PIPELINE_COMPLETE = "FRONTIER Runtime Complete"
+
+# ==============================================================================
+# Breakpoint
+# ==============================================================================
+
+def checkpoint(
+    name: str,
+) -> bool:
+    """
+    Runtime Breakpoint.
+    """
+
+    if BREAKPOINT != name:
+
+        return False
+
+    print()
+
+    print("=" * 70)
+
+    print(f"🛑 BREAKPOINT : {name}")
+
+    print("=" * 70)
+
+    return True
 
 
 # ==============================================================================
@@ -108,9 +145,10 @@ PIPELINE_COMPLETE = "FRONTIER Runtime Complete"
 def run_stage(
     title: str,
     runtime,
+    **kwargs,
 ) -> None:
     """
-    Execute a Runtime stage.
+    Execute Runtime Stage.
     """
 
     print()
@@ -123,126 +161,238 @@ def run_stage(
 
     print("=" * 70)
 
-    runtime()
+    runtime(
+        **kwargs,
+    )
 
 
 # ==============================================================================
-# Acquire Runtime
+# Runtime Wrappers
 # ==============================================================================
 
-def run_acquire() -> None:
+def run_fetch(
+    **kwargs,
+) -> None:
+    """
+    Execute Fetch Runtime.
+    """
+
+    discover_seed(
+        **kwargs,
+    )
+
+
+def run_acquire(
+    **kwargs,
+) -> None:
     """
     Execute Acquire Runtime.
     """
 
-    #
-    # Seed Discovery
-    #
-
-    fetch_seed()
-
-    #
-    # Runtime Discovery
-    #
-
-    discover_series()
-
-    discover_models()
-
-    #
-    # Product Acquisition
-    #
-
-    fetch_products()
+    acquire_listing(
+        **kwargs,
+    )
 
 
-# ==============================================================================
-# Observation Runtime
-# ==============================================================================
-
-def run_observation() -> None:
+def run_observation(
+    **kwargs,
+) -> None:
     """
     Execute Observation Runtime.
     """
 
-    observe()
+    observe(
+        **kwargs,
+    )
 
 
-# ==============================================================================
-# Mapper Runtime
-# ==============================================================================
+def run_formatter(
+    **kwargs,
+) -> None:
+    """
+    Execute Formatter Runtime.
+    """
 
-def run_mapper() -> None:
+    #
+    # Reserved
+    #
+    # Formatter Runtime will be implemented
+    # after Observation Runtime.
+    #
+
+    return
+
+
+def run_mapper(
+    **kwargs,
+) -> None:
     """
     Execute Mapper Runtime.
     """
 
-    mapper()
+    mapper(
+        **kwargs,
+    )
 
 
-# ==============================================================================
-# Integration Runtime
-# ==============================================================================
-
-def run_integration() -> None:
+def run_integration(
+    **kwargs,
+) -> None:
     """
     Execute Integration Runtime.
     """
 
-    integration()
-
+    integration(
+        **kwargs,
+    )
 
 # ==============================================================================
 # Runtime Pipeline
 # ==============================================================================
 
-def run() -> None:
+def run(
+    **kwargs,
+) -> None:
     """
-    Execute the complete Runtime Pipeline.
+    Execute FRONTIER Runtime Pipeline.
     """
 
+    #
+    # Fetch Runtime
+    #
+
     run_stage(
+
+        PIPELINE_FETCH,
+
+        run_fetch,
+
+        **kwargs,
+
+    )
+
+    if checkpoint("fetch"):
+
+        return
+
+    #
+    # Acquire Runtime
+    #
+
+    run_stage(
+
         PIPELINE_ACQUIRE,
+
         run_acquire,
+
+        **kwargs,
+
     )
 
+    if checkpoint("acquire"):
+
+        return
+
+    #
+    # Observation Runtime
+    #
+
     run_stage(
+
         PIPELINE_OBSERVATION,
+
         run_observation,
+
+        **kwargs,
+
     )
 
+    if checkpoint("observation"):
+
+        return
+
+    #
+    # Formatter Runtime
+    #
+
     run_stage(
+
+        PIPELINE_FORMATTER,
+
+        run_formatter,
+
+        **kwargs,
+
+    )
+
+    if checkpoint("formatter"):
+
+        return
+
+    #
+    # Mapper Runtime
+    #
+
+    run_stage(
+
         PIPELINE_MAPPER,
+
         run_mapper,
+
+        **kwargs,
+
     )
 
+    if checkpoint("mapper"):
+
+        return
+
+    #
+    # Integration Runtime
+    #
+
     run_stage(
+
         PIPELINE_INTEGRATION,
+
         run_integration,
+
+        **kwargs,
+
     )
+
+    if checkpoint("integration"):
+
+        return
 
     print()
 
     print("=" * 70)
 
     trace_pipeline(
+
         PIPELINE_COMPLETE,
+
     )
 
     print("=" * 70)
-
 
 # ==============================================================================
 # Entry Point
 # ==============================================================================
 
-def main() -> None:
+def main(
+    **kwargs,
+) -> None:
     """
-    Runtime Entry Point.
+    FRONTIER Runtime Entry Point.
     """
 
-    run()
+    run(
+        **kwargs,
+    )
 
 
 if __name__ == "__main__":
+
     main()

@@ -81,7 +81,6 @@ from acquisition.common.trace.reality_trace import (
     trace_pipeline,
 )
 
-from .formatter_product import normalize
 
 
 # ==============================================================================
@@ -624,19 +623,13 @@ def run():
         )
 
         #
-        # Formatter Runtime
-        #
-
-        html = normalize(
-            document.content,
-        )
-
-        #
         # Observation Runtime
         #
 
         observation = observe(
-            html,
+
+            document.content,
+
         )
 
         #

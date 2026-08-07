@@ -45,7 +45,6 @@ Not Responsibilities
 
 from __future__ import annotations
 
-import csv
 import json
 
 from api.models import (
@@ -63,11 +62,9 @@ from imports.common.affiliate import (
 )
 
 from .settings import (
-    PRODUCT_LIST_TSV,
     SITE_NAME,
     AFFILIATE,
 )
-
 
 # ==============================================================================
 # Runtime
@@ -75,41 +72,6 @@ from .settings import (
 
 SOURCE_PREFIX = SITE_NAME.upper()
 
-
-# ==============================================================================
-# Runtime TSV
-# ==============================================================================
-
-def load_price_map() -> dict:
-    """
-    Load Runtime price information.
-
-    Returns
-
-        {
-            model_slug: price
-        }
-    """
-
-    with PRODUCT_LIST_TSV.open(
-        "r",
-        encoding="utf-8",
-        newline="",
-    ) as f:
-
-        return {
-
-            row["model_slug"]: row.get(
-                "price",
-                "",
-            )
-
-            for row in csv.DictReader(
-                f,
-                delimiter="\t",
-            )
-
-        }
 
 
 # ==============================================================================
@@ -684,8 +646,6 @@ def run():
     trace_pipeline(
         "Mapper",
     )
-
-    price_map = load_price_map()
 
     documents = (
 
