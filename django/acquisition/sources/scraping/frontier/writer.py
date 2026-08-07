@@ -114,6 +114,10 @@ def writer(
     updated = 0
 
     for contract in contracts:
+        
+        print("=" * 70)
+        print(contract["affiliate"])
+        print("=" * 70)
 
         is_created = save_contract(
 

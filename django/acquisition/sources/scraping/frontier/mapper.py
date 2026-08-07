@@ -50,7 +50,8 @@ from acquisition.common.trace.reality_trace import (
     trace_pipeline,
 )
 
-from imports.common.affiliate import (
+
+from acquisition.common.affiliate.affiliate import (
     generate_affiliate_url,
 )
 
@@ -311,6 +312,30 @@ def build_affiliate(
         "raw_detail_url"
 
     ]
+    
+    affiliate_url = generate_affiliate_url(
+
+        product_url,
+
+        AFFILIATE,
+
+    )
+
+    print("=" * 70)
+    print("AFFILIATE BUILDER")
+    print("=" * 70)
+    print("URL       :", product_url)
+    print("CONFIG    :", AFFILIATE)
+    print("GENERATED :", affiliate_url)
+    print("=" * 70)
+
+    return {
+
+        "original_url": product_url,
+
+        "url": affiliate_url,
+
+    }
 
     return {
 
