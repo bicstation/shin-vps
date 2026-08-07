@@ -69,6 +69,17 @@ class ImportRepository:
         unique_id = payload["unique_id"]
 
         defaults = payload.copy()
+        
+        # ------------------------------------------------------------------
+        # Reality Policy
+        #
+        # Products discovered through Acquisition are immediately publishable.
+        # AI Runtime and Semantic Runtime enrich the product later, but do not
+        # control its publication state.
+        # ------------------------------------------------------------------
+
+        defaults["is_active"] = True
+        defaults["is_posted"] = True
 
         defaults.pop(
             "unique_id",
