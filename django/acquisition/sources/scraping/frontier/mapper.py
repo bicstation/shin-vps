@@ -1,12 +1,19 @@
 #!/usr/bin/env python3
 """
 ==============================================================================
+FILE:
+    acquisition/sources/scraping/frontier/mapper.py
+
+SHIN CORE LINX
+
 FRONTIER Import Contract Mapper
 
-ObservationDocument
+Reality First Pipeline
+
+Runtime Contract
         │
         ▼
-Import Contract Mapper
+Import Contract
         │
         ▼
 ImportDocument
@@ -15,45 +22,31 @@ Reality First
 Observation First
 Translation Authority
 
-Overview
-
-Translate ObservationDocument into the SHIN CORE LINX
-Import Contract.
-
-This Runtime transforms observable Reality into a
-standardized import contract without generating
-semantic meaning.
-
 Responsibilities
 
+- Translate Runtime Contract
 - Build Import Contract
 - Build Identity Contract
 - Build Commerce Contract
 - Build Media Contract
 - Build Affiliate Contract
-- Preserve Observation Runtime
+- Build Observation Runtime
 
-Not Responsibilities
+NOT Responsibilities
 
 - HTML Parsing
 - Reality Observation
-- Semantic Classification
+- Formatter
 - Product Import
 - Database Processing
+- Semantic Processing
+
 ==============================================================================
 """
 
 from __future__ import annotations
 
-import json
-
-from api.models import (
-    ObservationDocument,
-    ImportDocument,
-)
-
 from acquisition.common.trace.reality_trace import (
-    trace_model,
     trace_pipeline,
 )
 
@@ -61,9 +54,13 @@ from imports.common.affiliate import (
     generate_affiliate_url,
 )
 
+from .formatter_cards import (
+    formatter,
+)
+
 from .settings import (
-    SITE_NAME,
     AFFILIATE,
+    SITE_NAME,
 )
 
 # ==============================================================================
@@ -71,7 +68,6 @@ from .settings import (
 # ==============================================================================
 
 SOURCE_PREFIX = SITE_NAME.upper()
-
 
 
 # ==============================================================================
@@ -82,243 +78,199 @@ def normalize_identifier(
     value: str,
 ) -> str:
     """
-    Normalize Runtime identifier.
+    Normalize Runtime Identifier.
     """
 
     return (
-        value.strip()
-        .replace(" ", "_")
-        .replace("/", "_")
+
+        value
+
+        .strip()
+
+        .replace(
+            " ",
+            "_",
+        )
+
+        .replace(
+            "/",
+            "_",
+        )
+
     )
 
 
 # ==============================================================================
-# Runtime Identity
+# Unique ID Builder
 # ==============================================================================
 
 def build_unique_id(
-    observation: dict,
-    *,
-    document_key: str,
+    runtime: dict,
 ) -> str:
     """
     Build Runtime Unique ID.
-
-    Priority
-
-        Product Code
-            ↓
-        Model Slug
-            ↓
-        Document Key
     """
 
-    product_code = (
-        observation.get(
-            "product_code",
-            "",
-        ).strip()
-    )
-
-    if product_code:
-
-        return (
-            f"{SOURCE_PREFIX}_"
-            f"{normalize_identifier(product_code)}"
-        )
-
-    model_slug = (
-        observation.get(
-            "model_slug",
-            "",
-        ).strip()
-    )
-
-    if model_slug:
-
-        return (
-            f"{SOURCE_PREFIX}_"
-            f"{normalize_identifier(model_slug)}"
-        )
-
     return (
+
         f"{SOURCE_PREFIX}_"
-        f"{normalize_identifier(document_key)}"
+
+        f"{normalize_identifier(runtime['raw_title'])}"
+
     )
-    
+
+# ==============================================================================
+# Specification Translator
+# ==============================================================================
+
+def translate_specifications(
+    runtime: dict,
+) -> dict:
+    """
+    Translate Published Specifications
+    into Observation Runtime.
+    """
+
+    observation = {
+
+        "os": "",
+
+        "cpu": "",
+
+        "cooler": "",
+
+        "case": "",
+
+        "chipset": "",
+
+        "memory": "",
+
+        "storage": "",
+
+        "gpu": "",
+
+        "power": "",
+
+        "wifi": "",
+
+        "guarantee": "",
+
+    }
+
+    for spec in runtime["raw_specs"]:
+
+        if "Windows" in spec:
+
+            observation["os"] = spec
+
+        elif "Core" in spec or "Ryzen" in spec:
+
+            observation["cpu"] = spec
+
+        elif "CPUクーラー" in spec:
+
+            observation["cooler"] = spec
+
+        elif "ケース" in spec:
+
+            observation["case"] = spec
+
+        elif "チップセット" in spec:
+
+            observation["chipset"] = spec
+
+        elif "メモリ" in spec:
+
+            observation["memory"] = spec
+
+        elif "SSD" in spec:
+
+            observation["storage"] = spec
+
+        elif "GeForce" in spec or "Radeon" in spec:
+
+            observation["gpu"] = spec
+
+        elif "電源" in spec:
+
+            observation["power"] = spec
+
+        elif "Wi-Fi" in spec or "Bluetooth" in spec:
+
+            observation["wifi"] = spec
+
+        elif "保証" in spec:
+
+            observation["guarantee"] = spec
+
+    return observation
+
+
 # ==============================================================================
 # Identity Builder
 # ==============================================================================
 
 def build_identity(
-    observation: dict,
-    *,
-    document_key: str,
+    runtime: dict,
 ) -> dict:
     """
     Build Identity Contract.
-
-    Identity represents the published identity
-    of the product.
-
-    No semantic classification is performed.
     """
 
     return {
 
-        #
-        # Runtime Identity
-        #
+        "unique_id":
 
-        "unique_id": build_unique_id(
-            observation,
-            document_key=document_key,
-        ),
+            build_unique_id(
+                runtime,
+            ),
 
-        #
-        # Source Identity
-        #
+        "maker":
 
-        "maker": SITE_NAME,
+            SITE_NAME,
 
-        "brand": observation.get(
-            "brand",
-            "",
-        ),
+        "brand": "",
 
-        "series": observation.get(
-            "series",
-            "",
-        ),
+        "series": "",
 
-        "category": observation.get(
-            "category",
-            "",
-        ),
+        "collaboration": "",
 
-        #
-        # Product Identity
-        #
+        "model": "",
 
-        "model_slug": observation.get(
-            "model_slug",
-            "",
-        ),
+        "product_no":
 
-        "product_code": observation.get(
-            "product_code",
-            "",
-        ),
+            runtime["raw_title"],
 
-        #
-        # Published Identity
-        #
+        "sku":
 
-        "product_name": observation.get(
-            "html_title",
-            "",
-        ),
+            runtime["raw_title"],
 
-        "product_url": observation.get(
-            "canonical_url",
-            "",
-        ),
+        "product_name":
+
+            runtime["raw_title"],
+
+        "product_url":
+
+            runtime["raw_detail_url"],
 
     }
-# ==============================================================================
-# JSON-LD Translator
-# ==============================================================================
-
-def parse_product_jsonld(
-    observation: dict,
-) -> dict:
-    """
-    Extract Product JSON-LD.
-
-    Returns the first Product object found in the
-    observed JSON-LD collection.
-
-    No translation beyond extraction is performed.
-    """
-
-    for script in observation.get(
-        "jsonld_scripts",
-        [],
-    ):
-
-        try:
-
-            data = json.loads(
-                script,
-            )
-
-        except Exception:
-
-            continue
-
-        if not isinstance(
-            data,
-            dict,
-        ):
-            continue
-
-        if data.get("@type") != "Product":
-            continue
-
-        return data
-
-    return {}
-
 
 # ==============================================================================
 # Commerce Builder
 # ==============================================================================
 
 def build_commerce(
-    observation: dict,
-    *,
-    price: str,
+    runtime: dict,
 ) -> dict:
     """
     Build Commerce Contract.
-
-    Priority
-
-        Runtime TSV
-            ↓
-        Product JSON-LD
-            ↓
-        Empty
     """
-
-    product = parse_product_jsonld(
-        observation,
-    )
-
-    offers = product.get(
-        "offers",
-        {},
-    )
 
     return {
 
-        "price": (
-            price
-            or offers.get(
-                "price",
-                "",
-            )
-        ),
+        "price":
 
-        "currency": offers.get(
-            "priceCurrency",
-            "",
-        ),
-
-        "availability": offers.get(
-            "availability",
-            "",
-        ),
+            runtime["raw_price"],
 
     }
 
@@ -328,389 +280,199 @@ def build_commerce(
 # ==============================================================================
 
 def build_media(
-    observation: dict,
+    runtime: dict,
 ) -> dict:
     """
     Build Media Contract.
-
-    Runtime Images
-
-        Observation Runtime
-            ↓
-        Product JSON-LD
     """
-
-    product = parse_product_jsonld(
-        observation,
-    )
-
-    image = (
-
-        observation.get(
-            "main_image",
-            "",
-        )
-
-        or
-
-        product.get(
-            "image",
-            "",
-        )
-
-    )
-
-    images = list(
-        observation.get(
-            "images",
-            [],
-        )
-    )
-
-    if image and image not in images:
-
-        images.insert(
-            0,
-            image,
-        )
 
     return {
 
-        "image_url": image,
+        "image_url":
 
-        "images": images,
-
-    }
-
-# ==============================================================================
-# JSON-LD Translator
-# ==============================================================================
-
-def parse_product_jsonld(
-    observation: dict,
-) -> dict:
-    """
-    Extract Product JSON-LD.
-
-    Returns the first Product object found in the
-    observed JSON-LD collection.
-
-    No translation beyond extraction is performed.
-    """
-
-    for script in observation.get(
-        "jsonld_scripts",
-        [],
-    ):
-
-        try:
-
-            data = json.loads(
-                script,
-            )
-
-        except Exception:
-
-            continue
-
-        if not isinstance(
-            data,
-            dict,
-        ):
-            continue
-
-        if data.get("@type") != "Product":
-            continue
-
-        return data
-
-    return {}
-
-
-# ==============================================================================
-# Commerce Builder
-# ==============================================================================
-
-def build_commerce(
-    observation: dict,
-    *,
-    price: str,
-) -> dict:
-    """
-    Build Commerce Contract.
-
-    Priority
-
-        Runtime TSV
-            ↓
-        Product JSON-LD
-            ↓
-        Empty
-    """
-
-    product = parse_product_jsonld(
-        observation,
-    )
-
-    offers = product.get(
-        "offers",
-        {},
-    )
-
-    return {
-
-        "price": (
-            price
-            or offers.get(
-                "price",
-                "",
-            )
-        ),
-
-        "currency": offers.get(
-            "priceCurrency",
-            "",
-        ),
-
-        "availability": offers.get(
-            "availability",
-            "",
-        ),
+            runtime["raw_image"],
 
     }
 
 
 # ==============================================================================
-# Media Builder
+# Affiliate Builder
 # ==============================================================================
 
-def build_media(
-    observation: dict,
+def build_affiliate(
+    runtime: dict,
 ) -> dict:
     """
-    Build Media Contract.
-
-    Runtime Images
-
-        Observation Runtime
-            ↓
-        Product JSON-LD
+    Build Affiliate Contract.
     """
 
-    product = parse_product_jsonld(
-        observation,
-    )
+    product_url = runtime[
 
-    image = (
+        "raw_detail_url"
 
-        observation.get(
-            "main_image",
-            "",
-        )
-
-        or
-
-        product.get(
-            "image",
-            "",
-        )
-
-    )
-
-    images = list(
-        observation.get(
-            "images",
-            [],
-        )
-    )
-
-    if image and image not in images:
-
-        images.insert(
-            0,
-            image,
-        )
+    ]
 
     return {
 
-        "image_url": image,
+        "original_url":
 
-        "images": images,
+            product_url,
+
+        "affiliate_url":
+
+            generate_affiliate_url(
+
+                product_url,
+
+                AFFILIATE,
+
+            ),
 
     }
+
+# ==============================================================================
+# Observation Runtime Builder
+# ==============================================================================
+
+def build_observation_runtime(
+    runtime: dict,
+) -> dict:
+    """
+    Build Observation Runtime.
+    """
+
+    return translate_specifications(
+
+        runtime,
+
+    )
 
 # ==============================================================================
 # Import Contract Builder
 # ==============================================================================
 
-def build_import_contract(
-    observation: dict,
-    *,
-    document_key: str,
-    price: str,
+def build_contract(
+    runtime: dict,
 ) -> dict:
     """
     Build Import Contract.
     """
 
-    product_url = observation.get(
-        "canonical_url",
-        "",
-    )
-
     return {
 
-        "identity": build_identity(
-            observation,
-            document_key=document_key,
-        ),
+        #
+        # Identity
+        #
 
-        "commerce": build_commerce(
-            observation,
-            price=price,
-        ),
+        "identity":
 
-        "media": build_media(
-            observation,
-        ),
+            build_identity(
 
-        "affiliate": build_affiliate(
-            product_url,
-        ),
+                runtime,
 
-        "specifications": observation.get(
-            "specifications",
-            {},
-        ),
+            ),
 
-        "observation_runtime": build_observation(
-            observation,
-        ),
+        #
+        # Commerce
+        #
+
+        "commerce":
+
+            build_commerce(
+
+                runtime,
+
+            ),
+
+        #
+        # Media
+        #
+
+        "media":
+
+            build_media(
+
+                runtime,
+
+            ),
+
+        #
+        # Affiliate
+        #
+
+        "affiliate":
+
+            build_affiliate(
+
+                runtime,
+
+            ),
+
+        #
+        # Observation Runtime
+        #
+
+        "observation_runtime":
+
+            build_observation_runtime(
+
+                runtime,
+
+            ),
 
     }
 
-# ==============================================================================
-# Import Document Persistence
-# ==============================================================================
-
-def save_import_document(
-    *,
-    document: ObservationDocument,
-    contract: dict,
-):
-    """
-    Persist Import Contract.
-
-    ImportDocument is the canonical translation
-    between Observation Runtime and Product Import.
-    """
-
-    obj, created = (
-
-        ImportDocument.objects
-
-        .update_or_create(
-
-            source_name=document.source_name,
-
-            document_type=document.document_type,
-
-            document_key=document.document_key,
-
-            defaults={
-
-                "contract": contract,
-
-            },
-
-        )
-
-    )
-
-    return obj, created
-
 
 # ==============================================================================
-# Runtime
+# Mapper Runtime
 # ==============================================================================
 
-def run():
+def mapper():
     """
     Execute Import Contract Mapper.
     """
 
-    print("=" * 70)
-    print(f"📦 {SITE_NAME} IMPORT CONTRACT MAPPER")
-    print("=" * 70)
-
     trace_pipeline(
-        "Mapper",
+        "MAPPER",
     )
 
-    documents = (
+    print("=" * 70)
+    print(f"{SITE_NAME} IMPORT CONTRACT MAPPER")
+    print("=" * 70)
 
-        ObservationDocument.objects
+    runtimes = formatter()
 
-        .filter(
+    contracts = []
 
-            source_name=SITE_NAME.lower(),
+    for runtime in runtimes:
 
-            document_type="product",
+        contract = build_contract(
 
-        )
-
-        .order_by(
-            "document_key",
-        )
-
-        .iterator()
-
-    )
-
-    success = 0
-
-    for document in documents:
-
-        observation = (
-            document.observation
-            or {}
-        )
-
-        contract = build_import_contract(
-
-            observation,
-
-            document_key=document.document_key,
-
-            price=price_map.get(
-                document.document_key,
-                "",
-            ),
+            runtime,
 
         )
 
-        obj, created = save_import_document(
+        contracts.append(
 
-            document=document,
-
-            contract=contract,
+            contract,
 
         )
 
-        trace_model(
-            "ImportDocument",
-            obj,
-        )
+        print(
 
-        success += 1
+            contract["identity"]["product_name"]
+
+        )
 
     print()
 
     print("=" * 70)
     print("RESULT")
     print("=" * 70)
-    print(f"SUCCESS : {success}")
+    print(f"Contracts : {len(contracts)}")
     print("=" * 70)
+
+    return contracts
 
 
 # ==============================================================================
@@ -722,8 +484,9 @@ def main():
     Runtime Entry Point.
     """
 
-    run()
+    return mapper()
 
 
 if __name__ == "__main__":
+
     main()

@@ -6,32 +6,38 @@ FILE:
 
 SHIN CORE LINX
 
-FRONTIER Acquisition Pipeline
+FRONTIER Runtime Pipeline
 
 Reality Acquisition Framework
 
-                    Reality
-                       │
-                       ▼
-                 Fetch Runtime
-                       │
-                       ▼
-                Acquire Runtime
-                       │
-                       ▼
-             Observation Runtime
-                       │
-                       ▼
-               Formatter Runtime
-                       │
-                       ▼
-                 Mapper Runtime
-                       │
-                       ▼
-              Integration Runtime
-                       │
-                       ▼
-                   PCProduct
+                        Reality
+                           │
+                           ▼
+                     Seed Runtime
+                           │
+                           ▼
+               Listing Acquire Runtime
+                           │
+                           ▼
+            Listing Observation Runtime
+                           │
+                           ▼
+                 Card Acquire Runtime
+                           │
+                           ▼
+              Card Observation Runtime
+                           │
+                           ▼
+               Card Formatter Runtime
+                           │
+                           ▼
+                    Mapper Runtime
+                           │
+                           ▼
+                 Integration Runtime
+                           │
+                           ▼
+                      PCProduct
 
 Reality First
 Observation First
@@ -48,6 +54,7 @@ NOT Responsibilities
 
 - HTML Parsing
 - Reality Observation
+- Runtime Formatting
 - Mapping
 - Product Building
 - Semantic Processing
@@ -69,48 +76,73 @@ from .acquire_listing import (
     main as acquire_listing,
 )
 
-from .observe import (
-    main as observe,
+from .observe_listing import (
+    main as observe_listing,
+)
+
+from .acquire_card import (
+    main as acquire_card,
+)
+
+from .observe_card import (
+    main as observe_card,
+)
+
+from .formatter_cards import (
+    main as formatter_cards,
 )
 
 from .mapper import (
     main as mapper,
 )
 
+from .writer import (
+    main as writer,
+)
+
 from .integration import (
     main as integration,
 )
-
 # ==============================================================================
 # Breakpoint
 # ==============================================================================
 
-BREAKPOINT = "acquire"
+BREAKPOINT = "integration"
 
-# BREAKPOINT = "fetch"
-# BREAKPOINT = "acquire"
-# BREAKPOINT = "observation"
+# BREAKPOINT = "seed"
+# BREAKPOINT = "acquire_listing"
+# BREAKPOINT = "observe_listing"
+# BREAKPOINT = "acquire_card"
+# BREAKPOINT = "observe_card"
 # BREAKPOINT = "formatter"
 # BREAKPOINT = "mapper"
+# BREAKPOINT = "writer"
 # BREAKPOINT = "integration"
 
 # ==============================================================================
 # Runtime Names
 # ==============================================================================
 
-PIPELINE_FETCH = "Fetch Runtime"
+PIPELINE_SEED = "Seed Runtime"
 
-PIPELINE_ACQUIRE = "Acquire Runtime"
+PIPELINE_ACQUIRE_LISTING = "Listing Acquire Runtime"
 
-PIPELINE_OBSERVATION = "Observation Runtime"
+PIPELINE_OBSERVE_LISTING = "Listing Observation Runtime"
 
-PIPELINE_FORMATTER = "Formatter Runtime"
+PIPELINE_ACQUIRE_CARD = "Card Acquire Runtime"
+
+PIPELINE_OBSERVE_CARD = "Card Observation Runtime"
+
+PIPELINE_FORMATTER = "Card Formatter Runtime"
 
 PIPELINE_MAPPER = "Mapper Runtime"
+
+PIPELINE_WRITER = "ImportDocument Writer Runtime"
 
 PIPELINE_INTEGRATION = "Integration Runtime"
 
 PIPELINE_COMPLETE = "FRONTIER Runtime Complete"
+
 
 # ==============================================================================
 # Breakpoint
@@ -164,17 +196,15 @@ def run_stage(
     runtime(
         **kwargs,
     )
-
-
 # ==============================================================================
 # Runtime Wrappers
 # ==============================================================================
 
-def run_fetch(
+def run_seed(
     **kwargs,
 ) -> None:
     """
-    Execute Fetch Runtime.
+    Execute Seed Runtime.
     """
 
     discover_seed(
@@ -182,11 +212,11 @@ def run_fetch(
     )
 
 
-def run_acquire(
+def run_acquire_listing(
     **kwargs,
 ) -> None:
     """
-    Execute Acquire Runtime.
+    Execute Listing Acquire Runtime.
     """
 
     acquire_listing(
@@ -194,14 +224,38 @@ def run_acquire(
     )
 
 
-def run_observation(
+def run_observe_listing(
     **kwargs,
 ) -> None:
     """
-    Execute Observation Runtime.
+    Execute Listing Observation Runtime.
     """
 
-    observe(
+    observe_listing(
+        **kwargs,
+    )
+
+
+def run_acquire_card(
+    **kwargs,
+) -> None:
+    """
+    Execute Card Acquire Runtime.
+    """
+
+    acquire_card(
+        **kwargs,
+    )
+
+
+def run_observe_card(
+    **kwargs,
+) -> None:
+    """
+    Execute Card Observation Runtime.
+    """
+
+    observe_card(
         **kwargs,
     )
 
@@ -210,30 +264,40 @@ def run_formatter(
     **kwargs,
 ) -> None:
     """
-    Execute Formatter Runtime.
+    Execute Card Formatter Runtime.
     """
 
-    #
-    # Reserved
-    #
-    # Formatter Runtime will be implemented
-    # after Observation Runtime.
-    #
-
-    return
-
+    formatter_cards(
+        **kwargs,
+    )
 
 def run_mapper(
     **kwargs,
-) -> None:
+):
     """
     Execute Mapper Runtime.
     """
 
-    mapper(
+    return mapper(
+
         **kwargs,
+
     )
 
+
+def run_writer(
+    contracts,
+):
+    """
+    Execute ImportDocument Writer Runtime.
+    """
+
+    return writer(
+
+        contracts,
+
+    )
+    
 
 def run_integration(
     **kwargs,
@@ -258,61 +322,97 @@ def run(
     """
 
     #
-    # Fetch Runtime
+    # Seed Runtime
     #
 
     run_stage(
 
-        PIPELINE_FETCH,
+        PIPELINE_SEED,
 
-        run_fetch,
+        run_seed,
 
         **kwargs,
 
     )
 
-    if checkpoint("fetch"):
+    if checkpoint("seed"):
 
         return
 
     #
-    # Acquire Runtime
+    # Listing Acquire Runtime
     #
 
     run_stage(
 
-        PIPELINE_ACQUIRE,
+        PIPELINE_ACQUIRE_LISTING,
 
-        run_acquire,
+        run_acquire_listing,
 
         **kwargs,
 
     )
 
-    if checkpoint("acquire"):
+    if checkpoint("acquire_listing"):
 
         return
 
     #
-    # Observation Runtime
+    # Listing Observation Runtime
     #
 
     run_stage(
 
-        PIPELINE_OBSERVATION,
+        PIPELINE_OBSERVE_LISTING,
 
-        run_observation,
+        run_observe_listing,
 
         **kwargs,
 
     )
 
-    if checkpoint("observation"):
+    if checkpoint("observe_listing"):
 
         return
 
     #
-    # Formatter Runtime
+    # Card Acquire Runtime
+    #
+
+    run_stage(
+
+        PIPELINE_ACQUIRE_CARD,
+
+        run_acquire_card,
+
+        **kwargs,
+
+    )
+
+    if checkpoint("acquire_card"):
+
+        return
+
+    #
+    # Card Observation Runtime
+    #
+
+    run_stage(
+
+        PIPELINE_OBSERVE_CARD,
+
+        run_observe_card,
+
+        **kwargs,
+
+    )
+
+    if checkpoint("observe_card"):
+
+        return
+
+    #
+    # Card Formatter Runtime
     #
 
     run_stage(
@@ -328,22 +428,58 @@ def run(
     if checkpoint("formatter"):
 
         return
-
+    
+    
     #
     # Mapper Runtime
     #
 
-    run_stage(
+    print()
+
+    print("=" * 70)
+
+    trace_pipeline(
 
         PIPELINE_MAPPER,
 
-        run_mapper,
+    )
+
+    print("=" * 70)
+
+    contracts = run_mapper(
 
         **kwargs,
 
     )
 
     if checkpoint("mapper"):
+
+        return
+
+
+    #
+    # ImportDocument Writer Runtime
+    #
+
+    print()
+
+    print("=" * 70)
+
+    trace_pipeline(
+
+        PIPELINE_WRITER,
+
+    )
+
+    print("=" * 70)
+
+    run_writer(
+
+        contracts=contracts,
+
+    )
+
+    if checkpoint("writer"):
 
         return
 
@@ -376,6 +512,7 @@ def run(
     )
 
     print("=" * 70)
+
 
 # ==============================================================================
 # Entry Point

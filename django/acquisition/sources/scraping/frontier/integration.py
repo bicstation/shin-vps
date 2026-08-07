@@ -81,9 +81,11 @@ def run() -> None:
     print(f"Affiliate   : {AFFILIATE['provider']}")
 
     print()
-
+    
     trace_pipeline(
-        "Integration",
+
+        "INTEGRATION",
+
     )
 
     documents = (
