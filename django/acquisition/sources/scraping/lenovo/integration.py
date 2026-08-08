@@ -1,7 +1,12 @@
 #!/usr/bin/env python3
 """
 ==============================================================================
-FRONTIER Integration Runtime
+FILE:
+    acquisition/sources/scraping/lenovo/integration.py
+
+SHIN CORE LINX
+
+LENOVO Integration Runtime
 
 ImportDocument
         │
@@ -18,44 +23,50 @@ Reality First
 Translation Authority
 Import Authority
 
-Overview
-
-Load ImportDocument and delegate product construction
-to ImportService.
-
-This Runtime coordinates the import process without
-performing mapping, semantic analysis, or product
-construction.
-
 Responsibilities
 
-- Load Import Documents
-- Execute Import Service
-- Report Runtime Result
+- Load Lenovo ImportDocument
+- Delegate to ImportService
+- Pass Lenovo integration configuration
+- Report Integration Result
 
-Not Responsibilities
+NOT Responsibilities
 
+- HTTP Acquisition
 - HTML Parsing
 - Reality Observation
+- Formatter
 - Mapping
+- Contract Building
+- Writer
 - Product Building
 - Semantic Processing
+
+==============================================================================
+
+Design Principle
+
+Integration coordinates.
+
+Integration does not construct meaning.
+
 ==============================================================================
 """
 
 from __future__ import annotations
 
+
 from api.models import (
     ImportDocument,
+)
+
+from acquisition.integration.import_service import (
+    ImportService,
 )
 
 from acquisition.common.trace.reality_trace import (
     trace_model,
     trace_pipeline,
-)
-
-from acquisition.integration.import_service import (
-    ImportService,
 )
 
 from .settings import (
@@ -65,52 +76,154 @@ from .settings import (
 
 
 # ==============================================================================
-# Runtime
+# Runtime Constants
 # ==============================================================================
 
-def run() -> None:
+SOURCE_NAME = SITE_NAME.lower()
+
+DOCUMENT_TYPE = "product"
+
+SOURCE_PREFIX = SITE_NAME.upper()
+
+
+# ==============================================================================
+# ImportDocument Loader
+# ==============================================================================
+
+def load_documents():
     """
-    Execute Integration Runtime.
+    Load Lenovo ImportDocuments.
+
+    Integration reads persisted Import Contracts only.
     """
 
-    print("=" * 70)
-    print(f"🔗 {SITE_NAME.upper()} INTEGRATION RUNTIME")
-    print("=" * 70)
-
-    print(f"Source      : {SITE_NAME}")
-    print(f"Affiliate   : {AFFILIATE['provider']}")
-
-    print()
-    
-    trace_pipeline(
-
-        "INTEGRATION",
-
-    )
-
-    documents = (
-
+    return (
         ImportDocument.objects
 
         .filter(
 
-            source_name=SITE_NAME.lower(),
+            source_name=SOURCE_NAME,
 
-            document_type="product",
+            document_type=DOCUMENT_TYPE,
 
         )
 
         .order_by(
+
             "document_key",
+
         )
 
         .iterator()
 
     )
 
-    #
-    # Import Runtime
-    #
+
+# ==============================================================================
+# Integration Result Reporter
+# ==============================================================================
+
+def report_result(
+    results,
+) -> None:
+    """
+    Report ImportService Runtime Result.
+
+    Reporting only.
+
+    No product processing.
+    """
+
+    print()
+
+    print("=" * 70)
+
+    print("INTEGRATION RESULT")
+
+    print("=" * 70)
+
+    print(
+        f"Loaded   : "
+        f"{getattr(results, 'loaded', 0)}"
+    )
+
+    print(
+        f"Created  : "
+        f"{getattr(results, 'created', 0)}"
+    )
+
+    print(
+        f"Updated  : "
+        f"{getattr(results, 'updated', 0)}"
+    )
+
+    if hasattr(
+        results,
+        "skipped",
+    ):
+
+        print(
+            f"Skipped  : "
+            f"{results.skipped}"
+        )
+
+    if hasattr(
+        results,
+        "failed",
+    ):
+
+        print(
+            f"Failed   : "
+            f"{results.failed}"
+        )
+
+    print("=" * 70)
+
+
+# ==============================================================================
+# Integration Runtime
+# ==============================================================================
+
+def run():
+    """
+    Execute Lenovo Integration Runtime.
+
+    Flow
+
+        ImportDocument
+                ↓
+        ImportService
+                ↓
+            Results
+
+    Integration does not perform product construction.
+    """
+
+    print()
+
+    print("=" * 70)
+
+    print(
+        f"🔗 {SITE_NAME.upper()} INTEGRATION RUNTIME"
+    )
+
+    print("=" * 70)
+
+    print(
+        f"Source    : {SITE_NAME}"
+    )
+
+    print(
+        f"Affiliate : {AFFILIATE['provider']}"
+    )
+
+    print()
+
+    trace_pipeline(
+        "INTEGRATION",
+    )
+
+    documents = load_documents()
 
     results = ImportService.run(
 
@@ -120,7 +233,7 @@ def run() -> None:
 
         maker=SITE_NAME,
 
-        prefix=SITE_NAME.upper(),
+        prefix=SOURCE_PREFIX,
 
     )
 
@@ -132,48 +245,31 @@ def run() -> None:
 
     )
 
-    print()
+    report_result(
 
-    print("=" * 70)
-    print("RESULT")
-    print("=" * 70)
-
-    print(f"Loaded   : {results.loaded}")
-    print(f"Created  : {results.created}")
-    print(f"Updated  : {results.updated}")
-
-    if hasattr(
         results,
-        "skipped",
-    ):
 
-        print(
-            f"Skipped  : {results.skipped}"
-        )
+    )
 
-    if hasattr(
-        results,
-        "failed",
-    ):
-
-        print(
-            f"Failed   : {results.failed}"
-        )
-
-    print("=" * 70)
+    return results
 
 
 # ==============================================================================
 # Entry Point
 # ==============================================================================
 
-def main() -> None:
+def main():
     """
     Runtime Entry Point.
     """
 
-    run()
+    return run()
 
+
+# ==============================================================================
+# Standalone Execution
+# ==============================================================================
 
 if __name__ == "__main__":
+
     main()

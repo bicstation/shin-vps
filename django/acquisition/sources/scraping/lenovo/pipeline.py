@@ -6,10 +6,12 @@ FILE:
 
 SHIN CORE LINX
 
-LENOVO Runtime Pipeline
+LENOVO OpenAPI Runtime Pipeline
 
 Reality First
 Observation First
+
+Pipeline
 
 Seed
     │
@@ -17,28 +19,68 @@ Seed
 OpenAPI Fetch
     │
     ▼
-OpenAPI Observe
+OpenAPI Observation
     │
     ▼
-Product Acquire
+OpenAPI Formatter
     │
     ▼
-Mapper
+OpenAPI Mapper
     │
     ▼
-Writer
+ImportDocument Writer
     │
     ▼
 Integration
+    │
+    ▼
+PCProduct
+
+Responsibilities
+
+- Coordinate Lenovo acquisition pipeline
+- Pass Runtime Contract between stages
+- Pass Import Contract between stages
+- Control Runtime Breakpoints
+- Report pipeline completion
+
+NOT Responsibilities
+
+- HTTP Acquisition
+- HTML Parsing
+- Reality Observation
+- Formatting
+- Mapping
+- Persistence
+- Product Building
+- Semantic Processing
+
+==============================================================================
+
+Important
+
+Pipeline is an orchestration layer.
+
+Pipeline does NOT rebuild Runtime data.
+
+Pipeline does NOT modify Contracts.
+
+Each Runtime owns its own responsibility.
 
 ==============================================================================
 """
 
 from __future__ import annotations
 
+
 from acquisition.common.trace.reality_trace import (
     trace_pipeline,
 )
+
+
+# ==============================================================================
+# Runtime Imports
+# ==============================================================================
 
 from .discover_seed import (
     main as discover_seed,
@@ -52,12 +94,12 @@ from .observe_openapi import (
     main as observe_openapi,
 )
 
-from .acquire_product import (
-    main as acquire_product,
+from .formatter_openapi import (
+    main as formatter_openapi,
 )
 
 from .mapper import (
-    main as mapper,
+    main as mapper_openapi,
 )
 
 from .writer import (
@@ -67,17 +109,19 @@ from .writer import (
 from .integration import (
     main as integration,
 )
+
+
 # ==============================================================================
 # Breakpoint
 # ==============================================================================
 
-BREAKPOINT = "observe_openapi"
+BREAKPOINT = "integration"
 
 # BREAKPOINT = "seed"
 # BREAKPOINT = "fetch_openapi"
 # BREAKPOINT = "observe_openapi"
-# BREAKPOINT = "acquire_product"
-# BREAKPOINT = "mapper"
+# BREAKPOINT = "formatter_openapi"
+# BREAKPOINT = "mapper_openapi"
 # BREAKPOINT = "writer"
 # BREAKPOINT = "integration"
 
@@ -98,12 +142,12 @@ PIPELINE_OBSERVE_OPENAPI = (
     "OpenAPI Observation Runtime"
 )
 
-PIPELINE_ACQUIRE_PRODUCT = (
-    "Product Acquire Runtime"
+PIPELINE_FORMATTER_OPENAPI = (
+    "OpenAPI Formatter Runtime"
 )
 
-PIPELINE_MAPPER = (
-    "Mapper Runtime"
+PIPELINE_MAPPER_OPENAPI = (
+    "OpenAPI Mapper Runtime"
 )
 
 PIPELINE_WRITER = (
@@ -117,6 +161,8 @@ PIPELINE_INTEGRATION = (
 PIPELINE_COMPLETE = (
     "LENOVO Runtime Complete"
 )
+
+
 # ==============================================================================
 # Breakpoint
 # ==============================================================================
@@ -144,39 +190,6 @@ def checkpoint(
 
     return True
 
-
-# ==============================================================================
-# Stage Runner
-# ==============================================================================
-
-def run_stage(
-    title: str,
-    runtime,
-    **kwargs,
-) -> None:
-    """
-    Execute Runtime Stage.
-    """
-
-    print()
-
-    print("=" * 70)
-
-    trace_pipeline(
-
-        title,
-
-    )
-
-    print("=" * 70)
-
-    runtime(
-
-        **kwargs,
-
-    )
-
-
 # ==============================================================================
 # Runtime Wrappers
 # ==============================================================================
@@ -189,9 +202,7 @@ def run_seed(
     """
 
     discover_seed(
-
         **kwargs,
-
     )
 
 
@@ -200,12 +211,15 @@ def run_fetch_openapi(
 ) -> dict:
     """
     Execute OpenAPI Fetch Runtime.
+
+    Returns
+    -------
+    dict
+        Lenovo OpenAPI Reality Runtime.
     """
 
     return fetch_openapi(
-
         **kwargs,
-
     )
 
 
@@ -218,69 +232,73 @@ def run_observe_openapi(
     """
 
     observe_openapi(
-
         runtime=runtime,
-
     )
 
 
-
-def run_acquire_product(
-    **kwargs,
-) -> None:
+def run_formatter_openapi() -> list[dict]:
     """
-    Execute Product Acquire Runtime.
-    """
+    Execute OpenAPI Formatter Runtime.
 
-    acquire_product(
-
-        **kwargs,
-
-    )
-
-def run_mapper(
-    **kwargs,
-):
-    """
-    Execute Mapper Runtime.
+    Returns
+    -------
+    list[dict]
+        Formatter Runtime Contracts.
     """
 
-    return mapper(
+    return formatter_openapi()
 
-        **kwargs,
 
+def run_mapper_openapi(
+    runtimes: list[dict],
+) -> list[dict]:
+    """
+    Execute OpenAPI Mapper Runtime.
+
+    Parameters
+    ----------
+    runtimes:
+        Formatter Runtime Contracts.
+
+    Returns
+    -------
+    list[dict]
+        Import Contracts.
+    """
+
+    return mapper_openapi(
+        runtimes=runtimes,
     )
 
 
 def run_writer(
-    contracts,
-):
+    contracts: list[dict],
+) -> dict:
     """
     Execute ImportDocument Writer Runtime.
+
+    Parameters
+    ----------
+    contracts:
+        Import Contracts produced by Mapper.
+
+    Returns
+    -------
+    dict
+        Writer Runtime result.
     """
 
     return writer(
-
         contracts=contracts,
-
     )
 
 
-def run_integration(
-    **kwargs,
-) -> None:
+def run_integration() -> object:
     """
     Execute Integration Runtime.
     """
 
-    integration(
-
-        **kwargs,
-
-    )
-
-
-
+    return integration()
 
 # ==============================================================================
 # Runtime Pipeline
@@ -293,213 +311,189 @@ def run(
     Execute LENOVO Runtime Pipeline.
     """
 
-    #
+    # --------------------------------------------------------------------------
     # Seed Runtime
-    #
+    # --------------------------------------------------------------------------
 
-    run_stage(
+    print()
 
+    print("=" * 70)
+
+    trace_pipeline(
         PIPELINE_SEED,
+    )
 
-        run_seed,
+    print("=" * 70)
 
+    run_seed(
         **kwargs,
-
     )
 
     if checkpoint("seed"):
 
         return
 
-
-    #
+    # --------------------------------------------------------------------------
     # OpenAPI Fetch Runtime
-    #
+    # --------------------------------------------------------------------------
 
     print()
 
     print("=" * 70)
 
     trace_pipeline(
-
         PIPELINE_FETCH_OPENAPI,
-
     )
 
     print("=" * 70)
 
     runtime = run_fetch_openapi(
-
         **kwargs,
-
     )
 
     if checkpoint("fetch_openapi"):
 
         return
 
-    #
-    # OpenAPI Fetch Runtime
-    #
-    
-    print()
-
-    print("=" * 70)
-
-    trace_pipeline(
-
-        PIPELINE_FETCH_OPENAPI,
-
-    )
-
-    print("=" * 70)
-
-    runtime = run_fetch_openapi(
-
-        **kwargs,
-
-    )
-
-    run_stage(
-
-        PIPELINE_FETCH_OPENAPI,
-
-        run_fetch_openapi,
-
-        **kwargs,
-
-    )
-
-    if checkpoint("fetch_openapi"):
-
-        return
-    
-    #
+    # --------------------------------------------------------------------------
     # OpenAPI Observation Runtime
-    #
+    # --------------------------------------------------------------------------
 
     print()
 
     print("=" * 70)
 
     trace_pipeline(
-
         PIPELINE_OBSERVE_OPENAPI,
-
     )
 
     print("=" * 70)
 
     run_observe_openapi(
-
         runtime=runtime,
-
     )
 
     if checkpoint("observe_openapi"):
 
         return
 
-    #
-    # Product Acquire Runtime
-    #
-
-    run_stage(
-
-        PIPELINE_ACQUIRE_PRODUCT,
-
-        run_acquire_product,
-
-        **kwargs,
-
-    )
-
-    if checkpoint("acquire_product"):
-
-        return
-    
-    #
-    # Mapper Runtime
-    #
+    # --------------------------------------------------------------------------
+    # OpenAPI Formatter Runtime
+    # --------------------------------------------------------------------------
 
     print()
 
     print("=" * 70)
 
     trace_pipeline(
-
-        PIPELINE_MAPPER,
-
+        PIPELINE_FORMATTER_OPENAPI,
     )
 
     print("=" * 70)
 
-    contracts = run_mapper(
+    runtimes = run_formatter_openapi()
 
-        **kwargs,
+    print()
 
+    print(
+        f"Formatted Products : "
+        f"{len(runtimes)}"
     )
 
-    if checkpoint("mapper"):
+    if checkpoint("formatter_openapi"):
 
         return
 
-    #
+    # --------------------------------------------------------------------------
+    # OpenAPI Mapper Runtime
+    # --------------------------------------------------------------------------
+
+    print()
+
+    print("=" * 70)
+
+    trace_pipeline(
+        PIPELINE_MAPPER_OPENAPI,
+    )
+
+    print("=" * 70)
+
+    contracts = run_mapper_openapi(
+        runtimes,
+    )
+
+    print()
+
+    print(
+        f"Import Contracts : "
+        f"{len(contracts)}"
+    )
+
+    if checkpoint("mapper_openapi"):
+
+        return
+
+    # --------------------------------------------------------------------------
     # ImportDocument Writer Runtime
-    #
+    # --------------------------------------------------------------------------
 
     print()
 
     print("=" * 70)
 
     trace_pipeline(
-
         PIPELINE_WRITER,
-
     )
 
     print("=" * 70)
 
-    run_writer(
-
-        contracts=contracts,
-
+    writer_result = run_writer(
+        contracts,
     )
 
     if checkpoint("writer"):
 
         return
 
-    #
+    # --------------------------------------------------------------------------
     # Integration Runtime
-    #
-
-    run_stage(
-
-        PIPELINE_INTEGRATION,
-
-        run_integration,
-
-        **kwargs,
-
-    )
-
-    if checkpoint("integration"):
-
-        return
+    # --------------------------------------------------------------------------
 
     print()
 
     print("=" * 70)
 
     trace_pipeline(
-
-        PIPELINE_COMPLETE,
-
+        PIPELINE_INTEGRATION,
     )
 
     print("=" * 70)
 
+    integration_result = run_integration()
+
+    if checkpoint("integration"):
+
+        return
+
+    # --------------------------------------------------------------------------
+    # Complete
+    # --------------------------------------------------------------------------
+
+    print()
+
+    print("=" * 70)
+
+    trace_pipeline(
+        PIPELINE_COMPLETE,
+    )
+
+    print("=" * 70)
+
+    print()
+
+    print(
+        "LENOVO PIPELINE COMPLETE"
+    )
 
 # ==============================================================================
 # Entry Point
@@ -517,7 +511,10 @@ def main(
     )
 
 
+# ==============================================================================
+# Standalone Execution
+# ==============================================================================
+
 if __name__ == "__main__":
 
     main()
-    

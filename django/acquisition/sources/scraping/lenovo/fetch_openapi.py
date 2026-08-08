@@ -1,5 +1,4 @@
-# /home/maya/shin-dev/shin-vps/django/acquisition/sources/scraping/lenovo/fetch_listing_api.py
-
+# /home/maya/shin-vps/django/acquisition/sources/scraping/lenovo/fetch_openapi.py
 #!/usr/bin/env python3
 """
 ==============================================================================
@@ -421,3 +420,4 @@ def main() -> dict:
 if __name__ == "__main__":
 
     main()
+    
