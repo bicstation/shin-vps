@@ -24,6 +24,11 @@ REALITY_RUNTIMES = {
         "FRONTIER",
         "acquisition.sources.scraping.frontier.run",
     ),
+    
+    "lenovo": (
+        "LENOVO",
+        "acquisition.sources.scraping.lenovo.run",
+    ),
 
     "ozgaming": (
         "OzGaming",
