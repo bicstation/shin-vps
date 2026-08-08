@@ -2,25 +2,25 @@
 """
 ==============================================================================
 FILE:
-    acquisition/sources/scraping/lenovo/import_reality.py
+    acquisition/sources/scraping/lenovo/export_reality.py
 
 SHIN CORE LINX
 
-LENOVO Reality Import Runtime
+LENOVO Reality Export Runtime
 
-Reality JSON
+AcquisitionDocument
         │
         ▼
-AcquisitionDocument
+Reality JSON
 
 Reality First
 Observation First
 
 Responsibilities
 
-- Import Reality Package
-- Restore AcquisitionDocument
+- Export AcquisitionDocument
 - Preserve Reality
+- Produce Reality Package
 
 NOT Responsibilities
 
@@ -48,13 +48,18 @@ from acquisition.common.trace.reality_trace import (
     trace_pipeline,
 )
 
-from .settings import (
+from ..settings import (
     SITE_NAME,
+    SOURCE_NAME,
 )
 
 # ==============================================================================
 # Runtime
 # ==============================================================================
+
+SOURCE_TYPE = "scraping"
+
+DOCUMENT_TYPE = "seed"
 
 REALITY_DIR = (
 
@@ -70,14 +75,14 @@ REALITY_DIR = (
 # Runtime
 # ==============================================================================
 
-def import_reality() -> None:
+def export() -> None:
     """
-    Import Reality Package.
+    Export Reality Package.
     """
 
     trace_pipeline(
 
-        "REALITY IMPORT",
+        "REALITY EXPORT",
 
     )
 
@@ -85,81 +90,93 @@ def import_reality() -> None:
 
     print("=" * 70)
 
-    print(f"📥 {SITE_NAME} REALITY IMPORT")
+    print(f"📦 {SITE_NAME} REALITY EXPORT")
 
     print("=" * 70)
 
-    if not REALITY_DIR.exists():
+    REALITY_DIR.mkdir(
 
-        print(
+        parents=True,
 
-            "Reality Directory Not Found"
+        exist_ok=True,
+
+    )
+
+    documents = (
+
+        AcquisitionDocument.objects
+
+        .filter(
+
+            source_type=SOURCE_TYPE,
+
+            source_name=SOURCE_NAME,
+
+            document_type=DOCUMENT_TYPE,
 
         )
 
-        return
+        .order_by(
 
-    files = sorted(
-
-        REALITY_DIR.glob(
-
-            "page*.json"
+            "document_key",
 
         )
 
     )
 
-    imported = 0
+    exported = 0
 
-    for file in files:
+    for document in documents:
 
-        runtime = json.loads(
+        output = (
 
-            file.read_text(
+            REALITY_DIR
 
-                encoding="utf-8",
-
-            )
+            / f"{document.document_key}.json"
 
         )
 
-        _, created = (
+        runtime = {
 
-            AcquisitionDocument.objects
+            "source_type": document.source_type,
 
-            .update_or_create(
+            "source_name": document.source_name,
 
-                source_type=runtime["source_type"],
+            "document_type": document.document_type,
 
-                source_name=runtime["source_name"],
+            "document_key": document.document_key,
 
-                document_type=runtime["document_type"],
+            "source_url": document.source_url,
 
-                document_key=runtime["document_key"],
+            "content_type": document.content_type,
 
-                defaults={
+            "content": document.content,
 
-                    "source_url": runtime["source_url"],
+        }
 
-                    "content_type": runtime["content_type"],
+        output.write_text(
 
-                    "content": runtime["content"],
+            json.dumps(
 
-                },
+                runtime,
 
-            )
+                ensure_ascii=False,
+
+                indent=2,
+
+            ),
+
+            encoding="utf-8",
 
         )
 
         print(
 
-            f"✓ {file.name} : "
-
-            f"{'CREATED' if created else 'UPDATED'}"
+            f"✓ {output.name}"
 
         )
 
-        imported += 1
+        exported += 1
 
     print()
 
@@ -169,10 +186,9 @@ def import_reality() -> None:
 
     print("=" * 70)
 
-    print(f"IMPORTED : {imported}")
+    print(f"EXPORTED : {exported}")
 
     print("=" * 70)
-
 
 # ==============================================================================
 # Entry Point
@@ -189,7 +205,7 @@ def main(
     Runtime Entry Point.
     """
 
-    import_reality()
+    export()
 
 
 if __name__ == "__main__":

@@ -1,3 +1,8 @@
 entry_name	maker	series	slug	runtime	url
 ThinkPad	LENOVO	ThinkPad	thinkpad	api	https://www.lenovo.com/jp/ja/laptops/results/?visibleDatas=2115%3AThinkPad
 Legion	LENOVO	Legion	legion	api	https://www.lenovo.com/jp/ja/laptops/results/?visibleDatas=2115%3ALegion
+Yoga	LENOVO	Yoga	yoga	api	https://www.lenovo.com/jp/ja/laptops/results/?visibleDatas=2115%3AYoga
+IdeaPad	LENOVO	IdeaPad	ideapad	api	https://www.lenovo.com/jp/ja/laptops/results/?visibleDatas=2115%3AIdeaPad
+ThinkBook	LENOVO	ThinkBook	thinkbook	api	https://www.lenovo.com/jp/ja/laptops/results/?visibleDatas=2115%3AThinkBook
+LOQ	LENOVO	LOQ	LOQ	api	https://www.lenovo.com/jp/ja/laptops/results/?visibleDatas=2115%3ALOQ
+Lenovo	LENOVO	Lenovo	lenovo	api	https://www.lenovo.com/jp/ja/laptops/results/?visibleDatas=2115%3ALenovo

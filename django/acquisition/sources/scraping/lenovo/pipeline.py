@@ -15,30 +15,25 @@
 #
 # Seed
 # │
-# ├───────────────┐
-# │               │
-# ▼               ▼
-# ThinkPad       Legion
-# │               │
-# ▼               ▼
-# OpenAPI Fetch  OpenAPI Fetch
-# │               │
-# ▼               ▼
-# Observation    Observation
-# └───────┬───────┘
-#         ▼
+# ▼
+# OpenAPI Fetch
+# │
+# ▼
+# OpenAPI Observation
+# │
+# ▼
 # OpenAPI Formatter
-#         │
-#         ▼
+# │
+# ▼
 # OpenAPI Mapper
-#         │
-#         ▼
+# │
+# ▼
 # ImportDocument Writer
-#         │
-#         ▼
+# │
+# ▼
 # Integration
-#         │
-#         ▼
+# │
+# ▼
 # PCProduct
 #
 # Responsibilities
@@ -59,6 +54,14 @@
 # - Persistence
 # - Product Building
 # - Semantic Processing
+#
+# IMPORTANT
+#
+# Pipeline does NOT iterate over individual Seeds.
+#
+# Pipeline passes collection Contracts between Runtime stages.
+#
+# Each Runtime owns processing of its own collection.
 #
 # ============================================================================
 
@@ -107,7 +110,7 @@ from .integration import (
 # Breakpoint
 # ============================================================================
 
-BREAKPOINT = "fetch_openapi"
+BREAKPOINT = "integration"
 
 # BREAKPOINT = "seed"
 # BREAKPOINT = "fetch_openapi"
@@ -196,7 +199,7 @@ def run_seed(
     Returns
     -------
     list[dict]
-        Lenovo Seed Reality.
+        Lenovo Seed Reality collection.
     """
 
     return discover_seed(
@@ -206,39 +209,53 @@ def run_seed(
 
 def run_fetch_openapi(
     *,
-    seed: dict,
+    seeds: list[dict],
     **kwargs,
-) -> dict:
+) -> list[dict]:
     """
     Execute OpenAPI Fetch Runtime.
 
     Parameters
     ----------
-    seed:
-        Lenovo Seed Reality.
+    seeds:
+        Lenovo Seed Reality collection.
 
     Returns
     -------
-    dict
-        Lenovo OpenAPI Reality Runtime.
+    list[dict]
+        Lenovo OpenAPI Reality Runtime collection.
+
+    NOTE
+    ----
+    The Fetch Runtime owns iteration over Seeds.
     """
 
     return fetch_openapi(
-        seed=seed,
+        seeds=seeds,
         **kwargs,
     )
 
 
 def run_observe_openapi(
     *,
-    runtime: dict,
+    runtimes: list[dict],
 ) -> None:
     """
     Execute OpenAPI Observation Runtime.
+
+    Parameters
+    ----------
+    runtimes:
+        Lenovo OpenAPI Reality Runtime collection.
+
+    NOTE
+    ----
+    The Observation Runtime owns iteration over
+    Reality Runtime entries.
     """
 
     observe_openapi(
-        runtime=runtime,
+        runtimes=runtimes,
     )
 
 
@@ -316,11 +333,25 @@ def run(
 ) -> None:
     """
     Execute LENOVO Runtime Pipeline.
+
+    Pipeline is an orchestration layer only.
+
+    Pipeline does NOT:
+
+    - iterate over individual Seeds
+    - fetch HTTP resources
+    - observe Reality
+    - format products
+    - map contracts
+    - write documents
+    - build products
+
+    Pipeline only passes Runtime Contracts between stages.
     """
 
-    # ------------------------------------------------------------------------
+    # ========================================================================
     # Seed Runtime
-    # ------------------------------------------------------------------------
+    # ========================================================================
 
     print()
 
@@ -352,105 +383,85 @@ def run(
             f"{seed.get('entry_name', '')}"
         )
 
-    if checkpoint("seed"):
+    if checkpoint(
+        "seed",
+    ):
 
         return
 
-    # ------------------------------------------------------------------------
-    # OpenAPI Fetch + Observation
+    # ========================================================================
+    # OpenAPI Fetch Runtime
     #
-    # Each Seed is an independent Reality Acquisition.
-    # ------------------------------------------------------------------------
+    # Pipeline passes the complete Seed collection.
+    #
+    # Fetch Runtime is responsible for processing each Seed.
+    # ========================================================================
 
-    for index, seed in enumerate(
-        seeds,
-        start=1,
+    print()
+
+    print("=" * 70)
+
+    trace_pipeline(
+        PIPELINE_FETCH_OPENAPI,
+    )
+
+    print("=" * 70)
+
+    runtimes = run_fetch_openapi(
+        seeds=seeds,
+        **kwargs,
+    )
+
+    print()
+
+    print(
+        f"OpenAPI Runtimes : "
+        f"{len(runtimes)}"
+    )
+
+    if checkpoint(
+        "fetch_openapi",
     ):
 
-        entry_name = seed.get(
-            "entry_name",
-            "",
-        )
+        return
 
-        series = seed.get(
-            "series",
-            "",
-        )
+    # ========================================================================
+    # OpenAPI Observation Runtime
+    #
+    # Pipeline passes the complete Reality collection.
+    #
+    # Observation Runtime is responsible for processing
+    # each Reality Runtime.
+    # ========================================================================
 
-        print()
+    print()
 
-        print("=" * 70)
+    print("=" * 70)
 
-        print(
-            f"🌐 LENOVO ACQUISITION "
-            f"[{index}/{len(seeds)}]"
-        )
+    trace_pipeline(
+        PIPELINE_OBSERVE_OPENAPI,
+    )
 
-        print(
-            f"Entry  : {entry_name}"
-        )
+    print("=" * 70)
 
-        print(
-            f"Series : {series}"
-        )
+    run_observe_openapi(
+        runtimes=runtimes,
+    )
 
-        print("=" * 70)
+    if checkpoint(
+        "observe_openapi",
+    ):
 
-        # --------------------------------------------------------------------
-        # OpenAPI Fetch Runtime
-        # --------------------------------------------------------------------
+        return
 
-        print()
-
-        print("=" * 70)
-
-        trace_pipeline(
-            PIPELINE_FETCH_OPENAPI,
-        )
-
-        print("=" * 70)
-
-        runtime = run_fetch_openapi(
-            seed=seed,
-            **kwargs,
-        )
-
-        if checkpoint(
-            "fetch_openapi",
-        ):
-
-            return
-
-        # --------------------------------------------------------------------
-        # OpenAPI Observation Runtime
-        # --------------------------------------------------------------------
-
-        print()
-
-        print("=" * 70)
-
-        trace_pipeline(
-            PIPELINE_OBSERVE_OPENAPI,
-        )
-
-        print("=" * 70)
-
-        run_observe_openapi(
-            runtime=runtime,
-        )
-
-        if checkpoint(
-            "observe_openapi",
-        ):
-
-            return
-
-    # ------------------------------------------------------------------------
+    # ========================================================================
     # OpenAPI Formatter Runtime
     #
     # All observed products are now available as
     # AcquisitionDocument(product).
-    # ------------------------------------------------------------------------
+    #
+    # Formatter owns its own collection processing.
+    # ========================================================================
 
     print()
 
@@ -462,13 +473,13 @@ def run(
 
     print("=" * 70)
 
-    runtimes = run_formatter_openapi()
+    formatted_runtimes = run_formatter_openapi()
 
     print()
 
     print(
         f"Formatted Products : "
-        f"{len(runtimes)}"
+        f"{len(formatted_runtimes)}"
     )
 
     if checkpoint(
@@ -477,9 +488,9 @@ def run(
 
         return
 
-    # ------------------------------------------------------------------------
+    # ========================================================================
     # OpenAPI Mapper Runtime
-    # ------------------------------------------------------------------------
+    # ========================================================================
 
     print()
 
@@ -492,7 +503,7 @@ def run(
     print("=" * 70)
 
     contracts = run_mapper_openapi(
-        runtimes,
+        formatted_runtimes,
     )
 
     print()
@@ -508,9 +519,9 @@ def run(
 
         return
 
-    # ------------------------------------------------------------------------
+    # ========================================================================
     # ImportDocument Writer Runtime
-    # ------------------------------------------------------------------------
+    # ========================================================================
 
     print()
 
@@ -539,9 +550,9 @@ def run(
 
         return
 
-    # ------------------------------------------------------------------------
+    # ========================================================================
     # Integration Runtime
-    # ------------------------------------------------------------------------
+    # ========================================================================
 
     print()
 
@@ -568,9 +579,9 @@ def run(
 
         return
 
-    # ------------------------------------------------------------------------
+    # ========================================================================
     # Complete
-    # ------------------------------------------------------------------------
+    # ========================================================================
 
     print()
 

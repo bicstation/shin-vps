@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 """
 ==============================================================================
 FILE:
@@ -8,7 +9,7 @@ SHIN CORE LINX
 
 LENOVO OpenAPI Observation Runtime
 
-OpenAPI Runtime
+OpenAPI Runtime Collection
         │
         ▼
 Observe Reality
@@ -22,10 +23,12 @@ Observation First
 
 Responsibilities
 
-- Receive OpenAPI Reality Runtime
+- Receive OpenAPI Reality Runtime Collection
+- Validate OpenAPI Reality Runtime Collection
 - Persist Seed Reality
 - Observe Product Reality
 - Persist Product AcquisitionDocument
+- Deduplicate Product Reality by URL
 
 NOT Responsibilities
 
@@ -36,10 +39,18 @@ NOT Responsibilities
 - Builder
 - Semantic Processing
 
+IMPORTANT
+
+Pipeline does NOT iterate over Reality Runtimes.
+
+Observation Runtime owns iteration over
+the OpenAPI Reality Runtime collection.
+
 ==============================================================================
 """
 
 from __future__ import annotations
+
 
 import json
 
@@ -47,13 +58,16 @@ from urllib.parse import (
     urlparse,
 )
 
+
 from api.models import (
     AcquisitionDocument,
 )
 
+
 from acquisition.common.trace.reality_trace import (
     trace_pipeline,
 )
+
 
 from .settings import (
     BASE_URL,
@@ -62,9 +76,9 @@ from .settings import (
 )
 
 
-# ==============================================================================
+# ============================================================================
 # Helpers
-# ==============================================================================
+# ============================================================================
 
 def absolute_url(
     href: str,
@@ -74,9 +88,11 @@ def absolute_url(
     """
 
     if not href:
+
         return ""
 
     if href.startswith("/"):
+
         return BASE_URL + href
 
     return href
@@ -95,23 +111,126 @@ def document_key(
 
     return path.rstrip("/").split("/")[-1]
 
-# ==============================================================================
+
+# ============================================================================
+# Runtime Validation
+# ============================================================================
+
+def validate_runtime(
+    runtime: dict,
+) -> None:
+    """
+    Validate one OpenAPI Reality Runtime.
+    """
+
+    if not isinstance(
+        runtime,
+        dict,
+    ):
+
+        raise RuntimeError(
+            "OpenAPI Runtime must be a dict."
+        )
+
+    required_fields = (
+        "entry_name",
+        "maker",
+        "series",
+        "slug",
+        "runtime",
+        "url",
+        "products",
+    )
+
+    missing = [
+
+        field
+
+        for field in required_fields
+
+        if field not in runtime
+
+    ]
+
+    if missing:
+
+        raise RuntimeError(
+            "OpenAPI Runtime missing fields: "
+            + ", ".join(missing)
+        )
+
+    products = runtime.get(
+        "products",
+    )
+
+    if not isinstance(
+        products,
+        list,
+    ):
+
+        raise RuntimeError(
+            "OpenAPI Runtime products must be a list."
+        )
+
+
+def validate_runtimes(
+    runtimes: list[dict],
+) -> None:
+    """
+    Validate OpenAPI Reality Runtime Collection.
+    """
+
+    if not isinstance(
+        runtimes,
+        list,
+    ):
+
+        raise RuntimeError(
+            "OpenAPI Runtimes must be a list."
+        )
+
+    if not runtimes:
+
+        raise RuntimeError(
+            "OpenAPI Runtime collection is empty."
+        )
+
+    for runtime in runtimes:
+
+        validate_runtime(
+            runtime,
+        )
+
+
+# ============================================================================
 # Seed Persistence
-# ==============================================================================
+# ============================================================================
 
 def save_seed_document(
     runtime: dict,
 ) -> tuple[AcquisitionDocument, bool]:
     """
-    Persist OpenAPI Reality Runtime as Seed Document.
+    Persist one OpenAPI Reality Runtime as Seed Document.
     """
 
     slug = runtime.get(
         "slug",
         "",
-    ).strip()
+    )
+
+    if not isinstance(
+        slug,
+        str,
+    ):
+
+        raise RuntimeError(
+            "OpenAPI Runtime slug must be a string."
+        )
+
+    slug = slug.strip()
 
     if not slug:
+
         raise RuntimeError(
             "OpenAPI Runtime slug is empty."
         )
@@ -134,22 +253,28 @@ def save_seed_document(
 
         defaults={
 
+            # Fetch Runtime uses "url".
+            #
+            # Do not expect "source_url" here.
             "source_url": runtime.get(
-                "source_url",
+                "url",
                 "",
             ),
 
-            "content_type": "application/json",
+            "content_type":
+                "application/json",
 
-            "content": content,
+            "content":
+                content,
 
         },
 
     )
 
-# ==============================================================================
+
+# ============================================================================
 # Product Persistence
-# ==============================================================================
+# ============================================================================
 
 def save_product_document(
     product: dict,
@@ -163,12 +288,17 @@ def save_product_document(
         "",
     )
 
-    if not isinstance(href, str):
+    if not isinstance(
+        href,
+        str,
+    ):
+
         return None, False
 
     href = href.strip()
 
     if not href:
+
         return None, False
 
     url = absolute_url(
@@ -176,6 +306,7 @@ def save_product_document(
     )
 
     if not url:
+
         return None, False
 
     key = document_key(
@@ -183,6 +314,7 @@ def save_product_document(
     )
 
     if not key:
+
         return None, False
 
     content = json.dumps(
@@ -204,11 +336,14 @@ def save_product_document(
 
             defaults={
 
-                "source_url": url,
+                "source_url":
+                    url,
 
-                "content_type": "application/json",
+                "content_type":
+                    "application/json",
 
-                "content": content,
+                "content":
+                    content,
 
             },
 
@@ -217,15 +352,27 @@ def save_product_document(
 
     return document, created
 
-# ==============================================================================
+
+# ============================================================================
 # Observation Runtime
-# ==============================================================================
+# ============================================================================
 
 def observe_openapi(
-    runtime: dict,
+    runtimes: list[dict],
 ) -> None:
     """
-    Observe and persist OpenAPI Reality Runtime.
+    Observe and persist OpenAPI Reality Runtime Collection.
+
+    Parameters
+    ----------
+    runtimes:
+        OpenAPI Reality Runtime collection.
+
+    IMPORTANT
+    ---------
+    This Runtime owns iteration over the collection.
+
+    Pipeline does not iterate over individual Runtimes.
     """
 
     trace_pipeline(
@@ -242,216 +389,346 @@ def observe_openapi(
 
     print("=" * 70)
 
-    # --------------------------------------------------------------------------
-    # Validate Runtime
-    # --------------------------------------------------------------------------
+    # ========================================================================
+    # Validate Collection
+    # ========================================================================
 
-    if not isinstance(
-        runtime,
-        dict,
-    ):
-        raise RuntimeError(
-            "OpenAPI Runtime must be a dict."
-        )
-
-    products = runtime.get(
-        "products",
-        [],
+    validate_runtimes(
+        runtimes,
     )
-
-    if not isinstance(
-        products,
-        list,
-    ):
-        raise RuntimeError(
-            "OpenAPI Runtime products must be a list."
-        )
-
-    # --------------------------------------------------------------------------
-    # Persist Seed
-    # --------------------------------------------------------------------------
-
-    seed_document, seed_created = save_seed_document(
-        runtime,
-    )
-
-    if seed_created:
-
-        print(
-            f"CREATE SEED : {seed_document.document_key}"
-        )
-
-    else:
-
-        print(
-            f"UPDATE SEED : {seed_document.document_key}"
-        )
-
-    # --------------------------------------------------------------------------
-    # Observe Products
-    # --------------------------------------------------------------------------
-
-    created_count = 0
-
-    updated_count = 0
-
-    skipped_count = 0
-
-    seen: set[str] = set()
 
     print()
 
     print(
-        f"Products : {len(products)}"
+        f"OpenAPI Runtimes : "
+        f"{len(runtimes)}"
     )
 
-    for index, product in enumerate(
-        products,
+    # ========================================================================
+    # Counters
+    # ========================================================================
+
+    seed_created_count = 0
+
+    seed_updated_count = 0
+
+    product_created_count = 0
+
+    product_updated_count = 0
+
+    skipped_count = 0
+
+    # ========================================================================
+    # Global Product Reality Deduplication
+    #
+    # A product may appear in multiple Lenovo category Runtimes.
+    #
+    # AcquisitionDocument identity is based on Product URL.
+    #
+    # Therefore one Product Reality is observed once.
+    # ========================================================================
+
+    seen: set[str] = set()
+
+    # ========================================================================
+    # Observe Runtime Collection
+    # ========================================================================
+
+    for runtime_index, runtime in enumerate(
+
+        runtimes,
+
         start=1,
+
     ):
 
-        if not isinstance(
-            product,
-            dict,
-        ):
-
-            skipped_count += 1
-
-            print(
-                f"SKIP [{index}] : invalid product"
-            )
-
-            continue
-
-        href = product.get(
-            "url",
+        entry_name = runtime.get(
+            "entry_name",
             "",
         )
 
-        if not isinstance(
-            href,
-            str,
-        ):
-
-            skipped_count += 1
-
-            print(
-                f"SKIP [{index}] : invalid URL"
-            )
-
-            continue
-
-        href = href.strip()
-
-        if not href:
-
-            skipped_count += 1
-
-            print(
-                f"SKIP [{index}] : empty URL"
-            )
-
-            continue
-
-        url = absolute_url(
-            href,
+        series = runtime.get(
+            "series",
+            "",
         )
 
-        if url in seen:
-
-            skipped_count += 1
-
-            continue
-
-        seen.add(
-            url,
+        products = runtime.get(
+            "products",
+            [],
         )
 
-        document, created = save_product_document(
-            product,
+        # --------------------------------------------------------------------
+        # Runtime Header
+        # --------------------------------------------------------------------
+
+        print()
+
+        print("=" * 70)
+
+        print(
+            f"LENOVO OBSERVATION "
+            f"[{runtime_index}/{len(runtimes)}]"
         )
 
-        if document is None:
+        print(
+            f"Entry    : {entry_name}"
+        )
 
-            skipped_count += 1
+        print(
+            f"Series   : {series}"
+        )
 
-            print(
-                f"SKIP [{index}] : document key unavailable"
+        print(
+            f"Products : {len(products)}"
+        )
+
+        print("=" * 70)
+
+        # --------------------------------------------------------------------
+        # Persist Seed Reality
+        # --------------------------------------------------------------------
+
+        seed_document, seed_created = (
+            save_seed_document(
+                runtime,
             )
+        )
 
-            continue
+        if seed_created:
 
-        if created:
-
-            created_count += 1
+            seed_created_count += 1
 
             print(
-                f"CREATE [{index:>3}] : "
-                f"{document.document_key}"
+                f"CREATE SEED : "
+                f"{seed_document.document_key}"
             )
 
         else:
 
-            updated_count += 1
+            seed_updated_count += 1
 
             print(
-                f"UPDATE [{index:>3}] : "
-                f"{document.document_key}"
+                f"UPDATE SEED : "
+                f"{seed_document.document_key}"
             )
 
-    # --------------------------------------------------------------------------
+        # --------------------------------------------------------------------
+        # Observe Product Reality
+        # --------------------------------------------------------------------
+
+        for index, product in enumerate(
+
+            products,
+
+            start=1,
+
+        ):
+
+            # ----------------------------------------------------------------
+            # Product Validation
+            # ----------------------------------------------------------------
+
+            if not isinstance(
+                product,
+                dict,
+            ):
+
+                skipped_count += 1
+
+                print(
+                    f"SKIP [{index:>3}] : "
+                    "invalid product"
+                )
+
+                continue
+
+            href = product.get(
+                "url",
+                "",
+            )
+
+            if not isinstance(
+                href,
+                str,
+            ):
+
+                skipped_count += 1
+
+                print(
+                    f"SKIP [{index:>3}] : "
+                    "invalid URL"
+                )
+
+                continue
+
+            href = href.strip()
+
+            if not href:
+
+                skipped_count += 1
+
+                print(
+                    f"SKIP [{index:>3}] : "
+                    "empty URL"
+                )
+
+                continue
+
+            url = absolute_url(
+                href,
+            )
+
+            if not url:
+
+                skipped_count += 1
+
+                print(
+                    f"SKIP [{index:>3}] : "
+                    "absolute URL unavailable"
+                )
+
+                continue
+
+            # ----------------------------------------------------------------
+            # Cross-Runtime Deduplication
+            # ----------------------------------------------------------------
+
+            if url in seen:
+
+                skipped_count += 1
+
+                continue
+
+            seen.add(
+                url,
+            )
+
+            # ----------------------------------------------------------------
+            # Persist Product Reality
+            # ----------------------------------------------------------------
+
+            document, created = (
+                save_product_document(
+                    product,
+                )
+            )
+
+            if document is None:
+
+                skipped_count += 1
+
+                print(
+                    f"SKIP [{index:>3}] : "
+                    "document key unavailable"
+                )
+
+                continue
+
+            if created:
+
+                product_created_count += 1
+
+                print(
+                    f"CREATE [{index:>3}] : "
+                    f"{document.document_key}"
+                )
+
+            else:
+
+                product_updated_count += 1
+
+                print(
+                    f"UPDATE [{index:>3}] : "
+                    f"{document.document_key}"
+                )
+
+    # ========================================================================
     # Result
-    # --------------------------------------------------------------------------
+    # ========================================================================
+
+    observed_count = (
+        product_created_count
+        + product_updated_count
+    )
 
     print()
 
     print("=" * 70)
 
-    print("RESULT")
-
-    print("=" * 70)
-
     print(
-        f"SEED    : 1"
-    )
-
-    print(
-        f"CREATED : {created_count}"
-    )
-
-    print(
-        f"UPDATED : {updated_count}"
-    )
-
-    print(
-        f"SKIPPED : {skipped_count}"
-    )
-
-    print(
-        f"OBSERVED: {created_count + updated_count}"
+        "LENOVO OPENAPI OBSERVATION RESULT"
     )
 
     print("=" * 70)
-    
-# ==============================================================================
+
+    print(
+        f"RUNTIMES        : "
+        f"{len(runtimes)}"
+    )
+
+    print(
+        f"SEEDS CREATED   : "
+        f"{seed_created_count}"
+    )
+
+    print(
+        f"SEEDS UPDATED   : "
+        f"{seed_updated_count}"
+    )
+
+    print(
+        f"PRODUCT CREATED : "
+        f"{product_created_count}"
+    )
+
+    print(
+        f"PRODUCT UPDATED : "
+        f"{product_updated_count}"
+    )
+
+    print(
+        f"SKIPPED         : "
+        f"{skipped_count}"
+    )
+
+    print(
+        f"OBSERVED        : "
+        f"{observed_count}"
+    )
+
+    print(
+        f"UNIQUE PRODUCTS : "
+        f"{len(seen)}"
+    )
+
+    print("=" * 70)
+
+
+# ============================================================================
 # Entry Point
-# ==============================================================================
+# ============================================================================
 
 def main(
     *,
-    runtime: dict,
+    runtimes: list[dict],
 ) -> None:
     """
     Runtime Entry Point.
+
+    Receives the complete OpenAPI Reality Runtime collection.
     """
 
     observe_openapi(
-        runtime=runtime,
+        runtimes=runtimes,
     )
 
+
+# ============================================================================
+# Standalone Execution
+# ============================================================================
 
 if __name__ == "__main__":
 
     raise SystemExit(
-        "observe_openapi.py requires an OpenAPI runtime."
-    ) 
+        "observe_openapi.py requires an OpenAPI runtime collection."
+    )

@@ -51,7 +51,7 @@ from acquisition.common.trace.reality_trace import (
     trace_pipeline,
 )
 
-from .settings import (
+from ..settings import (
     BASE_URL,
     SITE_NAME,
     SOURCE_NAME,

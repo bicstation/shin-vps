@@ -2,13 +2,13 @@
 
 # ============================================================================
 # FILE:
-# acquisition/sources/scraping/lenovo/fetch_listing_api.py
+# acquisition/sources/scraping/lenovo/fetch_openapi.py
 #
 # SHIN CORE LINX
 #
 # LENOVO OpenAPI Listing Fetch Runtime
 #
-# Seed
+# Seed Collection
 # │
 # ▼
 # Results Page
@@ -20,28 +20,37 @@
 # Lenovo OpenAPI
 # │
 # ▼
-# Reality JSON
+# Reality Runtime Collection
 #
 # Reality First
 # Observation First
 #
 # Responsibilities
 #
-# - Receive Lenovo Seed
-# - Fetch Lenovo Results Page
+# - Receive Lenovo Seed collection
+# - Validate Lenovo Seeds
+# - Fetch Lenovo Results Pages
 # - Discover pageFilterId
 # - Fetch Lenovo OpenAPI
 # - Discover Page Count
 # - Fetch All Pages
-# - Produce Reality Runtime
+# - Produce Reality Runtime collection
 #
 # NOT Responsibilities
 #
+# - Pipeline orchestration
 # - Formatter
 # - Mapper
 # - Builder
 # - Semantic Runtime
 # - Persistence
+#
+# IMPORTANT
+#
+# Pipeline does NOT iterate over Seeds.
+#
+# This Runtime owns iteration over the Seed collection.
+#
 # ============================================================================
 
 from __future__ import annotations
@@ -90,9 +99,7 @@ def validate_seed(
     seed: dict,
 ) -> None:
     """
-    Validate Lenovo Listing Seed.
-
-    Seed is the Runtime configuration source.
+    Validate one Lenovo Listing Seed.
 
     Required fields:
 
@@ -104,6 +111,15 @@ def validate_seed(
     - url
     """
 
+    if not isinstance(
+        seed,
+        dict,
+    ):
+
+        raise ValueError(
+            "LENOVO seed must be a dict."
+        )
+
     required = (
         "entry_name",
         "maker",
@@ -114,9 +130,13 @@ def validate_seed(
     )
 
     missing = [
+
         field
+
         for field in required
+
         if not seed.get(field)
+
     ]
 
     if missing:
@@ -132,6 +152,35 @@ def validate_seed(
             "LENOVO OpenAPI Runtime requires "
             f"runtime='api'. "
             f"Got: {seed['runtime']}"
+        )
+
+
+def validate_seeds(
+    seeds: list[dict],
+) -> None:
+    """
+    Validate Lenovo Seed collection.
+    """
+
+    if not isinstance(
+        seeds,
+        list,
+    ):
+
+        raise ValueError(
+            "LENOVO seeds must be a list."
+        )
+
+    if not seeds:
+
+        raise ValueError(
+            "LENOVO Seed collection is empty."
+        )
+
+    for seed in seeds:
+
+        validate_seed(
+            seed,
         )
 
 
@@ -189,15 +238,11 @@ def discover_page_filter_id(
     )
 
     facet_name = soup.select_one(
-
         "div.facetName",
-
     )
 
     facet_id = soup.select_one(
-
         "div.facetId",
-
     )
 
     if facet_name is None:
@@ -213,9 +258,7 @@ def discover_page_filter_id(
         )
 
     page_filter_id = facet_id.get_text(
-
         strip=True,
-
     )
 
     print(
@@ -366,39 +409,24 @@ def request_page(
 
 
 # ============================================================================
-# Runtime
+# Single Seed Fetch
 # ============================================================================
 
-def fetch(
+def fetch_seed(
     *,
+    session: requests.Session,
     seed: dict,
 ) -> dict:
     """
-    Execute Lenovo OpenAPI Listing Runtime.
+    Fetch one Lenovo Seed.
 
-    Seed-driven.
+    This function owns one Seed acquisition.
 
-    Flow
-
-        Seed
-          ↓
-        Results Page
-          ↓
-        pageFilterId
-          ↓
-        OpenAPI
-          ↓
-        All Pages
-          ↓
-        Reality Runtime
+    The collection-level fetch() owns iteration.
     """
 
     validate_seed(
         seed,
-    )
-
-    trace_pipeline(
-        "OPENAPI FETCH",
     )
 
     print()
@@ -426,27 +454,63 @@ def fetch(
 
     print("=" * 70)
 
-    with requests.Session() as session:
+    # ------------------------------------------------------------------------
+    # Discovery
+    # ------------------------------------------------------------------------
 
-        # --------------------------------------------------------------
-        # Discovery
-        # --------------------------------------------------------------
+    page_filter_id = (
+        discover_page_filter_id(
 
-        page_filter_id = (
-            discover_page_filter_id(
+            session,
 
-                session,
+            result_url=seed["url"],
 
-                result_url=seed["url"],
-
-            )
         )
+    )
 
-        # --------------------------------------------------------------
-        # First Page
-        #
-        # Used to discover pageCount.
-        # --------------------------------------------------------------
+    # ------------------------------------------------------------------------
+    # First Page
+    #
+    # Used to discover pageCount.
+    # ------------------------------------------------------------------------
+
+    runtime = request_page(
+
+        session,
+
+        result_url=seed["url"],
+
+        page_filter_id=page_filter_id,
+
+        series=seed["series"],
+
+        page=1,
+
+    )
+
+    page_count = (
+        runtime["data"]["pageCount"]
+    )
+
+    print()
+
+    print(
+        f"Page Count : {page_count}"
+    )
+
+    # ------------------------------------------------------------------------
+    # All Pages
+    # ------------------------------------------------------------------------
+
+    products = []
+
+    for page in range(
+
+        1,
+
+        page_count + 1,
+
+    ):
 
         runtime = request_page(
 
@@ -458,79 +522,39 @@ def fetch(
 
             series=seed["series"],
 
-            page=1,
+            page=page,
 
         )
 
-        page_count = (
-            runtime["data"]["pageCount"]
-        )
+        page_products = []
 
-        print()
-
-        print(
-            f"Page Count : {page_count}"
-        )
-
-        # --------------------------------------------------------------
-        # All Pages
-        # --------------------------------------------------------------
-
-        products = []
-
-        for page in range(
-
-            1,
-
-            page_count + 1,
-
+        for group in (
+            runtime["data"]["data"]
         ):
 
-            runtime = request_page(
+            page_products.extend(
 
-                session,
-
-                result_url=seed["url"],
-
-                page_filter_id=page_filter_id,
-
-                series=seed["series"],
-
-                page=page,
-
-            )
-
-            page_products = []
-
-            for group in (
-                runtime["data"]["data"]
-            ):
-
-                page_products.extend(
-
-                    group.get(
-                        "products",
-                        [],
-                    )
-
+                group.get(
+                    "products",
+                    [],
                 )
 
-            products.extend(
-
-                page_products,
-
             )
 
-            print(
+        products.extend(
+            page_products,
+        )
 
-                f"Page {page:>2} : "
-                f"{len(page_products)}"
+        print(
 
-            )
+            f"Page {page:>2} : "
+            f"{len(page_products)}"
 
-    # ==================================================================
-    # Result
-    # ==================================================================
+        )
+
+    # ------------------------------------------------------------------------
+    # Reality Runtime
+    # ------------------------------------------------------------------------
 
     print()
 
@@ -598,22 +622,141 @@ def fetch(
 
 
 # ============================================================================
+# Collection Runtime
+# ============================================================================
+
+def fetch(
+    *,
+    seeds: list[dict],
+) -> list[dict]:
+    """
+    Execute Lenovo OpenAPI Listing Runtime.
+
+    Collection Contract
+
+        Seed Collection
+              ↓
+        fetch_seed()
+              ↓
+        Reality Runtime Collection
+
+    The Pipeline does NOT iterate over Seeds.
+
+    This Runtime owns Seed iteration.
+    """
+
+    validate_seeds(
+        seeds,
+    )
+
+    trace_pipeline(
+        "OPENAPI FETCH",
+    )
+
+    print()
+
+    print("=" * 70)
+
+    print("LENOVO OPENAPI FETCH RUNTIME")
+
+    print("=" * 70)
+
+    print(
+        f"Seed Entries : {len(seeds)}"
+    )
+
+    print("=" * 70)
+
+    runtimes = []
+
+    with requests.Session() as session:
+
+        for index, seed in enumerate(
+
+            seeds,
+
+            start=1,
+
+        ):
+
+            print()
+
+            print(
+                "=" * 70
+            )
+
+            print(
+                f"LENOVO ACQUISITION "
+                f"[{index}/{len(seeds)}]"
+            )
+
+            print(
+                f"Entry  : "
+                f"{seed['entry_name']}"
+            )
+
+            print(
+                f"Series : "
+                f"{seed['series']}"
+            )
+
+            print(
+                "=" * 70
+            )
+
+            runtime = fetch_seed(
+
+                session=session,
+
+                seed=seed,
+
+            )
+
+            runtimes.append(
+                runtime,
+            )
+
+    # ========================================================================
+    # Collection Result
+    # ========================================================================
+
+    print()
+
+    print("=" * 70)
+
+    print("LENOVO OPENAPI FETCH COMPLETE")
+
+    print("=" * 70)
+
+    print(
+        f"Seeds   : {len(seeds)}"
+    )
+
+    print(
+        f"Runtime : {len(runtimes)}"
+    )
+
+    print("=" * 70)
+
+    return runtimes
+
+
+# ============================================================================
 # Entry Point
 # ============================================================================
 
 def main(
     *,
-    seed: dict,
-) -> dict:
+    seeds: list[dict],
+) -> list[dict]:
     """
     Runtime Entry Point.
 
-    Seed must be supplied by the
-    Lenovo Acquisition Runtime.
+    Receives the complete Lenovo Seed collection.
     """
 
     return fetch(
-        seed=seed,
+        seeds=seeds,
     )
 
 
@@ -623,32 +766,62 @@ def main(
 
 if __name__ == "__main__":
 
-    test_seed = {
+    test_seeds = [
 
-        "entry_name":
-            "ThinkPad",
+        {
 
-        "maker":
-            "LENOVO",
+            "entry_name":
+                "ThinkPad",
 
-        "series":
-            "ThinkPad",
+            "maker":
+                "LENOVO",
 
-        "slug":
-            "thinkpad",
+            "series":
+                "ThinkPad",
 
-        "runtime":
-            "api",
+            "slug":
+                "thinkpad",
 
-        "url":
-            (
-                "https://www.lenovo.com/"
-                "jp/ja/laptops/results/"
-                "?visibleDatas=2115%3AThinkPad"
-            ),
+            "runtime":
+                "api",
 
-    }
+            "url":
+                (
+                    "https://www.lenovo.com/"
+                    "jp/ja/laptops/results/"
+                    "?visibleDatas=2115%3AThinkPad"
+                ),
+
+        },
+
+        {
+
+            "entry_name":
+                "Legion",
+
+            "maker":
+                "LENOVO",
+
+            "series":
+                "Legion",
+
+            "slug":
+                "legion",
+
+            "runtime":
+                "api",
+
+            "url":
+                (
+                    "https://www.lenovo.com/"
+                    "jp/ja/laptops/results/"
+                    "?visibleDatas=2115%3ALegion"
+                ),
+
+        },
+
+    ]
 
     main(
-        seed=test_seed,
+        seeds=test_seeds,
     )

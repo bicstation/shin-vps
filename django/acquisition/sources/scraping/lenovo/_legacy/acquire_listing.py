@@ -55,7 +55,7 @@ from acquisition.common.trace.reality_trace import (
     trace_pipeline,
 )
 
-from ._lrgacy.fetch_listing import (
+from .fetch_listing import (
     main as fetch_listing,
 )
 
@@ -67,7 +67,7 @@ from .import_reality import (
     main as import_reality,
 )
 
-from .settings import (
+from ..settings import (
     REALITY_MODE,
     SITE_NAME,
 )
