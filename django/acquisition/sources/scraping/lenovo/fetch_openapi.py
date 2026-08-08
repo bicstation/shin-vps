@@ -1,42 +1,48 @@
-# /home/maya/shin-vps/django/acquisition/sources/scraping/lenovo/fetch_openapi.py
 #!/usr/bin/env python3
-"""
-==============================================================================
-FILE:
-    acquisition/sources/scraping/lenovo/fetch_listing_api.py
 
-SHIN CORE LINX
-
-LENOVO OpenAPI Listing Fetch Runtime
-
-ThinkPad Results
-        │
-        ▼
-OpenAPI
-        │
-        ▼
-Reality JSON
-
-Reality First
-Observation First
-
-Responsibilities
-
-- Fetch Lenovo OpenAPI
-- Discover Page Count
-- Fetch All Pages
-- Produce Reality JSON
-
-NOT Responsibilities
-
-- Formatter
-- Mapper
-- Builder
-- Semantic Runtime
-- Persistence
-
-==============================================================================
-"""
+# ============================================================================
+# FILE:
+# acquisition/sources/scraping/lenovo/fetch_listing_api.py
+#
+# SHIN CORE LINX
+#
+# LENOVO OpenAPI Listing Fetch Runtime
+#
+# Seed
+# │
+# ▼
+# Results Page
+# │
+# ▼
+# Discover pageFilterId
+# │
+# ▼
+# Lenovo OpenAPI
+# │
+# ▼
+# Reality JSON
+#
+# Reality First
+# Observation First
+#
+# Responsibilities
+#
+# - Receive Lenovo Seed
+# - Fetch Lenovo Results Page
+# - Discover pageFilterId
+# - Fetch Lenovo OpenAPI
+# - Discover Page Count
+# - Fetch All Pages
+# - Produce Reality Runtime
+#
+# NOT Responsibilities
+#
+# - Formatter
+# - Mapper
+# - Builder
+# - Semantic Runtime
+# - Persistence
+# ============================================================================
 
 from __future__ import annotations
 
@@ -44,19 +50,16 @@ import json
 
 import requests
 
+from bs4 import BeautifulSoup
+
 from acquisition.common.trace.reality_trace import (
     trace_pipeline,
 )
 
-# ==============================================================================
-# Constants
-# ==============================================================================
 
-RESULT_URL = (
-    "https://www.lenovo.com/"
-    "jp/ja/laptops/results/"
-    "?visibleDatas=2115%3AThinkPad"
-)
+# ============================================================================
+# Runtime Constants
+# ============================================================================
 
 OPENAPI_URL = (
     "https://openapi.lenovo.com/"
@@ -72,18 +75,81 @@ USER_AGENT = (
     "Safari/537.36"
 )
 
-# ==============================================================================
+FACET_ID = "2115"
+
+CLASSIFICATION_GROUP_ID = "400001"
+
+PAGE_SIZE = 20
+
+
+# ============================================================================
+# Seed Validation
+# ============================================================================
+
+def validate_seed(
+    seed: dict,
+) -> None:
+    """
+    Validate Lenovo Listing Seed.
+
+    Seed is the Runtime configuration source.
+
+    Required fields:
+
+    - entry_name
+    - maker
+    - series
+    - slug
+    - runtime
+    - url
+    """
+
+    required = (
+        "entry_name",
+        "maker",
+        "series",
+        "slug",
+        "runtime",
+        "url",
+    )
+
+    missing = [
+        field
+        for field in required
+        if not seed.get(field)
+    ]
+
+    if missing:
+
+        raise ValueError(
+            "LENOVO seed missing fields: "
+            + ", ".join(missing)
+        )
+
+    if seed["runtime"] != "api":
+
+        raise ValueError(
+            "LENOVO OpenAPI Runtime requires "
+            f"runtime='api'. "
+            f"Got: {seed['runtime']}"
+        )
+
+
+# ============================================================================
 # Discovery
-# ==============================================================================
-
-from bs4 import BeautifulSoup
-
+# ============================================================================
 
 def discover_page_filter_id(
     session: requests.Session,
+    *,
+    result_url: str,
 ) -> str:
     """
-    Discover pageFilterId from Results page.
+    Discover pageFilterId from Lenovo Results Page.
+
+    The pageFilterId is Runtime Reality.
+
+    It must NOT be hard-coded.
     """
 
     print()
@@ -94,9 +160,13 @@ def discover_page_filter_id(
 
     print("=" * 70)
 
+    print(
+        f"Results URL : {result_url}"
+    )
+
     response = session.get(
 
-        RESULT_URL,
+        result_url,
 
         headers={
 
@@ -110,11 +180,9 @@ def discover_page_filter_id(
 
     response.raise_for_status()
 
-    html = response.text
-
     soup = BeautifulSoup(
 
-        html,
+        response.text,
 
         "html.parser",
 
@@ -135,17 +203,13 @@ def discover_page_filter_id(
     if facet_name is None:
 
         raise RuntimeError(
-
             "facetName not found."
-
         )
 
     if facet_id is None:
 
         raise RuntimeError(
-
             "facetId not found."
-
         )
 
     page_filter_id = facet_id.get_text(
@@ -155,60 +219,76 @@ def discover_page_filter_id(
     )
 
     print(
-
-        f"Facet Name   : {facet_name.get_text(strip=True)}"
-
+        "Facet Name   : "
+        f"{facet_name.get_text(strip=True)}"
     )
 
     print(
-
-        f"PageFilterId : {page_filter_id}"
-
+        "PageFilterId : "
+        f"{page_filter_id}"
     )
 
     print()
 
     return page_filter_id
 
-# ==============================================================================
-# OpenAPI
-# ==============================================================================
+
+# ============================================================================
+# OpenAPI Request
+# ============================================================================
 
 def request_page(
     session: requests.Session,
     *,
+    result_url: str,
     page_filter_id: str,
+    series: str,
     page: int,
 ) -> dict:
     """
-    Request OpenAPI page.
+    Request one Lenovo OpenAPI page.
+
+    Series is supplied by Seed.
+
+    Example:
+
+        ThinkPad
+        Legion
     """
 
     params = {
 
-        "classificationGroupIds": "400001",
+        "classificationGroupIds":
+            CLASSIFICATION_GROUP_ID,
 
-        "pageFilterId": page_filter_id,
+        "pageFilterId":
+            page_filter_id,
 
         "facets": [
 
             {
 
-                "facetId": "2115",
+                "facetId":
+                    FACET_ID,
 
-                "selectedValues": "ThinkPad",
+                "selectedValues":
+                    series,
 
             }
 
         ],
 
-        "page": str(page),
+        "page":
+            str(page),
 
-        "pageSize": 20,
+        "pageSize":
+            PAGE_SIZE,
 
-        "groupCode": "",
+        "groupCode":
+            "",
 
-        "init": page == 1,
+        "init":
+            page == 1,
 
         "sorts": [
 
@@ -218,11 +298,14 @@ def request_page(
 
         ],
 
-        "version": "v2",
+        "version":
+            "v2",
 
-        "enablePreselect": True,
+        "enablePreselect":
+            True,
 
-        "subseriesCode": "",
+        "subseriesCode":
+            "",
 
     }
 
@@ -232,31 +315,44 @@ def request_page(
 
         headers={
 
-            "User-Agent": USER_AGENT,
+            "User-Agent":
+                USER_AGENT,
 
-            "Referer": RESULT_URL,
+            "Referer":
+                result_url,
 
-            "Origin": "https://www.lenovo.com",
+            "Origin":
+                "https://www.lenovo.com",
+
+            "Accept":
+                "application/json",
 
         },
 
         params={
 
-            "pageFilterId": page_filter_id,
+            "pageFilterId":
+                page_filter_id,
 
-            "subSeriesCode": "",
+            "subSeriesCode":
+                "",
 
-            "loyalty": "false",
+            "loyalty":
+                "false",
 
-            "params": json.dumps(
+            "params":
+                json.dumps(
 
-                params,
+                    params,
 
-                separators=(",", ":"),
+                    separators=(
+                        ",",
+                        ":",
+                    ),
 
-                ensure_ascii=False,
+                    ensure_ascii=False,
 
-            ),
+                ),
 
         },
 
@@ -268,14 +364,38 @@ def request_page(
 
     return response.json()
 
-# ==============================================================================
-# Runtime
-# ==============================================================================
 
-def fetch() -> dict:
+# ============================================================================
+# Runtime
+# ============================================================================
+
+def fetch(
+    *,
+    seed: dict,
+) -> dict:
     """
-    Execute OpenAPI Runtime.
+    Execute Lenovo OpenAPI Listing Runtime.
+
+    Seed-driven.
+
+    Flow
+
+        Seed
+          ↓
+        Results Page
+          ↓
+        pageFilterId
+          ↓
+        OpenAPI
+          ↓
+        All Pages
+          ↓
+        Reality Runtime
     """
+
+    validate_seed(
+        seed,
+    )
 
     trace_pipeline(
         "OPENAPI FETCH",
@@ -285,85 +405,132 @@ def fetch() -> dict:
 
     print("=" * 70)
 
-    print("LENOVO OPENAPI TEST")
+    print(
+        f"🌐 {seed['entry_name']} "
+        "OPENAPI FETCH"
+    )
 
     print("=" * 70)
 
-    session = requests.Session()
-
-    page_filter_id = discover_page_filter_id(
-
-        session,
-
+    print(
+        f"Maker  : {seed['maker']}"
     )
-
-    runtime = request_page(
-
-        session,
-
-        page_filter_id=page_filter_id,
-
-        page=1,
-
-    )
-
-    page_count = runtime["data"]["pageCount"]
-
-    print()
 
     print(
-
-        f"Page Count : {page_count}"
-
+        f"Series : {seed['series']}"
     )
 
-    products = []
+    print(
+        f"URL    : {seed['url']}"
+    )
 
-    for page in range(
+    print("=" * 70)
 
-        1,
+    with requests.Session() as session:
 
-        page_count + 1,
+        # --------------------------------------------------------------
+        # Discovery
+        # --------------------------------------------------------------
 
-    ):
+        page_filter_id = (
+            discover_page_filter_id(
+
+                session,
+
+                result_url=seed["url"],
+
+            )
+        )
+
+        # --------------------------------------------------------------
+        # First Page
+        #
+        # Used to discover pageCount.
+        # --------------------------------------------------------------
 
         runtime = request_page(
 
             session,
 
+            result_url=seed["url"],
+
             page_filter_id=page_filter_id,
 
-            page=page,
+            series=seed["series"],
+
+            page=1,
 
         )
 
-        page_products = []
+        page_count = (
+            runtime["data"]["pageCount"]
+        )
 
-        for group in runtime["data"]["data"]:
+        print()
 
-            page_products.extend(
+        print(
+            f"Page Count : {page_count}"
+        )
 
-                group.get(
+        # --------------------------------------------------------------
+        # All Pages
+        # --------------------------------------------------------------
 
-                    "products",
+        products = []
 
-                    [],
+        for page in range(
 
-                )
+            1,
+
+            page_count + 1,
+
+        ):
+
+            runtime = request_page(
+
+                session,
+
+                result_url=seed["url"],
+
+                page_filter_id=page_filter_id,
+
+                series=seed["series"],
+
+                page=page,
 
             )
 
-        products.extend(
+            page_products = []
 
-            page_products,
+            for group in (
+                runtime["data"]["data"]
+            ):
 
-        )
+                page_products.extend(
 
-        print(
+                    group.get(
+                        "products",
+                        [],
+                    )
 
-            f"Page {page:>2} : {len(page_products)}"
+                )
 
-        )
+            products.extend(
+
+                page_products,
+
+            )
+
+            print(
+
+                f"Page {page:>2} : "
+                f"{len(page_products)}"
+
+            )
+
+    # ==================================================================
+    # Result
+    # ==================================================================
 
     print()
 
@@ -374,50 +541,114 @@ def fetch() -> dict:
     print("=" * 70)
 
     print(
+        f"Entry          : "
+        f"{seed['entry_name']}"
+    )
 
-        f"TOTAL PRODUCTS : {len(products)}"
+    print(
+        f"Series         : "
+        f"{seed['series']}"
+    )
 
+    print(
+        f"Page Count     : "
+        f"{page_count}"
+    )
+
+    print(
+        f"Total Products : "
+        f"{len(products)}"
     )
 
     print("=" * 70)
-    
-    runtime = {
 
-        "entry_name": "ThinkPad",
+    return {
 
-        "maker": "LENOVO",
+        "entry_name":
+            seed["entry_name"],
 
-        "series": "ThinkPad",
+        "maker":
+            seed["maker"],
 
-        "slug": "thinkpad",
+        "series":
+            seed["series"],
 
-        "runtime": "openapi",
+        "slug":
+            seed["slug"],
 
-        "page_filter_id": page_filter_id,
+        "runtime":
+            seed["runtime"],
 
-        "page_count": page_count,
+        "url":
+            seed["url"],
 
-        "total_products": len(products),
+        "page_filter_id":
+            page_filter_id,
 
-        "products": products,
+        "page_count":
+            page_count,
+
+        "total_products":
+            len(products),
+
+        "products":
+            products,
 
     }
-    
-    return runtime
 
 
-# ==============================================================================
+# ============================================================================
 # Entry Point
-# ==============================================================================
+# ============================================================================
 
-def main() -> dict:
+def main(
+    *,
+    seed: dict,
+) -> dict:
     """
     Runtime Entry Point.
+
+    Seed must be supplied by the
+    Lenovo Acquisition Runtime.
     """
 
-    return fetch()
+    return fetch(
+        seed=seed,
+    )
+
+
+# ============================================================================
+# Standalone Execution
+# ============================================================================
 
 if __name__ == "__main__":
 
-    main()
-    
+    test_seed = {
+
+        "entry_name":
+            "ThinkPad",
+
+        "maker":
+            "LENOVO",
+
+        "series":
+            "ThinkPad",
+
+        "slug":
+            "thinkpad",
+
+        "runtime":
+            "api",
+
+        "url":
+            (
+                "https://www.lenovo.com/"
+                "jp/ja/laptops/results/"
+                "?visibleDatas=2115%3AThinkPad"
+            ),
+
+    }
+
+    main(
+        seed=test_seed,
+    )

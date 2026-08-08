@@ -1,32 +1,37 @@
 #!/usr/bin/env python3
-"""
-==============================================================================
-FRONTIER Seed Discovery Runtime
 
-Reality
-
-seed.tsv
-    │
-    ▼
-Seed Runtime
-    │
-    ▼
-Seed Reality
-
-Responsibilities
-
-- Load Seed Reality
-- Validate Seed Entries
-
-NOT
-
-- HTTP Fetch
-- Acquisition
-- Observation
-- Mapping
-- Persistence
-==============================================================================
-"""
+# ============================================================================
+#
+# FILE:
+# acquisition/sources/scraping/lenovo/discover_seed.py
+#
+# SHIN CORE LINX
+#
+# LENOVO Seed Discovery Runtime
+#
+# Reality
+#
+# seed.tsv
+# │
+# ▼
+# Seed Runtime
+# │
+# ▼
+# Seed Reality
+#
+# Responsibilities
+#
+# - Load Seed Reality
+#
+# NOT
+#
+# - HTTP Fetch
+# - Acquisition
+# - Observation
+# - Mapping
+# - Persistence
+#
+# ============================================================================
 
 from __future__ import annotations
 
@@ -37,38 +42,29 @@ from .settings import (
 )
 
 
-# ==============================================================================
+# ============================================================================
 # Runtime
-# ==============================================================================
+# ============================================================================
 
 def discover():
 
     with SEED_TSV.open(
-
         "r",
-
         encoding="utf-8",
-
         newline="",
-
     ) as f:
 
         return list(
-
             csv.DictReader(
-
                 f,
-
                 delimiter="\t",
-
             )
-
         )
 
 
-# ==============================================================================
+# ============================================================================
 # Entry Point
-# ==============================================================================
+# ============================================================================
 
 def main():
 
