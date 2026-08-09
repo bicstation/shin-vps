@@ -54,6 +54,11 @@ REALITY_RUNTIMES = {
         "STORM",
         "acquisition.sources.scraping.storm.run",
     ),
+    
+    "sycom": (
+        "SYCOM",
+        "acquisition.sources.scraping.sycom.run",
+    ),
 
     "linkshare": (
         "LinkShare",

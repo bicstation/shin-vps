@@ -85,6 +85,9 @@ SCRAPER_SHOPS=(
   "ozgaming"
   "geekom"
   "lavie"
+  "storm"
+  "sycom"
+
 )
 
 # ==========================================================
@@ -347,6 +350,8 @@ run_django import_products frontier
 run_django import_products geekom
 run_django import_products tsukumo
 run_django import_products ozgaming
+run_django import_products storm
+run_django import_products sycom
 
 
 # ==========================================================
