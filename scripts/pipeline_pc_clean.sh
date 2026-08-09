@@ -87,6 +87,7 @@ SCRAPER_SHOPS=(
   "lavie"
   "storm"
   "sycom"
+  "mouse"
 
 )
 
@@ -352,6 +353,7 @@ run_django import_products tsukumo
 run_django import_products ozgaming
 run_django import_products storm
 run_django import_products sycom
+run_django import_products mouse
 
 
 # ==========================================================
