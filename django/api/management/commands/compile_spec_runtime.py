@@ -4,37 +4,79 @@
 # =========================================================
 
 import time
+import traceback
 
-from concurrent.futures import ( ThreadPoolExecutor, as_completed, )
-from django.core.management.base import ( BaseCommand, )
-from django.db import ( close_old_connections, )
-from api.models.pc_products import ( PCProduct, )
-from api.services.ai.runtime.ai_runtime import ( AIRuntime, )
-from api.services.ai.services.pc_spec_service import ( PCSpecService, )
-from api.services.ai.services.spec_runtime_persist_service import ( SpecRuntimePersistService, )
-from api.services.ai.exceptions.parse_error import (   ParseError,)
+from concurrent.futures import (
+    ThreadPoolExecutor,
+    as_completed,
+)
+
+from django.core.management.base import (
+    BaseCommand,
+)
+
+from django.db import (
+    close_old_connections,
+)
+
+from api.models.pc_products import (
+    PCProduct,
+)
+
+from api.services.ai.runtime.ai_runtime import (
+    AIRuntime,
+)
+
+from api.services.ai.services.pc_spec_service import (
+    PCSpecService,
+)
+
+from api.services.ai.services.spec_runtime_persist_service import (
+    SpecRuntimePersistService,
+)
+
+from api.services.ai.exceptions.parse_error import (
+    ParseError,
+)
 
 
 class Command(BaseCommand):
 
-    help = ( "Compile Spec Runtime" )
+    help = (
+        "Compile Spec Runtime"
+    )
 
     # =====================================================
     # INIT
     # =====================================================
 
-    def __init__( self, *args, **kwargs, ):
+    def __init__(
+        self,
+        *args,
+        **kwargs,
+    ):
 
-        super().__init__( *args, **kwargs, )
+        super().__init__(
+            *args,
+            **kwargs,
+        )
 
-        self.spec_service = ( PCSpecService() )
-        self.persist_service = ( SpecRuntimePersistService() )
+        self.spec_service = (
+            PCSpecService()
+        )
+
+        self.persist_service = (
+            SpecRuntimePersistService()
+        )
 
     # =====================================================
     # ARGUMENTS
     # =====================================================
 
-    def add_arguments( self, parser, ):
+    def add_arguments(
+        self,
+        parser,
+    ):
 
         parser.add_argument(
             "unique_id",
@@ -67,7 +109,11 @@ class Command(BaseCommand):
     # HANDLE
     # =====================================================
 
-    def handle( self, *args, **options, ):
+    def handle(
+        self,
+        *args,
+        **options,
+    ):
 
         products = self.get_products(
             options
@@ -171,7 +217,7 @@ class Command(BaseCommand):
             return PCProduct.objects.all()
 
         return PCProduct.objects.all()
-    
+
     # =====================================================
     # PRODUCTS
     # =====================================================
@@ -284,7 +330,9 @@ class Command(BaseCommand):
                 product
             )
 
-            spec_result = bundle["spec_result"]
+            spec_result = bundle[
+                "spec_result"
+            ]
 
             self.persist_service.save(
                 product,
@@ -292,8 +340,12 @@ class Command(BaseCommand):
             )
 
             elapsed = round(
-                time.time() - started,
+
+                time.time()
+                - started,
+
                 2,
+
             )
 
             self.stdout.write(
@@ -359,6 +411,12 @@ class Command(BaseCommand):
                 )
 
             )
+
+            # =================================================
+            # DEBUG TRACEBACK
+            # =================================================
+
+            traceback.print_exc()
 
             return
 

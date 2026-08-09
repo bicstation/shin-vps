@@ -340,9 +340,9 @@ log "📡 (01/12) Import Linkshare API"
 run_django import_products linkshare api 43708
 
 run_django import_products linkshare ftp 2543
-run_django import_products linkshare api 2557
-run_django import_products linkshare api 35909
-run_django import_products linkshare api 36508
+run_django import_products linkshare ftp 2557
+run_django import_products linkshare ftp 35909
+run_django import_products linkshare ftp 36508
 
 
 run_django import_products lavie
