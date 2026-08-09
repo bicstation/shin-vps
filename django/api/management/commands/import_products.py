@@ -49,6 +49,11 @@ REALITY_RUNTIMES = {
         "TSUKUMO",
         "acquisition.sources.scraping.tsukumo.run",
     ),
+    
+    "storm": (
+        "STORM",
+        "acquisition.sources.scraping.storm.run",
+    ),
 
     "linkshare": (
         "LinkShare",
