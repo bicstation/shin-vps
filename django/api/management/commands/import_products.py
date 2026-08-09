@@ -60,6 +60,11 @@ REALITY_RUNTIMES = {
         "acquisition.sources.scraping.sycom.run",
     ),
 
+    "acer": (
+        "ACER",
+        "acquisition.sources.scraping.acer.run",
+    ),
+
     "linkshare": (
         "LinkShare",
         "acquisition.sources.scraping.linkshare.run",
