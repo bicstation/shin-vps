@@ -79,6 +79,21 @@ REALITY_RUNTIMES = {
         "DELL",
         "acquisition.sources.scraping.dell.run",
     ),
+    
+    "hp": (
+        "HP",
+        "acquisition.sources.scraping.hp.run",
+    ),
+    
+    "fujitsu": (
+        "FUJITSU",
+        "acquisition.sources.scraping.fujitsu.run",
+    ),
+    
+    "dynabook": (
+        "DYNABOOK",
+        "acquisition.sources.scraping.dynabook.run",
+    ),
 
 }
 

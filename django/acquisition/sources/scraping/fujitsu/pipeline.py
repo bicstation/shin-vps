@@ -3,11 +3,11 @@
 """
 ==============================================================================
 FILE:
-    acquisition/sources/scraping/dell/pipeline.py
+acquisition/sources/scraping/fujitsu/pipeline.py
 
 SHIN CORE LINX
 
-DELL Scraping Runtime Pipeline
+FUJITSU / FMV Scraping Runtime Pipeline
 
 Reality First
 
@@ -31,7 +31,7 @@ Runtime Flow
     PCProduct Verification
         │
         ▼
-    DELL Runtime Complete
+    FUJITSU Runtime Complete
 
 
 Responsibilities
@@ -41,7 +41,6 @@ Responsibilities
 - Coordinate Runtime Flow
 - Save Scraping Observation
 - Verify Saved PCProduct
-
 
 NOT Responsibilities
 
@@ -56,7 +55,7 @@ NOT Responsibilities
 - Semantic Runtime
 - Model Mapper
 - Card Formatting
-============================================================================== 
+==============================================================================
 """
 
 from __future__ import annotations
@@ -135,7 +134,7 @@ PIPELINE_VERIFY = (
 
 
 PIPELINE_COMPLETE = (
-    "dell Runtime Complete"
+    "FUJITSU Runtime Complete"
 )
 
 
@@ -151,6 +150,7 @@ def checkpoint(
     """
 
     if BREAKPOINT != name:
+
         return False
 
     print()
@@ -210,9 +210,9 @@ def run_stage(
 
 def run_seed():
     """
-    Execute DELL Seed Runtime.
+    Execute FUJITSU Seed Runtime.
 
-    Seed Runtime discovers existing DELL
+    Seed Runtime discovers existing FUJITSU
     PCProducts from the database.
     """
 
@@ -224,7 +224,7 @@ def run_acquire_listing(
     force: bool = False,
 ):
     """
-    Execute DELL Listing Acquire Runtime.
+    Execute FUJITSU Listing Acquire Runtime.
     """
 
     return acquire_listing(
@@ -234,11 +234,12 @@ def run_acquire_listing(
 
 def run_observe_listing():
     """
-    Execute DELL Listing Observation Runtime.
+    Execute FUJITSU Listing Observation Runtime.
 
-    Returns:
-
-        Observation Reality
+    Returns
+    -------
+    list[dict]
+        Observation Reality.
     """
 
     return observe_listing()
@@ -248,7 +249,7 @@ def run_observation_store(
     observations,
 ):
     """
-    Save DELL Observation Reality
+    Save FUJITSU Observation Reality
     into PCProduct.observation.
     """
 
@@ -274,7 +275,7 @@ def run(
     force: bool = False,
 ):
     """
-    Execute DELL Scraping Runtime.
+    Execute FUJITSU / FMV Scraping Runtime.
 
     Final responsibility:
 
@@ -299,7 +300,8 @@ def run(
     if checkpoint(
         "seed",
     ):
-        return
+
+        return seeds
 
     # ==========================================================================
     # Listing Acquire Runtime
@@ -314,6 +316,7 @@ def run(
     if checkpoint(
         "acquire_listing",
     ):
+
         return
 
     # ==========================================================================
@@ -328,6 +331,7 @@ def run(
     if checkpoint(
         "observe_listing",
     ):
+
         return observations
 
     # ==========================================================================
@@ -343,6 +347,7 @@ def run(
     if checkpoint(
         "observation_store",
     ):
+
         return
 
     # ==========================================================================
@@ -357,6 +362,7 @@ def run(
     if checkpoint(
         "verify",
     ):
+
         return
 
     # ==========================================================================
@@ -387,7 +393,7 @@ def main(
     force: bool = False,
 ):
     """
-    DELL Scraping Runtime Entry Point.
+    FUJITSU / FMV Scraping Runtime Entry Point.
     """
 
     return run(

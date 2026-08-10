@@ -96,7 +96,7 @@ from .verify import (
 # Breakpoint
 # ==============================================================================
 
-BREAKPOINT = "verify"
+BREAKPOINT = "observe_listing"
 
 # BREAKPOINT = "seed"
 # BREAKPOINT = "acquire_listing"

@@ -1,0 +1,59 @@
+# SHIN CORE LINX
+# DELL Reality Acquisition Runtime
+
+---
+
+## Purpose
+
+This directory implements the DELL-specific
+Reality Acquisition Runtime.
+
+The purpose of this Runtime is:
+
+    PCProduct
+        ↓
+    Official URL
+        ↓
+    HTML Acquisition
+        ↓
+    Observation
+        ↓
+    PCProduct.observation_runtime
+
+The Runtime does NOT attempt to reconstruct the
+PCProduct or assign semantic meaning during acquisition.
+
+The primary principle is:
+
+    Reality First
+    Observation First
+    Semantic Later
+
+---
+
+# Runtime Flow
+
+```text
+PCProduct
+    │
+    ▼
+discover_seed.py
+    │
+    │ Seed
+    ▼
+acquire_listing.py
+    │
+    │ HTML
+    ▼
+observe_listing.py
+    │
+    │ Observation
+    ▼
+observation_store.py
+    │
+    │ PCProduct.observation_runtime
+    ▼
+verify.py
+    │
+    ▼
+DELL Runtime Complete

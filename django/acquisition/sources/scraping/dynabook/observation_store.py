@@ -3,20 +3,22 @@
 """
 ==============================================================================
 FILE:
-    acquisition/sources/scraping/dell/observation_store.py
+    acquisition/sources/scraping/dynabook/observation_store.py
 
 SHIN CORE LINX
 
-DELL Observation Store Runtime
+dynabook Observation Store Runtime
 
 Reality First
 
+
 Responsibilities
 
-- Receive DELL Product Observation
+- Receive dynabook Product Observation
 - Locate existing PCProduct from document_key
 - Save Observation into PCProduct.observation_runtime
 - Preserve Observation Reality as JSON
+
 
 NOT Responsibilities
 
@@ -27,12 +29,49 @@ NOT Responsibilities
 - Semantic Processing
 - Product Mapping
 - Product Reconstruction
+
+
+Runtime Flow
+
+    Observation Reality
+            │
+            ▼
+      document_key
+            │
+            ▼
+    Existing PCProduct
+            │
+            ▼
+  PCProduct.observation_runtime
+
+
+IMPORTANT
+
+This Runtime does NOT interpret the Observation.
+
+It does NOT:
+
+    - extract CPU
+    - normalize memory
+    - normalize storage
+    - determine GPU
+    - determine AI PC
+    - create semantic labels
+    - modify PCProduct specification fields
+
+The Observation is stored exactly as received.
+
+Reality First.
+Semantic Later.
+
 ==============================================================================
 """
 
 from __future__ import annotations
 
+
 import json
+
 
 from api.models import (
     PCProduct,
@@ -92,6 +131,17 @@ def resolve_product(
             │
             ▼
         PCProduct.unique_id
+
+
+    Example:
+
+        document_key
+
+            product__dynabook_W6PZMA5PAB
+
+        becomes
+
+            dynabook_W6PZMA5PAB
     """
 
     document_key = (
@@ -102,20 +152,32 @@ def resolve_product(
         or ""
     ).strip()
 
+    # --------------------------------------------------------------------------
+    # document_key required
+    # --------------------------------------------------------------------------
+
     if not document_key:
 
         raise ValueError(
-            "DELL Observation requires document_key."
+            "dynabook Observation requires document_key."
         )
+
+    # --------------------------------------------------------------------------
+    # Validate document_key prefix
+    # --------------------------------------------------------------------------
 
     if not document_key.startswith(
         DOCUMENT_KEY_PREFIX,
     ):
 
         raise ValueError(
-            "Invalid DELL Observation document_key: "
+            "Invalid dynabook Observation document_key: "
             f"{document_key}"
         )
+
+    # --------------------------------------------------------------------------
+    # Extract PCProduct unique_id
+    # --------------------------------------------------------------------------
 
     unique_id = document_key[
         len(DOCUMENT_KEY_PREFIX):
@@ -124,9 +186,13 @@ def resolve_product(
     if not unique_id:
 
         raise ValueError(
-            "DELL Observation document_key "
+            "dynabook Observation document_key "
             "contains no unique_id."
         )
+
+    # --------------------------------------------------------------------------
+    # Resolve existing PCProduct
+    # --------------------------------------------------------------------------
 
     try:
 
@@ -137,7 +203,7 @@ def resolve_product(
     except PCProduct.DoesNotExist as exc:
 
         raise ValueError(
-            "DELL PCProduct not found for "
+            "dynabook PCProduct not found for "
             f"unique_id: {unique_id}"
         ) from exc
 
@@ -157,15 +223,27 @@ def store_observation(
     No other PCProduct column is modified.
     """
 
+    # --------------------------------------------------------------------------
+    # Resolve existing product
+    # --------------------------------------------------------------------------
+
     product = resolve_product(
         observation,
     )
+
+    # --------------------------------------------------------------------------
+    # Serialize Observation Reality
+    # --------------------------------------------------------------------------
 
     product.observation_runtime = (
         serialize_observation(
             observation,
         )
     )
+
+    # --------------------------------------------------------------------------
+    # Persist ONLY observation_runtime
+    # --------------------------------------------------------------------------
 
     product.save(
         update_fields=[
@@ -184,7 +262,7 @@ def observation_store(
     observations: list[dict],
 ) -> list[PCProduct]:
     """
-    Execute DELL Observation Store Runtime.
+    Execute dynabook Observation Store Runtime.
 
     Input:
 
@@ -193,6 +271,7 @@ def observation_store(
     Output:
 
         Saved PCProduct objects
+
 
     Runtime:
 
@@ -203,6 +282,11 @@ def observation_store(
         Existing PCProduct
             ↓
         PCProduct.observation_runtime
+
+
+    IMPORTANT
+
+    No semantic processing is performed.
     """
 
     print()
@@ -212,7 +296,7 @@ def observation_store(
     )
 
     print(
-        "DELL OBSERVATION STORE"
+        "dynabook OBSERVATION STORE"
     )
 
     print(
@@ -224,10 +308,16 @@ def observation_store(
         f"{len(observations)}"
     )
 
-    products: list[PCProduct] = []
+    products: list[
+        PCProduct
+    ] = []
 
     saved = 0
     failed = 0
+
+    # ==========================================================================
+    # Observations
+    # ==========================================================================
 
     for index, observation in enumerate(
         observations,
@@ -297,7 +387,7 @@ def observation_store(
     )
 
     print(
-        "DELL OBSERVATION STORE RESULT"
+        "dynabook OBSERVATION STORE RESULT"
     )
 
     print(
@@ -342,7 +432,7 @@ def main(
     if observations is None:
 
         raise RuntimeError(
-            "DELL Observation Store requires "
+            "dynabook Observation Store requires "
             "Observation Runtime output."
         )
 

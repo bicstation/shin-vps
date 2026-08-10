@@ -1,91 +1,83 @@
 #!/usr/bin/env python3
 
-"""
-==============================================================================
-FILE:
-    acquisition/sources/scraping/dell/pipeline.py
-
-SHIN CORE LINX
-
-DELL Scraping Runtime Pipeline
-
-Reality First
-
-Runtime Flow
-
-    PCProduct
-        │
-        ▼
-    Seed Runtime
-        │
-        ▼
-    Listing Acquire Runtime
-        │
-        ▼
-    Listing Observation Runtime
-        │
-        ▼
-    Observation Store Runtime
-        │
-        ▼
-    PCProduct Verification
-        │
-        ▼
-    DELL Runtime Complete
-
-
-Responsibilities
-
-- Execute Runtime Stages
-- Preserve Runtime Order
-- Coordinate Runtime Flow
-- Save Scraping Observation
-- Verify Saved PCProduct
-
-
-NOT Responsibilities
-
-- HTML Parsing
-- HTTP Acquisition
-- Reality Observation
-- Semantic Processing
-- Product Reconstruction
-- Affiliate Generation
-- Import Contract
-- Product Builder
-- Semantic Runtime
-- Model Mapper
-- Card Formatting
-============================================================================== 
-"""
+# ==============================================================================
+#
+# FILE:
+# acquisition/sources/scraping/dynabook/pipeline.py
+#
+# SHIN CORE LINX
+#
+# dynabook Scraping Runtime Pipeline
+#
+# Reality First
+#
+# Runtime Flow
+#
+# PCProduct
+#     │
+#     ▼
+# Seed Runtime
+#     │
+#     ▼
+# Listing Acquire Runtime
+#     │
+#     ▼
+# Listing Observation Runtime
+#     │
+#     ▼
+# Observation Store Runtime
+#     │
+#     ▼
+# PCProduct Verification
+#     │
+#     ▼
+# dynabook Runtime Complete
+#
+# Responsibilities
+#
+# - Execute Runtime Stages
+# - Preserve Runtime Order
+# - Coordinate Runtime Flow
+# - Save Scraping Observation
+# - Verify Saved PCProduct
+#
+# NOT Responsibilities
+#
+# - HTML Parsing
+# - HTTP Acquisition
+# - Reality Observation
+# - Semantic Processing
+# - Product Reconstruction
+# - Affiliate Generation
+# - Import Contract
+# - Product Builder
+# - Semantic Runtime
+# - Model Mapper
+# - Card Formatting
+#
+# ==============================================================================
 
 from __future__ import annotations
-
 
 from acquisition.common.trace.reality_trace import (
     trace_pipeline,
 )
 
-
 from .discover_seed import (
     main as discover_seed,
 )
-
 
 from .acquire_listing import (
     main as acquire_listing,
 )
 
-
 from .observe_listing import (
     main as observe_listing,
 )
 
-
 from .observation_store import (
     main as observation_store,
 )
-
 
 from .verify import (
     main as verify,
@@ -113,29 +105,24 @@ PIPELINE_SEED = (
     "Seed Runtime"
 )
 
-
 PIPELINE_ACQUIRE_LISTING = (
     "Listing Acquire Runtime"
 )
-
 
 PIPELINE_OBSERVE_LISTING = (
     "Listing Observation Runtime"
 )
 
-
 PIPELINE_OBSERVATION_STORE = (
     "Observation Store Runtime"
 )
-
 
 PIPELINE_VERIFY = (
     "PCProduct Verification Runtime"
 )
 
-
 PIPELINE_COMPLETE = (
-    "dell Runtime Complete"
+    "dynabook Runtime Complete"
 )
 
 
@@ -210,9 +197,9 @@ def run_stage(
 
 def run_seed():
     """
-    Execute DELL Seed Runtime.
+    Execute dynabook Seed Runtime.
 
-    Seed Runtime discovers existing DELL
+    Seed Runtime discovers existing dynabook
     PCProducts from the database.
     """
 
@@ -224,7 +211,7 @@ def run_acquire_listing(
     force: bool = False,
 ):
     """
-    Execute DELL Listing Acquire Runtime.
+    Execute dynabook Listing Acquire Runtime.
     """
 
     return acquire_listing(
@@ -234,11 +221,12 @@ def run_acquire_listing(
 
 def run_observe_listing():
     """
-    Execute DELL Listing Observation Runtime.
+    Execute dynabook Listing Observation Runtime.
 
-    Returns:
-
-        Observation Reality
+    Returns
+    -------
+    list[dict]
+        Observation Reality.
     """
 
     return observe_listing()
@@ -248,8 +236,8 @@ def run_observation_store(
     observations,
 ):
     """
-    Save DELL Observation Reality
-    into PCProduct.observation.
+    Save dynabook Observation Reality
+    into PCProduct.observation_runtime.
     """
 
     return observation_store(
@@ -259,7 +247,7 @@ def run_observation_store(
 
 def run_verify():
     """
-    Verify actual saved PCProduct records.
+    Verify actual saved dynabook PCProduct records.
     """
 
     return verify()
@@ -274,7 +262,7 @@ def run(
     force: bool = False,
 ):
     """
-    Execute DELL Scraping Runtime.
+    Execute dynabook Scraping Runtime.
 
     Final responsibility:
 
@@ -282,7 +270,7 @@ def run(
               ↓
         Observation
               ↓
-        PCProduct.observation
+        PCProduct.observation_runtime
               ↓
         Verification
     """
@@ -299,7 +287,7 @@ def run(
     if checkpoint(
         "seed",
     ):
-        return
+        return seeds
 
     # ==========================================================================
     # Listing Acquire Runtime
@@ -387,7 +375,7 @@ def main(
     force: bool = False,
 ):
     """
-    DELL Scraping Runtime Entry Point.
+    dynabook Scraping Runtime Entry Point.
     """
 
     return run(

@@ -1,34 +1,34 @@
 #!/usr/bin/env python3
 
-"""
-==============================================================================
-FILE:
-    acquisition/sources/scraping/dell/observation_store.py
-
-SHIN CORE LINX
-
-DELL Observation Store Runtime
-
-Reality First
-
-Responsibilities
-
-- Receive DELL Product Observation
-- Locate existing PCProduct from document_key
-- Save Observation into PCProduct.observation_runtime
-- Preserve Observation Reality as JSON
-
-NOT Responsibilities
-
-- HTTP Acquisition
-- HTML Parsing
-- Observation Extraction
-- Formatting
-- Semantic Processing
-- Product Mapping
-- Product Reconstruction
-==============================================================================
-"""
+# ==============================================================================
+#
+# FILE:
+# acquisition/sources/scraping/fujitsu/observation_store.py
+#
+# SHIN CORE LINX
+#
+# FUJITSU Observation Store Runtime
+#
+# Reality First
+#
+# Responsibilities
+#
+# - Receive FUJITSU Product Observation
+# - Locate existing PCProduct from document_key
+# - Save Observation into PCProduct.observation_runtime
+# - Preserve Observation Reality as JSON
+#
+# NOT Responsibilities
+#
+# - HTTP Acquisition
+# - HTML Parsing
+# - Observation Extraction
+# - Formatting
+# - Semantic Processing
+# - Product Mapping
+# - Product Reconstruction
+#
+# ==============================================================================
 
 from __future__ import annotations
 
@@ -43,9 +43,7 @@ from api.models import (
 # Constants
 # ==============================================================================
 
-DOCUMENT_KEY_PREFIX = (
-    "product__"
-)
+DOCUMENT_KEY_PREFIX = "product__"
 
 
 # ==============================================================================
@@ -103,17 +101,15 @@ def resolve_product(
     ).strip()
 
     if not document_key:
-
         raise ValueError(
-            "DELL Observation requires document_key."
+            "FUJITSU Observation requires document_key."
         )
 
     if not document_key.startswith(
         DOCUMENT_KEY_PREFIX,
     ):
-
         raise ValueError(
-            "Invalid DELL Observation document_key: "
+            "Invalid FUJITSU Observation document_key: "
             f"{document_key}"
         )
 
@@ -122,22 +118,19 @@ def resolve_product(
     ]
 
     if not unique_id:
-
         raise ValueError(
-            "DELL Observation document_key "
+            "FUJITSU Observation document_key "
             "contains no unique_id."
         )
 
     try:
-
         return PCProduct.objects.get(
             unique_id=unique_id,
         )
 
     except PCProduct.DoesNotExist as exc:
-
         raise ValueError(
-            "DELL PCProduct not found for "
+            "FUJITSU PCProduct not found for "
             f"unique_id: {unique_id}"
         ) from exc
 
@@ -184,7 +177,7 @@ def observation_store(
     observations: list[dict],
 ) -> list[PCProduct]:
     """
-    Execute DELL Observation Store Runtime.
+    Execute FUJITSU Observation Store Runtime.
 
     Input:
 
@@ -212,7 +205,7 @@ def observation_store(
     )
 
     print(
-        "DELL OBSERVATION STORE"
+        "FUJITSU OBSERVATION STORE"
     )
 
     print(
@@ -297,7 +290,7 @@ def observation_store(
     )
 
     print(
-        "DELL OBSERVATION STORE RESULT"
+        "FUJITSU OBSERVATION STORE RESULT"
     )
 
     print(
@@ -342,7 +335,7 @@ def main(
     if observations is None:
 
         raise RuntimeError(
-            "DELL Observation Store requires "
+            "FUJITSU Observation Store requires "
             "Observation Runtime output."
         )
 
