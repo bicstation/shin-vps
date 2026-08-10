@@ -1,68 +1,70 @@
 #!/usr/bin/env python3
 
-# ==============================================================================
-#
-# FILE:
-#
-# acquisition/sources/scraping/dell/pipeline.py
-#
-# SHIN CORE LINX
-#
-# DELL Runtime Pipeline
-#
-# Reality Acquisition Framework
-#
-# DELL-specific entry:
-#
-# PCProduct
-# │
-# ▼
-# Seed Runtime
-# │
-# ▼
-# URL Resolver
-# │
-# ▼
-# Listing Acquire Runtime
-# │
-# ▼
-# Listing Observation Runtime
-# │
-# ▼
-# Card Formatter Runtime
-# │
-# ▼
-# Mapper Runtime
-# │
-# ▼
-# ImportDocument Writer Runtime
-# │
-# ▼
-# Integration Runtime
-#
-# Reality First
-# Observation First
-# Translation Authority
-# Semantic Later
-#
-# Responsibilities
-#
-# - Execute Runtime Stages
-# - Preserve Runtime Order
-# - Coordinate Runtime Flow
-#
-# NOT Responsibilities
-#
-# - HTML Parsing
-# - Reality Observation
-# - Runtime Formatting
-# - Mapping
-# - Product Building
-# - Semantic Processing
-#
-# ==============================================================================
+"""
+==============================================================================
+FILE:
+    acquisition/sources/scraping/dell/pipeline.py
+
+SHIN CORE LINX
+
+DELL Scraping Runtime Pipeline
+
+Reality First
+
+Runtime Flow
+
+    PCProduct
+        │
+        ▼
+    Seed Runtime
+        │
+        ▼
+    URL Resolver
+        │
+        ▼
+    Listing Acquire Runtime
+        │
+        ▼
+    Listing Observation Runtime
+        │
+        ▼
+    Card Formatter Runtime
+        │
+        ▼
+    Observation Save Runtime
+        │
+        ▼
+    PCProduct Verification
+        │
+        ▼
+    DELL Runtime Complete
+
+
+Responsibilities
+
+- Execute Runtime Stages
+- Preserve Runtime Order
+- Coordinate Runtime Flow
+- Save Scraping Observation
+- Verify Saved PCProduct
+
+
+NOT Responsibilities
+
+- HTML Parsing
+- HTTP Acquisition
+- Reality Observation
+- Semantic Processing
+- Product Reconstruction
+- Affiliate Generation
+- Import Contract
+- Product Builder
+- Semantic Runtime
+- Model Mapper
+"""
 
 from __future__ import annotations
+
 
 from acquisition.common.trace.reality_trace import (
     trace_pipeline,
@@ -84,16 +86,12 @@ from .formatter_cards import (
     main as formatter_cards,
 )
 
-from .mapper import (
-    main as mapper,
+from .observation_store import (
+    main as observation_store,
 )
 
-from .writer import (
-    main as writer,
-)
-
-from .integration import (
-    main as integration,
+from .verify import (
+    main as verify,
 )
 
 
@@ -101,15 +99,14 @@ from .integration import (
 # Breakpoint
 # ==============================================================================
 
-BREAKPOINT = "formatter"
+BREAKPOINT = "observe_listing"
 
 # BREAKPOINT = "seed"
 # BREAKPOINT = "acquire_listing"
 # BREAKPOINT = "observe_listing"
 # BREAKPOINT = "formatter"
-# BREAKPOINT = "mapper"
-# BREAKPOINT = "writer"
-# BREAKPOINT = "integration"
+# BREAKPOINT = "observation_store"
+# BREAKPOINT = "verify"
 
 
 # ==============================================================================
@@ -132,16 +129,12 @@ PIPELINE_FORMATTER = (
     "Card Formatter Runtime"
 )
 
-PIPELINE_MAPPER = (
-    "Mapper Runtime"
+PIPELINE_OBSERVATION_STORE = (
+    "Observation Store Runtime"
 )
 
-PIPELINE_WRITER = (
-    "ImportDocument Writer Runtime"
-)
-
-PIPELINE_INTEGRATION = (
-    "Integration Runtime"
+PIPELINE_VERIFY = (
+    "PCProduct Verification Runtime"
 )
 
 PIPELINE_COMPLETE = (
@@ -188,11 +181,11 @@ def run_stage(
     title: str,
     runtime,
     **kwargs,
-) -> object:
+):
     """
     Execute Runtime Stage.
 
-    Pipeline is responsible only for orchestration.
+    Pipeline owns orchestration only.
     """
 
     print()
@@ -222,12 +215,8 @@ def run_seed():
     """
     Execute DELL Seed Runtime.
 
-    DELL does not use seed.tsv as the Reality source.
-
-    The Seed Runtime discovers existing DELL PCProducts
-    from the database and validates their affiliate URLs.
-
-    Runtime options are not accepted here.
+    Seed Runtime discovers existing DELL
+    PCProducts from the database.
     """
 
     return discover_seed()
@@ -236,11 +225,9 @@ def run_seed():
 def run_acquire_listing(
     *,
     force: bool = False,
-) -> None:
+):
     """
     Execute DELL Listing Acquire Runtime.
-
-    force belongs exclusively to Listing Acquire.
     """
 
     return acquire_listing(
@@ -248,64 +235,50 @@ def run_acquire_listing(
     )
 
 
-def run_observe_listing() -> list[dict]:
+def run_observe_listing():
     """
     Execute DELL Listing Observation Runtime.
-
-    Returns:
-
-        Observation Reality
     """
 
     return observe_listing()
 
 
 def run_formatter(
-    observations: list[dict],
-) -> list[dict]:
+    observations,
+):
     """
     Execute DELL Card Formatter Runtime.
 
-    Input:
+    Observation is received from the
+    Observation Runtime.
 
-        Observation Reality
-
-    Output:
-
-        Runtime Contracts
+    No HTML access occurs here.
     """
 
     return formatter_cards(
-        observations,
+        observations=observations,
     )
 
 
-def run_mapper():
-    """
-    Execute Mapper Runtime.
-    """
-
-    return mapper()
-
-
-def run_writer(
-    contracts,
+def run_observation_store(
+    runtimes,
 ):
     """
-    Execute ImportDocument Writer Runtime.
+    Save formatted Observation into
+    PCProduct.observation.
     """
 
-    return writer(
-        contracts,
+    return observation_store(
+        runtimes=runtimes,
     )
 
 
-def run_integration() -> None:
+def run_verify():
     """
-    Execute Integration Runtime.
+    Verify actual saved PCProduct records.
     """
 
-    return integration()
+    return verify()
 
 
 # ==============================================================================
@@ -315,48 +288,26 @@ def run_integration() -> None:
 def run(
     *,
     force: bool = False,
-) -> None:
+):
     """
-    Execute DELL Runtime Pipeline.
+    Execute DELL Scraping Runtime.
 
-    Runtime options are explicitly routed to the Runtime
-    that owns them.
+    Final responsibility:
 
-    force
-        → Listing Acquire Runtime only.
-
-    DELL acquisition flow:
-
-        PCProduct
-            ↓
-        Seed Runtime
-            ↓
-        URL Resolver
-            ↓
-        Listing Acquire
-            ↓
-        Listing Observation
-            ↓
-        Formatter
-            ↓
-        Mapper
-            ↓
-        Writer
-            ↓
-        Integration
+        Scraping Reality
+              ↓
+        Observation
+              ↓
+        PCProduct.observation
+              ↓
+        Verification
     """
 
     # --------------------------------------------------------------------------
-    # Seed Runtime
-    #
-    # DELL:
-    #
-    #   PCProduct DB
-    #       ↓
-    #   Existing DELL products
+    # Seed
     # --------------------------------------------------------------------------
 
-    run_stage(
+    seeds = run_stage(
         PIPELINE_SEED,
         run_seed,
     )
@@ -367,19 +318,7 @@ def run(
         return
 
     # --------------------------------------------------------------------------
-    # Listing Acquire Runtime
-    #
-    # DELL:
-    #
-    #   PCProduct.affiliate_url
-    #          ↓
-    #   url_resolver.py
-    #          ↓
-    #   DELL Official URL
-    #          ↓
-    #   HTTP
-    #          ↓
-    #   HTML
+    # Listing Acquire
     # --------------------------------------------------------------------------
 
     run_stage(
@@ -394,12 +333,6 @@ def run(
         return
 
     # --------------------------------------------------------------------------
-    # Listing Observation Runtime
-    #
-    # HTML
-    #   ↓
-    # Manufacturer Reality
-    #   ↓
     # Observation
     # --------------------------------------------------------------------------
 
@@ -414,14 +347,10 @@ def run(
         return
 
     # --------------------------------------------------------------------------
-    # Card Formatter Runtime
-    #
-    # Observation
-    #      ↓
-    # Runtime Contract
+    # Formatter
     # --------------------------------------------------------------------------
 
-    contracts = run_stage(
+    runtimes = run_stage(
         PIPELINE_FORMATTER,
         run_formatter,
         observations=observations,
@@ -433,68 +362,31 @@ def run(
         return
 
     # --------------------------------------------------------------------------
-    # Mapper Runtime
-    # --------------------------------------------------------------------------
-
-    print()
-
-    print(
-        "=" * 70
-    )
-
-    trace_pipeline(
-        PIPELINE_MAPPER,
-    )
-
-    print(
-        "=" * 70
-    )
-
-    contracts = run_mapper()
-
-    if checkpoint(
-        "mapper",
-    ):
-        return
-
-    # --------------------------------------------------------------------------
-    # ImportDocument Writer Runtime
-    # --------------------------------------------------------------------------
-
-    print()
-
-    print(
-        "=" * 70
-    )
-
-    trace_pipeline(
-        PIPELINE_WRITER,
-    )
-
-    print(
-        "=" * 70
-    )
-
-    run_writer(
-        contracts=contracts,
-    )
-
-    if checkpoint(
-        "writer",
-    ):
-        return
-
-    # --------------------------------------------------------------------------
-    # Integration Runtime
+    # Observation Store
     # --------------------------------------------------------------------------
 
     run_stage(
-        PIPELINE_INTEGRATION,
-        run_integration,
+        PIPELINE_OBSERVATION_STORE,
+        run_observation_store,
+        runtimes=runtimes,
     )
 
     if checkpoint(
-        "integration",
+        "observation_store",
+    ):
+        return
+
+    # --------------------------------------------------------------------------
+    # Verification
+    # --------------------------------------------------------------------------
+
+    run_stage(
+        PIPELINE_VERIFY,
+        run_verify,
+    )
+
+    if checkpoint(
+        "verify",
     ):
         return
 
@@ -524,12 +416,12 @@ def run(
 def main(
     *,
     force: bool = False,
-) -> None:
+):
     """
-    DELL Runtime Entry Point.
+    DELL Scraping Runtime Entry Point.
     """
 
-    run(
+    return run(
         force=force,
     )
 
@@ -539,4 +431,5 @@ def main(
 # ==============================================================================
 
 if __name__ == "__main__":
+
     main()

@@ -7,7 +7,7 @@ FILE:
 
 SHIN CORE LINX
 
-dell Import Contract Mapper
+DELL Import Contract Mapper
 
 Reality First Pipeline
 
@@ -50,7 +50,7 @@ NOT Responsibilities
 
 IMPORTANT
 
-dell Observation Runtime has already produced
+DELL Observation Runtime has already produced
 structured Published Reality.
 
 Example:
@@ -86,18 +86,7 @@ from acquisition.common.trace.reality_trace import (
 )
 
 
-from acquisition.common.affiliate.affiliate import (
-    generate_affiliate_url,
-)
-
-
-from .formatter_cards import (
-    formatter,
-)
-
-
 from .settings import (
-    AFFILIATE,
     SITE_NAME,
 )
 
@@ -174,7 +163,7 @@ def translate_specifications(
     Translate Published Specification Reality
     into Observation Runtime.
 
-    dell exposes specifications as structured
+    DELL exposes specifications as structured
     label/value pairs.
 
     Example:
@@ -220,7 +209,6 @@ def translate_specifications(
         "wifi": "",
 
         "guarantee": "",
-
     }
 
     raw_specs = runtime.get(
@@ -447,7 +435,7 @@ def build_commerce(
     """
     Build Commerce Contract.
 
-    dell publishes price information on
+    DELL publishes price information on
     the listing card.
 
     Stock information is not currently
@@ -496,64 +484,46 @@ def build_media(
 
 
 # ==============================================================================
-# Affiliate Builder
+# DELL URL Contract Builder
 # ==============================================================================
 
 def build_affiliate(
     runtime: dict,
 ) -> dict:
     """
-    Build Affiliate Contract.
+    Build DELL URL Contract.
 
-    Reality URL
-        ↓
-    Common Affiliate Generator
-        ↓
-    Affiliate URL
+    DELL Runtime does NOT generate
+    a new Affiliate URL.
 
-    Provider-specific logic remains inside
-    acquisition.common.affiliate.affiliate.
+    The URL reaching this stage is already
+    the resolved DELL Manufacturer URL.
+
+    Pipeline:
+
+        PCProduct.affiliate_url
+                ↓
+        DELL URL Resolver
+                ↓
+        DELL Manufacturer URL
+                ↓
+        Observation
+                ↓
+        Formatter
+                ↓
+        Mapper
+                ↓
+        Preserve URL
+
+    No Affiliate transformation is performed.
+
+    The existing "affiliate" Contract key
+    is preserved for downstream compatibility.
     """
 
     product_url = runtime.get(
         "raw_detail_url",
         "",
-    )
-
-    affiliate_url = generate_affiliate_url(
-        product_url,
-        AFFILIATE,
-    )
-
-    print(
-        "=" * 70
-    )
-
-    print(
-        "AFFILIATE BUILDER"
-    )
-
-    print(
-        "=" * 70
-    )
-
-    print(
-        "URL       :",
-        product_url,
-    )
-
-    print(
-        "CONFIG    :",
-        AFFILIATE,
-    )
-
-    print(
-        "GENERATED :",
-        affiliate_url,
-    )
-
-    print(
-        "=" * 70
     )
 
     return {
@@ -564,7 +534,7 @@ def build_affiliate(
 
         "url":
 
-            affiliate_url,
+            product_url,
     }
 
 
@@ -665,7 +635,7 @@ def build_contract(
             ),
 
         # ----------------------------------------------------------------------
-        # Affiliate
+        # DELL URL
         # ----------------------------------------------------------------------
 
         "affiliate":
@@ -690,9 +660,11 @@ def build_contract(
 # Mapper Runtime
 # ==============================================================================
 
-def mapper() -> list[dict]:
+def mapper(
+    runtimes: list[dict],
+) -> list[dict]:
     """
-    Execute dell Import Contract Mapper.
+    Execute DELL Import Contract Mapper.
 
     Pipeline:
 
@@ -723,7 +695,9 @@ def mapper() -> list[dict]:
         "=" * 70
     )
 
-    runtimes = formatter()
+    print(
+        f"INPUT RUNTIMES : {len(runtimes)}"
+    )
 
     contracts: list[dict] = []
 
@@ -771,13 +745,32 @@ def mapper() -> list[dict]:
 # Entry Point
 # ==============================================================================
 
-def main():
+def main(
+    runtimes: list[dict] | None = None,
+):
     """
     Runtime Entry Point.
+
+    Pipeline owns Formatter execution.
+
+    Mapper receives Formatter Runtime output.
     """
 
-    return mapper()
+    if runtimes is None:
 
+        raise RuntimeError(
+            "DELL Mapper requires "
+            "Formatter Runtime output."
+        )
+
+    return mapper(
+        runtimes,
+    )
+
+
+# ==============================================================================
+# Direct Execution
+# ==============================================================================
 
 if __name__ == "__main__":
 
