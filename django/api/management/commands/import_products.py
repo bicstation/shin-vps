@@ -74,6 +74,11 @@ REALITY_RUNTIMES = {
         "LinkShare",
         "acquisition.sources.scraping.linkshare.run",
     ),
+    
+    "dell": (
+        "DELL",
+        "acquisition.sources.scraping.dell.run",
+    ),
 
 }
 
