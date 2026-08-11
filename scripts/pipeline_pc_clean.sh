@@ -341,7 +341,7 @@ run_django import_products linkshare api 43708
 
 run_django import_products linkshare ftp 2543
 run_django import_products linkshare ftp 2557
-run_django import_products linkshare ftp 35909
+# run_django import_products linkshare ftp 35909
 run_django import_products linkshare ftp 36508
 
 
@@ -357,6 +357,7 @@ run_django import_products mouse
 run_django import_products dell
 run_django import_products fujitsu
 run_django import_products dynabook
+run_django import_products hp
 
 
 # ==========================================================
