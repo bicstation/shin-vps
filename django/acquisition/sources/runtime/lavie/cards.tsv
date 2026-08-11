@@ -70,9 +70,11 @@ all-entry	n14slim	N14 Slim クリエイティブな作業に対応するハイ�
 all-entry	direct-n13slim	N13 Slim(ブルー)Office搭載で快適に操作できるおすすめモデル	PC-GE33E391YAD3H41AA	10010356	pc-ge33e391yad3h41aa	https://www.nec-lavie.jp/products/notebook/direct-n13slim/
 all-entry	direct-n13slim	N13 Slim(ブルー)アプリの操作が快適なおすすめモデル	PC-GE33E395YAD3H41AA	10010665	pc-ge33e395yad3h41aa	https://www.nec-lavie.jp/products/notebook/direct-n13slim/
 all-entry	direct-n13slim	N13 Slim(ブルー、ミニマムソフト)アプリの操作が快適なおすすめモデル	PC-GE33E396YAD3H41AA	10010698	pc-ge33e396yad3h41aa	https://www.nec-lavie.jp/products/notebook/direct-n13slim/
+all-entry	direct-n13slim	16GBメモリ モデル	PC-GE33E485YAD3H21AA	10011540	pc-ge33e485yad3h21aa	https://www.nec-lavie.jp/products/notebook/direct-n13slim/
 all-entry	direct-n13slim	N13 Slim(シルバー)4年保証付き、アプリの操作が快適なおすすめモデル	PC-GE33E495YAC3H41AG	10010678	pc-ge33e495yac3h41ag	https://www.nec-lavie.jp/products/notebook/direct-n13slim/
 all-entry	direct-n13slim	N13 Slim(シルバー)アプリの操作が快適なおすすめモデル	PC-GE33E495YAD3H41AA	10010287	pc-ge33e495yad3h41aa	https://www.nec-lavie.jp/products/notebook/direct-n13slim/
 all-entry	direct-n13slim	N13 Slim(シルバー、ミニマムソフト)アプリの操作が快適なおすすめモデル	PC-GE33E496YAD3H41AA	10010308	pc-ge33e496yad3h41aa	https://www.nec-lavie.jp/products/notebook/direct-n13slim/
+all-entry	n15slim	N15 Slim (グレー)Office搭載のおすすめモデル	PC-GE33ETY1YAD2H2YAA	10011520	pc-ge33ety1yad2h2yaa	https://www.nec-lavie.jp/products/notebook/n15slim/index.html
 all-entry	n15slim	N15 Slim (グレー)アプリの操作が快適なおすすめモデル	PC-GE33ETY5YAD2H2YAA	10011308	pc-ge33ety5yad2h2yaa	https://www.nec-lavie.jp/products/notebook/n15slim/index.html
 all-entry	n15slim	N15 Slim (グレー、ミニマムソフト)アプリの操作が快適なおすすめモデル	PC-GE33ETY6YAD2H2YAA	10011257	pc-ge33ety6yad2h2yaa	https://www.nec-lavie.jp/products/notebook/n15slim/index.html
 all-entry	n14slim	N14 Slim タッチパネル搭載、快適にアプリを操作できるおすすめモデル	PC-GE35DRL5YAD2HSYAA	10010280	pc-ge35drl5yad2hsyaa	https://www.nec-lavie.jp/products/notebook/n14slim/index.html
@@ -167,7 +169,6 @@ bizpc-mate	ml-r	エントリーモデルとして十分な性能を備えたコ�
 bizpc-mate	ml-r	エントリーモデルとして十分な性能を備えたコストパフォーマンスPC(Windows 11 Pro モデル)	PC-M2Z39LZGM8KRMRSZZ	10010600	pc-m2z39lzgm8krmrszz	https://www.nec-lavie.jp/products/bizpc/mate/ml-r/
 bizpc-mate	ml-r	エントリーモデルとして十分な性能を備えたコストパフォーマンスPC(Windows 11 Home モデル)	PC-M2Z39LZXM8KRM4SZZ	10010241	pc-m2z39lzxm8krm4szz	https://www.nec-lavie.jp/products/bizpc/mate/ml-r/
 bizpc-mate	ml-r	エントリーモデルとして十分な性能を備えたコストパフォーマンスPC(Windows 11 Home モデル)	PC-M2Z39LZXM8KRMRSZZ	10010599	pc-m2z39lzxm8krmrszz	https://www.nec-lavie.jp/products/bizpc/mate/ml-r/
-tablet-smalllight	t8	LAVIE Tab T8(PC-T0855KAS)(ルナグレー)	PC-T0855KAS	897848	pc-t0855kas	https://www.nec-lavie.jp/products/tablet/t8/index.html
 tablet-smalllight	t10	LAVIE Tab T10(PC-T1055KAS)(ルナグレー)	PC-T1055KAS	897573	pc-t1055kas	https://www.nec-lavie.jp/products/tablet/t10/
 tablet-smalllight	direct-t11n	LAVIE Tab T11N(PC-T1175LAC)(サンドローズ)	PC-T1175LAC	898343	pc-t1175lac	https://www.nec-lavie.jp/products/tablet/direct-t11n/
 tablet-smalllight	direct-t11n	LAVIE Tab T11N(PC-T1175LAS)(ルナグレー)	PC-T1175LAS	898344	pc-t1175las	https://www.nec-lavie.jp/products/tablet/direct-t11n/
@@ -188,15 +189,16 @@ bizpc-versapro	t	AMD Ryzen AI搭載の 16型スタンダードノートPC	PC-V25
 bizpc-versapro	t	AMD Ryzen AI搭載の 16型スタンダードノートPC	PC-V25N5CAHMC8TZDYZY	10011427	pc-v25n5cahmc8tzdyzy	https://www.nec-lavie.jp/products/bizpc/notebook/bn56r/t/index.html
 bizpc-versapro	vm-r	AI搭載で高速処理＆高速通信が可能なモバイルノート	PC-V2649MMGHC6RZGYZY	10011332	pc-v2649mmghc6rzgyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vm-r/
 bizpc-versapro	vm-r	AI搭載で高速処理＆高速通信が可能なモバイルノート	PC-V2649MMGHC8RZEYZY	10011330	pc-v2649mmghc8rzeyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vm-r/
-bizpc-versapro	vx-p	幅広い構成から用途に応じたスペックを選びたい方におすすめ	PC-V2H52XDGBC8PZEYZY	10009815	pc-v2h52xdgbc8pzeyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vx-p/
+bizpc-versapro	vx-p	幅広い構成から用途に応じたスペックを選びたい方におすすめ	PC-V2H52XBGBC6PZHYZY	10011530	pc-v2h52xbgbc6pzhyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vx-p/
+bizpc-versapro	vx-p	幅広い構成から用途に応じたスペックを選びたい方におすすめ	PC-V2H52XBGBC8PZEYZY	10011529	pc-v2h52xbgbc8pzeyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vx-p/
 bizpc-versapro	vx-r	NPU搭載の先進CPU、Wi-Fi 7を採用したスタンダードノートPC	PC-V2H53XDGHC4RZKYZY	10009879	pc-v2h53xdghc4rzkyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vx-r/
 bizpc-versapro	vx-r	NPU搭載の先進CPU、Wi-Fi 7を採用したスタンダードノートPC	PC-V2H53XDGHC6RZGYZY	10009878	pc-v2h53xdghc6rzgyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vx-r/
 bizpc-versapro	t	高性能×拡張性でビジネスを加速 16型AIノートPC	PC-V2HN7AAHMCRTZYYZY	10011420	pc-v2hn7aahmcrtzyyzy	https://www.nec-lavie.jp/products/bizpc/notebook/bn76c/t/index.html
 bizpc-versapro	t	高性能×拡張性でビジネスを加速 15.6型AIノートPC	PC-V2HN7ACHMC4TZYYZY	10011416	pc-v2hn7achmc4tzyyzy	https://www.nec-lavie.jp/products/bizpc/notebook/bn76c/t/index.html
 bizpc-versapro	t	日常業務を安定して支える、16型スタンダードノートPC	PC-V2LN5BAGMC8TZAYZY	10011449	pc-v2ln5bagmc8tzayzy	https://www.nec-lavie.jp/products/bizpc/notebook/bn56c/t/index.html
 bizpc-versapro	t	日常業務を安定して支える、15.6型スタンダードノートPC	PC-V2LN5BCGMC8TZAYZY	10011481	pc-v2ln5bcgmc8tzayzy	https://www.nec-lavie.jp/products/bizpc/notebook/bn56c/t/index.html
+bizpc-versapro	vd-p	高負荷なデータ管理業務や基幹業務などにおすすめ	PC-V2M47DBGBC6PZHYZY	10011531	pc-v2m47dbgbc6pzhyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vd-p/
 bizpc-versapro	vd-p	高負荷なデータ管理業務や基幹業務などにおすすめ	PC-V2M47DBGBC8PZEYZY	10009271	pc-v2m47dbgbc8pzeyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vd-p/
-bizpc-versapro	vd-p	高負荷なデータ管理業務や基幹業務などにおすすめ(フルHD液晶)	PC-V2M47DDGBC8PZEYZY	10011340	pc-v2m47ddgbc8pzeyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vd-p/
 bizpc-versapro	vs-s	第13世代インテル® Core™ プロセッサー搭載タブレットPC	PC-V2M47S4G8C8SZGYZY	10010174	pc-v2m47s4g8c8szgyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vs-s/
 bizpc-versapro	vx-p	幅広い構成から用途に応じたスペックを選びたい方におすすめ	PC-V2M47XBGBC8PZEYZY	10009814	pc-v2m47xbgbc8pzeyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vx-p/
 bizpc-versapro	vx-r	NPU搭載の先進CPU、Wi-Fi 7を採用したスタンダードノートPC	PC-V2M49XBGHC8RZGYZY	10009876	pc-v2m49xbghc8rzgyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vx-r/
@@ -215,7 +217,7 @@ bizpc-versapro	vf-p	第13世代インテル® Core™ プロセッサー 搭載�
 bizpc-versapro	vf-p	第13世代インテル® Core™ プロセッサー 搭載バリューPC	PC-V2T46FDGMC8PZGYZY	10009873	pc-v2t46fdgmc8pzgyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vf-p/index.html
 bizpc-versapro	vn-s	第13世代インテル® Core™ プロセッサー搭載セキュアモバイル	PC-V2T46NUGHC6SZPYZY	10010172	pc-v2t46nughc6szpyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vn-s
 bizpc-versapro	vn-s	第13世代インテル® Core™ プロセッサー搭載セキュアモバイル	PC-V2T46NUGHC8SZPYZY	10011512	pc-v2t46nughc8szpyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vn-s
-bizpc-versapro	vs-s	vPro対応 第13世代インテル® Core™ プロセッサー搭載タブレットPC	PC-V2T46S4G8C8SZHYZY	10011511	pc-v2t46s4g8c8szhyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vs-s/
+bizpc-versapro	vs-s	vPro対応 第13世代インテル® Core™ プロセッサー搭載タブレットPC	PC-V2T46S4G8C8SZKYZY	10011532	pc-v2t46s4g8c8szkyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vs-s/
 bizpc-versapro	vx-r	NPU搭載の先進CPU、Wi-Fi 7を採用したスタンダードノートPC	PC-V2T48XBGHC8RZEYZY	10009911	pc-v2t48xbghc8rzeyzy	https://www.nec-lavie.jp/products/bizpc/versapro/vx-r/
 bizpc-versapro	t	大幅にモバイル性能を強化したスタンダード14型モバイル	PC-V2TM5FDGHC8TZDYZY	10011475	pc-v2tm5fdghc8tzdyzy	https://www.nec-lavie.jp/products/bizpc/notebook/bm54c/t/index.html
 bizpc-versapro	t	大幅にモバイル性能を強化したスタンダード14型モバイル(タッチパネルモデル)	PC-V2TM5FJGHC8TZDYZY	10011453	pc-v2tm5fjghc8tzdyzy	https://www.nec-lavie.jp/products/bizpc/notebook/bm54c/t/index.html

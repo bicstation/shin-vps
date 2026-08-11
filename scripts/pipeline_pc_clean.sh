@@ -354,6 +354,7 @@ run_django import_products ozgaming
 run_django import_products storm
 run_django import_products sycom
 run_django import_products mouse
+run_django import_products lenovo
 run_django import_products dell
 run_django import_products fujitsu
 run_django import_products dynabook

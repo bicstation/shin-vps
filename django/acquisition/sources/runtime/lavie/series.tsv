@@ -29,13 +29,14 @@ series_slug	raw_title	product_id
 	一般業務に適した機能性を備えたエントリーPC	PC-V2545WDGMC5SZKYZY
 	一般業務に適した機能性を備えたエントリーPC	PC-V2545WDGMC7SZGYZY
 	一般業務に適した機能性を備えたエントリーPC	PC-V2545WDGMC9SZEYZY
-	幅広い構成から用途に応じたスペックを選びたい方におすすめ	PC-V2H52XDGBC8PZEYZY
+	幅広い構成から用途に応じたスペックを選びたい方におすすめ	PC-V2H52XBGBC6PZHYZY
+	幅広い構成から用途に応じたスペックを選びたい方におすすめ	PC-V2H52XBGBC8PZEYZY
 	高性能×拡張性でビジネスを加速 16型AIノートPC	PC-V2HN7AAHMCRTZYYZY
 	高性能×拡張性でビジネスを加速 15.6型AIノートPC	PC-V2HN7ACHMC4TZYYZY
 	日常業務を安定して支える、16型スタンダードノートPC	PC-V2LN5BAGMC8TZAYZY
 	日常業務を安定して支える、15.6型スタンダードノートPC	PC-V2LN5BCGMC8TZAYZY
+	高負荷なデータ管理業務や基幹業務などにおすすめ	PC-V2M47DBGBC6PZHYZY
 	高負荷なデータ管理業務や基幹業務などにおすすめ	PC-V2M47DBGBC8PZEYZY
-	高負荷なデータ管理業務や基幹業務などにおすすめ(フルHD液晶)	PC-V2M47DDGBC8PZEYZY
 	第13世代インテル® Core™ プロセッサー搭載タブレットPC	PC-V2M47S4G8C8SZGYZY
 	幅広い構成から用途に応じたスペックを選びたい方におすすめ	PC-V2M47XBGBC8PZEYZY
 	ビジネスに必要な性能と持ち運びやすさのエントリーモバイルPC	PC-V2M50BUGHC6RZGAZY
@@ -76,6 +77,7 @@ series_slug	raw_title	product_id
 14	14世代インテル® Core™ プロセッサーを選択可能なスタンダードPC（24型液晶セット）	PC-M2J47BZGJ8KSNRSZZ
 14	14世代インテル® Core™ プロセッサーを選択可能なスタンダードPC（24型液晶セット）	PC-M2P50BZGJ8KSNRSZZ
 14	14世代インテル® Core™ プロセッサーを選択可能なスタンダードPC	PC-M2Z39BZGJ8KSNRSZZ
+16gb	16GBメモリ モデル	PC-GE33E485YAD3H21AA
 a23	A23 インターネットやメールに最適な一体型	PC-GJ122CC5T3D3AUAAA
 a23	A23 (ミニマムソフト) インターネットやメールに最適な一体型	PC-GJ122CC6T3D3AUAAA
 a23	A23 ExcelやWordが使えるOffice搭載、快適に操作できるおすすめモデル	PC-GJ134CC1T3D3AUAAA
@@ -149,7 +151,6 @@ dt	DT(ミニマムモデル)エントリーモデル	PC-GJ39EZZ6T5D1A2AAA
 dt	DT エントリーモデル	PC-GJ39EZZAT5D1A4AAA
 dt	DT エントリーモデル(ミニマムソフト）	PC-GJ39EZZDT5D1A4AAA
 lavie	LAVIE Tab T12発表記念セット (PC-TAB12Q01+ガラス保護フィルム)	NSLCB168T2QZ1S
-lavie	LAVIE Tab T8(PC-T0855KAS)(ルナグレー)	PC-T0855KAS
 lavie	LAVIE Tab T10(PC-T1055KAS)(ルナグレー)	PC-T1055KAS
 lavie	LAVIE Tab T11N(PC-T1175LAC)(サンドローズ)	PC-T1175LAC
 lavie	LAVIE Tab T11N(PC-T1175LAS)(ルナグレー)	PC-T1175LAS
@@ -181,6 +182,7 @@ n15	N15 (標準ソフト) アプリの操作が快適なおすすめモデル	PC
 n15	N15 (標準ソフト) 動画の編集も快適なハイスペックモデル	PC-GE177AD5YAD3HVYAA
 n15	N15 Slim (グレー)動画の編集も快適なハイスペックモデル	PC-GE32BJY5YAD2H4YAA
 n15	N15 Slim (ブルー)動画の編集も快適なハイスペックモデル	PC-GE32BLY5YAD2H4YAA
+n15	N15 Slim (グレー)Office搭載のおすすめモデル	PC-GE33ETY1YAD2H2YAA
 n15	N15 Slim (グレー)アプリの操作が快適なおすすめモデル	PC-GE33ETY5YAD2H2YAA
 n15	N15 Slim (グレー、ミニマムソフト)アプリの操作が快適なおすすめモデル	PC-GE33ETY6YAD2H2YAA
 n15-r	N15(R) (標準ソフト) 動画の編集も快適なハイスペックモデル	PC-GE27BAD5YAD3HVYAA
@@ -252,6 +254,6 @@ vpro	vPro対応 豊富なBTOで業務を強力にサポートするハイエン�
 vpro	vPro対応 第14世代インテル® Core™ プロセッサーを選択可能なスモールPC	PC-M2Q48CZGH4KSMJSZZ
 vpro	vPro対応 14世代インテル® Core™ プロセッサーを選択可能なスタンダードPC	PC-M2Q50BZGJ8KSNRSZZ
 vpro	vPro対応 第14世代インテル® Core™ プロセッサーを選択可能なハイエンドPC	PC-M2Q50EZGJ8KSNRSZZ
-vpro	vPro対応 第13世代インテル® Core™ プロセッサー搭載タブレットPC	PC-V2T46S4G8C8SZHYZY
+vpro	vPro対応 第13世代インテル® Core™ プロセッサー搭載タブレットPC	PC-V2T46S4G8C8SZKYZY
 windows	Windows 11 Pro モデル	PC-V2T46FBGMC8PZEYZY
 windows	Windows 11 Home モデル	PC-V2T46FBXMC8PZEYZY
