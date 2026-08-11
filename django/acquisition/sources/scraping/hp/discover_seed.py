@@ -1,105 +1,75 @@
 #!/usr/bin/env python3
 
-"""
-==============================================================================
-FILE:
-    acquisition/sources/scraping/hp/discover_seed.py
-
-SHIN CORE LINX
-
-HP Seed Discovery Runtime
-
-Reality
-
-PCProduct DB
-    │
-    ▼
-Seed Runtime
-    │
-    ▼
-Seed Reality
-
-
-Responsibilities
-
-- Load existing HP PCProduct Reality
-- Validate Seed Entries
-
-NOT
-
-- URL Resolution
-- HTTP Fetch
-- Acquisition
-- Observation
-- Mapping
-- Persistence
-============================================================================== 
-"""
+# ============================================================================
+#
+# FILE:
+# acquisition/sources/scraping/hp/discover_seed.py
+#
+# SHIN CORE LINX
+#
+# HP Seed Discovery Runtime
+#
+# Reality
+#
+# seed.tsv
+#     │
+#     ▼
+# Seed Runtime
+#     │
+#     ▼
+# Seed Reality
+#
+# Responsibilities
+#
+# - Load Seed Reality
+#
+# NOT
+#
+# - HTTP Fetch
+# - Acquisition
+# - Observation
+# - Mapping
+# - Persistence
+#
+# ============================================================================
 
 from __future__ import annotations
 
+import csv
 
-from api.models import (
-    PCProduct,
+from .settings import (
+    SEED_TSV,
 )
 
 
-# ==============================================================================
+# ============================================================================
 # Runtime
-# ==============================================================================
+# ============================================================================
 
-def discover() -> list[dict[str, str]]:
-    """
-    Load HP Seed Reality from existing PCProduct records.
+def discover():
 
-    Returns
-    -------
+    with SEED_TSV.open(
+        "r",
+        encoding="utf-8",
+        newline="",
+    ) as f:
 
-    list[dict[str, str]]
-        Seed entries for HP Reality Acquisition.
-    """
-
-    products = (
-        PCProduct.objects
-        .filter(
-            maker="hp",
-        )
-        .order_by(
-            "id",
-        )
-    )
-
-    seeds: list[dict[str, str]] = []
-
-    for product in products:
-
-        seeds.append(
-            {
-                "unique_id": product.unique_id or "",
-                "maker": product.maker or "",
-                "name": product.name or "",
-                "affiliate_url": product.affiliate_url or "",
-            }
+        return list(
+            csv.DictReader(
+                f,
+                delimiter="\t",
+            )
         )
 
-    return seeds
 
-
-# ==============================================================================
+# ============================================================================
 # Entry Point
-# ==============================================================================
+# ============================================================================
 
-def main() -> list[dict[str, str]]:
-    """
-    Runtime Entry Point.
-    """
+def main():
 
     return discover()
 
-
-# ==============================================================================
-# Direct Execution
-# ==============================================================================
 
 if __name__ == "__main__":
 

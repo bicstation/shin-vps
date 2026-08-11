@@ -1,0 +1,17 @@
+entry_name	maker	series	slug	runtime	url
+HP All	hp	ALL	hp_all	scraping	https://jp.ext.hp.com/search/?orderBy=score&type=Product
+HP	hp	HP	hp	scraping	https://jp.ext.hp.com/search/?category_name=%E3%83%8E%E3%83%BC%E3%83%88%E3%83%91%E3%82%BD%E3%82%B3%E3%83%B3&hp_facet_subbrand=HP&orderBy=score&type=Product
+EliteBook	hp	EliteBook	elitebook	scraping	https://jp.ext.hp.com/search/?category_name=%E3%83%8E%E3%83%BC%E3%83%88%E3%83%91%E3%82%BD%E3%82%B3%E3%83%B3&hp_facet_subbrand=EliteBook&orderBy=score&type=Product
+OmniBook 3	hp	OmniBook 3	omnibook_3	scraping	https://jp.ext.hp.com/search/?category_name=%E3%83%8E%E3%83%BC%E3%83%88%E3%83%91%E3%82%BD%E3%82%B3%E3%83%B3&hp_facet_subbrand=OmniBook%203&orderBy=score&type=Product
+OmniBook 5	hp	OmniBook 5	omnibook_5	scraping	https://jp.ext.hp.com/search/?category_name=%E3%83%8E%E3%83%BC%E3%83%88%E3%83%91%E3%82%BD%E3%82%B3%E3%83%B3&hp_facet_subbrand=OmniBook%205&orderBy=score&type=Product
+OmniBook 7	hp	OmniBook 7	omnibook_7	scraping	https://jp.ext.hp.com/search/?category_name=%E3%83%8E%E3%83%BC%E3%83%88%E3%83%91%E3%82%BD%E3%82%B3%E3%83%B3&hp_facet_subbrand=OmniBook%207&orderBy=score&type=Product
+OmniBook Ultra	hp	OmniBook Ultra	omnibook_ultra	scraping	https://jp.ext.hp.com/search/?category_name=%E3%83%8E%E3%83%BC%E3%83%88%E3%83%91%E3%82%BD%E3%82%B3%E3%83%B3&hp_facet_subbrand=OmniBook%20Ultra&orderBy=score&type=Product
+OmniBook X	hp	OmniBook X	omnibook_x	scraping	https://jp.ext.hp.com/search/?category_name=%E3%83%8E%E3%83%BC%E3%83%88%E3%83%91%E3%82%BD%E3%82%B3%E3%83%B3&hp_facet_subbrand=OmniBook%20X&orderBy=score&type=Product
+ProBook	hp	ProBook	probook	scraping	https://jp.ext.hp.com/search/?category_name=%E3%83%8E%E3%83%BC%E3%83%88%E3%83%91%E3%82%BD%E3%82%B3%E3%83%B3&hp_facet_subbrand=ProBook&orderBy=score&type=Product
+OmniDesk	hp	OmniDesk	omnidesk	scraping	https://jp.ext.hp.com/search/?category_name=%E3%83%87%E3%82%B9%E3%82%AF%E3%83%88%E3%83%83%E3%83%97&hp_facet_subbrand=OmniDesk&orderBy=score&type=Product
+OmniStudio	hp	OmniStudio	omnistudio	scraping	https://jp.ext.hp.com/search/?category_name=%E3%83%87%E3%82%B9%E3%83%88%E3%83%83%E3%83%97&hp_facet_subbrand=OmniStudio&orderBy=score&type=Product
+HP Desktop	hp	HP	desktop_hp	scraping	https://jp.ext.hp.com/search/?category_name=%E3%83%87%E3%82%B9%E3%83%88%E3%83%83%E3%83%97&hp_facet_subbrand=HP&orderBy=score&type=Product
+Elite Desktop	hp	Elite	elite_desktop	scraping	https://jp.ext.hp.com/search/?category_name=%E3%83%87%E3%82%B9%E3%83%88%E3%83%83%E3%83%97&hp_facet_subbrand=Elite&orderBy=score&type=Product
+Pro Desktop	hp	Pro	pro_desktop	scraping	https://jp.ext.hp.com/search/?category_name=%E3%83%87%E3%82%B9%E3%83%88%E3%83%83%E3%83%97&hp_facet_subbrand=Pro&orderBy=score&type=Product
+Gaming	hp	Gaming	gaming	scraping	https://jp.ext.hp.com/search/?category_name=%E3%82%B2%E3%83%BC%E3%83%9F%E3%83%B3%E3%82%B0&orderBy=score&type=Product
+Workstation	hp	Workstation	workstation	scraping	https://jp.ext.hp.com/search/?category_name=%E3%83%AF%E3%83%BC%E3%82%AF%E3%82%B9%E3%83%86%E3%83%BC%E3%82%B7%E3%83%A7%E3%83%B3&orderBy=score&type=Product

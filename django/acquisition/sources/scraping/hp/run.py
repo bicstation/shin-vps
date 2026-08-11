@@ -1,27 +1,20 @@
 """
-==============================================================================
-FILE:
-    acquisition/sources/scraping/dell/run.py
-
 SHIN CORE LINX
-
-ACER Runtime
+HP Runtime
 
 Entry Point
-==============================================================================
 """
 
 from __future__ import annotations
-
 
 from .pipeline import (
     main as pipeline,
 )
 
 
-# ==============================================================================
+# ============================================================================
 # Entry Point
-# ==============================================================================
+# ============================================================================
 
 def main(
     *,
@@ -31,14 +24,25 @@ def main(
     force: bool = False,
 ) -> None:
     """
-    Execute STORM Runtime.
+    Execute HP Runtime.
+
+    Compatibility arguments are accepted from
+    the shared import_products command.
+
+    HP Runtime does not currently use:
+
+    - method
+    - mid
+    - list_only
+    - force
     """
 
-    pipeline(
-        force=force,
-    )
+    pipeline()
 
+
+# ============================================================================
+# Standalone Execution
+# ============================================================================
 
 if __name__ == "__main__":
-
     main()

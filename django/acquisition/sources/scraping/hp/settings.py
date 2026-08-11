@@ -1,16 +1,36 @@
 #!/usr/bin/env python3
-"""
-==============================================================================
-FILE:
-acquisition/sources/scraping/hp/settings.py
 
-SHIN CORE LINX
+# ==============================================================================
+#
+# FILE:
+# acquisition/sources/scraping/hp/settings.py
+#
+# SHIN CORE LINX
+#
+# HP Runtime Settings
+#
+# Reality First
+#
+# Responsibilities
+#
+# - Runtime Configuration
+# - Fetch Runtime Configuration
+# - Reality Runtime Configuration
+# - Affiliate Runtime Configuration
+# - Runtime Constants
+#
+# NOT Responsibilities
+#
+# - Catalog Definition
+# - Reality Observation
+# - Runtime Translation
+# - Product Definition
+#
+# ==============================================================================
 
-HP Runtime Settings
+from __future__ import annotations
 
-Reality First
-==============================================================================
-"""
+import os
 
 from pathlib import Path
 
@@ -21,11 +41,68 @@ from pathlib import Path
 
 RUNTIME_VERSION = "v2"
 
-SOURCE_NAME = "HP"
+SOURCE_NAME = "hp"
 
 ENCODING = "utf-8"
 
 TSV_DELIMITER = "\t"
+
+BASE_DIR = Path(__file__).resolve().parent
+
+SCRAPING_DIR = BASE_DIR.parent
+
+SOURCE_DIR = SCRAPING_DIR.parent
+
+
+# ==============================================================================
+# Environment
+# ==============================================================================
+
+#
+# .env
+#
+# RUNTIME_ENV=local
+# RUNTIME_ENV=vps
+#
+
+RUNTIME = os.getenv(
+    "RUNTIME_ENV",
+    "vps",
+)
+
+
+# ==============================================================================
+# Reality Runtime
+# ==============================================================================
+
+if RUNTIME == "local":
+
+    REALITY_MODE = "export"
+
+elif RUNTIME == "vps":
+
+    REALITY_MODE = "import"
+
+else:
+
+    raise RuntimeError(
+        f"Unknown Runtime : {RUNTIME}"
+    )
+
+
+print()
+
+print("=" * 70)
+
+print("🌍 REALITY MODE")
+
+print("=" * 70)
+
+print(f"Runtime  : {RUNTIME}")
+
+print(f"Mode     : {REALITY_MODE}")
+
+print("=" * 70)
 
 
 # ==============================================================================
@@ -34,7 +111,9 @@ TSV_DELIMITER = "\t"
 
 SITE_NAME = "HP"
 
-BASE_URL = "https://jp.ext.hp.com/"
+BASE_URL = "https://jp.ext.hp.com"
+
+LOCALE_PREFIX = ""
 
 
 # ==============================================================================
@@ -58,35 +137,12 @@ TIMEOUT = 30
 
 AFFILIATE = {
 
-    # True  : Generate Affiliate URL
-    # False : Use Reality URL
-
     "enabled": True,
-
-    "provider": "a8",
-
-    "a8mat": (
-        "3Z0VI7+20OX42+5G54+BW0YB"
-    ),
+    "provider": "linkshare",  
+    "id":"nNBA6GzaGrQ",
+    "mid": "35909",
 
 }
-
-
-# ==============================================================================
-# Directory
-# ==============================================================================
-
-BASE_DIR = (
-    Path(__file__).resolve().parent
-)
-
-SCRAPING_DIR = (
-    BASE_DIR.parent
-)
-
-SOURCE_DIR = (
-    SCRAPING_DIR.parent
-)
 
 
 # ==============================================================================
