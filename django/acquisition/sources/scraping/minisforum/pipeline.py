@@ -9,19 +9,19 @@ GMKtec Reality Acquisition Pipeline
 
 Reality Source
 GMKtec AMD Mini PC Collection
-↓
+        ↓
 Fetch Runtime
-↓
+        ↓
 Acquire Runtime
-↓
+        ↓
 Observation Runtime
-↓
+        ↓
 Formatter Runtime
-↓
+        ↓
 Mapper Runtime
-↓
+        ↓
 Integration Runtime
-↓
+        ↓
 Import Contract
 
 Reality First
@@ -32,6 +32,7 @@ Single Responsibility
 """
 
 from __future__ import annotations
+
 
 # ==========================================================
 # Runtime Imports
@@ -186,10 +187,7 @@ def checkpoint(
 # Fetch / Acquire Runtime
 # ==========================================================
 
-def run_acquire(
-    *,
-    force: bool = False,
-) -> bool:
+def run_acquire() -> bool:
     """
     Execute Fetch and Acquire Runtimes.
 
@@ -200,13 +198,6 @@ def run_acquire(
     Product Discovery
         ↓
     Product Fetch
-
-    force
-    -----
-    Passed only to Product Fetch Runtime.
-
-    Collection and Product Discovery remain
-    under their normal cache behavior.
     """
 
     # ======================================================
@@ -256,9 +247,7 @@ def run_acquire(
     )
     print("=" * 70)
 
-    fetch_product(
-        force=force,
-    )
+    fetch_product()
 
     if checkpoint(
         "fetch_product"
@@ -398,10 +387,7 @@ def run_integration() -> bool:
 # Pipeline
 # ==========================================================
 
-def run(
-    *,
-    force: bool = False,
-) -> None:
+def run() -> None:
     """
     Execute complete GMKtec Reality Acquisition Pipeline.
 
@@ -426,9 +412,7 @@ def run(
     # Fetch + Acquire
     # ======================================================
 
-    if run_acquire(
-        force=force,
-    ):
+    if run_acquire():
         return
 
     # ======================================================

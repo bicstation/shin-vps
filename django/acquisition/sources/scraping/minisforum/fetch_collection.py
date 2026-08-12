@@ -1,46 +1,43 @@
 #!/usr/bin/env python3
 """
 FILE:
-acquisition/sources/scraping/gmktec/fetch_product.py
+acquisition/sources/scraping/gmktec/fetch_collection.py
 
 SHIN CORE LINX
 
-GMKtec Product Fetch Runtime
+GMKtec Collection Fetch Runtime
 
-Product Discovery Reality
-↓
-Product URL
-↓
-HTTP Acquisition
-↓
+Reality Source
+    ↓
+Collection HTTP Acquisition
+    ↓
 AcquisitionDocument
-document_type = "product"
 
 Responsibilities
 
-- Load discovered Product Documents
-- Fetch Product HTML
-- Preserve Raw Product HTML
-- Update AcquisitionDocument
-- Skip already acquired Product Reality
+- Load Collection Reality Source
+- Fetch Collection HTML
+- Preserve Raw HTML
+- Save AcquisitionDocument
 
 NOT
 
-- Product Parsing
-- Product Observation
-- Product Name Extraction
-- Price Extraction
-- Image Extraction
-- Specification Extraction
+- Parse HTML
+- Discover Collections
+- Discover Products
+- Extract Product Data
+- Observe Reality
+- Generate Meaning
 - Mapping
 - Integration
-- Semantic Processing
+- Persistence to PCProduct
 
 Reality First
 """
 
 from __future__ import annotations
 
+import csv
 import random
 import time
 
@@ -51,6 +48,7 @@ from api.models.acquisition_document import (
 )
 
 from .settings import (
+    ROOT_TSV,
     SITE_NAME,
     TIMEOUT,
     USER_AGENT,
@@ -58,39 +56,39 @@ from .settings import (
 
 
 # ==========================================================
-# Product Reality
+# Root / Collection Seeds
 # ==========================================================
 
-def load_products() -> list[dict[str, str]]:
+def load_sources() -> list[dict[str, str]]:
     """
-    Load Product Discovery Reality.
+    Load enabled Collection Reality Sources.
 
-    Product URLs are stored in
-    AcquisitionDocument.
+    The configured ROOT_TSV contains the actual
+    Collection URL to acquire.
 
-    No TSV is used.
+    No Collection Discovery is performed here.
     """
 
-    documents = (
-        AcquisitionDocument.objects
-        .filter(
-            source_type="scraping",
-            source_name=SITE_NAME,
-            document_type="product",
-        )
-        .order_by(
-            "document_key",
-        )
-    )
+    with ROOT_TSV.open(
+        "r",
+        encoding="utf-8",
+        newline="",
+    ) as f:
 
-    return [
-        {
-            "slug": document.document_key,
-            "url": document.source_url,
-        }
-        for document in documents
-        if document.source_url
-    ]
+        reader = csv.DictReader(
+            f,
+            delimiter="\t",
+        )
+
+        return [
+            row
+            for row in reader
+            if (
+                row.get("enabled", "")
+                .lower()
+                == "true"
+            )
+        ]
 
 
 # ==========================================================
@@ -101,28 +99,23 @@ def fetch(
     force: bool = False,
 ) -> None:
     """
-    Fetch Product HTML.
+    Fetch configured Collection Reality.
 
-    Product Discovery Reality
-            ↓
-        Product URL
-            ↓
-        HTTP Response
-            ↓
+    Web
+        ↓
+    HTTP Response
+        ↓
     AcquisitionDocument
-
-    Existing Product HTML is preserved
-    and reused unless force=True.
     """
 
-    products = load_products()
+    rows = load_sources()
 
     print(
         "=" * 60
     )
 
     print(
-        "🌐 GMKTEC PRODUCT FETCH"
+        "GMKTEC COLLECTION FETCH"
     )
 
     print(
@@ -130,17 +123,17 @@ def fetch(
     )
 
     print(
-        f"Target : {len(products)} Products"
+        f"Target : {len(rows)} Collections"
     )
 
     print(
         "=" * 60
     )
 
-    if not products:
+    if not rows:
 
         print(
-            "⚠️ No Product Documents"
+            "⚠️ No enabled Collection Sources"
         )
 
         return
@@ -166,77 +159,76 @@ def fetch(
         tuple[str, str]
     ] = []
 
-    skipped: list[str] = []
-
     # ======================================================
-    # Product Loop
+    # Collection Loop
     # ======================================================
 
-    for index, product in enumerate(
-        products,
+    for index, row in enumerate(
+        rows,
         start=1,
     ):
 
-        slug = product["slug"]
-        url = product["url"]
+        slug = (
+            row.get(
+                "slug",
+                "",
+            )
+            .strip()
+        )
 
-        print(
-            f"[{index}/{len(products)}] {slug}"
+        url = (
+            row.get(
+                "url",
+                "",
+            )
+            .strip()
         )
 
         print(
-            f"URL    : {url}"
+            f"[{index}/{len(rows)}] {slug}"
         )
+
+        if not url:
+
+            print(
+                "  ❌ URL is empty"
+            )
+
+            failed.append(
+                (
+                    slug,
+                    "URL is empty",
+                )
+            )
+
+            print()
+
+            continue
 
         # ==================================================
-        # Cache Check
+        # Cache
         # ==================================================
 
         if not force:
 
-            document = (
-                AcquisitionDocument.objects
-                .filter(
+            exists = (
+                AcquisitionDocument.objects.filter(
                     source_type="scraping",
                     source_name=SITE_NAME,
-                    document_type="product",
+                    document_type="collection",
                     document_key=slug,
                 )
-                .first()
-            )
-            
-            print(
-                "DEBUG CACHE:",
-                slug,
-                "force=",
-                force,
-                "exists=",
-                document is not None,
-                "content=",
-                bool(document.content)
-                    if document is not None
-                    else False,
+                .exists()
             )
 
-            if (
-                document is not None
-                and document.content
-            ):
-
-                skipped.append(
-                    slug
-                )
+            if exists:
 
                 success.append(
                     slug
                 )
 
                 print(
-                    "Cache  : HIT"
-                )
-
-                print(
-                    "⏭️ SKIP : Product HTML already acquired"
+                    "  Cache  : HIT"
                 )
 
                 print()
@@ -244,31 +236,27 @@ def fetch(
                 continue
 
         # ==================================================
-        # HTTP Acquisition
+        # Gentle Delay
         # ==================================================
 
+        if index > 1:
+
+            wait = random.uniform(
+                3.0,
+                6.0,
+            )
+
+            print(
+                f"  😴 Sleep {wait:.1f}s"
+            )
+
+            time.sleep(
+                wait
+            )
+
+        response = None
+
         try:
-
-            # ==================================================
-            # Gentle Delay
-            # ==================================================
-
-            if index > 1:
-
-                wait = random.uniform(
-                    20.0,
-                    30.0,
-                )
-
-                print(
-                    f"😴 Sleep {wait:.1f}s"
-                )
-
-                time.sleep(
-                    wait
-                )
-
-            response = None
 
             # ==================================================
             # Retry
@@ -283,27 +271,26 @@ def fetch(
                 )
 
                 print(
-                    f"Status : "
+                    f"  Status : "
                     f"{response.status_code}"
                 )
 
                 print(
-                    f"Type   : "
+                    f"  Type   : "
                     f"{response.headers.get('Content-Type')}"
                 )
 
                 if response.status_code == 200:
-
                     break
 
                 if response.status_code == 429:
 
-                    wait = 20 * (
+                    wait = 10 * (
                         attempt + 1
                     )
 
                     print(
-                        f"⏳ 429 Retry "
+                        f"  ⏳ 429 Retry "
                         f"({wait}s)"
                     )
 
@@ -322,13 +309,13 @@ def fetch(
             response.raise_for_status()
 
             # ==================================================
-            # Preserve Product Reality
+            # Preserve Raw Reality
             # ==================================================
 
             AcquisitionDocument.objects.update_or_create(
                 source_type="scraping",
                 source_name=SITE_NAME,
-                document_type="product",
+                document_type="collection",
                 document_key=slug,
                 defaults={
                     "source_url": url,
@@ -345,15 +332,15 @@ def fetch(
             )
 
             print(
-                "Cache  : MISS"
+                "  Cache  : MISS"
             )
 
             print(
-                f"✓ {response.status_code}"
+                f"  ✓ {response.status_code}"
             )
 
             print(
-                f"Size   : "
+                f"  Size   : "
                 f"{len(response.content):,} bytes"
             )
 
@@ -364,17 +351,17 @@ def fetch(
             if response is not None:
 
                 print(
-                    f"Status : "
+                    f"  Status : "
                     f"{response.status_code}"
                 )
 
                 print(
-                    f"URL    : "
+                    f"  URL    : "
                     f"{url}"
                 )
 
             print(
-                f"ERROR  : {e}"
+                f"  ERROR  : {e}"
             )
 
             failed.append(
@@ -387,7 +374,7 @@ def fetch(
         except Exception as e:
 
             print(
-                f"ERROR  : {e}"
+                f"  ERROR  : {e}"
             )
 
             failed.append(
@@ -412,10 +399,6 @@ def fetch(
     )
 
     print(
-        f"SKIPPED : {len(skipped)}"
-    )
-
-    print(
         f"FAILED  : {len(failed)}"
     )
 
@@ -432,7 +415,7 @@ def main(
     force: bool = False,
 ) -> None:
     """
-    Execute GMKtec Product Fetch Runtime.
+    Execute GMKtec Collection Fetch Runtime.
     """
 
     fetch(

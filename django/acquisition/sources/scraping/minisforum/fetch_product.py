@@ -204,19 +204,6 @@ def fetch(
                 )
                 .first()
             )
-            
-            print(
-                "DEBUG CACHE:",
-                slug,
-                "force=",
-                force,
-                "exists=",
-                document is not None,
-                "content=",
-                bool(document.content)
-                    if document is not None
-                    else False,
-            )
 
             if (
                 document is not None

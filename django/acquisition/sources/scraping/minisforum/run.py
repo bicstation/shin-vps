@@ -43,9 +43,7 @@ def main(
     Execute Acquisition Pipeline.
     """
 
-    run(
-        force=force,
-    )
+    run()
 
 
 # ==========================================================
