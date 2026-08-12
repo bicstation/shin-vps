@@ -39,6 +39,11 @@ REALITY_RUNTIMES = {
         "GEEKOM",
         "acquisition.sources.scraping.geekom.run",
     ),
+    
+    "gmktec": (
+        "GMKtec",
+        "acquisition.sources.scraping.gmktec.run",
+    ),
 
     "lavie": (
         "NEC LAVIE",

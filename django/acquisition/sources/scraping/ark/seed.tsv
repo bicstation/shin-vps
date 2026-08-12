@@ -1,0 +1,6 @@
+entry_name	maker	series	slug	runtime	url
+ゲーミングデスクトップ	ark	sc_gaming	sc_gaming	scraping	https://www.ark-pc.co.jp/bto/list/?list_tag=sc_gaming&sort_para=st_low_p
+ゲーミングノート	ark	sc_g_note	sc_g_note	scraping	https://www.ark-pc.co.jp/bto/list/?list_tag=sc_g_note&sort_para=st_low_p
+デスクトップ	ark	sc_desktop	sc_desktop	scraping	https://www.ark-pc.co.jp/bto/list/?list_tag=sc_desktop&sort_para=st_low_p
+ノート	ark	sc_note	sc_note	scraping	https://www.ark-pc.co.jp/bto/list/?list_tag=sc_note&sort_para=st_low_p
+ワークステーション	ark	sc_workstation	sc_workstation	scraping	https://www.ark-pc.co.jp/bto/list/?list_tag=sc_workstation&sort_para=st_low_p

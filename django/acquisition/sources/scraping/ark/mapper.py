@@ -1,707 +1,790 @@
 #!/usr/bin/env python3
-"""
-==============================================================================
-SHIN CORE LINX
 
-ARK Mapper Runtime
-
-Mapper Runtime
-
-AcquisitionDocument (formatter)
-        │
-        ▼
-Formatter Runtime
-        │
-        ▼
-Import Contract Builder
-        │
-        ▼
-ImportDocument
-
-Reality First
-Translation First
-
-Responsibilities
-
-- Translate Formatter Runtime
-- Build Import Contract
-- Generate Affiliate Runtime
-- Persist ImportDocument
-
-Not Responsibilities
-
-- HTML Parsing
-- Observation
-- Formatter
-- Semantic Runtime
-- AI Runtime
-- Database Import
-
-==============================================================================
-"""
+# ============================================================================
+#
+# FILE:
+# acquisition/sources/scraping/ark/mapper.py
+#
+# SHIN CORE LINX
+#
+# ARK Import Contract Mapper
+#
+# Reality First
+# Observation First
+# Translation Authority
+#
+# Formatter Runtime
+#        ↓
+# Import Contract
+#
+# ============================================================================
 
 from __future__ import annotations
 
-import json
+from typing import Any
 
-from api.models import (
-    ImportDocument,
-)
-
-from api.models.acquisition_document import (
-    AcquisitionDocument,
+from acquisition.common.affiliate.affiliate import (
+    generate_affiliate_url,
 )
 
 from acquisition.common.trace.reality_trace import (
     trace_pipeline,
 )
 
-from acquisition.common.affiliate.builder import (
-    AffiliateBuilder,
-)
-
 from .settings import (
-    SITE_NAME,
     AFFILIATE,
+    SITE_NAME,
 )
 
 
-# ==============================================================================
-# Runtime
-# ==============================================================================
+# ============================================================================
+# Runtime Constants
+# ============================================================================
 
-DOCUMENT_INPUT = "formatter"
+SOURCE_NAME = SITE_NAME.lower()
+DOCUMENT_TYPE = "product"
 
-DOCUMENT_OUTPUT = "product"
 
-SOURCE_PREFIX = SITE_NAME.upper()
-
-BASE_URL = "https://www.ark-pc.co.jp"
-
-# ==============================================================================
-# URL Helper
-# ==============================================================================
-
-def absolute_url(
-    url: str,
-) -> str:
-    """
-    Normalize absolute URL.
-
-    Translation only.
-    """
-
-    if not url:
-
-        return ""
-
-    if url.startswith(
-
-        "http://",
-
-    ):
-
-        return url
-
-    if url.startswith(
-
-        "https://",
-
-    ):
-
-        return url
-
-    if url.startswith(
-
-        "/",
-
-    ):
-
-        return (
-
-            BASE_URL
-
-            + url
-
-        )
-
-    return url
-
-# ==============================================================================
-# Identity Builder
-# ==============================================================================
+# ============================================================================
+# Identity
+# ============================================================================
 
 def build_identity(
-    formatter: dict,
-) -> dict:
+    runtime: dict[str, Any],
+) -> dict[str, Any]:
     """
-    Build Import Identity.
+    Translate ARK Formatter Identity
+    into Import Contract Identity.
 
-    Formatter Runtime
-            │
-            ▼
-    Import Identity
+    No new identity is generated.
+
+    ARK Identity Authority:
+        pc_id
+            ↓
+        sku
+            ↓
+        Common Identity Runtime
     """
-
-    product_url = absolute_url(
-
-        formatter.get(
-
-            "detail_url",
-
-            "",
-
-        )
-
-    )
 
     return {
 
-        # ---------------------------------------------------------------------
-        # Runtime
-        # ---------------------------------------------------------------------
+        "unique_id":
+            runtime.get(
+                "internal_reality_id",
+                "",
+            ),
 
-        "unique_id": (
+        "source_unique_id":
+            runtime.get(
+                "source_product_id",
+                "",
+            ),
 
-            f"{SOURCE_PREFIX}_"
+        # --------------------------------------------------------------------
+        # ARK Source Identity
+        #
+        # pc_id is the ARK product identity observed from Reality.
+        #
+        # Pass it to the common Identity Runtime as SKU so that the
+        # common IdentityBuilder can construct:
+        #
+        #     ark + pc_id
+        #
+        # Example:
+        #
+        #     pc_id = 3746
+        #         ↓
+        #     sku = 3746
+        #         ↓
+        #     unique_id = ark_3746
+        #
+        # Do NOT use product_name as the primary Identity.
+        # --------------------------------------------------------------------
 
-            f"{formatter.get('pc_id', '')}"
+        "sku":
+            runtime.get(
+                "pc_id",
+                "",
+            ),
 
-        ),
+        "product_code":
+            runtime.get(
+                "source_product_id",
+                "",
+            ),
 
-        # ---------------------------------------------------------------------
-        # Identity
-        # ---------------------------------------------------------------------
+        "pc_id":
+            runtime.get(
+                "pc_id",
+                "",
+            ),
 
-        "maker": formatter.get(
+        "product_number":
+            runtime.get(
+                "product_number",
+                "",
+            ),
 
-            "maker",
+        "model_number":
+            runtime.get(
+                "model_number",
+                "",
+            ),
 
-            "",
+        "maker":
+            runtime.get(
+                "maker",
+                "",
+            ),
 
-        ),
+        "series":
+            runtime.get(
+                "series",
+                "",
+            ),
 
-        "brand": formatter.get(
+        "product_name":
+            runtime.get(
+                "published",
+                {},
+            ).get(
+                "product_name",
+                "",
+            ),
 
-            "brand",
+        "model_name":
+            runtime.get(
+                "published",
+                {},
+            ).get(
+                "model_name",
+                "",
+            ),
 
-            "",
-
-        ),
-
-        "series": formatter.get(
-
-            "series",
-
-            "",
-
-        ),
-
-        "collaboration": "",
-
-        "product_name": formatter.get(
-
-            "product_name",
-
-            "",
-
-        ),
-
-        "model": formatter.get(
-
-            "model",
-
-            "",
-
-        ),
-
-        "product_no": formatter.get(
-
-            "product_no",
-
-            "",
-
-        ),
-
-        "pc_id": formatter.get(
-
-            "pc_id",
-
-            "",
-
-        ),
-
-        "sku": "",
-
-        "jan": "",
-
-        "product_url": product_url,
+        "product_url":
+            runtime.get(
+                "published",
+                {},
+            ).get(
+                "url",
+                "",
+            ),
 
     }
 
-# ==============================================================================
-# Commerce Builder
-# ==============================================================================
+
+# ============================================================================
+# Description
+# ============================================================================
+
+def build_description(
+    runtime: dict[str, Any],
+) -> str:
+    """
+    Preserve published description.
+    """
+
+    return runtime.get(
+        "published",
+        {},
+    ).get(
+        "description",
+        "",
+    )
+
+
+# ============================================================================
+# Commerce
+# ============================================================================
 
 def build_commerce(
-    formatter: dict,
-) -> dict:
+    runtime: dict[str, Any],
+) -> dict[str, Any]:
     """
-    Build Import Commerce.
+    Translate published commerce fields.
 
-    Formatter Runtime
-            │
-            ▼
-    Import Commerce
+    No price interpretation.
     """
+
+    published = runtime.get(
+        "published",
+        {},
+    )
 
     return {
 
-        # ---------------------------------------------------------------------
-        # Price
-        # ---------------------------------------------------------------------
+        "price":
+            published.get(
+                "web_price",
+            ),
 
-        "price": formatter.get(
-
-            "price",
-
-            "",
-
-        ),
-
-        # ---------------------------------------------------------------------
-        # Currency
-        # ---------------------------------------------------------------------
-
-        "currency": "JPY",
-
-        # ---------------------------------------------------------------------
-        # Availability
-        # ---------------------------------------------------------------------
-
-        "availability": "",
-
-        # ---------------------------------------------------------------------
-        # Release
-        # ---------------------------------------------------------------------
-
-        "release_date": formatter.get(
-
-            "release_date",
-
-            "",
-
-        ),
+        "purchase_url":
+            published.get(
+                "url",
+                "",
+            ),
 
     }
 
-# ==============================================================================
-# Media Builder
-# ==============================================================================
+
+# ============================================================================
+# Media
+# ============================================================================
 
 def build_media(
-    formatter: dict,
-) -> dict:
+    runtime: dict[str, Any],
+) -> dict[str, Any]:
     """
-    Build Import Media.
-
-    Formatter Runtime
-            │
-            ▼
-    Import Media
+    Translate published media fields.
     """
 
-    image_url = absolute_url(
-
-        formatter.get(
-
-            "image_url",
-
-            "",
-
-        )
-
+    published = runtime.get(
+        "published",
+        {},
     )
 
     return {
 
-        # ---------------------------------------------------------------------
-        # Primary Image
-        # ---------------------------------------------------------------------
+        "image_url":
+            published.get(
+                "image_url",
+                "",
+            ),
 
-        "image_url": image_url,
-
-        # ---------------------------------------------------------------------
-        # Gallery
-        # ---------------------------------------------------------------------
-
-        "images": [
-
-            image_url,
-
-        ] if image_url else [],
+        "image_urls":
+            published.get(
+                "image_urls",
+                [],
+            ),
 
     }
 
-# ==============================================================================
-# Affiliate Builder
-# ==============================================================================
+
+# ============================================================================
+# Affiliate
+# ============================================================================
 
 def build_affiliate(
-    formatter: dict,
-) -> dict:
+    runtime: dict[str, Any],
+) -> dict[str, Any]:
     """
-    Build Affiliate Runtime.
+    Generate Affiliate URL from the observed
+    ARK Product URL.
 
-    Formatter Runtime
-            │
-            ▼
-    Affiliate Runtime
+    Provider-specific logic remains inside
+    the common Affiliate Runtime.
     """
 
-    product_url = absolute_url(
-
-        formatter.get(
-
-            "detail_url",
-
+    product_url = (
+        runtime.get(
+            "published",
+            {},
+        ).get(
+            "url",
             "",
-
         )
-
     )
 
-    return AffiliateBuilder.build(
-
-        product_url=product_url,
-
-        config=AFFILIATE,
-
+    affiliate_url = (
+        generate_affiliate_url(
+            product_url,
+            AFFILIATE,
+        )
     )
 
-# ==============================================================================
-# Import Contract Builder
-# ==============================================================================
+    return {
+
+        "url":
+            affiliate_url,
+
+        "original_url":
+            product_url,
+
+        "affiliate_url":
+            affiliate_url,
+
+        "purchase_url":
+            product_url,
+
+    }
+
+
+# ============================================================================
+# Specifications
+# ============================================================================
+
+def build_specifications(
+    runtime: dict[str, Any],
+) -> dict[str, Any]:
+    """
+    Preserve Formatter specification set.
+
+    No specification inference.
+    No specification combination.
+    """
+
+    return {
+
+        "specifications":
+            runtime.get(
+                "published",
+                {},
+            ).get(
+                "specifications",
+                {},
+            ),
+
+    }
+
+
+# ============================================================================
+# Features
+# ============================================================================
+
+def build_features(
+    runtime: dict[str, Any],
+) -> dict[str, Any]:
+    """
+    Preserve published descriptive fields.
+    """
+
+    published = runtime.get(
+        "published",
+        {},
+    )
+
+    return {
+
+        "description":
+            published.get(
+                "description",
+                "",
+            ),
+
+        "release_date":
+            published.get(
+                "release_date",
+                "",
+            ),
+
+    }
+
+
+# ============================================================================
+# Category
+# ============================================================================
+
+def build_category(
+    runtime: dict[str, Any],
+) -> dict[str, Any]:
+    """
+    Preserve Seed category context.
+
+    Mapper does not create category meaning.
+    """
+
+    return {
+
+        "entry_name":
+            runtime.get(
+                "entry_name",
+                "",
+            ),
+
+        "maker":
+            runtime.get(
+                "maker",
+                "",
+            ),
+
+        "series":
+            runtime.get(
+                "series",
+                "",
+            ),
+
+        "slug":
+            runtime.get(
+                "slug",
+                "",
+            ),
+
+    }
+
+
+# ============================================================================
+# Observation Runtime
+# ============================================================================
+
+def build_observation_runtime(
+    runtime: dict[str, Any],
+) -> dict[str, Any]:
+    """
+    Preserve the Formatter Runtime's original
+    Product Reality.
+
+    Mapper does not re-observe or re-parse it.
+    """
+
+    return {
+
+        "internal_reality_id":
+            runtime.get(
+                "internal_reality_id",
+                "",
+            ),
+
+        "source_product_id":
+            runtime.get(
+                "source_product_id",
+                "",
+            ),
+
+        "pc_id":
+            runtime.get(
+                "pc_id",
+                "",
+            ),
+
+        "product_number":
+            runtime.get(
+                "product_number",
+                "",
+            ),
+
+        "model_number":
+            runtime.get(
+                "model_number",
+                "",
+            ),
+
+        "url":
+            runtime.get(
+                "published",
+                {},
+            ).get(
+                "url",
+                "",
+            ),
+
+        "request_url":
+            runtime.get(
+                "request_url",
+                "",
+            ),
+
+        "observation":
+            runtime.get(
+                "observation",
+                {},
+            ),
+
+    }
+
+
+# ============================================================================
+# Import Contract
+# ============================================================================
 
 def build_contract(
-    formatter: dict,
-) -> dict:
+    runtime: dict[str, Any],
+) -> dict[str, Any]:
     """
-    Build Import Contract.
+    Translate exactly one ARK Formatter Runtime
+    into exactly one Import Contract.
+
+    One input
+        ↓
+    One output
+
+    No grouping.
+    No merging.
+    """
+
+    return {
+
+        "source_name":
+            SOURCE_NAME,
+
+        "site_name":
+            SITE_NAME,
+
+        "document_type":
+            DOCUMENT_TYPE,
+
+        "identity":
+            build_identity(
+                runtime,
+            ),
+
+        "description":
+            build_description(
+                runtime,
+            ),
+
+        "commerce":
+            build_commerce(
+                runtime,
+            ),
+
+        "media":
+            build_media(
+                runtime,
+            ),
+
+        "affiliate":
+            build_affiliate(
+                runtime,
+            ),
+
+        "specifications":
+            build_specifications(
+                runtime,
+            ),
+
+        "features":
+            build_features(
+                runtime,
+            ),
+
+        "category":
+            build_category(
+                runtime,
+            ),
+
+        "observation_runtime":
+            build_observation_runtime(
+                runtime,
+            ),
+
+    }
+
+
+# ============================================================================
+# Runtime
+# ============================================================================
+
+def mapper(
+    *,
+    runtimes: list[dict[str, Any]],
+    **kwargs,
+) -> list[dict[str, Any]]:
+    """
+    Execute ARK Import Contract Mapper.
 
     Formatter Runtime
-            │
-            ▼
+            ↓
+        Adapter
+            ↓
     Import Contract
     """
 
-    return {
-
-        # ---------------------------------------------------------------------
-        # Identity
-        # ---------------------------------------------------------------------
-
-        "identity": build_identity(
-
-            formatter,
-
-        ),
-
-        # ---------------------------------------------------------------------
-        # Commerce
-        # ---------------------------------------------------------------------
-
-        "commerce": build_commerce(
-
-            formatter,
-
-        ),
-
-        # ---------------------------------------------------------------------
-        # Media
-        # ---------------------------------------------------------------------
-
-        "media": build_media(
-
-            formatter,
-
-        ),
-
-        # ---------------------------------------------------------------------
-        # Affiliate
-        # ---------------------------------------------------------------------
-
-        "affiliate": build_affiliate(
-
-            formatter,
-
-        ),
-
-        # ---------------------------------------------------------------------
-        # Observation Runtime
-        # ---------------------------------------------------------------------
-
-        "observation_runtime": formatter.get(
-
-            "observation",
-
-            {},
-
-        ),
-
-    }
-
-# ==============================================================================
-# Cache
-# ==============================================================================
-
-def exists(
-    document_key: str,
-) -> bool:
-
-    return ImportDocument.objects.filter(
-
-        source_name=SITE_NAME.lower(),
-
-        document_type=DOCUMENT_OUTPUT,
-
-        document_key=document_key,
-
-    ).exists()
-
-
-# ==============================================================================
-# Persistence
-# ==============================================================================
-
-def save_contract(
-    contract: dict,
-) -> None:
-    """
-    Persist Import Contract.
-    """
-
-    identity = contract.get(
-
-        "identity",
-
-        {},
-
-    )
-
-    document_key = identity.get(
-
-        "unique_id",
-
-        "",
-
-    )
-
-    document, created = ImportDocument.objects.update_or_create(
-
-        source_name=SITE_NAME.lower(),
-
-        document_type=DOCUMENT_OUTPUT,
-
-        document_key=document_key,
-
-        defaults={
-
-            "contract": contract,
-
-        },
-
-    )
-
-    print(
-
-        f"{document_key} :",
-
-        "CREATED" if created else "UPDATED",
-
-    )
-
-# ==============================================================================
-# Runtime
-# ==============================================================================
-
-def run(
-    *,
-    method: str = "default",
-    mid: str | None = None,
-    list_only: bool = False,
-    force: bool = False,
-) -> None:
-
     trace_pipeline(
-
         "MAPPER",
-
     )
 
+    print()
     print("=" * 70)
-
     print(
-
-        f"🗺️ {SITE_NAME} MAPPER"
-
+        f"{SITE_NAME} IMPORT CONTRACT MAPPER"
     )
-
     print("=" * 70)
 
-    documents = (
+    contracts: list[dict[str, Any]] = []
 
-        AcquisitionDocument.objects
+    failed = 0
 
-        .filter(
+    internal_ids: list[str] = []
+    source_ids: list[str] = []
 
-            source_type="scraping",
+    with_specs = 0
+    with_purchase = 0
+    with_affiliate = 0
 
-            source_name=SITE_NAME.lower(),
-
-            document_type=DOCUMENT_INPUT,
-
-        )
-
-        .order_by(
-
-            "document_key",
-
-        )
-
-    )
-
-    success = 0
-
-    failed: list[tuple[str, str]] = []
-
-    for document in documents:
-
-        document_key = document.document_key
-
-        print(
-
-            document_key,
-
-        )
+    for runtime in runtimes:
 
         try:
 
-            formatter_runtime = json.loads(
-
-                document.content,
-
+            contract = build_contract(
+                runtime,
             )
 
-            products = formatter_runtime.get(
-
-                "products",
-
-                [],
-
+            contracts.append(
+                contract,
             )
 
-            print(
+            identity = contract[
+                "identity"
+            ]
 
-                f"  Products : {len(products)}"
-
+            internal_id = identity.get(
+                "unique_id",
+                "",
             )
 
-            for formatter in products:
+            source_id = identity.get(
+                "source_unique_id",
+                "",
+            )
 
-                contract = build_contract(
+            internal_ids.append(
+                internal_id
+            )
 
-                    formatter,
+            source_ids.append(
+                source_id
+            )
 
+            specifications = (
+                contract[
+                    "specifications"
+                ].get(
+                    "specifications",
+                    {},
                 )
+            )
 
-                save_contract(
+            if specifications:
+                with_specs += 1
 
-                    contract,
+            if contract[
+                "commerce"
+            ].get(
+                "purchase_url",
+            ):
+                with_purchase += 1
 
-                )
-
-                success += 1
+            if contract[
+                "affiliate"
+            ].get(
+                "affiliate_url",
+            ):
+                with_affiliate += 1
 
             print()
-
-        except Exception as e:
-
-            failed.append(
-
-                (
-
-                    document_key,
-
-                    str(e),
-
-                )
-
+            print(
+                f"MAP    : "
+                f"{internal_id}"
+                f" | SOURCE={source_id}"
+                f" | PC_ID="
+                f"{identity.get('pc_id', '')}"
+                f" | SKU="
+                f"{identity.get('sku', '')}"
             )
 
             print(
-
-                "  Status : ERROR"
-
+                f"         "
+                f"{identity.get('product_name', '')}"
             )
 
             print(
-
-                f"  Reason : {e}"
-
+                f"         "
+                f"SPEC={len(specifications)} fields"
+                f" | PURCHASE="
+                f"{'YES' if contract['commerce'].get('purchase_url') else 'NO'}"
+                f" | AFFILIATE="
+                f"{'YES' if contract['affiliate'].get('affiliate_url') else 'NO'}"
             )
+
+        except Exception as exc:
+
+            failed += 1
 
             print()
+            print(
+                "MAP FAILED"
+            )
 
+            print(
+                f"  ERROR : {exc}"
+            )
+
+    # =========================================================================
+    # Result
+    # =========================================================================
+
+    print()
+    print("=" * 70)
+    print("MAPPER RESULT")
     print("=" * 70)
 
     print(
+        f"Formatter Runtimes      : "
+        f"{len(runtimes)}"
+    )
 
-        "RESULT"
+    print(
+        f"Import Contracts        : "
+        f"{len(contracts)}"
+    )
 
+    print(
+        f"Distinct Internal IDs   : "
+        f"{len(set(internal_ids))}"
+    )
+
+    print(
+        f"Distinct Source IDs     : "
+        f"{len(set(source_ids))}"
+    )
+
+    print(
+        f"Duplicate Internal IDs : "
+        f"{len(internal_ids) - len(set(internal_ids))}"
+    )
+
+    print(
+        f"Duplicate Source IDs   : "
+        f"{len(source_ids) - len(set(source_ids))}"
+    )
+
+    print(
+        f"With Specifications    : "
+        f"{with_specs}"
+    )
+
+    print(
+        f"With Purchase URL      : "
+        f"{with_purchase}"
+    )
+
+    print(
+        f"With Affiliate URL     : "
+        f"{with_affiliate}"
+    )
+
+    print(
+        f"Failed                 : "
+        f"{failed}"
     )
 
     print("=" * 70)
 
-    print(
+    return contracts
 
-        f"SUCCESS : {success}"
 
-    )
-
-    print(
-
-        f"FAILED  : {len(failed)}"
-
-    )
-
-    print("=" * 70)
-
-# ==============================================================================
+# ============================================================================
 # Entry Point
-# ==============================================================================
+# ============================================================================
 
 def main(
     *,
-    method: str = "default",
-    mid: str | None = None,
-    list_only: bool = False,
-    force: bool = False,
-) -> None:
+    runtimes: list[dict[str, Any]],
+    **kwargs,
+) -> list[dict[str, Any]]:
 
-    run(
-
-        method=method,
-
-        mid=mid,
-
-        list_only=list_only,
-
-        force=force,
-
+    return mapper(
+        runtimes=runtimes,
+        **kwargs,
     )
 
 
+# ============================================================================
+# Standalone Execution
+# ============================================================================
+
 if __name__ == "__main__":
 
-    main()
+    main(
+        runtimes=[],
+    )
