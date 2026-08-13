@@ -345,22 +345,40 @@ run_django import_products linkshare ftp 36508
 
 
 run_django import_products lavie
+# lavie　◯ ◯
 run_django import_products ark
+# ark　◯　◯
 run_django import_products frontier
+# シリーズ名が多分独特なのであとでWEBページを調べる
 run_django import_products geekom
+# geekom　◯ ◯
 run_django import_products gmktec
+# gmktec　◯ 1つだけドッキングステーション
 run_django import_products minisforum
+# minisforum　◯ ◯
 run_django import_products tsukumo
+# minisforum　◯ ◯
 run_django import_products ozgaming
+# ozgaming　◯ ◯ 
 run_django import_products storm
+# storm　◯ 
 run_django import_products sycom
+# sycom　◯ 
 run_django import_products mouse
+# mouse　◯ ◯
 run_django import_products lenovo
 run_django import_products dell
 run_django import_products fujitsu
 run_django import_products dynabook
 run_django import_products hp
 # run_django import_products asus これはサイトから無理だった
+
+# 
+# djmanage import_products ark --force
+# シリーズ、ブランドの確認ツール
+# djmanage investigate_identity --maker ark --series-empty
+# djmanage investigate_identity --maker ark --brand-empty
+
 
 
 # ==========================================================

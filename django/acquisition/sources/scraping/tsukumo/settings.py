@@ -23,23 +23,14 @@ BASE_URL = "https://shop.tsukumo.co.jp"
 
 SCRAPING_DIR = Path(__file__).resolve().parent
 
-RUNTIME_DIR = (
-    SCRAPING_DIR.parent.parent
-    / "runtime"
-    / SITE_NAME.lower()
-)
-
-RUNTIME_DIR.mkdir(
-    parents=True,
-    exist_ok=True,
-)
-
 # ==============================================================================
 # Catalog
 # Reality Catalog Index
 # ==============================================================================
 
-CATALOG_TSV = RUNTIME_DIR / "catalog.tsv"
+CATALOG_TSV = SCRAPING_DIR / "catalog.tsv"
+
+CATALOG_BASE_TSV = SCRAPING_DIR / "catalog_base.tsv"
 
 # ==============================================================================
 # Fetch

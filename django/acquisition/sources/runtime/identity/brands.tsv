@@ -1,35 +1,28 @@
 maker	keyword	brand	priority
-dell	dell	Dell	100
-dell	alienware	Alienware	200
-dell	ultrasharp	Dell	150
-hp	hp	HP	100
-hp	omen	OMEN	200
-hp	victus	Victus	200
-fujitsu	fmv	FMV	200
-fujitsu	lifebook	LIFEBOOK	200
-fujitsu	esprimo	ESPRIMO	200
-fujitsu	celsius	CELSIUS	200
-fujitsu	arrows	ARROWS	200
-dynabook	dynabook	dynabook	200
-dynabook	portege	Portégé	200
-dynabook	portégé	Portégé	200
-dynabook	tecra	Tecra	200
-dynabook	satellite	Satellite	200
-dynabook	kira	KIRA	200
-lenovo	lenovo	Lenovo	100
-lenovo	thinkpad	ThinkPad	200
-lenovo	thinkcentre	ThinkCentre	200
-lenovo	thinkstation	ThinkStation	200
-lenovo	ideapad	IdeaPad	200
-lenovo	legion	Legion	200
-lenovo	yoga	Yoga	200
-asus	asus	ASUS	100
-asus	rog	ROG	200
-asus	tuf	TUF	200
-asus	zenbook	Zenbook	200
-asus	vivobook	Vivobook	200
-asus	proart	ProArt	200
-asus	expertbook	ExpertBook	200
+ark	ARK	ARK	200
+ark	ARK	ark	200
+ark	ARK	ARK PC	200
+ark	ARK	ARKパソコン	200
+ark	ARK	パソコンショップARK	200
+ark	ARK	パソコンショップ アーク	200
+ark	ARK	PCショップARK	200
+ark	ARK	アーク	200
+ark	ARK	アークPC	200
+ark	ARK	ARK Gaming	200
+ark	ARK	ARK GAMING	200
+ark	ARK	ARK BTO	200
+ark	ARK	ARK BTO PC	200
+ark	ARK	アークBTO	200
+ark	ARK	アークゲーミング	200
+ark	ARK	秋葉原アーク	200
+ark	ARK	ARKhive	200
+ark	ARK	ARKHIVE	200
+ark	ARK	ARKhive Gaming	200
+ark	ARK	ARKhive Creator	200
+ark	ARK	ARKhive Office	200
+ark	ARK	arkhive	200
+ark	ARK	ARK Creator	200
+ark	ARK	ARK Workstation	200
 asus	asus	ASUS	100
 asus	rog	ROG	200
 asus	tuf	TUF	200
@@ -39,6 +32,541 @@ asus	proart	ProArt	200
 asus	expertbook	ExpertBook	200
 asus	expertcenter	ExpertCenter	200
 asus	nuc	NUC	200
+asus	ASUS	ASUS	200
+asus	ASUS	Asus	200
+asus	ASUS	ASUSTeK	200
+asus	ASUS	ASUSTeK Computer	200
+asus	ASUS	ASUS Japan	200
+asus	ASUS	エイスース	200
+asus	ASUS	アスース	200
+asus	ROG	ROG	200
+asus	ROG	Republic of Gamers	200
+asus	ROG	ROG Gaming	200
+asus	ROG	ROG Strix	200
+asus	ROG	ROG Zephyrus	200
+asus	ROG	ROG Flow	200
+asus	ROG	ROG Ally	200
+asus	ROG	ROG Ally X	200
+asus	TUF Gaming	TUF Gaming	200
+asus	TUF Gaming	TUF	200
+asus	TUF Gaming	TUF GAMING	200
+asus	TUF Gaming	TUF Gaming A	200
+asus	TUF Gaming	TUF Gaming F	200
+asus	TUF Gaming	TUF Gaming Dash	200
+asus	ProArt	ProArt	200
+asus	ProArt	PROART	200
+asus	ProArt	ProArt Studiobook	200
+asus	ProArt	ProArt P16	200
+asus	ProArt	ProArt PX	200
+asus	Zenbook	Zenbook	200
+asus	Zenbook	ZENBOOK	200
+asus	Zenbook	ZenBook	200
+asus	Zenbook	Zenbook S	200
+asus	Zenbook	Zenbook Pro	200
+asus	Zenbook	Zenbook Duo	200
+asus	Vivobook	Vivobook	200
+asus	Vivobook	VIVOBOOK	200
+asus	Vivobook	VivoBook	200
+asus	Vivobook	Vivobook S	200
+asus	Vivobook	Vivobook Pro	200
+asus	Vivobook	Vivobook Go	200
+asus	ExpertBook	ExpertBook	200
+asus	ExpertBook	EXPERTBOOK	200
+asus	ExpertBook	Expert Book	200
+asus	ExpertCenter	ExpertCenter	200
+asus	ExpertCenter	EXPERTCENTER	200
+asus	ExpertCenter	Expert Center	200
+asus	Chromebook	Chromebook	200
+asus	Chromebook	ASUS Chromebook	200
+asus	Chromebook	Chromebook Plus	200
+asus	BR1100	BR1100	200
+asus	BR1100	ASUS BR1100	200
+asus	ASUS	ASUS PC	200
+asus	ASUS	ASUSパソコン	200
+asus	ASUS	ASUS JAPAN	200
+asus	TUF Gaming	TUF Gaming PC	200
+asus	ProArt	ProArt PC	200
+asus	ProArt	ProArt Creator	200
+asus	VivoBook	VivoBook	200
+asus	ROG	ROG Strix G	200
+asus	ROG	ROG Strix SCAR	200
+asus	ROG	ROG Zephyrus G	200
+asus	ROG	ROG Zephyrus M	200
+asus	ROG	ROG Flow X	200
+asus	TUF Gaming	TUF Gaming A15	200
+asus	TUF Gaming	TUF Gaming A16	200
+asus	TUF Gaming	TUF Gaming F15	200
+asus	TUF Gaming	TUF Gaming F16	200
+asus	ProArt	ProArt PX13	200
+asus	Zenbook	Zenbook 14	200
+asus	Zenbook	Zenbook S 14	200
+asus	Vivobook	Vivobook 14	200
+asus	Vivobook	Vivobook 15	200
+asus	Vivobook	Vivobook 16	200
+asus	Vivobook	Vivobook S 14	200
+asus	Vivobook	Vivobook S 16	200
+asus	ExpertBook	ExpertBook B	200
+asus	ExpertBook	ExpertBook P	200
+asus	ExpertCenter	ExpertCenter D	200
+asus	ExpertCenter	ExpertCenter P	200
+asus	ASUSTeK	ASUSTeK	200
+dell	dell	Dell	100
+dell	alienware	Alienware	200
+dell	ultrasharp	Dell	150
+dell	Dell	Dell	200
+dell	Dell	DELL	200
+dell	Dell	Dell Technologies	200
+dell	Dell	Dell Inc	200
+dell	Dell	Dell Japan	200
+dell	Dell	デル	200
+dell	Dell	デル・テクノロジーズ	200
+dell	Alienware	Alienware	200
+dell	Alienware	ALIENWARE	200
+dell	Alienware	Alien Ware	200
+dell	Alienware	エイリアンウェア	200
+dell	OptiPlex	OptiPlex	200
+dell	OptiPlex	OPTIPLEX	200
+dell	OptiPlex	Opti Plex	200
+dell	OptiPlex	OptiPlex Micro	200
+dell	Latitude	Latitude	200
+dell	Latitude	LATITUDE	200
+dell	Latitude	Latitude PC	200
+dell	Precision	Precision	200
+dell	Precision	PRECISION	200
+dell	Precision	Precision Workstation	200
+dell	XPS	XPS	200
+dell	XPS	xps	200
+dell	Inspiron	Inspiron	200
+dell	Inspiron	INSPIRON	200
+dell	Vostro	Vostro	200
+dell	Vostro	VOSTRO	200
+dell	G Series	G Series	200
+dell	G Series	G-Series	200
+dell	G Series	Gaming G Series	200
+dell	Dell	Dell PC	200
+dell	Dell	Dellパソコン	200
+dell	Alienware	Alienware Aurora	200
+dell	Alienware	Alienware Area-51	200
+dell	OptiPlex	OptiPlex Tower	200
+dell	OptiPlex	OptiPlex Small Form Factor	200
+dell	Precision	Precision Tower	200
+dell	Precision	Precision Mobile Workstation	200
+dell	XPS	XPS Desktop	200
+dell	XPS	XPS Laptop	200
+dell	Inspiron	Inspiron Desktop	200
+dell	Inspiron	Inspiron Laptop	200
+dell	Alienware	Alienware m16	200
+dell	Alienware	Alienware m18	200
+dell	Latitude	Latitude 3000	200
+dell	Latitude	Latitude 5000	200
+dell	Latitude	Latitude 7000	200
+dell	Precision	Precision 3000	200
+dell	Precision	Precision 5000	200
+dell	Precision	Precision 7000	200
+dell	XPS	XPS 13	200
+dell	XPS	XPS 14	200
+dell	XPS	XPS 16	200
+dell	Inspiron	Inspiron 14	200
+dell	Inspiron	Inspiron 15	200
+dell	Inspiron	Inspiron 16	200
+dynabook	dynabook	dynabook	200
+dynabook	portege	Portégé	200
+dynabook	portégé	Portégé	200
+dynabook	tecra	Tecra	200
+dynabook	satellite	Satellite	200
+dynabook	kira	KIRA	200
+dynabook	Dynabook	Dynabook	200
+dynabook	Dynabook	DYNABOOK	200
+dynabook	Dynabook	dynabook	200
+dynabook	Dynabook	ダイナブック	200
+dynabook	Dynabook	ダイナブック株式会社	200
+dynabook	dynabook R	dynabook R	200
+dynabook	dynabook G	dynabook G	200
+dynabook	dynabook X	dynabook X	200
+dynabook	dynabook B	dynabook B	200
+dynabook	dynabook A	dynabook A	200
+dynabook	dynabook S	dynabook S	200
+dynabook	dynabook T	dynabook T	200
+dynabook	dynabook C	dynabook C	200
+dynabook	EX	EX	200
+dynabook	Satellite	Satellite	200
+dynabook	Satellite	Satellite Pro	200
+dynabook	Portégé	Portégé	200
+dynabook	Portégé	PORTEGE	200
+dynabook	Portégé	Portege	200
+dynabook	Dynabook	dynabook PC	200
+dynabook	Dynabook	dynabookパソコン	200
+dynabook	dynabook G	dynabook Gシリーズ	200
+dynabook	dynabook R	dynabook Rシリーズ	200
+dynabook	dynabook X	dynabook Xシリーズ	200
+dynabook	dynabook A	dynabook Aシリーズ	200
+dynabook	dynabook B	dynabook Bシリーズ	200
+dynabook	dynabook R	dynabook R73	200
+dynabook	dynabook R	dynabook R9	200
+dynabook	dynabook G	dynabook G83	200
+dynabook	dynabook G	dynabook G6	200
+dynabook	dynabook X	dynabook X83	200
+dynabook	dynabook X	dynabook X8	200
+dynabook	dynabook A	dynabook A6	200
+dynabook	dynabook A	dynabook A8	200
+dynabook	dynabook B	dynabook B65	200
+dynabook	dynabook B	dynabook B75	200
+frontier	FRONTIER	FRONTIER	200
+frontier	FRONTIER	Frontier	200
+frontier	FRONTIER	FRONTIER PC	200
+frontier	FRONTIER	FRONTIERパソコン	200
+frontier	FRONTIER	フロンティア	200
+frontier	FRONTIER	フロンティアPC	200
+frontier	FRONTIER	FRONTIER Gaming	200
+frontier	FRONTIER	FRONTIER GAMING	200
+frontier	FRONTIER	FRONTIER BTO	200
+frontier	FRONTIER	FRONTIER BTO PC	200
+frontier	FRONTIER	FRONTIER Gシリーズ	200
+frontier	FRONTIER	FRONTIER GA	200
+frontier	FRONTIER	FRONTIER GX	200
+frontier	FRONTIER	FRONTIER GB	200
+frontier	FRONTIER	FRONTIER GH	200
+frontier	FRONTIER	FRONTIER FR	200
+frontier	FRONTIER	FRONTIER Desktop	200
+frontier	FRONTIER	FRONTIER Notebook	200
+frontier	FRONTIER Gaming		200
+frontier	FRONTIER Creator		200
+frontier	FRONTIER Office		200
+fujitsu	fmv	FMV	200
+fujitsu	lifebook	LIFEBOOK	200
+fujitsu	esprimo	ESPRIMO	200
+fujitsu	celsius	CELSIUS	200
+fujitsu	arrows	ARROWS	200
+fujitsu	FUJITSU	FUJITSU	200
+fujitsu	FUJITSU	Fujitsu	200
+fujitsu	FUJITSU	富士通	200
+fujitsu	FUJITSU	富士通クライアントコンピューティング	200
+fujitsu	FUJITSU	FCCL	200
+fujitsu	FMV	FMV	200
+fujitsu	FMV	FMV LIFEBOOK	200
+fujitsu	FMV	FMV ESPRIMO	200
+fujitsu	FMV	FMV Chromebook	200
+fujitsu	LIFEBOOK	LIFEBOOK	200
+fujitsu	LIFEBOOK	Lifebook	200
+fujitsu	LIFEBOOK	LIFE BOOK	200
+fujitsu	ESPRIMO	ESPRIMO	200
+fujitsu	ESPRIMO	Esprimo	200
+fujitsu	ESPRIMO	ESPRIMO PC	200
+fujitsu	CHROMEOS	Chromebook	200
+fujitsu	CHROMEOS	FMV Chromebook	200
+fujitsu	FMV	FMVパソコン	200
+fujitsu	LIFEBOOK	LIFEBOOK UH	200
+fujitsu	LIFEBOOK	LIFEBOOK AH	200
+fujitsu	LIFEBOOK	LIFEBOOK CH	200
+fujitsu	ESPRIMO	ESPRIMO DH	200
+fujitsu	ESPRIMO	ESPRIMO FH	200
+fujitsu	LIFEBOOK	LIFEBOOK WU	200
+fujitsu	ESPRIMO	ESPRIMO D	200
+fujitsu	FMV	FMV Note	200
+fujitsu	FMV	FMV Lite	200
+geekom	GEEKOM	GEEKOM	200
+geekom	GEEKOM	Geekom	200
+geekom	GEEKOM	GEEKOM JAPAN	200
+geekom	GEEKOM	GEEKOM Japan	200
+geekom	GEEKOM	GEEKOM JP	200
+geekom	GEEKOM	ギーコム	200
+geekom	GEEKOM	GEEKOM AI PC	200
+geekom	GEEKOM	GEEKOM Mini PC	200
+geekom	GEEKOM	GEEKOM ミニPC	200
+geekom	GEEKOM	GEEKOM MiniPC	200
+geekom	GEEKOM	GEEKOM IT	200
+geekom	GEEKOM	GEEKOM GT	200
+geekom	GEEKOM	GEEKOM A	200
+geekom	GEEKOM	GEEKOM A5	200
+geekom	GEEKOM	GEEKOM A6	200
+geekom	GEEKOM	GEEKOM A7	200
+geekom	GEEKOM	GEEKOM A8	200
+geekom	GEEKOM	GEEKOM A9	200
+geekom	GEEKOM	GEEKOM AIR	200
+geekom	GEEKOM	GEEKOM Mini Air	200
+geekom	GEEKOM	GEekom	200
+gigabyte	gigabyte	GIGABYTE	100
+gigabyte	aorus	AORUS	200
+gmktec	GMKtec	GMKtec	200
+gmktec	GMKTEK	GMKTEK	200
+gmktec	GMKtec	GMK TEK	200
+gmktec	GMKtec	GMK-TEC	200
+gmktec	GMKtec	GMKtec Direct	200
+gmktec	GMKtec	GMKTECDirect	200
+gmktec	GMKtec	GMK	200
+gmktec	GMKtec	ジーエムケーテック	200
+gmktec	GMKtec	GMKtec Mini PC	200
+gmktec	GMKtec	GMKtec ミニPC	200
+gmktec	GMKtec	GMKtec NucBox	200
+gmktec	NucBox	NucBox	200
+gmktec	NucBox	NucBox K	200
+gmktec	NucBox	NucBox G	200
+gmktec	NucBox	NucBox M	200
+gmktec	GMKtec	GMKtec NucBox K	200
+gmktec	GMKtec	GMKtec NucBox G	200
+gmktec	GMKtec	GMKtec NucBox M	200
+gmktec	GMKtec	GMKtec NucBox K8	200
+gmktec	GMKtec	GMKtec NucBox K9	200
+gmktec	GMKtec	GMKtec NucBox G3	200
+gmktec	GMKtec	GMKtec NucBox G5	200
+gmktec	GMKtec	GMKTEK	200
+gmktec	NucBox	NucBox Series	200
+hp	hp	HP	100
+hp	omen	OMEN	200
+hp	victus	Victus	200
+hp	HP	HP	200
+hp	HP	hp	200
+hp	HP	HP Inc.	200
+hp	HP	HP Inc	200
+hp	HP	Hewlett-Packard	200
+hp	HP	Hewlett Packard	200
+hp	HP	日本HP	200
+hp	HP	日本ヒューレット・パッカード	200
+hp	HP	ヒューレット・パッカード	200
+hp	HP	HP Japan	200
+hp	OMEN	OMEN	200
+hp	OMEN	OMEN Gaming	200
+hp	OMEN	OMEN by HP	200
+hp	OMEN	OMEN PC	200
+hp	OMEN	オーメン	200
+hp	HP Victus	Victus	200
+hp	HP Victus	VICTUS	200
+hp	HP Victus	Victus by HP	200
+hp	HP Victus	HP VICTUS	200
+hp	HP Victus	ビクタス	200
+hp	EliteBook	EliteBook	200
+hp	EliteBook	ELITEBOOK	200
+hp	EliteBook	Elite Book	200
+hp	ProBook	ProBook	200
+hp	ProBook	PROBOOK	200
+hp	ProBook	Pro Book	200
+hp	ProDesk	ProDesk	200
+hp	ProDesk	PRODESK	200
+hp	ProDesk	Pro Desk	200
+hp	EliteDesk	EliteDesk	200
+hp	EliteDesk	ELITEDESK	200
+hp	EliteDesk	Elite Desk	200
+hp	ZBook	ZBook	200
+hp	ZBook	ZBOOK	200
+hp	ZBook	Z Book	200
+hp	Spectre	Spectre	200
+hp	Spectre	SPECTRE	200
+hp	Spectre	Spectre x360	200
+hp	ENVY	ENVY	200
+hp	ENVY	Envy	200
+hp	ENVY	ENVY x360	200
+hp	Pavilion	Pavilion	200
+hp	Pavilion	PAVILION	200
+hp	Pavilion	Pavilion Aero	200
+hp	Pavilion	Pavilion Plus	200
+hp	HP	HP PC	200
+hp	HP	HPパソコン	200
+hp	HP	HPノートPC	200
+hp	HP	HPデスクトップ	200
+hp	HP Victus	Victus Gaming	200
+hp	EliteBook	EliteBook X	200
+hp	EliteBook	EliteBook Ultra	200
+hp	ProBook	ProBook 400	200
+hp	ProBook	ProBook 600	200
+hp	ProDesk	ProDesk 400	200
+hp	EliteDesk	EliteDesk 800	200
+hp	ZBook	ZBook Firefly	200
+hp	ZBook	ZBook Power	200
+hp	ZBook	ZBook Fury	200
+hp	OMEN	OMEN 16	200
+hp	OMEN	OMEN 17	200
+hp	OMEN	OMEN Transcend	200
+hp	HP Victus	Victus 15	200
+hp	HP Victus	Victus 16	200
+hp	EliteBook	EliteBook 600	200
+hp	EliteBook	EliteBook 800	200
+lavie	lavie tab t11n	LAVIE Tab T11N	100
+lavie	lavie tab t12n	LAVIE Tab T12N	100
+lavie	lavie tab t10	LAVIE Tab T10	100
+lavie	lavie tab t8	LAVIE Tab T8	100
+lavie	lavie tab ex	LAVIE Tab EX	100
+lavie	lavie tab t12	LAVIE Tab T12	100
+lavie	lavie nextreme carbon	LAVIE NEXTREME Carbon	200
+lavie	lavie nextreme infinity	LAVIE NEXTREME Infinity	200
+lavie	lavie nextreme	LAVIE NEXTREME	200
+lavie	lavie nxt	LAVIE NXT	200
+lavie	lavie n14	LAVIE N14	200
+lavie	lavie n16	LAVIE N16	200
+lavie	lavie n15	LAVIE N15	200
+lavie	lavie a27	LAVIE A27	200
+lavie	lavie a	LAVIE A	200
+lavie	lavie direct n	LAVIE Direct N	200
+lavie	lavie direct a	LAVIE Direct A	200
+lavie	lavie direct x	LAVIE Direct X	200
+lavie	lavie direct	LAVIE Direct	200
+lavie	mate	Mate	200
+lavie	versapro	VersaPro	200
+lavie	nec lavie n	NEC LaVie N	200
+lavie	nec lavie	NEC LaVie	200
+lavie	lavieシリーズ	LAVIEシリーズ	200
+lavie	lavie	LAVIE	100
+lavie	nec	NEC	50
+lavie	lavie	LaVie	200
+lavie	lavie	La Vie	200
+lavie	lavie	lavie N	200
+lavie	lavie	lavie direct	200
+lenovo	lenovo	Lenovo	100
+lenovo	thinkpad	ThinkPad	200
+lenovo	thinkcentre	ThinkCentre	200
+lenovo	thinkstation	ThinkStation	200
+lenovo	ideapad	IdeaPad	200
+lenovo	legion	Legion	200
+lenovo	yoga	Yoga	200
+lenovo	Lenovo	Lenovo	200
+lenovo	Lenovo	LENOVO	200
+lenovo	Lenovo	Lenovo Japan	200
+lenovo	Lenovo	レノボ	200
+lenovo	Lenovo	レノボ・ジャパン	200
+lenovo	ThinkPad	ThinkPad	200
+lenovo	ThinkPad	THINKPAD	200
+lenovo	ThinkPad	Think Pad	200
+lenovo	ThinkCentre	ThinkCentre	200
+lenovo	ThinkCentre	THINKCENTRE	200
+lenovo	ThinkCentre	Think Centre	200
+lenovo	ThinkBook	ThinkBook	200
+lenovo	ThinkBook	THINKBOOK	200
+lenovo	ThinkBook	Think Book	200
+lenovo	IdeaPad	IdeaPad	200
+lenovo	IdeaPad	IDEAPAD	200
+lenovo	IdeaPad	Idea Pad	200
+lenovo	Yoga	Yoga	200
+lenovo	Yoga	YOGA	200
+lenovo	Yoga	Yoga Slim	200
+lenovo	Yoga	Yoga Pro	200
+lenovo	Yoga	Yoga Book	200
+lenovo	Legion	Legion	200
+lenovo	Legion	LEGION	200
+lenovo	Legion	Legion Go	200
+lenovo	Legion	Legion Slim	200
+lenovo	Legion	Legion Pro	200
+lenovo	LOQ	LOQ	200
+lenovo	LOQ	Lenovo LOQ	200
+lenovo	LOQ	LOQ Gaming	200
+lenovo	Aspire	Aspire	200
+lenovo	ThinkPad	ThinkPad X1	200
+lenovo	ThinkPad	ThinkPad T	200
+lenovo	ThinkPad	ThinkPad E	200
+lenovo	ThinkPad	ThinkPad L	200
+lenovo	ThinkPad	ThinkPad P	200
+lenovo	ThinkCentre	ThinkCentre M	200
+lenovo	ThinkBook	ThinkBook Plus	200
+lenovo	IdeaPad	IdeaPad Slim	200
+lenovo	IdeaPad	IdeaPad Pro	200
+lenovo	Legion	Legion Tower	200
+lenovo	Legion	Legion 5	200
+lenovo	Legion	Legion 7	200
+lenovo	LOQ	LOQ Tower	200
+lenovo	ThinkPad	ThinkPad X1 Carbon	200
+lenovo	ThinkPad	ThinkPad X1 Yoga	200
+lenovo	ThinkPad	ThinkPad T14	200
+lenovo	ThinkPad	ThinkPad T16	200
+lenovo	ThinkPad	ThinkPad E14	200
+lenovo	ThinkPad	ThinkPad E16	200
+lenovo	ThinkPad	ThinkPad P14s	200
+lenovo	ThinkPad	ThinkPad P16	200
+lenovo	ThinkCentre	ThinkCentre Neo	200
+lenovo	ThinkCentre	ThinkCentre M70	200
+lenovo	ThinkCentre	ThinkCentre M90	200
+lenovo	ThinkBook	ThinkBook 14	200
+lenovo	ThinkBook	ThinkBook 16	200
+lenovo	IdeaPad	IdeaPad Slim 3	200
+lenovo	IdeaPad	IdeaPad Slim 5	200
+lenovo	IdeaPad	IdeaPad Pro 5	200
+lenovo	Yoga	Yoga Slim 6	200
+lenovo	Yoga	Yoga Slim 7	200
+lenovo	Yoga	Yoga Pro 7	200
+lenovo	Legion	Legion Pro 5	200
+lenovo	Legion	Legion Pro 7	200
+lenovo	LOQ	LOQ 15	200
+lenovo	LOQ	LOQ 16	200
+lenovo	Lenovo	Lenovo PC	200
+lenovo	IdeaCentre	IdeaCentre	200
+minisforum	Minisforum	Minisforum	200
+minisforum	Minisforum	MINISFORUM	200
+minisforum	Minisforum	MINIS FORUM	200
+minisforum	Minisforum	Minis Forum	200
+minisforum	Minisforum	MINIS-FORUM	200
+minisforum	Minisforum	Minisforum JP	200
+minisforum	Minisforum	Minisforum Japan	200
+minisforum	Minisforum	ミニスフォーラム	200
+minisforum	Minisforum	ミニズフォーラム	200
+minisforum	Minisforum	Minisforum Mini PC	200
+minisforum	Minisforum	MINISFORUM Mini PC	200
+minisforum	Minisforum	MINISFORUM ミニPC	200
+minisforum	Minisforum	Minisforum ミニPC	200
+minisforum	EliteMini	EliteMini	200
+minisforum	EliteMini	Elite Mini	200
+minisforum	EliteMini	ELITEMINI	200
+minisforum	UM	UM	200
+minisforum	UM	UM Series	200
+minisforum	UM	UMシリーズ	200
+minisforum	UM	UM790	200
+minisforum	UM	UM780	200
+minisforum	UM	UM890	200
+minisforum	Neptune	Neptune	200
+minisforum	Neptune	NEPTUNE	200
+minisforum	Neptune	Neptune Series	200
+minisforum	Minisforum	UM	200
+minisforum	Minisforum	UM Series	200
+minisforum	Minisforum	UM790 Pro	200
+minisforum	Minisforum	UM780 XTX	200
+minisforum	Minisforum	UM890 Pro	200
+minisforum	Minisforum	UM870	200
+minisforum	Minisforum	MS	200
+minisforum	Minisforum	MS-01	200
+minisforum	Minisforum	MS-02	200
+minisforum	Minisforum	MS-A1	200
+minisforum	Minisforum	AI X1	200
+minisforum	Minisforum	AI X1 Pro	200
+minisforum	Minisforum	N5	200
+minisforum	Minisforum	N5 Pro	200
+mouse	Mouse Computer	Mouse Computer	200
+mouse	Mouse Computer	mouse computer	200
+mouse	Mouse Computer	MouseComputer	200
+mouse	Mouse Computer	マウスコンピューター	200
+mouse	Mouse Computer	マウス	200
+mouse	Mouse Computer	マウスコンピュータ	200
+mouse	Mouse Computer	Mouse	200
+mouse	G-Tune	G-Tune	200
+mouse	G-Tune	G-TUNE	200
+mouse	G-Tune	G-Tune PC	200
+mouse	G-Tune	G-TUNE PC	200
+mouse	G-Tune	ジーチューン	200
+mouse	G-Tune	ゲーミングG-Tune	200
+mouse	DAIV	DAIV	200
+mouse	DAIV	DAIV PC	200
+mouse	DAIV	DAIVパソコン	200
+mouse	DAIV	ダイブ	200
+mouse	MousePro	MousePro	200
+mouse	MousePro	MOUSEPRO	200
+mouse	MousePro	Mouse Pro	200
+mouse	MousePro	マウスプロ	200
+mouse	Mouse Computer	Mouse Computer PC	200
+mouse	Mouse Computer	Mouse Computer BTO	200
+mouse	Mouse Computer	マウスコンピューターPC	200
+mouse	G-Tune	G-Tune Gaming	200
+mouse	G-Tune	G-TUNE Gaming	200
+mouse	DAIV	DAIV Creator	200
+mouse	DAIV	DAIVクリエイター	200
+mouse	MousePro	MousePro Business	200
+mouse	MousePro	MouseProビジネス	200
+mouse	G-Tune	G-Tune FZ	200
+mouse	G-Tune	G-Tune DG	200
+mouse	G-Tune	G-Tune FG	200
+mouse	G-Tune	G-Tune E5	200
+mouse	DAIV	DAIV R	200
+mouse	DAIV	DAIV Z	200
+mouse	DAIV	DAIV FX	200
+mouse	DAIV	DAIV 4N	200
+mouse	DAIV	DAIV 6N	200
+mouse	MousePro	MousePro C	200
+mouse	MousePro	MousePro LP	200
+mouse	MousePro	MousePro NB	200
 msi	msi	MSI	100
 msi	stealth	Stealth	200
 msi	katana	Katana	200
@@ -47,9 +575,83 @@ msi	raider	Raider	200
 msi	vector	Vector	200
 msi	cyborg	Cyborg	200
 msi	prestige	Prestige	200
-gigabyte	gigabyte	GIGABYTE	100
-gigabyte	aorus	AORUS	200
-lavie	lavie	LAVIE	100
-lavie	nec	NEC	50
-lavie	mate	Mate	200
-lavie	versapro	VersaPro	200
+ozgaming	OZgaming	OZgaming	200
+ozgaming	OZ Gaming	OZ Gaming	200
+ozgaming	OZgaming	OZ GAMING	200
+ozgaming	OZgaming	OZ GAMING PC	200
+ozgaming	OZgaming	OZgaming PC	200
+ozgaming	OZgaming	OZ Gaming PC	200
+ozgaming	OZgaming	OZゲーミング	200
+ozgaming	OZgaming	OZゲーミングPC	200
+ozgaming	OZgaming	OZgaming BTO	200
+ozgaming	OZgaming	OZgaming BTO PC	200
+storm	STORM	STORM	200
+storm	STORM	Storm	200
+storm	STORM	STORM PC	200
+storm	STORM	STORMパソコン	200
+storm	STORM	STORM Gaming	200
+storm	STORM	STORM GAMING	200
+storm	STORM	ストーム	200
+storm	STORM	ストームPC	200
+storm	STORM	ストームパソコン	200
+storm	STORM	STORM BTO	200
+storm	STORM	STORM BTO PC	200
+storm	STORM	STORM Gaming PC	200
+storm	STORM	STORMゲーミングPC	200
+storm	STORM	ストームBTO	200
+storm	STORM	ストームBTO PC	200
+storm	STORM	STORM Desktop	200
+storm	STORM	STORM Mini	200
+storm	STORM	STORM Creator	200
+storm	STORM	STORM Workstation	200
+sycom	Sycom	Sycom	200
+sycom	Sycom	SYCOM	200
+sycom	Sycom	SYCOM PC	200
+sycom	Sycom	SYCOMパソコン	200
+sycom	Sycom	サイコム	200
+sycom	Sycom	サイコムPC	200
+sycom	Sycom	Sycom BTO	200
+sycom	Sycom	SYCOM BTO	200
+sycom	Sycom	サイコムBTO	200
+sycom	G-Master	G-Master	200
+sycom	G-Master	G-MASTER	200
+sycom	G-Master	G-Master Hydro	200
+sycom	G-Master	G-Master Hydro X	200
+sycom	G-Master	G-Master Spear	200
+sycom	G-Master	G-Master Mace	200
+sycom	G-Master	G-Master Arcus	200
+sycom	G-Master	G-Master Silent	200
+sycom	G-Master	G-Master Gaming	200
+sycom	G-Master	G-MASTER Gaming	200
+sycom	G-Master	G-Masterゲーミング	200
+sycom	Lepton	Lepton	200
+sycom	Lepton	LEPTON	200
+sycom	Lepton	Lepton WS	200
+sycom	Lepton	Lepton Custom	200
+sycom	Regulus	Regulus	200
+sycom	Regulus	REGULUS	200
+sycom	Regulus	Regulus II	200
+sycom	ThoughtGear	ThoughtGear	200
+sycom	ThoughtGear	THOUGHTGEAR	200
+tsukumo	TSUKUMO	TSUKUMO	200
+tsukumo	TSUKUMO	Tsukumo	200
+tsukumo	TSUKUMO	TSUKUMO PC	200
+tsukumo	TSUKUMO	TSUKUMOパソコン	200
+tsukumo	TSUKUMO	ツクモ	200
+tsukumo	TSUKUMO	九十九	200
+tsukumo	TSUKUMO	九十九電機	200
+tsukumo	TSUKUMO	TSUKUMO eX.	200
+tsukumo	TSUKUMO	TSUKUMO eX	200
+tsukumo	TSUKUMO	TSUKUMOネットショップ	200
+tsukumo	G-GEAR	G-GEAR	200
+tsukumo	G-GEAR	G-GEAR mini	200
+tsukumo	G-GEAR	G-GEAR ミニ	200
+tsukumo	G-GEAR	G-GEAR MINI	200
+tsukumo	G-GEAR	G-GEAR Aim	200
+tsukumo	G-GEAR	G-GEAR GA	200
+tsukumo	G-GEAR	G-GEAR Powered by ASUS	200
+tsukumo	G-GEAR	ジーギア	200
+tsukumo	G-GEAR	G-GEAR Aim GB	200
+tsukumo	G-GEAR	G-GEAR Gaming	200
+tsukumo	G-GEAR	G-GEAR PC	200
+Razer	Razer	Razer	200

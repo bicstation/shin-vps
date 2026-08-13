@@ -1,7 +1,7 @@
-# /home/maya/shin-dev/shin-vps/django/acquisition/common/mapping/pc_product.py
+#!/usr/bin/env python3
 # ============================================================================
 # FILE:
-# acquisition/common/mapping/pc_product.py
+#     acquisition/common/mapping/pc_product.py
 #
 # SHIN CORE LINX
 # PCProduct Mapping Contract
@@ -19,6 +19,7 @@
 # - update_or_create()
 # - AI Runtime
 # ============================================================================
+
 from __future__ import annotations
 
 from typing import Any, Dict
@@ -32,6 +33,23 @@ class PCProductMapper:
 
     AI解析に必要となる最小限のRealityを
     PCProductへマッピングする。
+
+    Identity Runtime
+            ↓
+    brand
+    series
+    collaboration
+
+    もRuntimeからそのまま保持する。
+
+    このMapperでは、
+
+    - semantic interpretation
+    - inference
+    - guessing
+    - classification
+
+    は行わない。
     """
 
     @classmethod
@@ -42,33 +60,88 @@ class PCProductMapper:
 
         return {
 
-            #
+            # =========================================================
             # Identity
-            #
-            "unique_id": getattr(runtime, "unique_id", ""),
-            "product_no": getattr(runtime, "product_no", ""),
-            "pc_id": getattr(runtime, "pc_id", ""),
-            "maker": getattr(runtime, "maker", ""),
+            # =========================================================
 
-            #
+            "unique_id": runtime.get(
+                "unique_id",
+                "",
+            ),
+
+            "product_no": runtime.get(
+                "product_no",
+                "",
+            ),
+
+            "pc_id": runtime.get(
+                "pc_id",
+                "",
+            ),
+
+            "maker": runtime.get(
+                "maker",
+                "",
+            ),
+
+            "brand": runtime.get(
+                "brand",
+                "",
+            ),
+
+            "series": runtime.get(
+                "series",
+                "",
+            ),
+
+            "collaboration": runtime.get(
+                "collaboration",
+                "",
+            ),
+
+            # =========================================================
             # Product
-            #
-            "name": getattr(runtime, "name", ""),
-            "description": getattr(runtime, "description", ""),
+            # =========================================================
 
-            #
+            "name": runtime.get(
+                "name",
+                "",
+            ),
+
+            "description": runtime.get(
+                "description",
+                "",
+            ),
+
+            # =========================================================
             # Commerce
-            #
-            "price": getattr(runtime, "price", 0),
-            "affiliate_url": getattr(runtime, "affiliate_url", ""),
+            # =========================================================
 
-            #
+            "price": runtime.get(
+                "price",
+                0,
+            ),
+
+            "affiliate_url": runtime.get(
+                "affiliate_url",
+                "",
+            ),
+
+            # =========================================================
             # Media
-            #
-            "image_url": getattr(runtime, "image_url", ""),
+            # =========================================================
 
-            #
+            "image_url": runtime.get(
+                "image_url",
+                "",
+            ),
+
+            # =========================================================
             # Source
-            #
-            "url": getattr(runtime, "url", ""),
+            # =========================================================
+
+            "url": runtime.get(
+                "url",
+                "",
+            ),
         }
