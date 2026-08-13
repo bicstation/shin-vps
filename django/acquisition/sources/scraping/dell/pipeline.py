@@ -31,6 +31,9 @@ Runtime Flow
     PCProduct Verification
         │
         ▼
+    Identity Runtime
+        │
+        ▼
     DELL Runtime Complete
 
 
@@ -41,6 +44,7 @@ Responsibilities
 - Coordinate Runtime Flow
 - Save Scraping Observation
 - Verify Saved PCProduct
+- Connect Scraping Reality to Common Identity Runtime
 
 
 NOT Responsibilities
@@ -56,7 +60,7 @@ NOT Responsibilities
 - Semantic Runtime
 - Model Mapper
 - Card Formatting
-============================================================================== 
+==============================================================================
 """
 
 from __future__ import annotations
@@ -92,17 +96,23 @@ from .verify import (
 )
 
 
+from .identity import (
+    main as identity,
+)
+
+
 # ==============================================================================
 # Breakpoint
 # ==============================================================================
 
-BREAKPOINT = "verify"
+BREAKPOINT = "identity"
 
 # BREAKPOINT = "seed"
 # BREAKPOINT = "acquire_listing"
 # BREAKPOINT = "observe_listing"
 # BREAKPOINT = "observation_store"
 # BREAKPOINT = "verify"
+# BREAKPOINT = "identity"
 
 
 # ==============================================================================
@@ -131,6 +141,11 @@ PIPELINE_OBSERVATION_STORE = (
 
 PIPELINE_VERIFY = (
     "PCProduct Verification Runtime"
+)
+
+
+PIPELINE_IDENTITY = (
+    "Identity Runtime"
 )
 
 
@@ -249,7 +264,7 @@ def run_observation_store(
 ):
     """
     Save DELL Observation Reality
-    into PCProduct.observation.
+    into PCProduct.observation_runtime.
     """
 
     return observation_store(
@@ -263,6 +278,28 @@ def run_verify():
     """
 
     return verify()
+
+
+def run_identity():
+    """
+    Execute Common Identity Runtime
+    for DELL PCProducts.
+
+    Existing Observation Reality is already stored
+    in PCProduct.observation_runtime.
+
+    The Identity Runtime receives:
+
+        maker
+        name
+        description
+        observation_runtime
+
+    No Observation-based execution condition
+    is applied here.
+    """
+
+    return identity()
 
 
 # ==============================================================================
@@ -282,9 +319,15 @@ def run(
               ↓
         Observation
               ↓
-        PCProduct.observation
+        PCProduct.observation_runtime
               ↓
         Verification
+              ↓
+        Common Identity Runtime
+              ↓
+        brand / series / collaboration
+              ↓
+        DELL Runtime Complete
     """
 
     # ==========================================================================
@@ -356,6 +399,20 @@ def run(
 
     if checkpoint(
         "verify",
+    ):
+        return
+
+    # ==========================================================================
+    # Identity Runtime
+    # ==========================================================================
+
+    run_stage(
+        PIPELINE_IDENTITY,
+        run_identity,
+    )
+
+    if checkpoint(
+        "identity",
     ):
         return
 

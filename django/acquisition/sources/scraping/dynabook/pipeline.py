@@ -31,6 +31,9 @@
 # PCProduct Verification
 #     │
 #     ▼
+# Identity Runtime
+#     │
+#     ▼
 # dynabook Runtime Complete
 #
 # Responsibilities
@@ -40,6 +43,7 @@
 # - Coordinate Runtime Flow
 # - Save Scraping Observation
 # - Verify Saved PCProduct
+# - Connect existing Observation Reality to Common Identity Runtime
 #
 # NOT Responsibilities
 #
@@ -83,18 +87,23 @@ from .verify import (
     main as verify,
 )
 
+from .identity import (
+    main as identity,
+)
+
 
 # ==============================================================================
 # Breakpoint
 # ==============================================================================
 
-BREAKPOINT = "verify"
+BREAKPOINT = "identity"
 
 # BREAKPOINT = "seed"
 # BREAKPOINT = "acquire_listing"
 # BREAKPOINT = "observe_listing"
 # BREAKPOINT = "observation_store"
 # BREAKPOINT = "verify"
+# BREAKPOINT = "identity"
 
 
 # ==============================================================================
@@ -119,6 +128,10 @@ PIPELINE_OBSERVATION_STORE = (
 
 PIPELINE_VERIFY = (
     "PCProduct Verification Runtime"
+)
+
+PIPELINE_IDENTITY = (
+    "Identity Runtime"
 )
 
 PIPELINE_COMPLETE = (
@@ -253,6 +266,26 @@ def run_verify():
     return verify()
 
 
+def run_identity():
+    """
+    Execute dynabook Identity Runtime.
+
+    Existing PCProduct Reality is passed
+    to the Common Identity Runtime.
+
+    Identity Runtime reads:
+
+        maker
+        name
+        description
+        observation_runtime
+
+    No additional execution condition is applied.
+    """
+
+    return identity()
+
+
 # ==============================================================================
 # Runtime Pipeline
 # ==============================================================================
@@ -273,6 +306,12 @@ def run(
         PCProduct.observation_runtime
               ↓
         Verification
+              ↓
+        Identity Runtime
+              ↓
+        brand / series / collaboration
+              ↓
+        dynabook Runtime Complete
     """
 
     # ==========================================================================
@@ -344,6 +383,20 @@ def run(
 
     if checkpoint(
         "verify",
+    ):
+        return
+
+    # ==========================================================================
+    # Identity Runtime
+    # ==========================================================================
+
+    run_stage(
+        PIPELINE_IDENTITY,
+        run_identity,
+    )
+
+    if checkpoint(
+        "identity",
     ):
         return
 

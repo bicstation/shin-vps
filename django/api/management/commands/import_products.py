@@ -104,6 +104,11 @@ REALITY_RUNTIMES = {
         "DYNABOOK",
         "acquisition.sources.scraping.dynabook.run",
     ),
+    
+    "asus": (
+        "ASUS",
+        "acquisition.sources.scraping.asus.run",
+    ),
 
 }
 

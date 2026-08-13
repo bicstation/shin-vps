@@ -3,7 +3,7 @@
 """
 ==============================================================================
 FILE:
-acquisition/sources/scraping/fujitsu/pipeline.py
+    acquisition/sources/scraping/fujitsu/pipeline.py
 
 SHIN CORE LINX
 
@@ -31,6 +31,9 @@ Runtime Flow
     PCProduct Verification
         │
         ▼
+    Identity Runtime
+        │
+        ▼
     FUJITSU Runtime Complete
 
 
@@ -41,6 +44,7 @@ Responsibilities
 - Coordinate Runtime Flow
 - Save Scraping Observation
 - Verify Saved PCProduct
+- Connect existing Observation Reality to Common Identity Runtime
 
 NOT Responsibilities
 
@@ -91,6 +95,11 @@ from .verify import (
 )
 
 
+from .identity import (
+    main as identity,
+)
+
+
 # ==============================================================================
 # Breakpoint
 # ==============================================================================
@@ -102,6 +111,7 @@ BREAKPOINT = "verify"
 # BREAKPOINT = "observe_listing"
 # BREAKPOINT = "observation_store"
 # BREAKPOINT = "verify"
+# BREAKPOINT = "identity"
 
 
 # ==============================================================================
@@ -130,6 +140,11 @@ PIPELINE_OBSERVATION_STORE = (
 
 PIPELINE_VERIFY = (
     "PCProduct Verification Runtime"
+)
+
+
+PIPELINE_IDENTITY = (
+    "Identity Runtime"
 )
 
 
@@ -250,7 +265,7 @@ def run_observation_store(
 ):
     """
     Save FUJITSU Observation Reality
-    into PCProduct.observation.
+    into PCProduct.observation_runtime.
     """
 
     return observation_store(
@@ -264,6 +279,26 @@ def run_verify():
     """
 
     return verify()
+
+
+def run_identity():
+    """
+    Execute FUJITSU Identity Runtime.
+
+    Existing PCProduct Reality is passed
+    to the Common Identity Runtime.
+
+    The Identity Runtime itself reads:
+
+        maker
+        name
+        description
+        observation_runtime
+
+    No additional condition is applied here.
+    """
+
+    return identity()
 
 
 # ==============================================================================
@@ -283,9 +318,15 @@ def run(
               ↓
         Observation
               ↓
-        PCProduct.observation
+        PCProduct.observation_runtime
               ↓
         Verification
+              ↓
+        Identity Runtime
+              ↓
+        brand / series / collaboration
+              ↓
+        FUJITSU Runtime Complete
     """
 
     # ==========================================================================
@@ -361,6 +402,21 @@ def run(
 
     if checkpoint(
         "verify",
+    ):
+
+        return
+
+    # ==========================================================================
+    # Identity Runtime
+    # ==========================================================================
+
+    run_stage(
+        PIPELINE_IDENTITY,
+        run_identity,
+    )
+
+    if checkpoint(
+        "identity",
     ):
 
         return

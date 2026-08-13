@@ -361,15 +361,19 @@ run_django import_products tsukumo
 run_django import_products ozgaming
 # ozgaming　◯ ◯ 
 run_django import_products storm
-# storm　◯ 
+# storm　◯ あとで、、ブランドごとの再構築を考えよう
 run_django import_products sycom
 # sycom　◯ 
 run_django import_products mouse
 # mouse　◯ ◯
 run_django import_products lenovo
+# lenovo　◯ ◯
 run_django import_products dell
+# dell　◯ ◯ 
 run_django import_products fujitsu
+# fujitsu　◯ ◯ 
 run_django import_products dynabook
+# dynabook　◯ ◯ 
 run_django import_products hp
 # run_django import_products asus これはサイトから無理だった
 
@@ -378,6 +382,12 @@ run_django import_products hp
 # シリーズ、ブランドの確認ツール
 # djmanage investigate_identity --maker ark --series-empty
 # djmanage investigate_identity --maker ark --brand-empty
+
+# djmanage investigate_identity \
+#   --maker dell \
+#   --both-empty \
+#   --observation \
+#   --limit 20
 
 
 

@@ -281,3 +281,250 @@ storm	rk2-	STORM	RK2		100
 storm	rk-	STORM	RK		100
 storm	s2p-	STORM	S2P		100
 storm	s2-	STORM	S2		100
+sycom	aqua-master	SYCOM	Aqua-Master		200
+sycom	radiant	SYCOM	Radiant		200
+sycom	g-master	SYCOM	G-Master		200
+sycom	lepton	SYCOM	Lepton		200
+sycom	silent-master	SYCOM	Silent Master		200
+sycom	silent master	SYCOM	Silent Master		200
+maker	keyword	brand	series	collaboration	priority
+lenovo	thinkpad	Lenovo	ThinkPad		100
+lenovo	thinkpad x	Lenovo	ThinkPad X		100
+lenovo	thinkpad t	Lenovo	ThinkPad T		100
+lenovo	thinkpad p	Lenovo	ThinkPad P		100
+lenovo	thinkpad l	Lenovo	ThinkPad L		100
+lenovo	thinkpad e	Lenovo	ThinkPad E		100
+lenovo	thinkpad a	Lenovo	ThinkPad A		100
+lenovo	thinkbook	Lenovo	ThinkBook		100
+lenovo	thinkbook plus	Lenovo	ThinkBook Plus		100
+lenovo	thinkbook 13	Lenovo	ThinkBook 13		100
+lenovo	thinkbook 14	Lenovo	ThinkBook 14		100
+lenovo	thinkbook 16	Lenovo	ThinkBook 16		100
+lenovo	ideapad	Lenovo	IdeaPad		100
+lenovo	ideapad slim	Lenovo	IdeaPad Slim		100
+lenovo	ideapad pro	Lenovo	IdeaPad Pro		100
+lenovo	ideapad flex	Lenovo	IdeaPad Flex		100
+lenovo	ideapad gaming	Lenovo	IdeaPad Gaming		100
+lenovo	yoga	Lenovo	Yoga		100
+lenovo	yoga slim	Lenovo	Yoga Slim		100
+lenovo	yoga pro	Lenovo	Yoga Pro		100
+lenovo	yoga 2-in-1	Lenovo	Yoga 2-in-1		100
+lenovo	yoga aio	Lenovo	Yoga AIO		100
+lenovo	yoga mini	Lenovo	Yoga Mini		100
+lenovo	legion	Lenovo	Legion		100
+lenovo	legion pro	Lenovo	Legion Pro		100
+lenovo	legion slim	Lenovo	Legion Slim		100
+lenovo	legion go	Lenovo	Legion Go		100
+lenovo	loq	Lenovo	LOQ		100
+lenovo	loq gaming	Lenovo	LOQ		100
+lenovo	thinkcentre	Lenovo	ThinkCentre		100
+lenovo	thinkstation	Lenovo	ThinkStation		100
+lenovo	thinkvision	Lenovo	ThinkVision		100
+lenovo	ideacentre	Lenovo	IdeaCentre		100
+lenovo	legion tower	Lenovo	Legion Tower		100
+lenovo	loq tower	Lenovo	LOQ Tower		100
+lenovo	chromebook duet	Lenovo	Chromebook Duet		100
+lenovo	v14 gen 6	Lenovo	V14 Gen 6		200
+lenovo	v15 gen 6	Lenovo	V15 Gen 6		200
+lenovo	v14 gen 7	Lenovo	V14 Gen 7		200
+lenovo	v15 gen 7	Lenovo	V15 Gen 7		200
+dell	alienware	Dell	Alienware		200
+dell	inspiron	Dell	Inspiron		200
+dell	latitude	Dell	Latitude		200
+dell	optiplex	Dell	OptiPlex		200
+dell	precision	Dell	Precision		200
+dell	xps	Dell	XPS		200
+dell	vostro	Dell	Vostro		200
+dell	ultrasharp	Dell	UltraSharp		200
+dell	pro	Dell	Pro		100
+dell	pro plus	Dell	Pro Plus		200
+dell	pro p	Dell	Pro P		200
+dell	pro max	Dell	Pro Max		200
+dell	pro premium	Dell	Pro Premium		200
+dell	g series	Dell	G Series		200
+dell	up series	Dell	UP Series		200
+dell	ultrasharp premiercolor	Dell	UltraSharp PremierColor		200
+dell	pシリーズ	Dell	P Series		80
+dell	sシリーズ	Dell	S Series		80
+dell	uシリーズ	Dell	U Series		80
+dell	se series	Dell	SE Series		80
+dell	in series	Dell	IN Series		80
+dell	c series	Dell	C Series		80
+dell	d series	Dell	D Series		80
+dell	e series	Dell	E Series		80
+fujitsu	fmv	Fujitsu	FMV		100
+fujitsu	lifebook	Fujitsu	LIFEBOOK		100
+fujitsu	esprimo	Fujitsu	ESPRIMO		100
+fujitsu	celsius	Fujitsu	CELSIUS		100
+fujitsu	arrows	Fujitsu	ARROWS		100
+fujitsu	uh	Fujitsu	UH		100
+fujitsu	ah	Fujitsu	AH		100
+fujitsu	ch	Fujitsu	CH		100
+fujitsu	mh	Fujitsu	MH		100
+fujitsu	fh	Fujitsu	FH		100
+fujitsu	wd	Fujitsu	WD		100
+fujitsu	wf	Fujitsu	WF		100
+fujitsu	ESPRIMO	Fujitsu	ESPRIMO		200
+fujitsu	ESPRIMO	Fujitsu	Esprimo		200
+fujitsu	ESPRIMO	Fujitsu	ESPRIMO PC		200
+fujitsu	CHROMEOS	Fujitsu	Chromebook		200
+fujitsu	CHROMEOS	Fujitsu	FMV Chromebook		200
+fujitsu	FMV	Fujitsu	FMV LIFEBOOK		200
+fujitsu	FMV	Fujitsu	FMV ESPRIMO		200
+fujitsu	FMV	Fujitsu	FMVパソコン		200
+fujitsu	LIFEBOOK	Fujitsu	LIFEBOOK UH		200
+fujitsu	LIFEBOOK	Fujitsu	LIFEBOOK AH		200
+fujitsu	LIFEBOOK	Fujitsu	LIFEBOOK CH		200
+fujitsu	ESPRIMO	Fujitsu	ESPRIMO DH		200
+fujitsu	ESPRIMO	Fujitsu	ESPRIMO FH		200
+fujitsu	LIFEBOOK	Fujitsu	LIFEBOOK UH		200
+fujitsu	LIFEBOOK	Fujitsu	LIFEBOOK AH		200
+fujitsu	LIFEBOOK	Fujitsu	LIFEBOOK CH		200
+fujitsu	LIFEBOOK	Fujitsu	LIFEBOOK WU		200
+fujitsu	ESPRIMO	Fujitsu	ESPRIMO FH		200
+fujitsu	ESPRIMO	Fujitsu	ESPRIMO DH		200
+fujitsu	ESPRIMO	Fujitsu	ESPRIMO D		200
+fujitsu	FMV	Fujitsu	FMV Note		200
+fujitsu	FMV	Fujitsu	FMV Lite		200
+fujitsu	FUJITSU	Fujitsu	FUJITSU		200
+fujitsu	FMV	Fujitsu	FMV		200
+fujitsu	LIFEBOOK	Fujitsu	LIFEBOOK		200
+fujitsu	ESPRIMO	Fujitsu	ESPRIMO		200
+dynabook	pz/ma	Dynabook	PZ/MA		300
+dynabook	mz/ma	Dynabook	MZ/MA		300
+dynabook	xz/hy	Dynabook	XZ/HY		300
+dynabook	xz/hw	Dynabook	XZ/HW		300
+dynabook	xa/za	Dynabook	XA/ZA		300
+dynabook	cz/ma	Dynabook	CZ/MA		300
+dynabook	portégé	Dynabook	Portégé		250
+dynabook	portege	Dynabook	Portégé		250
+dynabook	tecra	Dynabook	Tecra		250
+dynabook	satellite	Dynabook	Satellite		250
+dynabook	kira	Dynabook	KIRA		250
+dynabook	gシリーズ	Dynabook	G Series		200
+dynabook	mシリーズ	Dynabook	M Series		200
+dynabook	pシリーズ	Dynabook	P Series		200
+dynabook	rシリーズ	Dynabook	R Series		200
+dynabook	xシリーズ	Dynabook	X Series		200
+dynabook	gz	Dynabook	GZ		100
+dynabook	mz	Dynabook	MZ		100
+dynabook	pz	Dynabook	PZ		100
+dynabook	az	Dynabook	AZ		100
+dynabook	cz	Dynabook	CZ		100
+dynabook	rz	Dynabook	RZ		100
+dynabook	xz	Dynabook	XZ		100
+dynabook	xd/za	Dynabook	XD/ZA		300
+dynabook	kz20/a	Dynabook	KZ20/A		300
+dynabook	kz20/y	Dynabook	KZ20/Y		300
+hp	elitebook	HP	EliteBook		100
+hp	elitedesk	HP	EliteDesk		100
+hp	eliteone	HP	EliteOne		100
+hp	pro	HP	Pro		100
+hp	probook	HP	ProBook		100
+hp	prodesk	HP	ProDesk		100
+hp	zbook	HP	ZBook		100
+hp	z	HP	Z		100
+hp	omen	HP	OMEN		100
+hp	victus	HP	Victus		100
+hp	envy	HP	ENVY		100
+hp	spectre	HP	Spectre		100
+hp	pavilion	HP	Pavilion		100
+hp	dragonfly	HP	Dragonfly		100
+hp	all-in-one	HP	All-in-One		100
+hp	hp	HP	HP		100
+hp	omen	HP	OMEN Gaming		200
+hp	omen	HP	OMEN by HP		200
+hp	omen	HP	OMEN PC		200
+hp	omen	HP	オーメン		200
+hp	hp victus	HP	Victus		200
+hp	hp victus	HP	VICTUS		200
+hp	hp victus	HP	Victus by HP		200
+hp	hp victus	HP	HP VICTUS		200
+hp	hp victus	HP	ビクタス		200
+hp	hp	HP	hp		200
+hp	hp	HP	HP Inc.		200
+hp	hp	HP	HP Inc		200
+hp	hp	HP	Hewlett-Packard		200
+hp	hp	HP	Hewlett Packard		200
+hp	hp	HP	日本HP		200
+hp	hp	HP	日本ヒューレット・パッカード		200
+hp	hp	HP	ヒューレット・パッカード		200
+hp	hp	HP	HP Japan		200
+hp	hp	HP	HP PC		200
+hp	hp	HP	HPパソコン		200
+hp	hp	HP	HPノートPC		200
+hp	hp	HP	HPデスクトップ		200
+hp	elitebook	HP	ELITEBOOK		200
+hp	elitebook	HP	Elite Book		200
+hp	elitebook	HP	EliteBook X		200
+hp	elitebook	HP	EliteBook Ultra		200
+hp	elitebook	HP	EliteBook 600		200
+hp	elitebook	HP	EliteBook 800		200
+hp	pro	HP	Pro		200
+hp	probook	HP	PROBOOK		200
+hp	probook	HP	Pro Book		200
+hp	probook	HP	ProBook 400		200
+hp	probook	HP	ProBook 600		200
+hp	prodesk	HP	PRODESK		200
+hp	prodesk	HP	Pro Desk		200
+hp	prodesk	HP	ProDesk 400		200
+hp	elitedesk	HP	ELITEDESK		200
+hp	elitedesk	HP	Elite Desk		200
+hp	elitedesk	HP	EliteDesk 800		200
+hp	zbook	HP	ZBOOK		200
+hp	zbook	HP	Z Book		200
+hp	zbook	HP	ZBook Firefly		200
+hp	zbook	HP	ZBook Power		200
+hp	zbook	HP	ZBook Fury		200
+hp	omen	HP	OMEN 16		200
+hp	omen	HP	OMEN 17		200
+hp	omen	HP	OMEN Transcend		200
+hp	hp victus	HP	Victus Gaming		200
+hp	hp victus	HP	Victus 15		200
+hp	hp victus	HP	Victus 16		200
+hp	spectre	HP	SPECTRE		200
+hp	spectre	HP	Spectre x360		200
+hp	envy	HP	Envy		200
+hp	envy	HP	ENVY x360		200
+hp	pavilion	HP	PAVILION		200
+hp	pavilion	HP	Pavilion Aero		200
+hp	pavilion	HP	Pavilion Plus		200
+asus	rog strix	ASUS	ROG Strix		100
+asus	rog zephyrus	ASUS	ROG Zephyrus		100
+asus	rog flow	ASUS	ROG Flow		100
+asus	rog ally	ASUS	ROG Ally		100
+asus	rog	ASUS	ROG		90
+asus	tuf gaming	ASUS	TUF Gaming		100
+asus	tuf	ASUS	TUF Gaming		90
+asus	proart studiobook	ASUS	ProArt Studiobook		100
+asus	proart px	ASUS	ProArt		100
+asus	proart	ASUS	ProArt		90
+asus	zenbook pro	ASUS	Zenbook Pro		100
+asus	zenbook s	ASUS	Zenbook S		100
+asus	zenbook duo	ASUS	Zenbook Duo		100
+asus	zenbook	ASUS	Zenbook		90
+asus	vivobook pro	ASUS	Vivobook Pro		100
+asus	vivobook flip	ASUS	Vivobook Flip		100
+asus	vivobook s	ASUS	Vivobook S		100
+asus	vivobook go	ASUS	Vivobook Go		100
+asus	vivobook	ASUS	Vivobook		90
+asus	expertbook b	ASUS	ExpertBook B		100
+asus	expertbook p	ASUS	ExpertBook P		100
+asus	expertbook	ASUS	ExpertBook		90
+asus	expertcenter d	ASUS	ExpertCenter D		100
+asus	expertcenter p	ASUS	ExpertCenter P		100
+asus	expertcenter	ASUS	ExpertCenter		90
+asus	chromebook plus	ASUS	Chromebook Plus		100
+asus	chromebook	ASUS	Chromebook		90
+asus	nuc pro	ASUS	N ASUS NUC Pro		100
+asus	nuc 14	ASUS	N ASUS NUC		100
+asus	nuc 15	ASUS	N ASUS NUC		100
+asus	nuc	ASUS	N ASUS NUC		90
+asus	asus gaming	ASUS	ASUS Gaming		90
+asus	v400 aio	ASUS	V400 AiO		100
+asus	v400	ASUS	V400		90
+asus	v500 mini tower	ASUS	V500 Mini Tower		100
+asus	v500 sff	ASUS	V500 SFF		100
+asus	v500	ASUS	V500		90
+asus	v600 aio	ASUS	V600 AiO		100
+asus	v600	ASUS	V600		90
