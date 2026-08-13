@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
 FILE:
-acquisition/sources/scraping/gmktec/fetch_product.py
+acquisition/sources/scraping/minisforum/fetch_product.py
 
 SHIN CORE LINX
 
-GMKtec Product Fetch Runtime
+Minisforum Product Fetch Runtime
 
 Product Discovery Reality
 ↓
@@ -23,6 +23,7 @@ Responsibilities
 - Preserve Raw Product HTML
 - Update AcquisitionDocument
 - Skip already acquired Product Reality
+- Force re-acquisition when force=True
 
 NOT
 
@@ -51,6 +52,7 @@ from api.models.acquisition_document import (
 )
 
 from .settings import (
+    BASE_URL,
     SITE_NAME,
     TIMEOUT,
     USER_AGENT,
@@ -122,7 +124,7 @@ def fetch(
     )
 
     print(
-        "🌐 GMKTEC PRODUCT FETCH"
+        "🌐 MINISFORUM PRODUCT FETCH"
     )
 
     print(
@@ -131,6 +133,10 @@ def fetch(
 
     print(
         f"Target : {len(products)} Products"
+    )
+
+    print(
+        f"Force  : {force}"
     )
 
     print(
@@ -156,7 +162,7 @@ def fetch(
     session.headers.update(
         {
             "User-Agent": USER_AGENT,
-            "Referer": "https://jp.gmktec.com/",
+            "Referer": BASE_URL,
         }
     )
 
@@ -192,43 +198,55 @@ def fetch(
         # Cache Check
         # ==================================================
 
-        if not force:
+        document = (
+            AcquisitionDocument.objects
+            .filter(
+                source_type="scraping",
+                source_name=SITE_NAME,
+                document_type="product",
+                document_key=slug,
+            )
+            .first()
+        )
 
-            document = (
-                AcquisitionDocument.objects
-                .filter(
-                    source_type="scraping",
-                    source_name=SITE_NAME,
-                    document_type="product",
-                    document_key=slug,
-                )
-                .first()
+        print(
+            "DEBUG CACHE:",
+            slug,
+            "force=",
+            force,
+            "exists=",
+            document is not None,
+            "content=",
+            bool(document.content)
+                if document is not None
+                else False,
+        )
+
+        if (
+            not force
+            and document is not None
+            and document.content
+        ):
+
+            skipped.append(
+                slug
             )
 
-            if (
-                document is not None
-                and document.content
-            ):
+            success.append(
+                slug
+            )
 
-                skipped.append(
-                    slug
-                )
+            print(
+                "Cache  : HIT"
+            )
 
-                success.append(
-                    slug
-                )
+            print(
+                "⏭️ SKIP : Product HTML already acquired"
+            )
 
-                print(
-                    "Cache  : HIT"
-                )
+            print()
 
-                print(
-                    "⏭️ SKIP : Product HTML already acquired"
-                )
-
-                print()
-
-                continue
+            continue
 
         # ==================================================
         # HTTP Acquisition
@@ -243,8 +261,8 @@ def fetch(
             if index > 1:
 
                 wait = random.uniform(
-                    20.0,
-                    30.0,
+                    5.0,
+                    10.0,
                 )
 
                 print(
@@ -332,7 +350,12 @@ def fetch(
             )
 
             print(
-                "Cache  : MISS"
+                "Cache  : "
+                + (
+                    "FORCE"
+                    if force
+                    else "MISS"
+                )
             )
 
             print(
@@ -419,7 +442,7 @@ def main(
     force: bool = False,
 ) -> None:
     """
-    Execute GMKtec Product Fetch Runtime.
+    Execute Minisforum Product Fetch Runtime.
     """
 
     fetch(

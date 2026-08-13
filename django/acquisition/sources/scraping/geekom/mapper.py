@@ -1,37 +1,48 @@
 #!/usr/bin/env python3
 """
-mapper.py
+FILE:
+acquisition/sources/scraping/geekom/mapper.py
+
+SHIN CORE LINX
 
 GEEKOM Mapper Runtime
 
 ObservationDocument
-        │
-        ▼
+│
+▼
 Import Contract
-        │
-        ▼
+│
+▼
 ImportDocument
 
 Responsibilities
 
 - Translate Runtime Contracts
-- Build Import Contract
-- Preserve Observation Runtime
+- Preserve complete Observation Reality
+- Provide Observation Runtime for downstream AI analysis
+- Copy observable values into existing Contract fields
+- Preserve Reality without semantic classification
 
 NOT
 
 - Parse HTML
 - Parse Specifications
-- Generate Meaning
-- Classify Reality
+- Classify Observation Content
+- Generate Semantic Meaning
+- Infer
+- Guess
+- Calculate
+- Load external TSV
+- Re-acquire Reality
 
 Reality First
+Observation First
 Translation Authority
+Meaning Later
+AI Analysis Later
 """
 
 from __future__ import annotations
-
-import csv
 
 from api.models import (
     ObservationDocument,
@@ -51,38 +62,7 @@ from acquisition.common.trace.reality_trace import (
 from .settings import (
     SITE_NAME,
     AFFILIATE,
-    PRODUCT_LIST_TSV,
 )
-
-
-# ==========================================================
-# Price Runtime
-# ==========================================================
-
-def load_price_map() -> dict[str, str]:
-    """
-    Load product prices from PRODUCT_LIST_TSV.
-    """
-
-    with PRODUCT_LIST_TSV.open(
-        "r",
-        encoding="utf-8",
-        newline="",
-    ) as f:
-
-        return {
-
-            row["slug"]: row.get(
-                "price",
-                "",
-            )
-
-            for row in csv.DictReader(
-                f,
-                delimiter="\t",
-            )
-
-        }
 
 
 # ==========================================================
@@ -93,31 +73,74 @@ def map_observation(
     observation: dict,
     *,
     document_key: str,
-    price: str,
 ) -> dict:
+    """
+    Translate Observation Reality into Import Contract.
+
+    The complete Observation is preserved as
+    observation_runtime.
+
+    Existing Contract fields receive observable values
+    directly from Observation.
+
+    This Runtime does NOT:
+
+    - interpret values
+    - classify values
+    - identify specifications
+    - identify CPU/GPU/Memory/Storage
+    - calculate values
+    - convert prices
+    - infer missing values
+    - generate semantic meaning
+    - decide product categories
+
+    Downstream AI Runtime is responsible for
+    interpreting Observation Reality.
+    """
+
+    # ------------------------------------------------------
+    # Affiliate
+    #
+    # Affiliate generation is contract infrastructure.
+    # It does not interpret product Reality.
+    # ------------------------------------------------------
 
     affiliate = AffiliateBuilder.build(
-
         product_url=observation.get(
             "url",
             "",
         ),
-
         config=AFFILIATE,
-
     )
+
+    # ------------------------------------------------------
+    # Import Contract
+    #
+    # IMPORTANT:
+    #
+    # Existing Contract fields receive observable values
+    # directly from Observation.
+    #
+    # No semantic interpretation is performed here.
+    #
+    # The complete Observation is preserved separately in
+    # observation_runtime.
+    # ------------------------------------------------------
 
     contract = {
 
-        #
+        # --------------------------------------------------
         # Source
-        #
+        # --------------------------------------------------
 
         "site": SITE_NAME,
 
-        #
+        # --------------------------------------------------
         # Identity
         #
+        # Direct Observation transfer only.
+        # --------------------------------------------------
 
         "identity": {
 
@@ -147,13 +170,21 @@ def map_observation(
 
         },
 
-        #
+        # --------------------------------------------------
         # Commerce
         #
+        # Direct Observation transfer only.
+        #
+        # Price is preserved exactly as observed.
+        # No numeric conversion is performed.
+        # --------------------------------------------------
 
         "commerce": {
 
-            "price": price,
+            "price": observation.get(
+                "price",
+                "",
+            ),
 
             "stock": observation.get(
                 "stock",
@@ -163,16 +194,18 @@ def map_observation(
             "delivery": "",
 
         },
-        
-                #
+
+        # --------------------------------------------------
         # Affiliate
-        #
+        # --------------------------------------------------
 
         "affiliate": affiliate,
 
-        #
+        # --------------------------------------------------
         # Media
         #
+        # Direct Observation transfer only.
+        # --------------------------------------------------
 
         "media": {
 
@@ -183,45 +216,48 @@ def map_observation(
 
         },
 
-        #
+        # --------------------------------------------------
         # Description
         #
+        # Direct Observation transfer only.
+        # --------------------------------------------------
 
         "description": observation.get(
             "description",
             "",
         ),
 
-        #
-        # Specifications
-        #
-        # Observable Reality
-        # (No Semantic Meaning)
-        #
-
-        "specifications": {
-
-            "tables": observation.get(
-                "tables",
-                [],
-            ),
-
-            "images": observation.get(
-                "images",
-                [],
-            ),
-
-        },
-
-        #
+        # --------------------------------------------------
         # Observation Runtime
         #
-        # Preserve Reality
+        # ==================================================
+        # CORE REALITY
+        # ==================================================
         #
+        # Preserve the COMPLETE Observation exactly as
+        # produced by the Observation Runtime.
+        #
+        # No:
+        #
+        # - specification extraction
+        # - classification
+        # - semantic labeling
+        # - interpretation
+        # - inference
+        #
+        # is performed here.
+        #
+        # This becomes the material consumed by the
+        # downstream AI Analysis Runtime.
+        # --------------------------------------------------
 
-        "observation": observation,
+        "observation_runtime": observation,
 
     }
+
+    # ------------------------------------------------------
+    # Trace
+    # ------------------------------------------------------
 
     trace(
         "Import Contract",
@@ -230,70 +266,101 @@ def map_observation(
 
     return contract
 
+
 # ==========================================================
 # Runtime
 # ==========================================================
 
 def run() -> None:
+    """
+    Execute GEEKOM Mapper Runtime.
 
-    print("=" * 60)
-    print("🗺️ GEEKOM MAPPER")
-    print("=" * 60)
+    ObservationDocument
+            ↓
+    Complete Observation Reality
+            ↓
+    Direct Contract Transfer
+            ↓
+    observation_runtime
+            ↓
+    ImportDocument
+            ↓
+    AI Analysis
+            ↓
+    Semantic Meaning
+    """
 
-    trace_pipeline("Mapper")
+    print(
+        "=" * 60
+    )
 
-    #
-    # Price Runtime
-    #
+    print(
+        "🗺️ GEEKOM MAPPER"
+    )
 
-    price_map = load_price_map()
+    print(
+        "=" * 60
+    )
+
+    trace_pipeline(
+        "Mapper"
+    )
+
+    # ------------------------------------------------------
+    # Observation Documents
+    # ------------------------------------------------------
+
+    documents = (
+        ObservationDocument.objects
+        .filter(
+            source_name=SITE_NAME,
+            document_type="product",
+        )
+        .iterator()
+    )
 
     success = 0
 
-    documents = ObservationDocument.objects.filter(
-        source_name=SITE_NAME,
-        document_type="product",
-    ).iterator()
+    # ------------------------------------------------------
+    # Product Loop
+    # ------------------------------------------------------
 
     for document in documents:
 
-        #
-        # Observation Runtime
-        #
+        # --------------------------------------------------
+        # Observation Reality
+        # --------------------------------------------------
 
         observation = document.observation
 
-        #
-        # Price Runtime
-        #
-
-        price = price_map.get(
-            document.document_key,
-            "",
-        )
-
-        #
+        # --------------------------------------------------
         # Import Contract
-        #
+        # --------------------------------------------------
 
         contract = map_observation(
             observation,
             document_key=document.document_key,
-            price=price,
         )
 
-        #
+        # --------------------------------------------------
         # ImportDocument
-        #
+        # --------------------------------------------------
 
-        obj, _ = ImportDocument.objects.update_or_create(
-            source_name=document.source_name,
-            document_type=document.document_type,
-            document_key=document.document_key,
-            defaults={
-                "contract": contract,
-            },
+        obj, _ = (
+            ImportDocument.objects
+            .update_or_create(
+                source_name=document.source_name,
+                document_type=document.document_type,
+                document_key=document.document_key,
+                defaults={
+                    "contract": contract,
+                },
+            )
         )
+
+        # --------------------------------------------------
+        # Trace
+        # --------------------------------------------------
 
         trace_model(
             "ImportDocument",
@@ -302,9 +369,21 @@ def run() -> None:
 
         success += 1
 
-    print("=" * 60)
-    print(f"SUCCESS : {success}")
-    print("=" * 60)
+    # ------------------------------------------------------
+    # Result
+    # ------------------------------------------------------
+
+    print(
+        "=" * 60
+    )
+
+    print(
+        f"SUCCESS : {success}"
+    )
+
+    print(
+        "=" * 60
+    )
 
 
 # ==========================================================
@@ -312,10 +391,16 @@ def run() -> None:
 # ==========================================================
 
 def main() -> None:
+    """
+    Execute Mapper Runtime.
+    """
 
     run()
 
 
-if __name__ == "__main__":
+# ==========================================================
+# Standalone Execution
+# ==========================================================
 
+if __name__ == "__main__":
     main()

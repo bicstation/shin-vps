@@ -1,24 +1,14 @@
-#!/usr/bin/env python3
 """
-==============================================================================
 FILE:
-    acquisition/sources/scraping/geekom/run.py
+acquisition/sources/scraping/geekom/run.py
 
 SHIN CORE LINX
-GEEKOM Acquisition Runtime
+
+Geekom Acquisition Runtime
 
 Entry Point
 
 Pipeline
-
-Reality Source
-        │
-        ▼
-pipeline.py
-        │
-        ▼
-PCProduct Payload
-==============================================================================
 
 Responsibilities
 
@@ -31,12 +21,16 @@ NOT
 - Adapter
 - Integration
 - Business Logic
-==============================================================================
 """
 
 from __future__ import annotations
 
 from .pipeline import run
+
+
+# ==========================================================
+# Entry Point
+# ==========================================================
 
 def main(
     *,
@@ -51,6 +45,10 @@ def main(
 
     run()
 
+
+# ==========================================================
+# Standalone Execution
+# ==========================================================
 
 if __name__ == "__main__":
     main()

@@ -1,10 +1,10 @@
 """
 FILE:
-acquisition/sources/scraping/gmktec/run.py
+acquisition/sources/scraping/minisforum/run.py
 
 SHIN CORE LINX
 
-GMKtec Acquisition Runtime
+MinisForum Acquisition Runtime
 
 Entry Point
 

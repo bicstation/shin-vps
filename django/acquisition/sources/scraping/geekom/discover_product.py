@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
 FILE:
-acquisition/sources/scraping/minisforum/discover_product.py
+acquisition/sources/scraping/geekom/discover_product.py
 
 SHIN CORE LINX
 
-Minisforum Product Discovery Runtime
+Geekom Product Discovery Runtime
 
 Collection Reality
         ↓
@@ -18,7 +18,6 @@ Product URL Discovery
 Product Reality Synchronization
         ↓
 AcquisitionDocument
-document_type = "product"
 
 Responsibilities
 
@@ -32,6 +31,7 @@ Responsibilities
 - Observe Product Card Compare-at Price
 - Observe Product Card Badge
 - Normalize observed card values
+- Preserve Product Card Reality
 - Synchronize Product Discovery Reality
 - Register Product Discovery Reality
 - Preserve existing Product Acquisition Reality
@@ -55,6 +55,7 @@ Discovery Does Not Destroy Acquisition Reality
 
 from __future__ import annotations
 
+import json
 import re
 
 from urllib.parse import (
@@ -75,9 +76,19 @@ from .settings import (
 
 
 # ==========================================================
-# Collection Reality
+# Document Types
 # ==========================================================
 
+PRODUCT_DOCUMENT_TYPE = "product"
+
+PRODUCT_DISCOVERY_DOCUMENT_TYPE = (
+    "product_discovery"
+)
+
+
+# ==========================================================
+# Collection Reality
+# ==========================================================
 
 def load_collections() -> list[dict[str, str]]:
     """
@@ -117,7 +128,6 @@ def load_collections() -> list[dict[str, str]]:
 # ==========================================================
 # Product URL
 # ==========================================================
-
 
 def normalize_product_url(
     href: str,
@@ -167,7 +177,6 @@ def normalize_product_url(
 # Product Slug
 # ==========================================================
 
-
 def extract_product_slug(
     url: str,
 ) -> str:
@@ -205,7 +214,6 @@ def extract_product_slug(
 # Text Normalization
 # ==========================================================
 
-
 def normalize_text(
     value: str,
 ) -> str:
@@ -229,7 +237,6 @@ def normalize_text(
 # ==========================================================
 # Price Normalization
 # ==========================================================
-
 
 def normalize_price(
     value: str,
@@ -289,7 +296,6 @@ def normalize_price(
 # Card Image
 # ==========================================================
 
-
 def normalize_image_url(
     src: str,
 ) -> str:
@@ -298,11 +304,11 @@ def normalize_image_url(
 
     Shopify cards may provide:
 
-        //www.minisforum.jp/...
+        //geekom.jp/...
 
     Convert it to:
 
-        https://www.minisforum.jp/...
+        https://geekom.jp/...
     """
 
     if not src:
@@ -326,7 +332,6 @@ def normalize_image_url(
 # ==========================================================
 # Product Card Observation
 # ==========================================================
-
 
 def observe_product_card(
     card,
@@ -541,7 +546,6 @@ def observe_product_card(
 # Product Discovery
 # ==========================================================
 
-
 def discover_products(
     html: str,
 ) -> tuple[
@@ -639,9 +643,8 @@ def discover_products(
 
 
 # ==========================================================
-# Product Document
+# Product Acquisition Document
 # ==========================================================
-
 
 def save_product(
     *,
@@ -659,11 +662,6 @@ def save_product(
         - Product existence
         - Product URL
 
-    Product Card observation is used
-    by Discovery as Reality evidence,
-    but the Product AcquisitionDocument
-    content remains reserved for Product HTML.
-
     Fetch Runtime owns:
 
         - Product HTML
@@ -675,16 +673,12 @@ def save_product(
     overwritten by Product Discovery.
     """
 
-    # ------------------------------------------------------
-    # Existing Product Document
-    # ------------------------------------------------------
-
     document, created = (
         AcquisitionDocument.objects
         .get_or_create(
             source_type="scraping",
             source_name=SITE_NAME,
-            document_type="product",
+            document_type=PRODUCT_DOCUMENT_TYPE,
             document_key=slug,
             defaults={
                 "source_url": url,
@@ -736,9 +730,78 @@ def save_product(
 
 
 # ==========================================================
-# Product Reality Synchronization
+# Product Discovery Reality Document
 # ==========================================================
 
+def save_product_discovery(
+    *,
+    product: dict[str, object],
+) -> None:
+    """
+    Preserve Product Card Reality.
+
+    This Document is separate from the
+    Product HTML AcquisitionDocument.
+
+    Product Discovery Reality contains:
+
+        - handle
+        - slug
+        - url
+        - title
+        - image
+        - price
+        - compare_at_price
+        - badge
+
+    The content is serialized JSON.
+
+    No semantic interpretation is performed.
+    """
+
+    slug = str(
+        product.get(
+            "slug",
+            "",
+        )
+    )
+
+    if not slug:
+
+        return
+
+    url = str(
+        product.get(
+            "url",
+            "",
+        )
+    )
+
+    content = json.dumps(
+        product,
+        ensure_ascii=False,
+        separators=(
+            ",",
+            ":",
+        ),
+    )
+
+    AcquisitionDocument.objects.update_or_create(
+        source_type="scraping",
+        source_name=SITE_NAME,
+        document_type=PRODUCT_DISCOVERY_DOCUMENT_TYPE,
+        document_key=slug,
+        defaults={
+            "source_url": url,
+            "content_type": "application/json",
+            "content": content,
+        },
+    )
+
+
+# ==========================================================
+# Product Reality Synchronization
+# ==========================================================
 
 def synchronize_products(
     products: dict[str, dict[str, object]],
@@ -751,22 +814,29 @@ def synchronize_products(
     for this source.
 
     Products no longer discovered are removed
-    from AcquisitionDocument.
+    from both Product and Product Discovery
+    AcquisitionDocuments.
 
     Existing Product HTML is preserved.
     """
 
     discovered_slugs = {
-        product["slug"]
+        str(
+            product["slug"]
+        )
         for product in products.values()
     }
 
-    existing = (
+    # ======================================================
+    # Existing Product Documents
+    # ======================================================
+
+    existing_products = (
         AcquisitionDocument.objects
         .filter(
             source_type="scraping",
             source_name=SITE_NAME,
-            document_type="product",
+            document_type=PRODUCT_DOCUMENT_TYPE,
         )
     )
 
@@ -774,20 +844,24 @@ def synchronize_products(
     # Remove Stale Product Reality
     # ======================================================
 
-    stale = existing.exclude(
-        document_key__in=discovered_slugs,
+    stale_products = (
+        existing_products.exclude(
+            document_key__in=discovered_slugs,
+        )
     )
 
-    stale_count = stale.count()
+    stale_product_count = (
+        stale_products.count()
+    )
 
-    if stale_count:
+    if stale_product_count:
 
         print(
             f"🧹 STALE PRODUCTS : "
-            f"{stale_count}"
+            f"{stale_product_count}"
         )
 
-        for document in stale.order_by(
+        for document in stale_products.order_by(
             "document_key",
         ):
 
@@ -796,12 +870,65 @@ def synchronize_products(
                 f"{document.document_key}"
             )
 
-        stale.delete()
+        stale_products.delete()
 
     else:
 
         print(
             "🧹 STALE PRODUCTS : 0"
+        )
+
+    # ======================================================
+    # Existing Product Discovery Documents
+    # ======================================================
+
+    existing_discovery = (
+        AcquisitionDocument.objects
+        .filter(
+            source_type="scraping",
+            source_name=SITE_NAME,
+            document_type=(
+                PRODUCT_DISCOVERY_DOCUMENT_TYPE
+            ),
+        )
+    )
+
+    # ======================================================
+    # Remove Stale Discovery Reality
+    # ======================================================
+
+    stale_discovery = (
+        existing_discovery.exclude(
+            document_key__in=discovered_slugs,
+        )
+    )
+
+    stale_discovery_count = (
+        stale_discovery.count()
+    )
+
+    if stale_discovery_count:
+
+        print(
+            f"🧹 STALE DISCOVERY : "
+            f"{stale_discovery_count}"
+        )
+
+        for document in stale_discovery.order_by(
+            "document_key",
+        ):
+
+            print(
+                f"  DELETE : "
+                f"{document.document_key}"
+            )
+
+        stale_discovery.delete()
+
+    else:
+
+        print(
+            "🧹 STALE DISCOVERY : 0"
         )
 
     # ======================================================
@@ -815,20 +942,35 @@ def synchronize_products(
         ),
     ):
 
+        slug = str(
+            product["slug"]
+        )
+
+        url = str(
+            product["url"]
+        )
+
+        # --------------------------------------------------
+        # Product Acquisition Document
+        # --------------------------------------------------
+
         save_product(
-            slug=str(
-                product["slug"]
-            ),
-            url=str(
-                product["url"]
-            ),
+            slug=slug,
+            url=url,
+        )
+
+        # --------------------------------------------------
+        # Product Discovery Reality
+        # --------------------------------------------------
+
+        save_product_discovery(
+            product=product,
         )
 
 
 # ==========================================================
 # Product Card Reality Display
 # ==========================================================
-
 
 def print_product_reality(
     products: dict[str, dict[str, object]],
@@ -908,10 +1050,9 @@ def print_product_reality(
 # Runtime
 # ==========================================================
 
-
 def main() -> None:
     """
-    Execute Minisforum Product Discovery Runtime.
+    Execute Geekom Product Discovery Runtime.
 
     Collection Document
             ↓
@@ -921,11 +1062,24 @@ def main() -> None:
             ↓
     Card Reality Observation
             ↓
-    Product Identity
+    Product Discovery Reality
             ↓
-      Product Document
+    ┌──────────────────────────────┐
+    │ Product Discovery Document  │
+    │                              │
+    │ handle                       │
+    │ slug                         │
+    │ url                          │
+    │ title                        │
+    │ image                        │
+    │ price                        │
+    │ compare_at_price             │
+    │ badge                        │
+    └──────────────────────────────┘
             ↓
-    Product Fetch Runtime
+    Product AcquisitionDocument
+            ↓
+       Product Fetch Runtime
 
     Existing Product HTML
     is preserved.
@@ -936,7 +1090,7 @@ def main() -> None:
     )
 
     print(
-        "🔎 MINISFORUM PRODUCT DISCOVERY"
+        "🔎 GEEKOM PRODUCT DISCOVERY"
     )
 
     print(
@@ -1145,7 +1299,13 @@ def main() -> None:
     )
 
     print(
-        "📦 Storage : AcquisitionDocument"
+        "📦 Product Storage"
+        " : AcquisitionDocument"
+    )
+
+    print(
+        "👁️ Card Reality"
+        " : Product Discovery Document"
     )
 
     print(
@@ -1156,7 +1316,6 @@ def main() -> None:
 # ==========================================================
 # Standalone Execution
 # ==========================================================
-
 
 if __name__ == "__main__":
     main()

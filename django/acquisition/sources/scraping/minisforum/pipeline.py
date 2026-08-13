@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """
 FILE:
-acquisition/sources/scraping/gmktec/pipeline.py
+acquisition/sources/scraping/minisforum/pipeline.py
 
 SHIN CORE LINX
 
-GMKtec Reality Acquisition Pipeline
+Minisforum Reality Acquisition Pipeline
 
 Reality Source
-GMKtec AMD Mini PC Collection
+Minisforum AMD Mini PC Collection
         ↓
 Fetch Runtime
         ↓
@@ -126,35 +126,35 @@ BREAKPOINT: str | None = "integration"
 # ==========================================================
 
 PIPELINE_FETCH_COLLECTION = (
-    "GMKtec Collection Fetch Runtime"
+    "Minisforum Collection Fetch Runtime"
 )
 
 PIPELINE_DISCOVER_PRODUCT = (
-    "GMKtec Product Discovery Runtime"
+    "Minisforum Product Discovery Runtime"
 )
 
 PIPELINE_FETCH_PRODUCT = (
-    "GMKtec Product Fetch Runtime"
+    "Minisforum Product Fetch Runtime"
 )
 
 PIPELINE_OBSERVE = (
-    "GMKtec Observation Runtime"
+    "Minisforum Observation Runtime"
 )
 
 PIPELINE_FORMATTER = (
-    "GMKtec Formatter Runtime"
+    "Minisforum Formatter Runtime"
 )
 
 PIPELINE_MAPPER = (
-    "GMKtec Mapper Runtime"
+    "Minisforum Mapper Runtime"
 )
 
 PIPELINE_INTEGRATION = (
-    "GMKtec Integration Runtime"
+    "Minisforum Integration Runtime"
 )
 
 PIPELINE_COMPLETE = (
-    "GMKtec Reality Acquisition Complete"
+    "Minisforum Reality Acquisition Complete"
 )
 
 
@@ -191,7 +191,7 @@ def run_acquire() -> bool:
     """
     Execute Fetch and Acquire Runtimes.
 
-    GMKtec Reality
+    Minisforum Reality
         ↓
     Collection Fetch
         ↓
@@ -389,7 +389,7 @@ def run_integration() -> bool:
 
 def run() -> None:
     """
-    Execute complete GMKtec Reality Acquisition Pipeline.
+    Execute complete Minisforum Reality Acquisition Pipeline.
 
     Reality
         ↓
@@ -456,7 +456,7 @@ def run() -> None:
 
     print()
     print(
-        "GMKTEC REALITY ACQUISITION PIPELINE COMPLETE"
+        "MINISFORUM REALITY ACQUISITION PIPELINE COMPLETE"
     )
 
     print(

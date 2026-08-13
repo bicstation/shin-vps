@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
 FILE:
-acquisition/sources/scraping/gmktec/observe.py
+acquisition/sources/scraping/minisforum/observe.py
 
 SHIN CORE LINX
 
-GMKtec Observation Runtime
+Minisforum Observation Runtime
 
 AcquisitionDocument
         │
@@ -38,6 +38,7 @@ Observation First
 from __future__ import annotations
 
 import json
+import re
 
 from bs4 import BeautifulSoup
 
@@ -67,9 +68,9 @@ def normalize_url(
 
     Example:
 
-        //jp.gmktec.com/...
+        //www.minisforum.jp/...
             ↓
-        https://jp.gmktec.com/...
+        https://www.minisforum.jp/...
     """
 
     value = (
@@ -89,55 +90,154 @@ def normalize_url(
 # Price Reality
 # ==========================================================
 
+def extract_price(
+    value: str,
+) -> int | None:
+    """
+    Extract explicit numeric price from
+    source price text.
+
+    Examples:
+
+        ¥87,999から
+            ↓
+        87999
+
+        ¥109,999
+            ↓
+        109999
+
+    No calculation.
+    No currency conversion.
+    No inference.
+    """
+
+    value = (
+        value or ""
+    ).strip()
+
+    if not value:
+        return None
+
+    match = re.search(
+        r"¥\s*([\d,]+)",
+        value,
+    )
+
+    if not match:
+        return None
+
+    number = (
+        match.group(1)
+        .replace(
+            ",",
+            "",
+        )
+    )
+
+    try:
+        return int(number)
+
+    except ValueError:
+        return None
+
+
 def observe_price(
     soup: BeautifulSoup,
-) -> dict[str, str]:
+) -> dict[str, object]:
     """
-    Observe explicit GMKtec price Reality.
+    Observe explicit Minisforum price Reality.
 
-    Preserves source text.
+    Minisforum Reality:
+
+        <sale-price>
+            ¥87,999から
+        </sale-price>
+
+        <compare-at-price>
+            ¥109,999
+        </compare-at-price>
+
+    Preserves source text and
+    normalized numeric price.
 
     No calculation.
     No interpretation.
     """
 
-    sale_price = soup.select_one(
-        ".price-item--sale"
+    # ------------------------------------------------------
+    # Sale Price
+    # ------------------------------------------------------
+
+    sale_price_node = soup.select_one(
+        "sale-price"
     )
 
-    regular_price = soup.select_one(
-        ".price-item--regular"
+    # ------------------------------------------------------
+    # Regular / Compare Price
+    # ------------------------------------------------------
+
+    regular_price_node = soup.select_one(
+        "compare-at-price"
     )
+
+    # ------------------------------------------------------
+    # Sale Badge
+    # ------------------------------------------------------
 
     sale_badge = soup.select_one(
-        ".sale-badge"
+        ".product-card__badge-list .badge"
+    )
+
+    # ------------------------------------------------------
+    # Source Text
+    # ------------------------------------------------------
+
+    sale_price_text = (
+        sale_price_node.get_text(
+            " ",
+            strip=True,
+        )
+        if sale_price_node
+        else ""
+    )
+
+    regular_price_text = (
+        regular_price_node.get_text(
+            " ",
+            strip=True,
+        )
+        if regular_price_node
+        else ""
+    )
+
+    sale_badge_text = (
+        sale_badge.get_text(
+            " ",
+            strip=True,
+        )
+        if sale_badge
+        else ""
+    )
+
+    # ------------------------------------------------------
+    # Numeric Reality
+    # ------------------------------------------------------
+
+    sale_price = extract_price(
+        sale_price_text
+    )
+
+    regular_price = extract_price(
+        regular_price_text
     )
 
     return {
-        "sale_price": (
-            sale_price.get_text(
-                " ",
-                strip=True,
-            )
-            if sale_price
-            else ""
-        ),
-        "regular_price": (
-            regular_price.get_text(
-                " ",
-                strip=True,
-            )
-            if regular_price
-            else ""
-        ),
-        "sale_badge": (
-            sale_badge.get_text(
-                " ",
-                strip=True,
-            )
-            if sale_badge
-            else ""
-        ),
+        "sale_price": sale_price,
+        "sale_price_text": sale_price_text,
+        "regular_price": regular_price,
+        "regular_price_text": regular_price_text,
+        "sale_badge": sale_badge_text,
     }
 
 
@@ -149,11 +249,11 @@ def observe_images(
     soup: BeautifulSoup,
 ) -> dict[str, object]:
     """
-    Observe GMKtec Product Images.
+    Observe Minisforum Product Images.
 
     Primary image:
 
-        img.product-preview-image
+        .product-gallery__media.is-selected img
 
     Additional images are preserved
     without semantic classification.
@@ -166,8 +266,18 @@ def observe_images(
     # ------------------------------------------------------
 
     main = soup.select_one(
-        "img.product-preview-image"
+        ".product-gallery__media.is-selected img"
     )
+
+    # ------------------------------------------------------
+    # Fallback Main Image
+    # ------------------------------------------------------
+
+    if main is None:
+
+        main = soup.select_one(
+            ".product-gallery__media img"
+        )
 
     main_image = ""
 
@@ -181,16 +291,17 @@ def observe_images(
         )
 
         if main_image:
+
             images.append(
                 main_image
             )
 
     # ------------------------------------------------------
-    # Additional Images
+    # Additional Product Gallery Images
     # ------------------------------------------------------
 
     for img in soup.select(
-        "img",
+        ".product-gallery__media img"
     ):
 
         src = (
@@ -224,28 +335,177 @@ def observe_images(
 
 
 # ==========================================================
-# Table Reality
+# Feature Chart Reality
+# ==========================================================
+
+def observe_feature_chart(
+    soup: BeautifulSoup,
+) -> list[str]:
+    """
+    Preserve Minisforum Feature Chart Reality.
+
+    Actual source structure:
+
+        <feature-chart>
+
+            <div class="feature-chart__table-row">
+
+                <div class="feature-chart__heading">
+                    モデル
+                </div>
+
+                <div class="feature-chart__value">
+                    <p>N5 Air</p>
+                </div>
+
+            </div>
+
+        </feature-chart>
+
+    No specification interpretation
+    is performed here.
+
+    The complete row is preserved as
+    plain structured text for later
+    AI Specification Runtime processing.
+    """
+
+    tables: list[str] = []
+
+    # ------------------------------------------------------
+    # Feature Chart
+    # ------------------------------------------------------
+
+    feature_chart = soup.select_one(
+        "feature-chart"
+    )
+
+    if not feature_chart:
+
+        return tables
+
+    # ------------------------------------------------------
+    # Rows
+    # ------------------------------------------------------
+
+    rows = feature_chart.select(
+        ".feature-chart__table-row"
+    )
+
+    for row in rows:
+
+        heading = row.select_one(
+            ".feature-chart__heading"
+        )
+
+        value = row.select_one(
+            ".feature-chart__value"
+        )
+
+        if not heading or not value:
+            continue
+
+        heading_text = (
+            heading.get_text(
+                " ",
+                strip=True,
+            )
+        )
+
+        value_text = (
+            value.get_text(
+                "\n",
+                strip=True,
+            )
+        )
+
+        if not heading_text:
+            continue
+
+        if not value_text:
+            continue
+
+        tables.append(
+            f"{heading_text}\n{value_text}"
+        )
+
+    return tables
+
+
+# ==========================================================
+# Generic HTML Table Reality
+# ==========================================================
+
+def observe_html_tables(
+    soup: BeautifulSoup,
+) -> list[str]:
+    """
+    Preserve ordinary HTML Table Reality.
+
+    Minisforum primarily uses feature-chart,
+    but ordinary tables are also preserved
+    if present.
+
+    No specification interpretation.
+    """
+
+    tables: list[str] = []
+
+    for table in soup.find_all(
+        "table",
+    ):
+
+        text = table.get_text(
+            "\n",
+            strip=True,
+        )
+
+        if not text:
+            continue
+
+        tables.append(
+            text
+        )
+
+    return tables
+
+
+# ==========================================================
+# Combined Table / Specification Reality
 # ==========================================================
 
 def observe_tables(
     soup: BeautifulSoup,
 ) -> list[str]:
     """
-    Preserve HTML Table Reality.
+    Observe all explicit specification
+    Reality containers.
 
-    No specification interpretation
-    is performed here.
+    Priority:
+
+        1. feature-chart
+        2. ordinary HTML table
+
+    No semantic interpretation.
     """
 
-    return [
-        table.get_text(
-            "\n",
-            strip=True,
-        )
-        for table in soup.find_all(
-            "table",
-        )
-    ]
+    tables = observe_feature_chart(
+        soup
+    )
+
+    html_tables = observe_html_tables(
+        soup
+    )
+
+    for table in html_tables:
+
+        if table not in tables:
+
+            tables.append(
+                table
+            )
+
+    return tables
 
 
 # ==========================================================
@@ -267,14 +527,282 @@ def observe_jsonld(
         type="application/ld+json",
     ):
 
-        if not script.string:
+        # --------------------------------------------------
+        # script.string
+        # --------------------------------------------------
+
+        if script.string:
+
+            scripts.append(
+                script.string
+            )
+
             continue
 
-        scripts.append(
-            script.string
+        # --------------------------------------------------
+        # Fallback get_text
+        # --------------------------------------------------
+
+        text = script.get_text(
+            "",
+            strip=False,
         )
 
+        if text:
+
+            scripts.append(
+                text
+            )
+
     return scripts
+
+
+# ==========================================================
+# Product Name Reality
+# ==========================================================
+
+def observe_product_name(
+    soup: BeautifulSoup,
+) -> str:
+    """
+    Observe explicit Minisforum Product Name.
+
+    Primary selector:
+
+        h1
+
+    Fallbacks are restricted to
+    explicit product title elements.
+    """
+
+    selectors = (
+        "h1",
+        ".product-info__title",
+        ".product-title",
+        ".product-card__title",
+    )
+
+    for selector in selectors:
+
+        node = soup.select_one(
+            selector
+        )
+
+        if not node:
+            continue
+
+        text = node.get_text(
+            " ",
+            strip=True,
+        )
+
+        if text:
+
+            return text
+
+    return ""
+
+
+# ==========================================================
+# Product Description Reality
+# ==========================================================
+
+def observe_description(
+    soup: BeautifulSoup,
+) -> str:
+    """
+    Observe explicit product description.
+
+    Priority:
+
+        1. meta description
+        2. product description container
+
+    No summarization.
+    """
+
+    # ------------------------------------------------------
+    # Meta Description
+    # ------------------------------------------------------
+
+    meta = soup.find(
+        "meta",
+        attrs={
+            "name": "description",
+        },
+    )
+
+    if meta:
+
+        content = (
+            meta.get(
+                "content",
+                "",
+            )
+            .strip()
+        )
+
+        if content:
+
+            return content
+
+    # ------------------------------------------------------
+    # Product Description
+    # ------------------------------------------------------
+
+    selectors = (
+        ".product-info__description",
+        ".product-description",
+        "[data-product-description]",
+    )
+
+    for selector in selectors:
+
+        node = soup.select_one(
+            selector
+        )
+
+        if not node:
+            continue
+
+        text = node.get_text(
+            "\n",
+            strip=True,
+        )
+
+        if text:
+
+            return text
+
+    return ""
+
+
+# ==========================================================
+# Canonical URL
+# ==========================================================
+
+def observe_canonical_url(
+    soup: BeautifulSoup,
+) -> str:
+    """
+    Observe canonical Product URL.
+    """
+
+    canonical = soup.find(
+        "link",
+        rel="canonical",
+    )
+
+    if canonical:
+
+        return normalize_url(
+            canonical.get(
+                "href",
+                "",
+            )
+        )
+
+    return ""
+
+
+# ==========================================================
+# JSON-LD URL Fallback
+# ==========================================================
+
+def observe_jsonld_url(
+    scripts: list[str],
+) -> str:
+    """
+    Extract explicit URL from JSON-LD
+    when canonical URL is unavailable.
+
+    No semantic interpretation.
+    """
+
+    for script in scripts:
+
+        try:
+
+            data = json.loads(
+                script
+            )
+
+        except Exception:
+
+            continue
+
+        # --------------------------------------------------
+        # Direct Object
+        # --------------------------------------------------
+
+        if isinstance(
+            data,
+            dict,
+        ):
+
+            if data.get(
+                "url"
+            ):
+
+                return normalize_url(
+                    data["url"]
+                )
+
+            # ----------------------------------------------
+            # @graph
+            # ----------------------------------------------
+
+            graph = data.get(
+                "@graph"
+            )
+
+            if isinstance(
+                graph,
+                list,
+            ):
+
+                for node in graph:
+
+                    if not isinstance(
+                        node,
+                        dict,
+                    ):
+                        continue
+
+                    if node.get(
+                        "url"
+                    ):
+
+                        return normalize_url(
+                            node["url"]
+                        )
+
+        # --------------------------------------------------
+        # JSON-LD List
+        # --------------------------------------------------
+
+        elif isinstance(
+            data,
+            list,
+        ):
+
+            for node in data:
+
+                if not isinstance(
+                    node,
+                    dict,
+                ):
+                    continue
+
+                if node.get(
+                    "url"
+                ):
+
+                    return normalize_url(
+                        node["url"]
+                    )
+
+    return ""
 
 
 # ==========================================================
@@ -285,13 +813,14 @@ def observe(
     html: str,
 ) -> dict[str, object]:
     """
-    Observe GMKtec Product HTML.
+    Observe Minisforum Product HTML.
 
     Extract only explicit source Reality.
 
     No inference.
     No classification.
     No semantic generation.
+    No AI processing.
     """
 
     trace_pipeline(
@@ -313,116 +842,56 @@ def observe(
     )
 
     # ======================================================
-    # Reality Snapshot
+    # JSON-LD
     # ======================================================
 
-    result: dict[str, object] = {
-
-        # --------------------------------------------------
-        # Identity
-        # --------------------------------------------------
-
-        "title": "",
-
-        "product_name": "",
-
-        "url": "",
-
-        "description": "",
-
-        # --------------------------------------------------
-        # Commerce
-        # --------------------------------------------------
-
-        "price": "",
-
-        "regular_price": "",
-
-        "sale_label": "",
-
-        # --------------------------------------------------
-        # Media
-        # --------------------------------------------------
-
-        "main_image": "",
-
-        "images": [],
-
-        # --------------------------------------------------
-        # Reality
-        # --------------------------------------------------
-
-        "tables": [],
-
-        "scripts": [],
-    }
+    scripts = observe_jsonld(
+        soup
+    )
 
     # ======================================================
-    # HTML Title
+    # Identity
     # ======================================================
+
+    title = ""
 
     if soup.title:
 
-        result["title"] = (
-            soup.title.get_text(
-                strip=True,
-            )
+        title = soup.title.get_text(
+            strip=True,
         )
 
-    # ======================================================
-    # Product Name
-    # ======================================================
-
-    product_title = soup.select_one(
-        "h1.product-title-heading"
+    product_name = (
+        observe_product_name(
+            soup
+        )
     )
 
-    if product_title:
-
-        result["product_name"] = (
-            product_title.get_text(
-                " ",
-                strip=True,
-            )
+    url = (
+        observe_canonical_url(
+            soup
         )
-
-    # ======================================================
-    # Canonical URL
-    # ======================================================
-
-    canonical = soup.find(
-        "link",
-        rel="canonical",
     )
 
-    if canonical:
+    # ======================================================
+    # URL Fallback
+    # ======================================================
 
-        result["url"] = normalize_url(
-            canonical.get(
-                "href",
-                "",
-            )
+    if not url:
+
+        url = observe_jsonld_url(
+            scripts
         )
 
     # ======================================================
-    # Meta Description
+    # Description
     # ======================================================
 
-    meta = soup.find(
-        "meta",
-        attrs={
-            "name": "description",
-        },
+    description = (
+        observe_description(
+            soup
+        )
     )
-
-    if meta:
-
-        result["description"] = (
-            meta.get(
-                "content",
-                "",
-            ).strip()
-        )
 
     # ======================================================
     # Commerce
@@ -430,18 +899,6 @@ def observe(
 
     price = observe_price(
         soup
-    )
-
-    result["price"] = (
-        price["sale_price"]
-    )
-
-    result["regular_price"] = (
-        price["regular_price"]
-    )
-
-    result["sale_label"] = (
-        price["sale_badge"]
     )
 
     # ======================================================
@@ -452,101 +909,76 @@ def observe(
         soup
     )
 
-    result["main_image"] = (
-        image_result["main_image"]
-    )
-
-    result["images"] = (
-        image_result["images"]
-    )
-
     # ======================================================
-    # Tables
+    # Feature / Table Reality
     # ======================================================
 
-    result["tables"] = observe_tables(
+    tables = observe_tables(
         soup
     )
 
     # ======================================================
-    # JSON-LD
+    # Reality Snapshot
     # ======================================================
 
-    result["scripts"] = observe_jsonld(
-        soup
-    )
+    result: dict[str, object] = {
 
-    # ======================================================
-    # JSON-LD URL Fallback
-    # ======================================================
+        # --------------------------------------------------
+        # Identity
+        # --------------------------------------------------
 
-    if not result["url"]:
+        "title": title,
 
-        for script in result["scripts"]:
+        "product_name": product_name,
 
-            try:
+        "url": url,
 
-                data = json.loads(
-                    script
-                )
+        "description": description,
 
-            except Exception:
+        # --------------------------------------------------
+        # Commerce
+        # --------------------------------------------------
 
-                continue
+        "price": price[
+            "sale_price"
+        ],
 
-            if not isinstance(
-                data,
-                dict,
-            ):
-                continue
+        "price_text": price[
+            "sale_price_text"
+        ],
 
-            # ------------------------------------------------
-            # Direct URL
-            # ------------------------------------------------
+        "regular_price": price[
+            "regular_price"
+        ],
 
-            if data.get(
-                "url"
-            ):
+        "regular_price_text": price[
+            "regular_price_text"
+        ],
 
-                result["url"] = (
-                    data["url"]
-                )
+        "sale_label": price[
+            "sale_badge"
+        ],
 
-                break
+        # --------------------------------------------------
+        # Media
+        # --------------------------------------------------
 
-            # ------------------------------------------------
-            # @graph
-            # ------------------------------------------------
+        "main_image": image_result[
+            "main_image"
+        ],
 
-            graph = data.get(
-                "@graph"
-            )
+        "images": image_result[
+            "images"
+        ],
 
-            if isinstance(
-                graph,
-                list,
-            ):
+        # --------------------------------------------------
+        # Reality
+        # --------------------------------------------------
 
-                for node in graph:
+        "tables": tables,
 
-                    if (
-                        isinstance(
-                            node,
-                            dict,
-                        )
-                        and node.get(
-                            "url"
-                        )
-                    ):
-
-                        result["url"] = (
-                            node["url"]
-                        )
-
-                        break
-
-                if result["url"]:
-                    break
+        "scripts": scripts,
+    }
 
     # ======================================================
     # Trace
@@ -555,32 +987,64 @@ def observe(
     trace(
         "Observation Result",
         {
-            "title": result["title"],
-            "product_name": (
-                result["product_name"]
-            ),
-            "url": result["url"],
+            "title": result[
+                "title"
+            ],
+
+            "product_name": result[
+                "product_name"
+            ],
+
+            "url": result[
+                "url"
+            ],
+
             "description": bool(
-                result["description"]
+                result[
+                    "description"
+                ]
             ),
-            "price": result["price"],
-            "regular_price": (
-                result["regular_price"]
-            ),
-            "sale_label": (
-                result["sale_label"]
-            ),
-            "main_image": (
-                result["main_image"]
-            ),
+
+            "price": result[
+                "price"
+            ],
+
+            "price_text": result[
+                "price_text"
+            ],
+
+            "regular_price": result[
+                "regular_price"
+            ],
+
+            "regular_price_text": result[
+                "regular_price_text"
+            ],
+
+            "sale_label": result[
+                "sale_label"
+            ],
+
+            "main_image": result[
+                "main_image"
+            ],
+
             "images": len(
-                result["images"]
+                result[
+                    "images"
+                ]
             ),
+
             "tables": len(
-                result["tables"]
+                result[
+                    "tables"
+                ]
             ),
+
             "jsonld": len(
-                result["scripts"]
+                result[
+                    "scripts"
+                ]
             ),
         },
     )
@@ -594,7 +1058,7 @@ def observe(
 
 def run() -> None:
     """
-    Execute GMKtec Observation Runtime.
+    Execute Minisforum Observation Runtime.
 
     Raw Product HTML
             ↓
@@ -608,7 +1072,7 @@ def run() -> None:
     )
 
     print(
-        "👀 GMKTEC OBSERVATION"
+        "👀 MINISFORUM OBSERVATION"
     )
 
     print(

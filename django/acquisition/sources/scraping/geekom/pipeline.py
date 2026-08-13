@@ -1,105 +1,386 @@
 #!/usr/bin/env python3
 """
-==============================================================================
-GEEKOM Acquisition Pipeline
+FILE:
+acquisition/sources/scraping/geekom/pipeline.py
+
+SHIN CORE LINX
+
+Geekom Reality Acquisition Pipeline
 
 Reality Source
-        │
-        ▼
+Geekom Mini PC Collection
+        ↓
+Fetch Runtime
+        ↓
 Acquire Runtime
-        │
-        ▼
-AcquisitionDocument
-        │
-        ▼
+        ↓
 Observation Runtime
-        │
-        ├─ Formatter Runtime (Memory)
-        └─ Observation Runtime
-        │
-        ▼
-ObservationDocument
-        │
-        ▼
-Adapter Runtime
-        │
-        ▼
-ImportDocument
-        │
-        ▼
+        ↓
+Formatter Runtime
+        ↓
+Mapper Runtime
+        ↓
 Integration Runtime
-        ├─ Identity Runtime
-        ├─ Affiliate Runtime
-        ├─ Commerce Runtime
-        ├─ Normalize Runtime
-        └─ PCProductBuilder
-        │
-        ▼
-PCProduct
-==============================================================================
+        ↓
+Import Contract
 
 Reality First
 Observation First
-Translation Authority
-Semantic Later
-==============================================================================
+Document First
+Runtime Contract First
+Single Responsibility
 """
 
 from __future__ import annotations
 
-from .fetch_root import main as fetch_root
-from .discover_root import main as discover_root
 
-from .fetch_list import main as fetch_list
-from .discover_list import main as discover_list
+# ==========================================================
+# Runtime Imports
+# ==========================================================
 
-from .fetch_product import main as fetch_product
+from .fetch_collection import (
+    main as fetch_collection,
+)
 
-from .observe import main as observe
-from .mapper import main as mapper
-from .integration import main as integration
+from .discover_product import (
+    main as discover_product,
+)
+
+from .fetch_product import (
+    main as fetch_product,
+)
+
+from .observe import (
+    main as observe,
+)
+
+from .formatter import (
+    main as formatter,
+)
+
+from .mapper import (
+    main as mapper,
+)
+
+from .integration import (
+    main as integration,
+)
 
 
 # ==========================================================
-# Acquire Runtime
+# Breakpoint
 # ==========================================================
 
-def run_acquire() -> None:
+BREAKPOINT: str | None = "integration"
 
-    fetch_root()
-    discover_root()
 
-    fetch_list()
-    discover_list()
-    
+# ==========================================================
+# Available Breakpoints
+# ==========================================================
+
+#
+# "fetch_collection"
+#
+# Collection Fetch Runtime確認後に停止
+#
+#
+# "discover_product"
+#
+# Collection Realityから
+# Product Acquisition Unitsを発見した後に停止
+#
+#
+# "fetch_product"
+#
+# Product HTML Acquisition確認後に停止
+#
+#
+# "observe"
+#
+# ObservationDocument確認後に停止
+#
+#
+# "formatter"
+#
+# Formatter Runtime確認後に停止
+#
+#
+# "mapper"
+#
+# Mapper Runtime確認後に停止
+#
+#
+# "integration"
+#
+# Import Contract確認後に停止
+#
+#
+# None
+#
+# Pipeline Completeまで実行
+#
+
+
+# ==========================================================
+# Runtime Names
+# ==========================================================
+
+PIPELINE_FETCH_COLLECTION = (
+    "Geekom Collection Fetch Runtime"
+)
+
+PIPELINE_DISCOVER_PRODUCT = (
+    "Geekom Product Discovery Runtime"
+)
+
+PIPELINE_FETCH_PRODUCT = (
+    "Geekom Product Fetch Runtime"
+)
+
+PIPELINE_OBSERVE = (
+    "Geekom Observation Runtime"
+)
+
+PIPELINE_FORMATTER = (
+    "Geekom Formatter Runtime"
+)
+
+PIPELINE_MAPPER = (
+    "Geekom Mapper Runtime"
+)
+
+PIPELINE_INTEGRATION = (
+    "Geekom Integration Runtime"
+)
+
+PIPELINE_COMPLETE = (
+    "Geekom Reality Acquisition Complete"
+)
+
+
+# ==========================================================
+# Breakpoint
+# ==========================================================
+
+def checkpoint(
+    name: str,
+) -> bool:
+    """
+    Stop Pipeline when the configured
+    Breakpoint is reached.
+    """
+
+    if BREAKPOINT != name:
+        return False
+
+    print()
+    print("=" * 70)
+    print(
+        f"🛑 BREAKPOINT : {name}"
+    )
+    print("=" * 70)
+
+    return True
+
+
+# ==========================================================
+# Fetch / Acquire Runtime
+# ==========================================================
+
+def run_acquire() -> bool:
+    """
+    Execute Fetch and Acquire Runtimes.
+
+    Geekom Reality
+        ↓
+    Collection Fetch
+        ↓
+    Product Discovery
+        ↓
+    Product Fetch
+    """
+
+    # ======================================================
+    # Collection Fetch
+    # ======================================================
+
+    print()
+    print("=" * 70)
+    print(
+        PIPELINE_FETCH_COLLECTION
+    )
+    print("=" * 70)
+
+    fetch_collection()
+
+    if checkpoint(
+        "fetch_collection"
+    ):
+        return True
+
+    # ======================================================
+    # Product Discovery
+    # ======================================================
+
+    print()
+    print("=" * 70)
+    print(
+        PIPELINE_DISCOVER_PRODUCT
+    )
+    print("=" * 70)
+
+    discover_product()
+
+    if checkpoint(
+        "discover_product"
+    ):
+        return True
+
+    # ======================================================
+    # Product Fetch
+    # ======================================================
+
+    print()
+    print("=" * 70)
+    print(
+        PIPELINE_FETCH_PRODUCT
+    )
+    print("=" * 70)
+
     fetch_product()
+
+    if checkpoint(
+        "fetch_product"
+    ):
+        return True
+
+    return False
 
 
 # ==========================================================
 # Observation Runtime
 # ==========================================================
 
-def run_observe() -> None:
+def run_observe() -> bool:
+    """
+    Execute Observation Runtime.
+
+    Product AcquisitionDocument
+        ↓
+    ObservationDocument
+    """
+
+    print()
+    print("=" * 70)
+    print(
+        PIPELINE_OBSERVE
+    )
+    print("=" * 70)
 
     observe()
 
+    if checkpoint(
+        "observe"
+    ):
+        return True
+
+    return False
+
 
 # ==========================================================
-# Adapter Runtime
+# Formatter Runtime
 # ==========================================================
 
-def run_adapter() -> None:
+def run_formatter() -> bool:
+    """
+    Execute Formatter Runtime.
+
+    ObservationDocument
+        ↓
+    Formatter Runtime
+        ↓
+    Formatter Contract
+    """
+
+    print()
+    print("=" * 70)
+    print(
+        PIPELINE_FORMATTER
+    )
+    print("=" * 70)
+
+    formatter()
+
+    if checkpoint(
+        "formatter"
+    ):
+        return True
+
+    return False
+
+
+# ==========================================================
+# Mapper Runtime
+# ==========================================================
+
+def run_mapper() -> bool:
+    """
+    Execute Mapper Runtime.
+
+    Formatter Contract
+        ↓
+    Mapper Runtime
+        ↓
+    Mapper Contract
+    """
+
+    print()
+    print("=" * 70)
+    print(
+        PIPELINE_MAPPER
+    )
+    print("=" * 70)
 
     mapper()
+
+    if checkpoint(
+        "mapper"
+    ):
+        return True
+
+    return False
 
 
 # ==========================================================
 # Integration Runtime
 # ==========================================================
 
-def run_integration() -> None:
+def run_integration() -> bool:
+    """
+    Execute Integration Runtime.
+
+    Mapper Contract
+        ↓
+    Integration Runtime
+        ↓
+    Import Contract
+    """
+
+    print()
+    print("=" * 70)
+    print(
+        PIPELINE_INTEGRATION
+    )
+    print("=" * 70)
 
     integration()
+
+    if checkpoint(
+        "integration"
+    ):
+        return True
+
+    return False
 
 
 # ==========================================================
@@ -107,15 +388,87 @@ def run_integration() -> None:
 # ==========================================================
 
 def run() -> None:
+    """
+    Execute complete Geekom Reality Acquisition Pipeline.
 
-    run_acquire()
+    Reality
+        ↓
+    Fetch Runtime
+        ↓
+    Acquire Runtime
+        ↓
+    Observation Runtime
+        ↓
+    Formatter Runtime
+        ↓
+    Mapper Runtime
+        ↓
+    Integration Runtime
+        ↓
+    Import Contract
+    """
 
-    run_observe()
+    # ======================================================
+    # Fetch + Acquire
+    # ======================================================
 
-    run_adapter()
+    if run_acquire():
+        return
 
-    run_integration()
+    # ======================================================
+    # Observation
+    # ======================================================
 
+    if run_observe():
+        return
+
+    # ======================================================
+    # Formatter
+    # ======================================================
+
+    if run_formatter():
+        return
+
+    # ======================================================
+    # Mapper
+    # ======================================================
+
+    if run_mapper():
+        return
+
+    # ======================================================
+    # Integration
+    # ======================================================
+
+    if run_integration():
+        return
+
+    # ======================================================
+    # Complete
+    # ======================================================
+
+    print()
+    print("=" * 70)
+    print(
+        PIPELINE_COMPLETE
+    )
+    print("=" * 70)
+
+    print()
+    print(
+        "GEEKOM REALITY ACQUISITION PIPELINE COMPLETE"
+    )
+
+    print(
+        "Import Contract is ready."
+    )
+
+    print("=" * 70)
+
+
+# ==========================================================
+# Standalone Execution
+# ==========================================================
 
 if __name__ == "__main__":
     run()

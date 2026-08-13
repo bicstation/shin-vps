@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
 FILE:
-acquisition/sources/scraping/minisforum/fetch_collection.py
+acquisition/sources/scraping/geekom/fetch_collection.py
 
 SHIN CORE LINX
 
-Minisforum Collection Fetch Runtime
+Geekom Collection Fetch Runtime
 
 Reality Source
     ↓
@@ -42,11 +42,6 @@ import csv
 import random
 import re
 import time
-from urllib.parse import (
-    parse_qs,
-    urljoin,
-    urlparse,
-)
 
 from curl_cffi import requests
 
@@ -231,7 +226,7 @@ def fetch(
     )
 
     print(
-        "MINISFORUM COLLECTION FETCH"
+        "GEEKOM COLLECTION FETCH"
     )
 
     print(
@@ -266,7 +261,7 @@ def fetch(
         {
             "User-Agent": USER_AGENT,
             "Referer": (
-                "https://www.minisforum.jp/"
+                "https://geekom.jp/"
             ),
         }
     )
@@ -399,13 +394,6 @@ def fetch(
                 success.append(
                     document_key
                 )
-
-                # --------------------------------------------------
-                # Cached HTML is used only to determine whether
-                # another pagination page exists.
-                #
-                # Product Reality is NOT interpreted here.
-                # --------------------------------------------------
 
                 html = document.content
 
@@ -569,10 +557,6 @@ def fetch(
 
                 page += 1
 
-            # ==================================================
-            # HTTP Error
-            # ==================================================
-
             except requests.HTTPError as e:
 
                 response = e.response
@@ -601,10 +585,6 @@ def fetch(
                 )
 
                 break
-
-            # ==================================================
-            # Runtime Error
-            # ==================================================
 
             except Exception as e:
 
@@ -656,7 +636,7 @@ def main(
     force: bool = False,
 ) -> None:
     """
-    Execute Minisforum Collection Fetch Runtime.
+    Execute Geekom Collection Fetch Runtime.
     """
 
     fetch(

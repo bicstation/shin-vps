@@ -44,6 +44,11 @@ REALITY_RUNTIMES = {
         "GMKtec",
         "acquisition.sources.scraping.gmktec.run",
     ),
+    
+    "minisforum": (
+        "MinisForum",
+        "acquisition.sources.scraping.minisforum.run",
+    ),
 
     "lavie": (
         "NEC LAVIE",

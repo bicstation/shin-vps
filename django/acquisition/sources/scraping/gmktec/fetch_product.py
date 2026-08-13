@@ -256,8 +256,8 @@ def fetch(
             if index > 1:
 
                 wait = random.uniform(
-                    20.0,
-                    30.0,
+                    5.0,
+                    10.0,
                 )
 
                 print(

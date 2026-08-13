@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
 FILE:
-acquisition/sources/scraping/gmktec/formatter.py
+acquisition/sources/scraping/minisforum/formatter.py
 
 SHIN CORE LINX
 
-GMKtec Formatter Runtime
+Minisforum Formatter Runtime
 
 ObservationDocument
 │
@@ -372,7 +372,7 @@ def main() -> None:
     )
 
     print(
-        "🧹 GMKTEC FORMATTER"
+        "🧹 MINISFORUM FORMATTER"
     )
 
     print(

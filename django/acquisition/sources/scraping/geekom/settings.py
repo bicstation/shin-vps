@@ -2,6 +2,8 @@
 GEEKOM Importer Settings
 """
 
+from __future__ import annotations
+
 from pathlib import Path
 
 # ==========================================================
@@ -35,20 +37,26 @@ AFFILIATE = {
     "provider": "a8",
     "a8mat": "459XR1+CCSU76+5G4A+BW0YB",
 }
-
 # ==========================================================
 # Runtime Cache
 # ==========================================================
 
-BASE_DIR = Path(__file__).resolve().parent
-
-RUNTIME_DIR = (
-    BASE_DIR.parent.parent
-    / "runtime"
-    / SITE_NAME.lower()
+BASE_DIR = (
+    Path(__file__).resolve().parent
 )
 
-ROOT_TSV = RUNTIME_DIR / "root.tsv"
-COLLECTIONS_TSV = RUNTIME_DIR / "collections.tsv"
-LIST_TSV = RUNTIME_DIR / "list.tsv"
-PRODUCT_LIST_TSV = RUNTIME_DIR / "product_list.tsv"
+ROOT_TSV = (
+    BASE_DIR / "root.tsv"
+)
+
+COLLECTIONS_TSV = (
+    BASE_DIR / "collections.tsv"
+)
+
+LIST_TSV = (
+    BASE_DIR / "list.tsv"
+)
+
+PRODUCT_LIST_TSV = (
+    BASE_DIR / "product_list.tsv"
+)

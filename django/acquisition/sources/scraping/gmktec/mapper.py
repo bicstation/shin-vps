@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
 FILE:
-acquisition/sources/scraping/gmktec/mapper.py
+acquisition/sources/scraping/minisforum/mapper.py
 
 SHIN CORE LINX
 
-GMKtec Mapper Runtime
+Minisforum Mapper Runtime
 
 ObservationDocument
 │
@@ -98,6 +98,16 @@ def map_observation(
     Downstream AI Runtime is responsible for
     interpreting Observation Reality.
     """
+
+    # ------------------------------------------------------
+    # Defensive Reality Boundary
+    # ------------------------------------------------------
+
+    if not isinstance(
+        observation,
+        dict,
+    ):
+        observation = {}
 
     # ------------------------------------------------------
     # Affiliate
@@ -273,7 +283,7 @@ def map_observation(
 
 def run() -> None:
     """
-    Execute GMKtec Mapper Runtime.
+    Execute Minisforum Mapper Runtime.
 
     ObservationDocument
             ↓
@@ -295,7 +305,7 @@ def run() -> None:
     )
 
     print(
-        "🗺️ GMKtec MAPPER"
+        "🗺️ MINISFORUM MAPPER"
     )
 
     print(
@@ -331,7 +341,10 @@ def run() -> None:
         # Observation Reality
         # --------------------------------------------------
 
-        observation = document.observation
+        observation = (
+            document.observation
+            or {}
+        )
 
         # --------------------------------------------------
         # Import Contract

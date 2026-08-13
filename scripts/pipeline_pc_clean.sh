@@ -341,7 +341,6 @@ run_django import_products linkshare api 43708
 
 run_django import_products linkshare ftp 2543
 run_django import_products linkshare ftp 2557
-# run_django import_products linkshare ftp 35909
 run_django import_products linkshare ftp 36508
 
 
@@ -349,6 +348,8 @@ run_django import_products lavie
 run_django import_products ark
 run_django import_products frontier
 run_django import_products geekom
+run_django import_products gmktec
+run_django import_products minisforum
 run_django import_products tsukumo
 run_django import_products ozgaming
 run_django import_products storm
@@ -359,6 +360,7 @@ run_django import_products dell
 run_django import_products fujitsu
 run_django import_products dynabook
 run_django import_products hp
+# run_django import_products asus これはサイトから無理だった
 
 
 # ==========================================================

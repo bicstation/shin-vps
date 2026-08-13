@@ -1,59 +1,159 @@
 #!/usr/bin/env python3
 """
+FILE:
+acquisition/sources/scraping/geekom/fetch_product.py
+
+SHIN CORE LINX
+
 GEEKOM Product Fetch Runtime
 
-Fetch Product HTML
-→ Save AcquisitionDocument
+Product Discovery Reality
+↓
+Product URL
+↓
+HTTP Acquisition
+↓
+AcquisitionDocument
+document_type = "product"
+
+Responsibilities
+
+- Load discovered Product Documents
+- Fetch Product HTML
+- Preserve Raw Product HTML
+- Update AcquisitionDocument
+- Skip already acquired Product Reality
+- Force re-acquisition when force=True
+
+NOT
+
+- Product Parsing
+- Product Observation
+- Product Name Extraction
+- Price Extraction
+- Image Extraction
+- Specification Extraction
+- Mapping
+- Integration
+- Semantic Processing
+
+Reality First
 """
 
 from __future__ import annotations
 
-import csv
 import random
 import time
 
 from curl_cffi import requests
 
-from api.models.acquisition_document import AcquisitionDocument
+from api.models.acquisition_document import (
+    AcquisitionDocument,
+)
 
 from .settings import (
-    PRODUCT_LIST_TSV,
-    USER_AGENT,
+    BASE_URL,
+    SITE_NAME,
     TIMEOUT,
+    USER_AGENT,
 )
 
 
-def load_products():
+# ==========================================================
+# Product Reality
+# ==========================================================
 
-    with PRODUCT_LIST_TSV.open(
-        "r",
-        encoding="utf-8",
-        newline="",
-    ) as f:
+def load_products() -> list[dict[str, str]]:
+    """
+    Load Product Discovery Reality.
 
-        return [
-            row
-            for row in csv.DictReader(
-                f,
-                delimiter="\t",
-            )
-            if row["enabled"].lower() == "true"
-        ]
+    Product URLs are stored in
+    AcquisitionDocument.
+
+    No TSV is used.
+    """
+
+    documents = (
+        AcquisitionDocument.objects
+        .filter(
+            source_type="scraping",
+            source_name=SITE_NAME,
+            document_type="product",
+        )
+        .order_by(
+            "document_key",
+        )
+    )
+
+    return [
+        {
+            "slug": document.document_key,
+            "url": document.source_url,
+        }
+        for document in documents
+        if document.source_url
+    ]
 
 
-def fetch(force: bool = False):
+# ==========================================================
+# HTTP Acquisition
+# ==========================================================
+
+def fetch(
+    force: bool = False,
+) -> None:
+    """
+    Fetch Product HTML.
+
+    Product Discovery Reality
+            ↓
+        Product URL
+            ↓
+        HTTP Response
+            ↓
+    AcquisitionDocument
+
+    Existing Product HTML is preserved
+    and reused unless force=True.
+    """
 
     products = load_products()
 
-    print("=" * 60)
-    print("🌐 GEEKOM PRODUCT FETCH")
-    print("=" * 60)
-    print(f"Target : {len(products)} Products")
-    print("=" * 60)
+    print(
+        "=" * 60
+    )
 
-    #
+    print(
+        "🌐 GEEKOM PRODUCT FETCH"
+    )
+
+    print(
+        "=" * 60
+    )
+
+    print(
+        f"Target : {len(products)} Products"
+    )
+
+    print(
+        f"Force  : {force}"
+    )
+
+    print(
+        "=" * 60
+    )
+
+    if not products:
+
+        print(
+            "⚠️ No Product Documents"
+        )
+
+        return
+
+    # ======================================================
     # Chrome Session
-    #
+    # ======================================================
 
     session = requests.Session(
         impersonate="chrome",
@@ -62,100 +162,181 @@ def fetch(force: bool = False):
     session.headers.update(
         {
             "User-Agent": USER_AGENT,
-            "Referer": "https://geekom.jp/",
+            "Referer": BASE_URL,
         }
     )
 
-    success = []
-    failed = []
+    success: list[str] = []
 
-    for index, row in enumerate(products, start=1):
+    failed: list[
+        tuple[str, str]
+    ] = []
 
-        slug = row["slug"]
+    skipped: list[str] = []
 
-        print(f"[{index}/{len(products)}] {slug}")
+    # ======================================================
+    # Product Loop
+    # ======================================================
 
-        #
+    for index, product in enumerate(
+        products,
+        start=1,
+    ):
+
+        slug = product["slug"]
+        url = product["url"]
+
+        print(
+            f"[{index}/{len(products)}] {slug}"
+        )
+
+        print(
+            f"URL    : {url}"
+        )
+
+        # ==================================================
         # Cache Check
-        #
+        # ==================================================
 
-        if not force:
-
-            exists = AcquisitionDocument.objects.filter(
-                source_name="geekom",
+        document = (
+            AcquisitionDocument.objects
+            .filter(
+                source_type="scraping",
+                source_name=SITE_NAME,
                 document_type="product",
                 document_key=slug,
-            ).exists()
+            )
+            .first()
+        )
 
-            if exists:
+        print(
+            "DEBUG CACHE:",
+            slug,
+            "force=",
+            force,
+            "exists=",
+            document is not None,
+            "content=",
+            bool(document.content)
+            if document is not None
+            else False,
+        )
 
-                success.append(slug)
+        if (
+            not force
+            and document is not None
+            and document.content
+        ):
 
-                print("  Cache  : HIT")
-                print()
+            skipped.append(
+                slug
+            )
 
-                continue
+            success.append(
+                slug
+            )
+
+            print(
+                "Cache  : HIT"
+            )
+
+            print(
+                "⏭️ SKIP : Product HTML already acquired"
+            )
+
+            print()
+
+            continue
+
+        # ==================================================
+        # HTTP Acquisition
+        # ==================================================
 
         try:
 
-            #
+            # ==================================================
             # Gentle Delay
-            #
+            # ==================================================
 
             if index > 1:
 
                 wait = random.uniform(
-                    20.0,
-                    30.0,
+                    5.0,
+                    10.0,
                 )
 
-                print(f"  😴 Sleep {wait:.1f}s")
+                print(
+                    f"😴 Sleep {wait:.1f}s"
+                )
 
-                time.sleep(wait)
+                time.sleep(
+                    wait
+                )
 
             response = None
 
-            #
+            # ==================================================
             # Retry
-            #
+            # ==================================================
 
             for attempt in range(3):
 
                 response = session.get(
-                    row["url"],
+                    url,
                     timeout=TIMEOUT,
                     allow_redirects=True,
                 )
 
-                print(f"  Status : {response.status_code}")
                 print(
-                    f"  Type   : {response.headers.get('Content-Type')}"
+                    f"Status : "
+                    f"{response.status_code}"
+                )
+
+                print(
+                    f"Type   : "
+                    f"{response.headers.get('Content-Type')}"
                 )
 
                 if response.status_code == 200:
+
                     break
 
                 if response.status_code == 429:
 
-                    wait = 20 * (attempt + 1)
+                    wait = 20 * (
+                        attempt + 1
+                    )
 
-                    print(f"  ⏳ 429 Retry ({wait}s)")
+                    print(
+                        f"⏳ 429 Retry "
+                        f"({wait}s)"
+                    )
 
-                    time.sleep(wait)
+                    time.sleep(
+                        wait
+                    )
 
                     continue
 
                 response.raise_for_status()
 
+            # ==================================================
+            # HTTP Validation
+            # ==================================================
+
             response.raise_for_status()
+
+            # ==================================================
+            # Preserve Product Reality
+            # ==================================================
 
             AcquisitionDocument.objects.update_or_create(
                 source_type="scraping",
-                source_name="geekom",
+                source_name=SITE_NAME,
                 document_type="product",
                 document_key=slug,
                 defaults={
-                    "source_url": row["url"],
+                    "source_url": url,
                     "content_type": response.headers.get(
                         "Content-Type",
                         "text/html",
@@ -164,12 +345,26 @@ def fetch(force: bool = False):
                 },
             )
 
-            success.append(slug)
+            success.append(
+                slug
+            )
 
-            print("  Cache  : MISS")
-            print(f"  ✓ {response.status_code}")
             print(
-                f"  {len(response.content):,} bytes"
+                "Cache  : "
+                + (
+                    "FORCE"
+                    if force
+                    else "MISS"
+                )
+            )
+
+            print(
+                f"✓ {response.status_code}"
+            )
+
+            print(
+                f"Size   : "
+                f"{len(response.content):,} bytes"
             )
 
         except requests.HTTPError as e:
@@ -178,21 +373,19 @@ def fetch(force: bool = False):
 
             if response is not None:
 
-                print(f"  Status : {response.status_code}")
+                print(
+                    f"Status : "
+                    f"{response.status_code}"
+                )
 
-                print("  Headers")
+                print(
+                    f"URL    : "
+                    f"{url}"
+                )
 
-                for key, value in response.headers.items():
-
-                    print(f"    {key}: {value}")
-
-                print()
-
-                print(response.text[:1000])
-
-            else:
-
-                print(f"  ERROR : {e}")
+            print(
+                f"ERROR  : {e}"
+            )
 
             failed.append(
                 (
@@ -203,6 +396,10 @@ def fetch(force: bool = False):
 
         except Exception as e:
 
+            print(
+                f"ERROR  : {e}"
+            )
+
             failed.append(
                 (
                     slug,
@@ -210,21 +407,52 @@ def fetch(force: bool = False):
                 )
             )
 
-            print(f"  ERROR : {e}")
-
         print()
 
-    print("=" * 60)
-    print(f"SUCCESS : {len(success)}")
-    print(f"FAILED  : {len(failed)}")
-    print("=" * 60)
+    # ======================================================
+    # Result
+    # ======================================================
+
+    print(
+        "=" * 60
+    )
+
+    print(
+        f"SUCCESS : {len(success)}"
+    )
+
+    print(
+        f"SKIPPED : {len(skipped)}"
+    )
+
+    print(
+        f"FAILED  : {len(failed)}"
+    )
+
+    print(
+        "=" * 60
+    )
 
 
-def main(force: bool = False):
+# ==========================================================
+# Runtime Entry
+# ==========================================================
 
-    fetch(force=force)
+def main(
+    force: bool = False,
+) -> None:
+    """
+    Execute GEEKOM Product Fetch Runtime.
+    """
 
+    fetch(
+        force=force
+    )
+
+
+# ==========================================================
+# Standalone Execution
+# ==========================================================
 
 if __name__ == "__main__":
-
     main()
