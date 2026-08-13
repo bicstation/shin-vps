@@ -1,75 +1,67 @@
 #!/usr/bin/env python3
+"""
+==============================================================================
+SHIN CORE LINX
 
-# ==============================================================================
-#
-# FILE:
-# acquisition/sources/scraping/ark/settings.py
-#
-# SHIN CORE LINX
-#
-# ARK Runtime Settings
-#
-# Reality First
-#
-# Responsibilities
-#
-# - Runtime Configuration
-# - Fetch Runtime Configuration
-# - Reality Runtime Configuration
-# - Affiliate Runtime Configuration
-# - Runtime Constants
-#
-# NOT Responsibilities
-#
-# - Catalog Definition
-# - Reality Observation
-# - Runtime Translation
-# - Product Definition
-#
-# ==============================================================================
+ARK Runtime Settings
+
+Runtime Configuration
+
+Responsibilities
+
+- Runtime Configuration
+- Fetch Runtime Configuration
+- Reality Runtime Configuration
+- Affiliate Runtime Configuration
+- Runtime Constants
+
+Not Responsibilities
+
+- Catalog Definition
+- Reality Observation
+- Runtime Translation
+- Product Definition
+
+Reality Catalog
+
+    catalog.tsv
+
+==============================================================================
+"""
 
 from __future__ import annotations
 
-import os
-
 from pathlib import Path
-
 
 # ==============================================================================
 # Runtime
 # ==============================================================================
 
-RUNTIME_VERSION = "v2"
-
-SOURCE_NAME = "ark"
-
-ENCODING = "utf-8"
-
-TSV_DELIMITER = "\t"
-
-BASE_DIR = Path(__file__).resolve().parent
-
-SCRAPING_DIR = BASE_DIR.parent
-
-SOURCE_DIR = SCRAPING_DIR.parent
-
+BASE_DIR = Path(__file__).parent
 
 # ==============================================================================
 # Environment
 # ==============================================================================
 
 #
-# .env
+# Marya Development
 #
-# RUNTIME_ENV=local
-# RUNTIME_ENV=vps
+#     /home/maya/shin-vps
+#
+# Production Container
+#
+#     /usr/src/app
 #
 
-RUNTIME = os.getenv(
-    "RUNTIME_ENV",
-    "vps",
-)
+PROJECT_ROOT = Path(__file__).resolve()
 
+if "/usr/src/app" in str(PROJECT_ROOT):
+
+    RUNTIME = "vps"
+
+else:
+
+    RUNTIME = "local"
 
 # ==============================================================================
 # Reality Runtime
@@ -86,9 +78,10 @@ elif RUNTIME == "vps":
 else:
 
     raise RuntimeError(
-        f"Unknown Runtime : {RUNTIME}"
-    )
 
+        f"Unknown Runtime : {RUNTIME}"
+
+    )
 
 print()
 
@@ -104,20 +97,26 @@ print(f"Mode     : {REALITY_MODE}")
 
 print("=" * 70)
 
-
 # ==============================================================================
 # Site
 # ==============================================================================
 
-SITE_NAME = "ARK"
+SITE_NAME = "ark"
+
+SOURCE_TYPE = "scraping"
+
+SOURCE_NAME = SITE_NAME
 
 BASE_URL = "https://www.ark-pc.co.jp"
 
-LOCALE_PREFIX = ""
+# ==============================================================================
+# Catalog
+# ==============================================================================
 
+CATALOG_FILE = BASE_DIR / "catalog.tsv"
 
 # ==============================================================================
-# HTTP
+# Fetch Runtime
 # ==============================================================================
 
 USER_AGENT = (
@@ -130,11 +129,9 @@ USER_AGENT = (
 
 TIMEOUT = 30
 
-
 # ==============================================================================
-# Affiliate
+# Affiliate Runtime
 # ==============================================================================
-
 
 AFFILIATE = {
 
@@ -159,13 +156,3 @@ AFFILIATE = {
     "pid": "892466351",
 
 }
-
-
-# ==============================================================================
-# Reality
-# ==============================================================================
-
-SEED_TSV = (
-    BASE_DIR
-    / "seed.tsv"
-)
