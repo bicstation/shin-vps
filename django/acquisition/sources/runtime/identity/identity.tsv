@@ -287,7 +287,6 @@ sycom	g-master	SYCOM	G-Master		200
 sycom	lepton	SYCOM	Lepton		200
 sycom	silent-master	SYCOM	Silent Master		200
 sycom	silent master	SYCOM	Silent Master		200
-maker	keyword	brand	series	collaboration	priority
 lenovo	thinkpad	Lenovo	ThinkPad		100
 lenovo	thinkpad x	Lenovo	ThinkPad X		100
 lenovo	thinkpad t	Lenovo	ThinkPad T		100
