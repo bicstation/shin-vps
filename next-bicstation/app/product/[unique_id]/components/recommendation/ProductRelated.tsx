@@ -10,7 +10,7 @@
 ============================================================================ */
 
 import styles
-from './recommendation.module.css'
+  from './recommendation.module.css'
 
 /* ============================================================================
 🔥 Props
@@ -18,382 +18,343 @@ from './recommendation.module.css'
 
 type Props = {
 
-product: any
+  product: any
 
-related: any[]
+  related: any[]
+
 }
 
 /* ============================================================================
-🔥 HELPERS
+🔥 Helpers
 ============================================================================ */
 
-function buildRelatedNarratives(
-product: any,
-related: any[]
-) {
+/**
+ * Extract attributes that are actually present in the related product.
+ *
+ * IMPORTANT
+ *
+ * This component does NOT generate semantic meaning.
+ *
+ * It only presents observable / already-classified attributes
+ * supplied by the related-product runtime.
+ */
 
-const narratives: string[] = []
+function extractRelatedAttributes(
+  item: any,
+): string[] {
 
-// ==========================================================================
-// RELATED RUNTIME
-// ==========================================================================
+  const attributes: string[] = []
 
-if (
-Array.isArray(
-related
-)
-) {
+  /* ==========================================================================
+  CPU
+  ========================================================================== */
 
+  const cpu =
+    item?.cpu_model
+    || item?.cpuModel
 
-related.forEach(
-  (
-    item: any
-  ) => {
+  if (cpu) {
 
-    // ================================================================
-    // recommendation_reason
-    // ================================================================
-
-    if (
-      item?.recommendation_reason
-    ) {
-
-      narratives.push(
-        item.recommendation_reason
-      )
-
-    }
-
-    // ================================================================
-    // matched_attributes
-    // ================================================================
-
-    if (
-      Array.isArray(
-        item?.matched_attributes
-      )
-    ) {
-
-      const matchedText =
-
-        item.matched_attributes
-          .map(
-            (
-              attr: any
-            ) => {
-
-              if (
-                typeof attr === 'string'
-              ) {
-
-                return attr
-              }
-
-              return (
-                attr?.label
-                || attr?.name
-                || ''
-              )
-
-            }
-          )
-          .filter(Boolean)
-          .slice(0, 3)
-          .join('・')
-
-      if (
-        matchedText
-      ) {
-
-        narratives.push(
-
-          `${matchedText} の semantic runtime が近い構成です。`
-
-        )
-
-      }
-
-    }
-
-    // ================================================================
-    // grouped_attributes
-    // ================================================================
-
-    if (
-      item?.grouped_attributes
-    ) {
-
-      const groupedText =
-        JSON.stringify(
-          item.grouped_attributes
-        ).toLowerCase()
-
-      // ==============================================================
-      // AI
-      // ==============================================================
-
-      if (
-        groupedText.includes('ai')
-      ) {
-
-        narratives.push(
-          'AI画像生成やローカルLLM用途で近いworkflowを持っています。'
-        )
-
-      }
-
-      // ==============================================================
-      // GAMING
-      // ==============================================================
-
-      if (
-        groupedText.includes('gaming')
-      ) {
-
-        narratives.push(
-          '高fps gaming やGPU活用用途に近い構成です。'
-        )
-
-      }
-
-      // ==============================================================
-      // CREATOR
-      // ==============================================================
-
-      if (
-        groupedText.includes('creator')
-        || groupedText.includes('video')
-      ) {
-
-        narratives.push(
-          '動画編集・配信・制作workflowで近いsemantic構成です。'
-        )
-
-      }
-
-    }
+    attributes.push(
+      `CPU: ${cpu}`
+    )
 
   }
-)
 
+  /* ==========================================================================
+  GPU
+  ========================================================================== */
 
-}
+  const gpu =
+    item?.gpu_model
+    || item?.gpuModel
 
-// ==========================================================================
-// PRODUCT FALLBACK
-// ==========================================================================
+  if (gpu) {
 
-if (
-narratives.length === 0
-) {
+    attributes.push(
+      `GPU: ${gpu}`
+    )
 
+  }
 
-const text =
-  JSON.stringify(product)
-    .toLowerCase()
+  /* ==========================================================================
+  MEMORY
+  ========================================================================== */
 
-if (
-  text.includes('rtx')
-) {
+  const memory =
+    item?.memory_gb
+    ?? item?.memoryGb
 
-  narratives.push(
-    'RTX GPU を活かした高性能workflowに近い構成です。'
-  )
+  if (
+    memory !== undefined
+    && memory !== null
+  ) {
 
-}
+    attributes.push(
+      `MEMORY: ${memory}GB`
+    )
 
-if (
-  text.includes('gaming')
-) {
+  }
 
-  narratives.push(
-    'gaming用途や高fps環境に近いruntimeを持っています。'
-  )
+  /* ==========================================================================
+  STORAGE
+  ========================================================================== */
 
-}
+  const storage =
+    item?.storage_gb
+    ?? item?.storageGb
 
-if (
-  text.includes('creator')
-) {
+  if (
+    storage !== undefined
+    && storage !== null
+  ) {
 
-  narratives.push(
-    '制作・編集workflowとの相性が高いsemantic構成です。'
-  )
+    attributes.push(
+      `STORAGE: ${storage}GB`
+    )
 
-}
+  }
 
-if (
-  text.includes('ai')
-) {
+  /* ==========================================================================
+  DISPLAY
+  ========================================================================== */
 
-  narratives.push(
-    'AI画像生成や生成AI用途に適したruntime構成です。'
-  )
+  const display =
+    item?.display_info
+    || item?.displayInfo
 
-}
+  if (display) {
 
+    attributes.push(
+      `DISPLAY: ${display}`
+    )
 
-}
+  }
 
-// ==========================================================================
-// FINAL FALLBACK
-// ==========================================================================
+  /* ==========================================================================
+  BRAND
+  ========================================================================== */
 
-if (
-narratives.length === 0
-) {
+  if (item?.brand) {
 
+    attributes.push(
+      `BRAND: ${item.brand}`
+    )
 
-narratives.push(
-  '利用用途・workflow・semantic runtime が近いPCです。'
-)
+  }
 
+  /* ==========================================================================
+  SERIES
+  ========================================================================== */
 
-}
+  if (item?.series) {
 
-// ==========================================================================
-// UNIQUE
-// ==========================================================================
+    attributes.push(
+      `SERIES: ${item.series}`
+    )
 
-return Array.from(
-new Set(narratives)
-).slice(0, 4)
+  }
+
+  /* ==========================================================================
+  PRODUCT TYPE
+  ========================================================================== */
+
+  const productType =
+    item?.product_type
+    || item?.productType
+
+  if (productType) {
+
+    attributes.push(
+      `TYPE: ${productType}`
+    )
+
+  }
+
+  return attributes
 
 }
 
 /* ============================================================================
-🔥 COMPONENT
+🔥 Build Related Narratives
+============================================================================ */
+
+/**
+ * Build display text from actual related-product attributes.
+ *
+ * No workflow inference.
+ * No AI / gaming / creator inference.
+ * No JSON keyword inspection.
+ * No semantic meaning generation.
+ */
+
+function buildRelatedNarratives(
+  related: any[],
+) {
+
+  const narratives: string[] = []
+
+  if (
+    !Array.isArray(related)
+  ) {
+
+    return narratives
+
+  }
+
+  related.forEach(
+    (
+      item: any
+    ) => {
+
+      const attributes =
+        extractRelatedAttributes(
+          item
+        )
+
+      if (
+        attributes.length === 0
+      ) {
+
+        return
+
+      }
+
+      narratives.push(
+        attributes
+          .slice(0, 4)
+          .join(' ・ ')
+      )
+
+    }
+  )
+
+  return Array.from(
+    new Set(
+      narratives
+    )
+  ).slice(0, 4)
+
+}
+
+/* ============================================================================
+🔥 Component
 ============================================================================ */
 
 export default function ProductRelated({
 
-product,
-
-related,
+  product,
+  related,
 
 }: Props) {
 
-// ==========================================================================
-// Narrative Runtime
-// ==========================================================================
+  void product
 
-const narratives =
+  const narratives =
+    buildRelatedNarratives(
+      related
+    )
 
+  /* ==========================================================================
+  Empty
+  ========================================================================== */
 
-buildRelatedNarratives(
-  product,
-  related
-)
+  if (
+    narratives.length === 0
+  ) {
 
+    return null
 
-// ==========================================================================
-// EMPTY
-// ==========================================================================
-
-if (
-narratives.length === 0
-) {
-
-
-return null
-
-
-}
-
-// ==========================================================================
-// RENDER
-// ==========================================================================
-
-return (
-
-
-<section
-  className={
-    styles.relatedSection
   }
->
 
-  {/* ================================================================
-  HEADER
-  ================================================================ */}
+  /* ==========================================================================
+  Render
+  ========================================================================== */
 
-  <div
-    className={
-      styles.relatedHeader
-    }
-  >
+  return (
 
-    <div
+    <section
       className={
-        styles.relatedLabel
+        styles.relatedSection
       }
     >
 
-      SEMANTIC RELATION
+      {/* ================================================================
+      HEADER
+      ================================================================ */}
 
-    </div>
+      <div
+        className={
+          styles.relatedHeader
+        }
+      >
 
-    <h2
-      className={
-        styles.relatedTitle
-      }
-    >
+        <div
+          className={
+            styles.relatedLabel
+          }
+        >
+          SEMANTIC RELATION
+        </div>
 
-      このPCと近い構成
+        <h2
+          className={
+            styles.relatedTitle
+          }
+        >
+          このPCと近い構成
+        </h2>
 
-    </h2>
+        <p
+          className={
+            styles.relatedDescription
+          }
+        >
+          CPU・GPU・メモリー・ストレージなど、
+          主要な製品構成をもとに、
+          近い構成を持つPCを整理しています。
+        </p>
 
-    <p
-      className={
-        styles.relatedDescription
-      }
-    >
+      </div>
 
-      semantic runtime・workflow・
-      GPU構成・用途分析をもとに、
-      近い方向性を持つPCを整理しています。
+      {/* ================================================================
+      GRID
+      ================================================================ */}
 
-    </p>
+      <div
+        className={
+          styles.relatedNarratives
+        }
+      >
 
-  </div>
+        {
+          narratives.map(
+            (
+              narrative,
+              index
+            ) => (
 
-  {/* ================================================================
-  GRID
-  ================================================================ */}
+              <div
+                key={
+                  `${narrative}-${index}`
+                }
+                className={
+                  styles.relatedNarrativeCard
+                }
+              >
 
-  <div
-    className={
-      styles.relatedNarratives
-    }
-  >
+                {narrative}
 
-    {
-      narratives.map(
-        (
-          narrative,
-          index
-        ) => (
+              </div>
 
-          <div
-            key={index}
+            )
+          )
+        }
 
-            className={
-              styles.relatedNarrativeCard
-            }
-          >
+      </div>
 
-            {narrative}
+    </section>
 
-          </div>
+  )
 
-        )
-      )
-    }
-
-  </div>
-
-</section>
-
-
-)
 }

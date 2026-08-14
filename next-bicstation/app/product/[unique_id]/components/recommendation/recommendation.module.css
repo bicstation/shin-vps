@@ -708,3 +708,105 @@ grid-auto-columns:
 }
 
 }
+
+
+/* ============================================================================
+🔥 NEXT INTENT CARD LABEL
+============================================================================ */
+
+.nextIntentCardLabel {
+
+color:
+#7dd3fc;
+
+font-size: 10px;
+
+font-weight: 800;
+
+letter-spacing: .08em;
+
+text-transform: uppercase;
+
+margin-bottom: 8px;
+}
+
+/* ============================================================================
+🔥 NEXT INTENT CARD VALUE
+============================================================================ */
+
+.nextIntentCardValue {
+
+color:
+#ffffff;
+
+font-size: 15px;
+
+font-weight: 700;
+
+line-height: 1.9;
+}
+
+/* ============================================================================
+🔥 NEXT INTENT TAGS
+============================================================================ */
+
+.nextIntentTags {
+
+display: flex;
+
+flex-wrap: wrap;
+
+gap: 10px;
+}
+
+/* ============================================================================
+🔥 NEXT INTENT TAG
+============================================================================ */
+
+.nextIntentTag {
+
+display: inline-flex;
+
+align-items: center;
+
+justify-content: center;
+
+min-height: 34px;
+
+padding:
+0 14px;
+
+border-radius:
+999px;
+
+background:
+rgba(125,211,252,.08);
+
+border:
+1px solid rgba(125,211,252,.16);
+
+color:
+#bae6fd;
+
+font-size: 11px;
+
+font-weight: 800;
+
+line-height: 1.2;
+}
+
+/* ============================================================================
+🔥 NEXT INTENT FOOTER
+============================================================================ */
+
+.nextIntentFooter {
+
+padding-top: 8px;
+
+color:
+#64748b;
+
+font-size: 12px;
+
+line-height: 1.7;
+}

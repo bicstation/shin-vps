@@ -117,7 +117,7 @@ export default function Header() {
             { label: '📚 全PC一覧', href: '/catalog' },
             { label: '🔥 セール情報', href: '/guide/bto' },
             { label: '📊 コスパ比較', href: '/guide/parts' },
-            { label: '🛒 周辺機器', href: '/guide/peripherals' },
+            { label: '🛒 PC棚', href: '/shelves' },
         ]
 
         : [];
@@ -127,11 +127,11 @@ export default function Header() {
 
         { label: '---', href: '#' },
 
-        { label: 'ℹ️ 運営者情報', href: '/about' },
-        { label: '📏 ガイドライン', href: '/guideline' },
-        { label: '🛡️ プライバシーポリシー', href: '/privacy-policy' },
-        { label: '⚖️ 免責事項', href: '/disclaimer' },
-        { label: '📢 広告掲載について', href: '/ads-policy' },
+        { label: 'ℹ️ 運営者情報', href: '/guide/about' },
+        { label: '📏 ガイドライン', href: '/guide/guideline' },
+        { label: '🛡️ プライバシーポリシー', href: '/guide/privacy-policy' },
+        { label: '⚖️ 免責事項', href: '/guide/disclaimer' },
+        { label: '📢 広告掲載について', href: '/guide/ads-policy' },
         { label: '📧 お問い合わせ', href: '/contact' }
     ];
 

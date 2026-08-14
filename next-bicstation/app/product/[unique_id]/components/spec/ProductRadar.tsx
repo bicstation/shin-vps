@@ -1,130 +1,292 @@
+// ============================================================================
+// FILE:
 // next-bicstation/app/product/[unique_id]/components/spec/ProductRadar.tsx
+// ============================================================================
+//
+// SHIN CORE LINX
+// Product Observation Experience
+//
+// Backend Reality
+//      ↓
+// observation_runtime
+//      ↓
+// Adapter / Projection
+//      ↓
+// ProductRadar
+//      ↓
+// Observation UI
+//
+// IMPORTANT
+//
+// This component does NOT:
+// ✗ infer performance
+// ✗ generate scores
+// ✗ generate semantic meaning
+// ✗ modify Observation Reality
+//
+// It displays observed Reality supplied by Backend.
+// ============================================================================
 
-import styles
-  from './spec.module.css'
+import styles from './spec.module.css'
+
+/* ============================================================================
+🔥 Props
+============================================================================ */
 
 type Props = {
   product: any
 }
 
-/* =========================================
-🔥 HELPERS
-========================================= */
+/* ============================================================================
+🔥 Observation Types
+============================================================================ */
 
-function buildRadarData(
-  product: any
-) {
+type ObservationSpecification = {
+  label?: string
+  value?: string
+}
 
-  const text = JSON.stringify(
-    product
-  ).toLowerCase()
+type ProductObservationRuntime = {
+  source?: string
+  source_url?: string
+  document_key?: string
+  format?: string
+  specifications?: ObservationSpecification[]
+  raw_text?: string
+}
 
-  let gaming = 60
-  let ai = 50
-  let creator = 50
-  let multitask = 50
-  let cost = 60
+/* ============================================================================
+🔥 Observation Parser
+============================================================================ */
 
-  /* ======================================
-  GPU
-  ====================================== */
+function parseObservationRuntime(
+  product: any,
+): ProductObservationRuntime | null {
+
+  const observation =
+    product?.observationRuntime
+
+  if (!observation) {
+    return null
+  }
+
+  /* --------------------------------------------------------------------------
+  Structured Observation
+  -------------------------------------------------------------------------- */
 
   if (
-    text.includes('4090')
+    typeof observation === 'object'
+    &&
+    observation !== null
   ) {
 
-    gaming += 35
-    ai += 35
-    creator += 30
-    cost -= 25
+    const parsedObservation =
+      observation as ProductObservationRuntime
 
-  } else if (
-    text.includes('4080')
-  ) {
-
-    gaming += 30
-    ai += 28
-    creator += 24
-    cost -= 18
-
-  } else if (
-    text.includes('4070')
-  ) {
-
-    gaming += 24
-    ai += 22
-    creator += 18
-    cost -= 10
-
-  } else if (
-    text.includes('4060')
-  ) {
-
-    gaming += 18
-    ai += 14
-    creator += 10
-    cost += 8
+    return parsedObservation
 
   }
 
-  /* ======================================
-  MEMORY
-  ====================================== */
+  /* --------------------------------------------------------------------------
+  JSON Observation
+  -------------------------------------------------------------------------- */
 
   if (
-    text.includes('64gb')
+    typeof observation === 'string'
   ) {
 
-    multitask += 35
-    creator += 18
-    ai += 12
+    try {
 
-  } else if (
-    text.includes('32gb')
-  ) {
+      const parsed =
+        JSON.parse(
+          observation
+        )
 
-    multitask += 24
-    creator += 10
+      if (
+        parsed
+        &&
+        typeof parsed === 'object'
+      ) {
+
+        const parsedObservation =
+          parsed as ProductObservationRuntime
+
+        return parsedObservation
+
+      }
+
+    } catch (error) {
+
+      console.warn(
+        '⚠️ PRODUCT OBSERVATION JSON PARSE FAILED',
+        error,
+      )
+
+    }
 
   }
 
-  return [
-    {
-      label: 'Gaming',
-      value: Math.min(gaming, 100),
-    },
-    {
-      label: 'AI',
-      value: Math.min(ai, 100),
-    },
-    {
-      label: 'Creator',
-      value: Math.min(creator, 100),
-    },
-    {
-      label: 'Multi',
-      value: Math.min(multitask, 100),
-    },
-    {
-      label: 'Cost',
-      value: Math.min(cost, 100),
-    },
-  ]
+  return null
 
 }
 
-/* =========================================
-🔥 COMPONENT
-========================================= */
+/* ============================================================================
+🔥 Observation Specifications
+============================================================================ */
+
+function getObservationSpecifications(
+  product: any,
+): ObservationSpecification[] {
+
+  const observation =
+    parseObservationRuntime(
+      product,
+    )
+
+  const specifications =
+    observation?.specifications
+
+  if (
+    !Array.isArray(
+      specifications
+    )
+  ) {
+
+    return []
+
+  }
+
+  return specifications.filter(
+    (
+      item,
+    ): item is ObservationSpecification =>
+
+      item
+      &&
+      typeof item === 'object'
+      &&
+      (
+        typeof item.label === 'string'
+        ||
+        typeof item.value === 'string'
+      ),
+  )
+
+}
+
+/* ============================================================================
+🔥 Component
+============================================================================ */
 
 export default function ProductRadar({
   product,
 }: Props) {
 
-  const radarData =
-    buildRadarData(
-      product
+  const productName =
+    product?.name
+    || 'このPC'
+
+  const observation =
+    parseObservationRuntime(
+      product,
     )
+
+  const specifications =
+    getObservationSpecifications(
+      product,
+    )
+
+  /* ==========================================================================
+  🔥 Reality Observation
+  ========================================================================== */
+
+  console.log(
+    '🔥 PRODUCT OBSERVATION UI',
+    {
+      unique_id:
+        product?.uniqueId
+        ||
+        product?.unique_id,
+
+      product_name:
+        product?.name,
+
+      observationRuntime:
+        product?.observationRuntime,
+
+      observation,
+
+      specification_count:
+        specifications.length,
+    },
+  )
+
+  /* ==========================================================================
+  🔥 Empty Observation
+  ========================================================================== */
+
+  if (
+    !observation
+    ||
+    !specifications.length
+  ) {
+
+    return (
+
+      <section
+        className={
+          styles.radarSection
+        }
+      >
+
+        {/* ====================================================================
+        HEADER
+        ==================================================================== */}
+
+        <div
+          className={
+            styles.radarHeader
+          }
+        >
+
+          <div
+            className={
+              styles.radarLabel
+            }
+          >
+            OBSERVATION
+          </div>
+
+          <h2
+            className={
+              styles.radarTitle
+            }
+          >
+            {productName}
+            の観測された仕様
+          </h2>
+
+          <p
+            className={
+              styles.radarDescription
+            }
+          >
+            {productName}
+            について取得された
+            Observation情報はありません。
+          </p>
+
+        </div>
+
+      </section>
+
+    )
+
+  }
+
+  /* ==========================================================================
+  🔥 Observation UI
+  ========================================================================== */
 
   return (
 
@@ -134,9 +296,9 @@ export default function ProductRadar({
       }
     >
 
-      {/* ==================================
+      {/* ======================================================================
       HEADER
-      ================================== */}
+      ====================================================================== */}
 
       <div
         className={
@@ -149,7 +311,7 @@ export default function ProductRadar({
             styles.radarLabel
           }
         >
-          PERFORMANCE BALANCE
+          OBSERVATION
         </div>
 
         <h2
@@ -157,7 +319,8 @@ export default function ProductRadar({
             styles.radarTitle
           }
         >
-          性能バランス分析
+          {productName}
+          の観測された仕様
         </h2>
 
         <p
@@ -165,16 +328,130 @@ export default function ProductRadar({
             styles.radarDescription
           }
         >
-          gaming・AI・creator用途など、
-          利用シーン別に
-          バランスを整理しています。
+          {productName}
+          について、
+          Reality Sourceから実際に観測された
+          仕様情報を表示しています。
         </p>
 
       </div>
 
-      {/* ==================================
-      RADAR GRID
-      ================================== */}
+      {/* ======================================================================
+      SOURCE
+      ====================================================================== */}
+
+      {
+        (
+          observation.source
+          ||
+          observation.source_url
+        )
+        &&
+        (
+
+          <div
+            className={
+              styles.radarFooter
+            }
+          >
+
+            <div
+              className={
+                styles.radarFooterText
+              }
+            >
+
+              {
+                observation.source
+                &&
+                (
+                  <>
+                    SOURCE:
+                    {' '}
+                    {observation.source}
+                  </>
+                )
+              }
+
+              {
+                observation.source_url
+                &&
+                (
+                  <>
+                    {' '}
+                    / {' '}
+                    {observation.source_url}
+                  </>
+                )
+              }
+
+            </div>
+
+          </div>
+
+        )
+      }
+
+      {/* ======================================================================
+      DOCUMENT
+      ====================================================================== */}
+
+      {
+        (
+          observation.document_key
+          ||
+          observation.format
+        )
+        &&
+        (
+
+          <div
+            className={
+              styles.radarFooter
+            }
+          >
+
+            <div
+              className={
+                styles.radarFooterText
+              }
+            >
+
+              {
+                observation.document_key
+                &&
+                (
+                  <>
+                    DOCUMENT:
+                    {' '}
+                    {observation.document_key}
+                  </>
+                )
+              }
+
+              {
+                observation.format
+                &&
+                (
+                  <>
+                    {' '}
+                    / FORMAT:
+                    {' '}
+                    {observation.format}
+                  </>
+                )
+              }
+
+            </div>
+
+          </div>
+
+        )
+      }
+
+      {/* ======================================================================
+      SPECIFICATIONS
+      ====================================================================== */}
 
       <div
         className={
@@ -182,80 +459,103 @@ export default function ProductRadar({
         }
       >
 
-        {radarData.map(
-          (item) => (
-
-            <div
-              key={
-                item.label
-              }
-
-              className={
-                styles.radarCard
-              }
-            >
-
-              {/* ==========================
-              TOP
-              ========================== */}
+        {
+          specifications.map(
+            (
+              spec,
+              index,
+            ) => (
 
               <div
+                key={
+                  `${spec.label || 'specification'}-${index}`
+                }
                 className={
-                  styles.radarCardTop
+                  styles.radarCard
                 }
               >
 
+                {/* ============================================================
+                LABEL
+                ============================================================ */}
+
                 <div
                   className={
-                    styles.radarCardLabel
+                    styles.radarCardTop
                   }
                 >
-                  {item.label}
+
+                  <div
+                    className={
+                      styles.radarCardLabel
+                    }
+                  >
+                    {
+                      spec.label
+                      ||
+                      'SPECIFICATION'
+                    }
+                  </div>
+
                 </div>
+
+                {/* ============================================================
+                VALUE
+                ============================================================ */}
 
                 <div
                   className={
                     styles.radarCardValue
                   }
                 >
-                  {item.value}
+                  {
+                    spec.value
+                    ||
+                    '—'
+                  }
                 </div>
 
               </div>
 
-              {/* ==========================
-              BAR
-              ========================== */}
-
-              <div
-                className={
-                  styles.radarBar
-                }
-              >
-
-                <div
-                  className={
-                    styles.radarBarFill
-                  }
-
-                  style={{
-                    width:
-                      `${item.value}%`,
-                  }}
-                />
-
-              </div>
-
-            </div>
-
+            )
           )
-        )}
+        }
 
       </div>
 
-      {/* ==================================
+      {/* ======================================================================
+      RAW OBSERVATION
+      ====================================================================== */}
+
+      {
+        observation.raw_text
+        &&
+        (
+
+          <details>
+
+            <summary>
+              RAW OBSERVATION
+            </summary>
+
+            <div
+              className={
+                styles.radarFooterText
+              }
+            >
+              {
+                observation.raw_text
+              }
+            </div>
+
+          </details>
+
+        )
+      }
+
+      {/* ======================================================================
       FOOTER
-      ================================== */}
+      ====================================================================== */}
 
       <div
         className={
@@ -268,8 +568,9 @@ export default function ProductRadar({
             styles.radarFooterText
           }
         >
-          ✔ semantic analysis をもとに、
-          用途別バランスを整理しています。
+          {productName}
+          のReality Sourceから取得された
+          Observation Runtimeの情報を表示しています。
         </div>
 
       </div>
@@ -277,4 +578,5 @@ export default function ProductRadar({
     </section>
 
   )
+
 }

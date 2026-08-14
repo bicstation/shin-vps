@@ -1,7 +1,9 @@
+// ============================================================================
+// FILE:
 // next-bicstation/app/product/[unique_id]/components/spec/ProductSpec.tsx
+// ============================================================================
 
-import styles
-  from './spec.module.css'
+import styles from './spec.module.css'
 
 type Props = {
   product: any
@@ -11,59 +13,189 @@ type Props = {
 🔥 HELPERS
 ========================================= */
 
-function buildSpecs(
-  product: any
-) {
+function buildSpecs(product: any) {
 
-  return [
+  const specs = []
 
-    {
-      label: 'GPU',
-      value:
-        product?.gpu_name
-        || 'Unknown',
-    },
+  /* ======================================
+  MAKER
+  ====================================== */
 
-    {
+  const maker =
+    product?.maker
+    || product?.makerName
+    || product?.maker_name
+
+  if (maker) {
+
+    specs.push({
+      label: 'MAKER',
+      value: maker,
+    })
+
+  }
+
+  /* ======================================
+  BRAND
+  ====================================== */
+
+  if (product?.brand) {
+
+    specs.push({
+      label: 'BRAND',
+      value: product.brand,
+    })
+
+  }
+
+  /* ======================================
+  SERIES
+  ====================================== */
+
+  if (product?.series) {
+
+    specs.push({
+      label: 'SERIES',
+      value: product.series,
+    })
+
+  }
+
+  /* ======================================
+  COLLABORATION
+  ====================================== */
+
+  if (product?.collaboration) {
+
+    specs.push({
+      label: 'COLLABORATION',
+      value: product.collaboration,
+    })
+
+  }
+
+  /* ======================================
+  CPU
+  ====================================== */
+
+  const cpu =
+    product?.cpuModel
+    || product?.cpu_model
+
+  if (cpu) {
+
+    specs.push({
       label: 'CPU',
-      value:
-        product?.cpu_name
-        || 'Unknown',
-    },
+      value: cpu,
+    })
 
-    {
+  }
+
+  /* ======================================
+  GPU
+  ====================================== */
+
+  const gpu =
+    product?.gpuModel
+    || product?.gpu_model
+
+  if (gpu) {
+
+    specs.push({
+      label: 'GPU',
+      value: gpu,
+    })
+
+  }
+
+  /* ======================================
+  MEMORY
+  ====================================== */
+
+  if (
+    product?.memoryGb != null
+  ) {
+
+    specs.push({
       label: 'MEMORY',
       value:
-        product?.memory
-        || 'Unknown',
-    },
+        `${product.memoryGb}GB`,
+    })
 
-    {
+  } else if (
+    product?.memory_gb != null
+  ) {
+
+    specs.push({
+      label: 'MEMORY',
+      value:
+        `${product.memory_gb}GB`,
+    })
+
+  }
+
+  /* ======================================
+  STORAGE
+  ====================================== */
+
+  if (
+    product?.storageGb != null
+  ) {
+
+    specs.push({
       label: 'STORAGE',
       value:
-        product?.storage
-        || 'Unknown',
-    },
+        `${product.storageGb}GB`,
+    })
 
-    {
+  } else if (
+    product?.storage_gb != null
+  ) {
+
+    specs.push({
+      label: 'STORAGE',
+      value:
+        `${product.storage_gb}GB`,
+    })
+
+  }
+
+  /* ======================================
+  DISPLAY
+  ====================================== */
+
+  const display =
+    product?.displayInfo
+    || product?.display_info
+
+  if (display) {
+
+    specs.push({
+      label: 'DISPLAY',
+      value: display,
+    })
+
+  }
+
+  /* ======================================
+  PRICE
+  ====================================== */
+
+  if (
+    product?.price != null
+  ) {
+
+    specs.push({
       label: 'PRICE',
       value:
-        product?.price
-          ? `¥${Number(
-              product.price
-            ).toLocaleString()}`
-          : 'Unknown',
-    },
+        `¥${Number(
+          product.price
+        ).toLocaleString()}`,
+    })
 
-    {
-      label: 'MAKER',
-      value:
-        product?.maker_name
-        || product?.maker
-        || 'Unknown',
-    },
+  }
 
-  ]
+  return specs
 
 }
 
@@ -75,10 +207,16 @@ export default function ProductSpec({
   product,
 }: Props) {
 
+  if (!product) {
+    return null
+  }
+
   const specs =
-    buildSpecs(
-      product
-    )
+    buildSpecs(product)
+
+  const productName =
+    product?.name
+    || 'このPC'
 
   return (
 
@@ -119,63 +257,58 @@ export default function ProductSpec({
             styles.specDescription
           }
         >
-          主要パーツ・価格・構成情報を
-          一覧で整理しています。
+          {productName}
+          の主要構成と製品情報を確認できます。
         </p>
 
       </div>
 
       {/* ==================================
-      TABLE
+      SPEC GRID
       ================================== */}
 
       <div
         className={
-          styles.specTable
+          styles.specGrid
         }
       >
 
-        {specs.map(
-          (spec) => (
+        {
 
-            <div
-              key={
-                spec.label
-              }
-
-              className={
-                styles.specRow
-              }
-            >
-
-              {/* ==========================
-              LABEL
-              ========================== */}
+          specs.map(
+            (spec) => (
 
               <div
+                key={
+                  spec.label
+                }
                 className={
-                  styles.specRowLabel
+                  styles.specCard
                 }
               >
-                {spec.label}
+
+                <div
+                  className={
+                    styles.specCardLabel
+                  }
+                >
+                  {spec.label}
+                </div>
+
+                <div
+                  className={
+                    styles.specCardValue
+                  }
+                >
+                  {spec.value}
+                </div>
+
               </div>
 
-              {/* ==========================
-              VALUE
-              ========================== */}
-
-              <div
-                className={
-                  styles.specRowValue
-                }
-              >
-                {spec.value}
-              </div>
-
-            </div>
-
+            )
           )
-        )}
+
+        }
 
       </div>
 
@@ -188,19 +321,12 @@ export default function ProductSpec({
           styles.specFooter
         }
       >
-
-        <div
-          className={
-            styles.specFooterText
-          }
-        >
-          ✔ semantic recommendation に加えて、
-          構成詳細も確認できます。
-        </div>
-
+        {productName}
+        の主要構成と基本情報をまとめて確認できます。
       </div>
 
     </section>
 
   )
+
 }

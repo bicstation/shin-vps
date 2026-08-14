@@ -83,34 +83,17 @@ export default function ProductRelatedSection({
       Related Discovery
       ========================================================== */}
 
-      <ProductRelatedIntents
-
-        semanticRuntime={
-
-          semanticRuntime
-
-        }
-
-      />
+      {/* <ProductRelatedIntents
+        semanticRuntime={ semanticRuntime  }
+      /> */}
 
       {/* ==========================================================
       Related Narrative
       ========================================================== */}
 
       <ProductRelated
-
-        product={
-
-          product
-
-        }
-
-        related={
-
-          related
-
-        }
-
+        product={ product }
+        related={ related }
       />
 
       {/* ==========================================================
@@ -118,19 +101,9 @@ export default function ProductRelatedSection({
       ========================================================== */}
 
       <ProductSimilarUsage
-
-        product={
-
-          product
-
-        }
-
-        related={
-
-          related
-
-        }
-
+        product={ product }
+        related={ related }
+        semanticRuntime={ semanticRuntime }
       />
 
       {/* ==========================================================
@@ -138,19 +111,8 @@ export default function ProductRelatedSection({
       ========================================================== */}
 
       <ProductNextIntent
-
-        product={
-
-          product
-
-        }
-
-        related={
-
-          related
-
-        }
-
+        product={ product }
+        related={ related }
       />
 
       {/* ==========================================================
@@ -158,13 +120,7 @@ export default function ProductRelatedSection({
       ========================================================== */}
 
       <RelatedProducts
-
-        related={
-
-          related
-
-        }
-
+        related={ related }
       />
 
     </section>

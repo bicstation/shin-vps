@@ -17,9 +17,8 @@ import styles
 ============================================================================ */
 
 import type {
-
   ProjectedProduct,
-
+  ProjectedSemanticRuntime,
 } from '@/shared/lib/api/django/pc/product-detail'
 
 /* ============================================================================
@@ -32,258 +31,78 @@ type Props = {
 
   related: any[]
 
+  semanticRuntime?: ProjectedSemanticRuntime
+
 }
 
 /* ============================================================================
-🔥 HELPERS
+🔥 Helpers
 ============================================================================ */
 
-function buildNextIntent(
+/* ============================================================================
+🔥 Build Observation
+============================================================================ */
 
-  product: ProjectedProduct,
-
-  related: any[]
-
+function buildNextIntentObservation(
+  semanticRuntime?: ProjectedSemanticRuntime,
 ) {
 
-  const intents: string[] = []
+  const summary =
+    semanticRuntime?.semanticSummary
+    || ''
 
-  // ==========================================================================
-  // RELATED RUNTIME
-  // ==========================================================================
-
-  if (
-
+  const workflowTags =
     Array.isArray(
-
-      related
-
+      semanticRuntime?.workflowTags
     )
+      ? semanticRuntime.workflowTags
+      : []
 
-  ) {
-
-    related.forEach(
-
-      (
-
-        item: any
-
-      ) => {
-
-        const text =
-
-          JSON.stringify(item)
-
-            .toLowerCase()
-
-        // ================================================================
-        // AI
-        // ================================================================
-
-        if (
-
-          text.includes('ai')
-
-          || text.includes('llm')
-
-          || text.includes('stable diffusion')
-
-        ) {
-
-          intents.push(
-
-            'AI画像生成・ローカルLLM用途への探索を広げられます'
-
-          )
-
-        }
-
-        // ================================================================
-        // CREATOR
-        // ================================================================
-
-        if (
-
-          text.includes('creator')
-
-          || text.includes('premiere')
-
-          || text.includes('davinci')
-
-        ) {
-
-          intents.push(
-
-            '動画編集やクリエイティブ workflow へ拡張できます'
-
-          )
-
-        }
-
-        // ================================================================
-        // GAMING
-        // ================================================================
-
-        if (
-
-          text.includes('gaming')
-
-          || text.includes('geforce')
-
-          || text.includes('rtx')
-
-        ) {
-
-          intents.push(
-
-            '高fps gaming や配信用途へ探索を広げられます'
-
-          )
-
-        }
-
-        // ================================================================
-        // BUSINESS
-        // ================================================================
-
-        if (
-
-          text.includes('business')
-
-          || text.includes('office')
-
-        ) {
-
-          intents.push(
-
-            'ビジネス用途や日常workflow向け構成も探索できます'
-
-          )
-
-        }
-
-      }
-
+  const semanticLabels =
+    Array.isArray(
+      semanticRuntime?.semanticLabels
     )
+      ? semanticRuntime.semanticLabels
+      : []
+
+  return {
+
+    summary,
+
+    workflowTags:
+      Array.from(
+        new Set(
+          workflowTags
+            .filter(
+              (
+                value
+              ) =>
+                typeof value === 'string'
+                && value.trim()
+            )
+        )
+      ),
+
+    semanticLabels:
+      Array.from(
+        new Set(
+          semanticLabels
+            .filter(
+              (
+                value
+              ) =>
+                typeof value === 'string'
+                && value.trim()
+            )
+        )
+      ),
 
   }
-
-  // ==========================================================================
-  // PRODUCT FALLBACK
-  // ==========================================================================
-
-  if (
-
-    intents.length === 0
-
-  ) {
-
-    const text =
-
-      JSON.stringify(product)
-
-        .toLowerCase()
-
-    if (
-
-      text.includes('business')
-
-    ) {
-
-      intents.push(
-
-        '次は動画編集・制作向けPCもおすすめです'
-
-      )
-
-    }
-
-    if (
-
-      text.includes('creator')
-
-      || text.includes('premiere')
-
-      || text.includes('davinci')
-
-    ) {
-
-      intents.push(
-
-        '生成AI・ローカルAI用途への拡張も可能です'
-
-      )
-
-    }
-
-    if (
-
-      text.includes('gaming')
-
-      || text.includes('geforce')
-
-      || text.includes('rtx')
-
-    ) {
-
-      intents.push(
-
-        '高性能GPUを活かした配信・動画編集にも向いています'
-
-      )
-
-    }
-
-    if (
-
-      text.includes('ai')
-
-      || text.includes('rtx')
-
-    ) {
-
-      intents.push(
-
-        'AI画像生成やLLM用途の探索にも繋がります'
-
-      )
-
-    }
-
-  }
-
-  // ==========================================================================
-  // FINAL FALLBACK
-  // ==========================================================================
-
-  if (
-
-    intents.length === 0
-
-  ) {
-
-    intents.push(
-
-      '用途を広げながら次のPC探索へ進めます'
-
-    )
-
-  }
-
-  // ==========================================================================
-  // UNIQUE
-  // ==========================================================================
-
-  return Array.from(
-
-    new Set(intents)
-
-  ).slice(0, 4)
 
 }
 
 /* ============================================================================
-🔥 COMPONENT
+🔥 Component
 ============================================================================ */
 
 export default function ProductNextIntent({
@@ -292,151 +111,293 @@ export default function ProductNextIntent({
 
   related,
 
+  semanticRuntime,
+
 }: Props) {
 
-  // ==========================================================================
-  // Intent Runtime
-  // ==========================================================================
+  /* ==========================================================================
+  Observation
+  ========================================================================== */
 
-  const intents =
-
-    buildNextIntent(
-
-      product,
-
-      related
-
+  const observation =
+    buildNextIntentObservation(
+      semanticRuntime
     )
 
-  // ==========================================================================
-  // EMPTY
-  // ==========================================================================
+  /* ==========================================================================
+  Debug
+  ========================================================================== */
+
+  console.log(
+    '🔥 PRODUCT NEXT INTENT OBSERVATION',
+    {
+
+      uniqueId:
+        product?.uniqueId,
+
+      productName:
+        product?.name,
+
+      relatedCount:
+        Array.isArray(related)
+          ? related.length
+          : 0,
+
+      semanticSummary:
+        observation.summary,
+
+      workflowTags:
+        observation.workflowTags,
+
+      semanticLabels:
+        observation.semanticLabels,
+
+    }
+  )
+
+  /* ==========================================================================
+  Empty Guard
+  ========================================================================== */
+
+  const hasSummary =
+    Boolean(
+      observation.summary
+    )
+
+  const hasWorkflowTags =
+    observation.workflowTags.length > 0
+
+  const hasSemanticLabels =
+    observation.semanticLabels.length > 0
 
   if (
-
-    intents.length === 0
-
+    !hasSummary
+    && !hasWorkflowTags
+    && !hasSemanticLabels
   ) {
 
     return null
 
   }
 
-  // ==========================================================================
-  // RENDER
-  // ==========================================================================
+  /* ==========================================================================
+  Render
+  ========================================================================== */
 
   return (
 
     <section
-
       className={
-
         styles.nextIntentSection
-
       }
-
     >
 
+      {/* ==========================================================
+      HEADER
+      ========================================================== */}
+
       <div
-
         className={
-
           styles.nextIntentHeader
-
         }
-
       >
 
         <div
-
           className={
-
             styles.nextIntentLabel
-
           }
-
         >
-
           NEXT EXPLORATION
-
         </div>
 
         <h2
-
           className={
-
             styles.nextIntentTitle
-
           }
-
         >
-
-          次に探索したい用途
-
+          次に探索したい方向
         </h2>
 
         <p
-
           className={
-
             styles.nextIntentDescription
-
           }
-
         >
-
-          semantic runtime をもとに、
-          workflow・用途・GPU構成の近い
-          次の探索方向を整理しています。
-
+          この製品に対してBackend Runtimeで
+          観測・整理されている探索情報を表示しています。
         </p>
 
       </div>
 
+      {/* ==========================================================
+      SUMMARY
+      ========================================================== */}
+
+      {
+        hasSummary
+        && (
+
+          <div
+            className={
+              styles.nextIntentCard
+            }
+          >
+
+            <div
+              className={
+                styles.nextIntentCardLabel
+              }
+            >
+              SEMANTIC SUMMARY
+            </div>
+
+            <div
+              className={
+                styles.nextIntentCardValue
+              }
+            >
+              {
+                observation.summary
+              }
+            </div>
+
+          </div>
+
+        )
+      }
+
+      {/* ==========================================================
+      WORKFLOW TAGS
+      ========================================================== */}
+
+      {
+        hasWorkflowTags
+        && (
+
+          <div
+            className={
+              styles.nextIntentCard
+            }
+          >
+
+            <div
+              className={
+                styles.nextIntentCardLabel
+              }
+            >
+              WORKFLOW TAGS
+            </div>
+
+            <div
+              className={
+                styles.nextIntentTags
+              }
+            >
+
+              {
+                observation.workflowTags.map(
+                  (
+                    tag,
+                    index
+                  ) => (
+
+                    <span
+                      key={
+                        `${tag}-${index}`
+                      }
+
+                      className={
+                        styles.nextIntentTag
+                      }
+                    >
+                      {
+                        tag
+                      }
+                    </span>
+
+                  )
+                )
+              }
+
+            </div>
+
+          </div>
+
+        )
+      }
+
+      {/* ==========================================================
+      SEMANTIC LABELS
+      ========================================================== */}
+
+      {
+        hasSemanticLabels
+        && (
+
+          <div
+            className={
+              styles.nextIntentCard
+            }
+          >
+
+            <div
+              className={
+                styles.nextIntentCardLabel
+              }
+            >
+              SEMANTIC LABELS
+            </div>
+
+            <div
+              className={
+                styles.nextIntentTags
+              }
+            >
+
+              {
+                observation.semanticLabels.map(
+                  (
+                    label,
+                    index
+                  ) => (
+
+                    <span
+                      key={
+                        `${label}-${index}`
+                      }
+
+                      className={
+                        styles.nextIntentTag
+                      }
+                    >
+                      {
+                        label
+                      }
+                    </span>
+
+                  )
+                )
+              }
+
+            </div>
+
+          </div>
+
+        )
+      }
+
+      {/* ==========================================================
+      FOOTER
+      ========================================================== */}
+
       <div
-
         className={
-
-          styles.nextIntentGrid
-
+          styles.nextIntentFooter
         }
-
       >
 
-        {
-
-          intents.map(
-
-            (
-
-              intent,
-
-              index
-
-            ) => (
-
-              <div
-
-                key={index}
-
-                className={
-
-                  styles.nextIntentCard
-
-                }
-
-              >
-
-                {intent}
-
-              </div>
-
-            )
-
-          )
-
-        }
+        Backend Product Semantic Runtimeから
+        取得した情報を表示しています。
 
       </div>
 

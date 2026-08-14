@@ -1,7 +1,9 @@
+// ============================================================================
+// FILE:
 // next-bicstation/app/product/[unique_id]/components/spec/ProductCompactSpec.tsx
+// ============================================================================
 
-import styles
-  from './spec.module.css'
+import styles from './spec.module.css'
 
 type Props = {
   product: any
@@ -11,74 +13,63 @@ type Props = {
 🔥 HELPERS
 ========================================= */
 
-function buildCompactSpecs(
-  product: any
-) {
+function buildCompactSpecs(product: any) {
 
   const specs = []
 
-  /* ======================================
-  GPU
-  ====================================== */
+  const gpu =
+    product?.gpuModel
+    || product?.gpu_model
+    || product?.gpu_name
 
-  if (
-    product?.gpu_name
-  ) {
+  const cpu =
+    product?.cpuModel
+    || product?.cpu_model
+    || product?.cpu_name
 
-    specs.push({
-      label: 'GPU',
-      value: product.gpu_name,
-    })
+  const memory =
+    product?.memoryGb != null
+      ? `${product.memoryGb}GB`
+      : product?.memory_gb != null
+        ? `${product.memory_gb}GB`
+        : product?.memory
 
-  }
+  const storage =
+    product?.storageGb != null
+      ? `${product.storageGb}GB`
+      : product?.storage_gb != null
+        ? `${product.storage_gb}GB`
+        : product?.storage
 
-  /* ======================================
-  CPU
-  ====================================== */
-
-  if (
-    product?.cpu_name
-  ) {
-
+  if (cpu) {
     specs.push({
       label: 'CPU',
-      value: product.cpu_name,
+      value: cpu,
     })
-
   }
 
-  /* ======================================
-  MEMORY
-  ====================================== */
+  if (gpu) {
+    specs.push({
+      label: 'GPU',
+      value: gpu,
+    })
+  }
 
-  if (
-    product?.memory
-  ) {
-
+  if (memory) {
     specs.push({
       label: 'MEMORY',
-      value: product.memory,
+      value: memory,
     })
-
   }
 
-  /* ======================================
-  STORAGE
-  ====================================== */
-
-  if (
-    product?.storage
-  ) {
-
+  if (storage) {
     specs.push({
       label: 'SSD',
-      value: product.storage,
+      value: storage,
     })
-
   }
 
   return specs.slice(0, 4)
-
 }
 
 /* =========================================
@@ -89,18 +80,16 @@ export default function ProductCompactSpec({
   product,
 }: Props) {
 
-  const specs =
-    buildCompactSpecs(
-      product
-    )
-
-  if (
-    !specs.length
-  ) {
+  if (!product) {
     return null
   }
 
-  console.log(product)
+  const specs =
+    buildCompactSpecs(product)
+
+  if (!specs.length) {
+    return null
+  }
 
   return (
 
@@ -109,10 +98,6 @@ export default function ProductCompactSpec({
         styles.compactSpecSection
       }
     >
-
-      {/* ==================================
-      HEADER
-      ================================== */}
 
       <div
         className={
@@ -141,16 +126,11 @@ export default function ProductCompactSpec({
             styles.compactSpecDescription
           }
         >
-          比較しやすいよう、
-          重要スペックだけを
+          比較しやすいよう、重要スペックだけを
           コンパクトに整理しています。
         </p>
 
       </div>
-
-      {/* ==================================
-      GRID
-      ================================== */}
 
       <div
         className={
@@ -162,10 +142,7 @@ export default function ProductCompactSpec({
           (spec) => (
 
             <div
-              key={
-                spec.label
-              }
-
+              key={spec.label}
               className={
                 styles.compactSpecCard
               }
@@ -194,10 +171,6 @@ export default function ProductCompactSpec({
 
       </div>
 
-      {/* ==================================
-      FOOTER
-      ================================== */}
-
       <div
         className={
           styles.compactSpecFooter
@@ -209,8 +182,8 @@ export default function ProductCompactSpec({
             styles.compactSpecFooterText
           }
         >
-          ✔ gaming・AI・クリエイティブ用途で
-          重要な主要構成を表示しています。
+          ✔ CPU・GPU・メモリー・ストレージの
+          主要構成を表示しています。
         </div>
 
       </div>

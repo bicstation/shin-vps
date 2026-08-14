@@ -88,32 +88,16 @@ export default function ProductCTASection({
       Price CTA
       ========================================================== */}
 
-      
-
-      <ProductPriceCTA
-
-        product={
-
-          product
-
-        }
-
-      />
-
-     
+      {/* <ProductPriceCTA
+        product={          product        }
+      /> */}
 
       {/* ==========================================================
       Final CTA
       ========================================================== */}
 
       <ProductFinalCTA
-
-        product={
-
-          product
-
-        }
-
+        product={ product }
       />
 
       {/* ==========================================================
@@ -121,13 +105,7 @@ export default function ProductCTASection({
       ========================================================== */}
 
       <ProductStickyCTA
-
-        product={
-
-          product
-
-        }
-
+        product={ product }
       />
 
       {/* ==========================================================
@@ -135,13 +113,7 @@ export default function ProductCTASection({
       ========================================================== */}
 
       <FinalCta
-
-        product={
-
-          product
-
-        }
-
+        product={ product }
       />
 
     </section>

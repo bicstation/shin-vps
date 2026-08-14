@@ -53,25 +53,19 @@ ProductSpecSection({
       {/* Compact Spec */}
       {/* ============================= */}
 
-      {/* <ProductCompactSpec
-        product={product}
-      /> */}
+      <ProductCompactSpec product={product} />
 
       {/* ============================= */}
       {/* Main Spec */}
       {/* ============================= */}
 
-      {/* <ProductSpec
-        product={product}
-      /> */}
+      <ProductSpec product={product} />
 
       {/* ============================= */}
       {/* Radar */}
       {/* ============================= */}
 
-      {/* <ProductRadar
-        product={product}
-      /> */}
+      <ProductRadar product={product} />
 
     </section>
 

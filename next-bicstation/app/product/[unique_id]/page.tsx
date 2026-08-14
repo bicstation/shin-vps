@@ -21,6 +21,7 @@ import type { Metadata } from 'next'
 ============================================================================ */
 
 import ProductHeroSection from './section/ProductHeroSection'
+import ProductSpecSection from './section/ProductSpecSection'
 import ProductRelatedSection from './section/ProductRelatedSection'
 import ProductCTASection from './section/ProductCTASection'
 
@@ -211,6 +212,10 @@ export default async function ProductPage({ params }: Props) {
           product={product}
           semanticRuntime={semanticRuntime}
           compiledRuntime={compiledRuntime}
+        />
+
+        <ProductSpecSection
+          product={product}
         />
 
         <ProductRelatedSection

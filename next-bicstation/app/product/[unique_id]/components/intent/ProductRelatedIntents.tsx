@@ -10,26 +10,121 @@ import styles
   from './intent.module.css'
 
 /* ============================================================================
-🔥 Types
+🔥 Projection
 ============================================================================ */
 
-type RelatedIntent = {
+import type {
+  ProjectedSemanticRuntime,
+  ProjectedRelatedIntent,
+} from '@/shared/lib/api/django/pc/product-detail'
 
-  slug: string
-
-  title: string
-
-  description?: string | null
-
-}
+/* ============================================================================
+🔥 Props
+============================================================================ */
 
 type Props = {
 
-  semanticRuntime?: {
+  semanticRuntime?: ProjectedSemanticRuntime
 
-    related_intents?: RelatedIntent[]
+}
+
+/* ============================================================================
+🔥 Helpers
+============================================================================ */
+
+/**
+ * ============================================================================
+ * Related Intent Guard
+ * ============================================================================
+ *
+ * Projectionから渡されたRelated Intentを、
+ * UIとして安全に利用できる形だけに限定する。
+ *
+ * ここでは意味を生成しない。
+ *
+ * ✓ 型安全性
+ * ✓ Null Safety
+ * ✓ UI破壊防止
+ *
+ * ✗ Meaning Generation
+ * ✗ Semantic Generation
+ * ✗ Runtime Generation
+ *
+ * ============================================================================
+ */
+
+function isRelatedIntent(
+  value: unknown,
+): value is ProjectedRelatedIntent {
+
+  if (
+    !value
+    || typeof value !== 'object'
+  ) {
+
+    return false
 
   }
+
+  const intent =
+    value as ProjectedRelatedIntent
+
+  if (
+    typeof intent.groupSlug !== 'string'
+    || !intent.groupSlug.trim()
+  ) {
+
+    return false
+
+  }
+
+  if (
+    typeof intent.title !== 'string'
+    || !intent.title.trim()
+  ) {
+
+    return false
+
+  }
+
+  if (
+    intent.description !== undefined
+    && intent.description !== null
+    && typeof intent.description !== 'string'
+  ) {
+
+    return false
+
+  }
+
+  return true
+
+}
+
+/* ============================================================================
+🔥 Build Related Intents
+============================================================================ */
+
+function getRelatedIntents(
+  semanticRuntime?: ProjectedSemanticRuntime,
+): ProjectedRelatedIntent[] {
+
+  const relatedIntents =
+    semanticRuntime?.relatedIntents
+
+  if (
+    !Array.isArray(
+      relatedIntents
+    )
+  ) {
+
+    return []
+
+  }
+
+  return relatedIntents.filter(
+    isRelatedIntent
+  )
 
 }
 
@@ -44,23 +139,45 @@ export default function ProductRelatedIntents({
 }: Props) {
 
   const intents =
+    getRelatedIntents(
+      semanticRuntime
+    )
 
-    semanticRuntime
-      ?.related_intents
+  /* ==========================================================================
+  Debug
+  ========================================================================== */
 
-    ||
+  console.log(
+    '🔥 PRODUCT RELATED INTENTS',
+    {
 
-    []
+      relatedIntents:
+        semanticRuntime?.relatedIntents,
+
+      validIntents:
+        intents,
+
+      count:
+        intents.length,
+
+    }
+  )
+
+  /* ==========================================================================
+  Empty
+  ========================================================================== */
 
   if (
-
     intents.length === 0
-
   ) {
 
     return null
 
   }
+
+  /* ==========================================================================
+  Render
+  ========================================================================== */
 
   return (
 
@@ -93,7 +210,7 @@ export default function ProductRelatedIntents({
             styles.title
           }
         >
-          次に探索するカテゴリー
+          次に探索する分野
         </h2>
 
         <p
@@ -118,26 +235,31 @@ export default function ProductRelatedIntents({
       >
 
         {
-
           intents.map(
-
             (
-              intent
+              intent,
+              index
             ) => (
 
               <Link
                 key={
-                  intent.slug
+                  `${intent.groupSlug}-${index}`
                 }
 
                 href={
-                  `/discover/${intent.slug}`
+                  `/discover/${encodeURIComponent(
+                    intent.groupSlug
+                  )}`
                 }
 
                 className={
                   styles.card
                 }
               >
+
+                {/* ==================================================
+                Content
+                ================================================== */}
 
                 <div
                   className={
@@ -156,8 +278,8 @@ export default function ProductRelatedIntents({
                   </h3>
 
                   {
-
-                    intent.description && (
+                    intent.description
+                    && (
 
                       <p
                         className={
@@ -170,10 +292,13 @@ export default function ProductRelatedIntents({
                       </p>
 
                     )
-
                   }
 
                 </div>
+
+                {/* ==================================================
+                Action
+                ================================================== */}
 
                 <div
                   className={
@@ -186,9 +311,7 @@ export default function ProductRelatedIntents({
               </Link>
 
             )
-
           )
-
         }
 
       </div>

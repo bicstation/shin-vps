@@ -10,7 +10,16 @@
 ============================================================================ */
 
 import styles
-from './recommendation.module.css'
+  from './recommendation.module.css'
+
+/* ============================================================================
+🔥 Projection
+============================================================================ */
+
+import type {
+  ProjectedProduct,
+  ProjectedSemanticRuntime,
+} from '@/shared/lib/api/django/pc/product-detail'
 
 /* ============================================================================
 🔥 Props
@@ -18,342 +27,367 @@ from './recommendation.module.css'
 
 type Props = {
 
-product: any
+  product: ProjectedProduct
 
-related: any[]
+  related: any[]
+
+  semanticRuntime?: ProjectedSemanticRuntime
+
 }
 
 /* ============================================================================
 🔥 Helpers
 ============================================================================ */
 
-function buildUsageNarratives(
-product: any,
-related: any[]
+/**
+ * ============================================================================
+ * Build Workflow Observation
+ * ============================================================================
+ *
+ * Backend / Adapterから既に提供されている
+ * Semantic Runtimeをそのまま観測する。
+ *
+ * ここでは意味を生成しない。
+ *
+ * ✓ Runtime Observation
+ * ✓ Null Safety
+ * ✓ Duplicate Removal
+ *
+ * ✗ Meaning Generation
+ * ✗ Semantic Generation
+ * ✗ Keyword Classification
+ * ✗ Product Inference
+ *
+ * ============================================================================
+ */
+
+function buildWorkflowObservation(
+  semanticRuntime?: ProjectedSemanticRuntime,
 ) {
 
-const usages: string[] = []
+  const workflowTags =
+    Array.isArray(
+      semanticRuntime?.workflowTags
+    )
+      ? semanticRuntime.workflowTags
+      : []
 
-// ==========================================================================
-// RELATED RUNTIME
-// ==========================================================================
+  const semanticLabels =
+    Array.isArray(
+      semanticRuntime?.semanticLabels
+    )
+      ? semanticRuntime.semanticLabels
+      : []
 
-if (
-Array.isArray(
-related
-)
-) {
+  return {
 
+    workflowTags:
+      Array.from(
+        new Set(
+          workflowTags.filter(
+            (
+              value
+            ) =>
+              typeof value === 'string'
+              && value.trim()
+          )
+        )
+      ),
 
-related.forEach(
-  (
-    item: any
-  ) => {
-
-    const text =
-      JSON.stringify(item)
-        .toLowerCase()
-
-    // ================================================================
-    // AI
-    // ================================================================
-
-    if (
-      text.includes('ai')
-      || text.includes('llm')
-      || text.includes('stable diffusion')
-    ) {
-
-      usages.push(
-        'AI画像生成・ローカルLLM・生成AI workflow に近い構成です'
-      )
-
-    }
-
-    // ================================================================
-    // VIDEO EDIT
-    // ================================================================
-
-    if (
-      text.includes('premiere')
-      || text.includes('davinci')
-      || text.includes('creator')
-      || text.includes('video')
-    ) {
-
-      usages.push(
-        '動画編集・配信・制作workflowとの相性が高い構成です'
-      )
-
-    }
-
-    // ================================================================
-    // GAMING
-    // ================================================================
-
-    if (
-      text.includes('gaming')
-      || text.includes('rtx')
-      || text.includes('geforce')
-    ) {
-
-      usages.push(
-        '高fps gaming・GPU活用・配信向けworkflowに近い構成です'
-      )
-
-    }
-
-    // ================================================================
-    // BUSINESS
-    // ================================================================
-
-    if (
-      text.includes('business')
-      || text.includes('office')
-    ) {
-
-      usages.push(
-        '日常業務・business workflow に適したsemantic runtimeです'
-      )
-
-    }
-
-    // ================================================================
-    // CREATIVE
-    // ================================================================
-
-    if (
-      text.includes('creator')
-      || text.includes('creative')
-    ) {
-
-      usages.push(
-        'クリエイティブ制作やGPU acceleration用途に近いruntimeです'
-      )
-
-    }
+    semanticLabels:
+      Array.from(
+        new Set(
+          semanticLabels.filter(
+            (
+              value
+            ) =>
+              typeof value === 'string'
+              && value.trim()
+          )
+        )
+      ),
 
   }
-)
-
-
-}
-
-// ==========================================================================
-// PRODUCT FALLBACK
-// ==========================================================================
-
-if (
-usages.length === 0
-) {
-
-
-const text =
-  JSON.stringify(product)
-    .toLowerCase()
-
-if (
-  text.includes('ai')
-) {
-
-  usages.push(
-    'AI・生成AI workflow に適したGPU runtime構成です'
-  )
-
-}
-
-if (
-  text.includes('gaming')
-) {
-
-  usages.push(
-    'gaming用途や高fps環境に向いたsemantic runtimeです'
-  )
-
-}
-
-if (
-  text.includes('creator')
-) {
-
-  usages.push(
-    '制作・動画編集workflowとの親和性が高い構成です'
-  )
-
-}
-
-if (
-  text.includes('rtx')
-) {
-
-  usages.push(
-    'RTX GPUを活かした高性能workflowに近い構成です'
-  )
-
-}
-
-
-}
-
-// ==========================================================================
-// FINAL FALLBACK
-// ==========================================================================
-
-if (
-usages.length === 0
-) {
-
-
-usages.push(
-  'workflow・用途・semantic runtime が近いPCです'
-)
-
-
-}
-
-// ==========================================================================
-// UNIQUE
-// ==========================================================================
-
-return Array.from(
-new Set(usages)
-).slice(0, 4)
 
 }
 
 /* ============================================================================
-🔥 COMPONENT
+🔥 Component
 ============================================================================ */
 
 export default function ProductSimilarUsage({
 
-product,
+  product,
 
-related,
+  related,
+
+  semanticRuntime,
 
 }: Props) {
 
-// ==========================================================================
-// Runtime Narratives
-// ==========================================================================
+  /* ==========================================================================
+  Observation
+  ========================================================================== */
 
-const usages =
+  const observation =
+    buildWorkflowObservation(
+      semanticRuntime
+    )
 
+  /* ==========================================================================
+  Debug
+  ========================================================================== */
 
-buildUsageNarratives(
-  product,
-  related
-)
-
-
-// ==========================================================================
-// EMPTY
-// ==========================================================================
-
-if (
-usages.length === 0
-) {
-
-
-return null
-
-
-}
-
-// ==========================================================================
-// RENDER
-// ==========================================================================
-
-return (
-
-
-<section
-  className={
-    styles.similarUsageSection
-  }
->
-
-  {/* ================================================================
-  HEADER
-  ================================================================ */}
-
-  <div
-    className={
-      styles.similarUsageHeader
-    }
-  >
-
-    <div
-      className={
-        styles.similarUsageLabel
-      }
-    >
-
-      SIMILAR WORKFLOW
-
-    </div>
-
-    <h2
-      className={
-        styles.similarUsageTitle
-      }
-    >
-
-      近いworkflow・用途
-
-    </h2>
-
-    <p
-      className={
-        styles.similarUsageDescription
-      }
-    >
-
-      semantic runtime・GPU構成・
-      workflow分析をもとに、
-      近い用途を持つ構成を整理しています。
-
-    </p>
-
-  </div>
-
-  {/* ================================================================
-  GRID
-  ================================================================ */}
-
-  <div
-    className={
-      styles.similarUsageGrid
-    }
-  >
-
+  console.log(
+    '🔥 PRODUCT SIMILAR USAGE OBSERVATION',
     {
-      usages.map(
-        (
-          usage,
-          index
-        ) => (
+
+      uniqueId:
+        product?.uniqueId,
+
+      productName:
+        product?.name,
+
+      relatedCount:
+        Array.isArray(
+          related
+        )
+          ? related.length
+          : 0,
+
+      workflowTags:
+        observation.workflowTags,
+
+      semanticLabels:
+        observation.semanticLabels,
+
+      semanticRuntime,
+
+    }
+  )
+
+  /* ==========================================================================
+  Empty
+  ========================================================================== */
+
+  const hasWorkflowTags =
+    observation.workflowTags.length > 0
+
+  const hasSemanticLabels =
+    observation.semanticLabels.length > 0
+
+  if (
+    !hasWorkflowTags
+    && !hasSemanticLabels
+  ) {
+
+    return null
+
+  }
+
+  /* ==========================================================================
+  Render
+  ========================================================================== */
+
+  return (
+
+    <section
+      className={
+        styles.similarUsageSection
+      }
+    >
+
+      {/* ==========================================================
+      HEADER
+      ========================================================== */}
+
+      <div
+        className={
+          styles.similarUsageHeader
+        }
+      >
+
+        <div
+          className={
+            styles.similarUsageLabel
+          }
+        >
+          SIMILAR WORKFLOW
+        </div>
+
+        <h2
+          className={
+            styles.similarUsageTitle
+          }
+        >
+          近いworkflow・用途
+        </h2>
+
+        <p
+          className={
+            styles.similarUsageDescription
+          }
+        >
+          Product Semantic Runtimeから
+          取得されたworkflow・semantic情報を
+          そのまま表示しています。
+        </p>
+
+      </div>
+
+      {/* ==========================================================
+      WORKFLOW TAGS
+      ========================================================== */}
+
+      {
+        hasWorkflowTags
+        && (
 
           <div
-            key={index}
-
             className={
-              styles.similarUsageCard
+              styles.similarUsageGrid
             }
           >
 
-            {usage}
+            <div
+              className={
+                styles.similarUsageCard
+              }
+            >
+
+              <div
+                className={
+                  styles.similarUsageCardLabel
+                }
+              >
+                WORKFLOW TAGS
+              </div>
+
+              <div
+                className={
+                  styles.similarUsageTags
+                }
+              >
+
+                {
+                  observation.workflowTags.map(
+                    (
+                      tag,
+                      index
+                    ) => (
+
+                      <span
+                        key={
+                          `${tag}-${index}`
+                        }
+
+                        className={
+                          styles.similarUsageTag
+                        }
+                      >
+                        {
+                          tag
+                        }
+                      </span>
+
+                    )
+                  )
+                }
+
+              </div>
+
+            </div>
 
           </div>
 
         )
-      )
-    }
+      }
 
-  </div>
+      {/* ==========================================================
+      SEMANTIC LABELS
+      ========================================================== */}
 
-</section>
+      {
+        hasSemanticLabels
+        && (
 
+          <div
+            className={
+              styles.similarUsageGrid
+            }
+          >
 
-)
+            <div
+              className={
+                styles.similarUsageCard
+              }
+            >
+
+              <div
+                className={
+                  styles.similarUsageCardLabel
+                }
+              >
+                SEMANTIC LABELS
+              </div>
+
+              <div
+                className={
+                  styles.similarUsageTags
+                }
+              >
+
+                {
+                  observation.semanticLabels.map(
+                    (
+                      label,
+                      index
+                    ) => (
+
+                      <span
+                        key={
+                          `${label}-${index}`
+                        }
+
+                        className={
+                          styles.similarUsageTag
+                        }
+                      >
+                        {
+                          label
+                        }
+                      </span>
+
+                    )
+                  )
+                }
+
+              </div>
+
+            </div>
+
+          </div>
+
+        )
+      }
+
+      {/* ==========================================================
+      FOOTER
+      ========================================================== */}
+
+      <div
+        className={
+          styles.similarUsageFooter
+        }
+      >
+
+        Product Semantic Runtimeから
+        取得された情報を表示しています。
+
+      </div>
+
+    </section>
+
+  )
+
 }
