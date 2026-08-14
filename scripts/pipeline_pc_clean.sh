@@ -375,8 +375,9 @@ run_django import_products fujitsu
 run_django import_products dynabook
 # dynabook　◯ ◯ 
 run_django import_products hp
+# hp　◯ ◯ 
 # run_django import_products asus これはサイトから無理だった
-
+# asus　◯ ◯ 
 # 
 # djmanage import_products ark --force
 # シリーズ、ブランドの確認ツール

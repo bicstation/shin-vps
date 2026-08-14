@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 """
 ==============================================================================
 FILE:
@@ -33,6 +34,7 @@ Responsibilities
 - Resolve Main Image
 - Normalize Published Identity
 - Normalize Published Commerce
+- Normalize Published Specifications
 - Produce Runtime Contract
 
 NOT Responsibilities
@@ -86,6 +88,35 @@ Runtime Contract
 No semantic inference is performed.
 
 ==============================================================================
+
+Observation Policy
+
+Lenovo OpenAPI provides product specification Reality
+through classification[].
+
+The published classification structure is preserved
+in raw Reality.
+
+When the published specifications[] field is empty,
+classification[] is translated into UI-ready
+Observation specifications.
+
+No semantic interpretation is performed.
+
+Mapping:
+
+    a             → label
+    b             → value
+    mediaIcon     → media_icon
+    mediaIconAlt  → media_icon_alt
+    gamingIcon    → gaming_icon
+    gamingIconAlt → gaming_icon_alt
+    c             → c
+    webExclusive  → web_exclusive
+
+The meaning of c and webExclusive is intentionally
+not interpreted by Formatter.
+============================================================================== 
 """
 
 from __future__ import annotations
@@ -119,6 +150,7 @@ from .settings import (
     LOCALE_PREFIX,
 )
 
+
 # ==============================================================================
 # Runtime Constants
 # ==============================================================================
@@ -132,6 +164,10 @@ DEFAULT_IMAGE_BASE_URL = (
 )
 
 
+# ==============================================================================
+# Runtime Base URL
+# ==============================================================================
+
 def get_runtime_base_url() -> str:
     """
     Build Lenovo Japan Runtime Base URL.
@@ -142,6 +178,7 @@ def get_runtime_base_url() -> str:
         + "/"
         + LOCALE_PREFIX.strip("/")
     )
+
 
 # ==============================================================================
 # Generic Normalization
@@ -401,7 +438,6 @@ def resolve_product_url(
     )
 
 
-
 def resolve_image_url(
     value: Any,
 ) -> str:
@@ -605,6 +641,11 @@ def resolve_main_image(
 
     return ""
 
+
+# ==============================================================================
+# Price Normalization
+# ==============================================================================
+
 def price_value(
     reality: dict,
     key: str,
@@ -624,20 +665,132 @@ def price_value(
     )
 
     if value is None:
+
         return 0
 
     if isinstance(
         value,
         str,
     ):
+
         value = value.strip()
 
     if not value:
+
         return 0
 
     return int(
         float(value)
     )
+
+
+# ==============================================================================
+# Lenovo Specification Observation
+# ==============================================================================
+
+def normalize_classification(
+    value: Any,
+) -> list[dict]:
+    """
+    Normalize Lenovo classification Reality
+    into UI-ready Observation specifications.
+
+    Lenovo OpenAPI classification structure:
+
+        a
+        b
+        mediaIcon
+        mediaIconAlt
+        gamingIcon
+        gamingIconAlt
+        c
+        webExclusive
+
+    No semantic interpretation is performed.
+
+    The original meaning of c and webExclusive
+    is intentionally preserved without inference.
+    """
+
+    classification = normalize_list(
+        value
+    )
+
+    specifications: list[dict] = []
+
+    for item in classification:
+
+        if not isinstance(
+            item,
+            dict,
+        ):
+
+            continue
+
+        specifications.append({
+
+            "label":
+                normalize_text(
+                    item.get(
+                        "a",
+                        "",
+                    )
+                ),
+
+            "value":
+                normalize_text(
+                    item.get(
+                        "b",
+                        "",
+                    )
+                ),
+
+            "media_icon":
+                normalize_text(
+                    item.get(
+                        "mediaIcon",
+                        "",
+                    )
+                ),
+
+            "media_icon_alt":
+                normalize_text(
+                    item.get(
+                        "mediaIconAlt",
+                        "",
+                    )
+                ),
+
+            "gaming_icon":
+                normalize_text(
+                    item.get(
+                        "gamingIcon",
+                        "",
+                    )
+                ),
+
+            "gaming_icon_alt":
+                normalize_text(
+                    item.get(
+                        "gamingIconAlt",
+                        "",
+                    )
+                ),
+
+            "c":
+                item.get(
+                    "c",
+                ),
+
+            "web_exclusive":
+                item.get(
+                    "webExclusive",
+                ),
+
+        })
+
+    return specifications
+
 
 # ==============================================================================
 # Published Reality Formatter
@@ -663,7 +816,7 @@ def build_published(
             {},
         )
     )
-    
+
     product_url = resolve_product_url(
 
         reality.get(
@@ -677,12 +830,35 @@ def build_published(
         media
     )
 
+    #
+    # Existing published specifications
+    # are preserved when available.
+    #
+
     specifications = normalize_list(
         reality.get(
             "specifications",
             [],
         )
     )
+
+    #
+    # Lenovo OpenAPI may publish product
+    # specifications through classification[].
+    #
+    # Only use classification as the
+    # Observation source when specifications
+    # are not already available.
+    #
+
+    if not specifications:
+
+        specifications = normalize_classification(
+            reality.get(
+                "classification",
+                [],
+            )
+        )
 
     category_path = normalize_list(
         reality.get(
@@ -746,7 +922,7 @@ def build_published(
         # Lenovo OpenAPI Reality uses camelCase.
         # Formatter translates it into canonical Runtime names.
         # ------------------------------------------------------------------
-        
+
         "web_price":
             price_value(
                 reality,
@@ -1105,6 +1281,8 @@ def formatter() -> list[dict]:
 
     image_products = 0
 
+    specification_entries = 0
+
     for runtime in runtimes:
 
         published = runtime.get(
@@ -1112,12 +1290,34 @@ def formatter() -> list[dict]:
             {},
         )
 
+        #
+        # Existing runtime summary name is
+        # preserved for compatibility.
+        #
+        # NOTE:
+        # This currently counts category_path
+        # entries, not classification entries.
+        #
+
         classification_entries += len(
 
             normalize_list(
 
                 published.get(
                     "category_path",
+                    [],
+                )
+
+            )
+
+        )
+
+        specification_entries += len(
+
+            normalize_list(
+
+                published.get(
+                    "specifications",
                     [],
                 )
 
@@ -1197,6 +1397,11 @@ def formatter() -> list[dict]:
     print(
         f"Classification Entries : "
         f"{classification_entries}"
+    )
+
+    print(
+        f"Specification Entries  : "
+        f"{specification_entries}"
     )
 
     print(

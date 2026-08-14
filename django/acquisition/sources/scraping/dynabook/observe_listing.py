@@ -148,7 +148,7 @@ DYNABOOK_SPEC_TABLE_SELECTOR = (
 
 
 DYNABOOK_SPEC_ROW_SELECTOR = (
-    "tbody > tr"
+    "tr"
 )
 
 

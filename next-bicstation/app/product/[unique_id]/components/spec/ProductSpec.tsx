@@ -2,195 +2,296 @@
 // FILE:
 // next-bicstation/app/product/[unique_id]/components/spec/ProductSpec.tsx
 // ============================================================================
+//
+// SHIN CORE LINX
+// Product Basic Specification
+//
+// PURPOSE
+//
+// Product Detail
+//      ↓
+// ProjectedProduct
+//      ↓
+// ProductSpec
+//
+// ProductSpec = Basic Product Information UI
+//
+// ✓ Maker
+// ✓ Brand
+// ✓ Series
+// ✓ Collaboration
+// ✓ CPU
+// ✓ GPU
+// ✓ Memory
+// ✓ Storage
+// ✓ Display
+//
+// ✗ Observation Runtime
+// ✗ Manufacturer-specific Reality
+// ✗ Semantic Generation
+// ✗ Runtime Generation
+// ✗ Meaning Generation
+//
+// Manufacturer-specific Observation is handled by:
+//
+// components/spec/observation/
+//      ├── LenovoObservation
+//      ├── DefaultObservation
+//      └── future manufacturer renderers
+//
+// ============================================================================
 
 import styles from './spec.module.css'
+
+/* ============================================================================
+🔥 Props
+============================================================================ */
 
 type Props = {
   product: any
 }
 
-/* =========================================
-🔥 HELPERS
-========================================= */
+/* ============================================================================
+🔥 Specification
+============================================================================ */
 
-function buildSpecs(product: any) {
+type ProductSpecification = {
 
-  const specs = []
+  label: string
 
-  /* ======================================
+  value: string
+
+}
+
+/* ============================================================================
+🔥 Helpers
+============================================================================ */
+
+/**
+ * ============================================================================
+ * Product Basic Specifications
+ * ============================================================================
+ *
+ * Product model itself already contains these normalized fields.
+ *
+ * This function does NOT inspect:
+ *
+ * observation_runtime
+ * semantic_runtime
+ * compiled_runtime
+ *
+ * It only prepares the basic Product View Model for presentation.
+ *
+ * ============================================================================
+ */
+
+function buildSpecs(
+  product: any,
+): ProductSpecification[] {
+
+  const specs:
+    ProductSpecification[] = []
+
+  /* ========================================================================
   MAKER
-  ====================================== */
+  ======================================================================== */
 
   const maker =
     product?.maker
-    || product?.makerName
-    || product?.maker_name
+    ||
+    product?.makerName
+    ||
+    product?.maker_name
 
   if (maker) {
 
     specs.push({
-      label: 'MAKER',
-      value: maker,
+
+      label:
+        'MAKER',
+
+      value:
+        String(maker),
+
     })
 
   }
 
-  /* ======================================
+  /* ========================================================================
   BRAND
-  ====================================== */
+  ======================================================================== */
 
-  if (product?.brand) {
+  if (
+    product?.brand
+  ) {
 
     specs.push({
-      label: 'BRAND',
-      value: product.brand,
+
+      label:
+        'BRAND',
+
+      value:
+        String(product.brand),
+
     })
 
   }
 
-  /* ======================================
+  /* ========================================================================
   SERIES
-  ====================================== */
+  ======================================================================== */
 
-  if (product?.series) {
+  if (
+    product?.series
+  ) {
 
     specs.push({
-      label: 'SERIES',
-      value: product.series,
+
+      label:
+        'SERIES',
+
+      value:
+        String(product.series),
+
     })
 
   }
 
-  /* ======================================
+  /* ========================================================================
   COLLABORATION
-  ====================================== */
+  ======================================================================== */
 
-  if (product?.collaboration) {
+  if (
+    product?.collaboration
+  ) {
 
     specs.push({
-      label: 'COLLABORATION',
-      value: product.collaboration,
+
+      label:
+        'COLLABORATION',
+
+      value:
+        String(product.collaboration),
+
     })
 
   }
 
-  /* ======================================
+  /* ========================================================================
   CPU
-  ====================================== */
+  ======================================================================== */
 
   const cpu =
     product?.cpuModel
-    || product?.cpu_model
+    ||
+    product?.cpu_model
 
   if (cpu) {
 
     specs.push({
-      label: 'CPU',
-      value: cpu,
+
+      label:
+        'CPU',
+
+      value:
+        String(cpu),
+
     })
 
   }
 
-  /* ======================================
+  /* ========================================================================
   GPU
-  ====================================== */
+  ======================================================================== */
 
   const gpu =
     product?.gpuModel
-    || product?.gpu_model
+    ||
+    product?.gpu_model
 
   if (gpu) {
 
     specs.push({
-      label: 'GPU',
-      value: gpu,
+
+      label:
+        'GPU',
+
+      value:
+        String(gpu),
+
     })
 
   }
 
-  /* ======================================
+  /* ========================================================================
   MEMORY
-  ====================================== */
+  ======================================================================== */
+
+  const memory =
+    product?.memoryGb
+    ??
+    product?.memory_gb
 
   if (
-    product?.memoryGb != null
+    memory != null
   ) {
 
     specs.push({
-      label: 'MEMORY',
-      value:
-        `${product.memoryGb}GB`,
-    })
 
-  } else if (
-    product?.memory_gb != null
-  ) {
+      label:
+        'MEMORY',
 
-    specs.push({
-      label: 'MEMORY',
       value:
-        `${product.memory_gb}GB`,
+        `${memory}GB`,
+
     })
 
   }
 
-  /* ======================================
+  /* ========================================================================
   STORAGE
-  ====================================== */
+  ======================================================================== */
+
+  const storage =
+    product?.storageGb
+    ??
+    product?.storage_gb
 
   if (
-    product?.storageGb != null
+    storage != null
   ) {
 
     specs.push({
-      label: 'STORAGE',
-      value:
-        `${product.storageGb}GB`,
-    })
 
-  } else if (
-    product?.storage_gb != null
-  ) {
+      label:
+        'STORAGE',
 
-    specs.push({
-      label: 'STORAGE',
       value:
-        `${product.storage_gb}GB`,
+        `${storage}GB`,
+
     })
 
   }
 
-  /* ======================================
+  /* ========================================================================
   DISPLAY
-  ====================================== */
+  ======================================================================== */
 
   const display =
     product?.displayInfo
-    || product?.display_info
+    ||
+    product?.display_info
 
   if (display) {
 
     specs.push({
-      label: 'DISPLAY',
-      value: display,
-    })
 
-  }
+      label:
+        'DISPLAY',
 
-  /* ======================================
-  PRICE
-  ====================================== */
-
-  if (
-    product?.price != null
-  ) {
-
-    specs.push({
-      label: 'PRICE',
       value:
-        `¥${Number(
-          product.price
-        ).toLocaleString()}`,
+        String(display),
+
     })
 
   }
@@ -199,24 +300,61 @@ function buildSpecs(product: any) {
 
 }
 
-/* =========================================
-🔥 COMPONENT
-========================================= */
+/* ============================================================================
+🔥 Component
+============================================================================ */
 
 export default function ProductSpec({
+
   product,
+
 }: Props) {
 
-  if (!product) {
+  /* ==========================================================================
+  Guard
+  ========================================================================== */
+
+  if (
+    !product
+  ) {
+
     return null
+
   }
 
-  const specs =
-    buildSpecs(product)
+  /* ==========================================================================
+  Product Name
+  ========================================================================== */
 
   const productName =
     product?.name
-    || 'このPC'
+    ||
+    'このPC'
+
+  /* ==========================================================================
+  Basic Specifications
+  ========================================================================== */
+
+  const specs =
+    buildSpecs(
+      product
+    )
+
+  /* ==========================================================================
+  Empty
+  ========================================================================== */
+
+  if (
+    specs.length === 0
+  ) {
+
+    return null
+
+  }
+
+  /* ==========================================================================
+  Render
+  ========================================================================== */
 
   return (
 
@@ -226,9 +364,9 @@ export default function ProductSpec({
       }
     >
 
-      {/* ==================================
+      {/* ======================================================================
       HEADER
-      ================================== */}
+      ====================================================================== */}
 
       <div
         className={
@@ -241,7 +379,7 @@ export default function ProductSpec({
             styles.specLabel
           }
         >
-          FULL SPECIFICATIONS
+          PRODUCT SPECIFICATIONS
         </div>
 
         <h2
@@ -249,7 +387,8 @@ export default function ProductSpec({
             styles.specTitle
           }
         >
-          詳細スペック
+          {productName}
+          の基本仕様
         </h2>
 
         <p
@@ -258,14 +397,14 @@ export default function ProductSpec({
           }
         >
           {productName}
-          の主要構成と製品情報を確認できます。
+          の主要な製品情報と構成を確認できます。
         </p>
 
       </div>
 
-      {/* ==================================
+      {/* ======================================================================
       SPEC GRID
-      ================================== */}
+      ====================================================================== */}
 
       <div
         className={
@@ -274,14 +413,17 @@ export default function ProductSpec({
       >
 
         {
-
           specs.map(
-            (spec) => (
+            (
+              spec,
+              index,
+            ) => (
 
               <div
                 key={
-                  spec.label
+                  `${spec.label}-${index}`
                 }
+
                 className={
                   styles.specCard
                 }
@@ -292,7 +434,9 @@ export default function ProductSpec({
                     styles.specCardLabel
                   }
                 >
-                  {spec.label}
+                  {
+                    spec.label
+                  }
                 </div>
 
                 <div
@@ -300,29 +444,32 @@ export default function ProductSpec({
                     styles.specCardValue
                   }
                 >
-                  {spec.value}
+                  {
+                    spec.value
+                  }
                 </div>
 
               </div>
 
             )
           )
-
         }
 
       </div>
 
-      {/* ==================================
+      {/* ======================================================================
       FOOTER
-      ================================== */}
+      ====================================================================== */}
 
       <div
         className={
           styles.specFooter
         }
       >
+
         {productName}
-        の主要構成と基本情報をまとめて確認できます。
+        の基本的な製品情報をまとめて確認できます。
+
       </div>
 
     </section>
