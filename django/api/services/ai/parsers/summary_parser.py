@@ -101,6 +101,32 @@ class SummaryParser:
                 "Summary JSON parse failed"
             )
 
+        # =================================================
+        # Product Points
+        # =================================================
+
+        product_points = data.get(
+            "product_points",
+            []
+        )
+
+        if not isinstance(
+            product_points,
+            list,
+        ):
+
+            product_points = []
+
+        product_points = [
+
+            str(point).strip()
+
+            for point in product_points
+
+            if point
+
+        ]
+
         return SummaryResult(
 
             summary=data.get(
@@ -126,6 +152,10 @@ class SummaryParser:
             usage_tags=data.get(
                 "usage_tags",
                 []
+            ),
+
+            product_points=(
+                product_points
             ),
 
             raw_response=data,

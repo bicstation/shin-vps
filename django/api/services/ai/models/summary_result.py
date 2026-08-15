@@ -26,6 +26,10 @@ class SummaryResult:
         default_factory=list
     )
 
+    product_points: list = field(
+        default_factory=list
+    )
+
     raw_response: dict = field(
         default_factory=dict
     )
@@ -52,4 +56,7 @@ class SummaryResult:
 
             "usage_tags":
                 self.usage_tags,
+
+            "product_points":
+                self.product_points,
         }

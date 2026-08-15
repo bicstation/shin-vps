@@ -1,17 +1,34 @@
 # =========================================================
 # SHIN CORE LINX
-# analyze_pc_spec.py
+# django/api/management/commands/compile_semantic_runtime.py
 # parallel semantic runtime analyzer
 # centralized observability integrated
 # =========================================================
 
-from concurrent.futures import ( ThreadPoolExecutor, as_completed, )
-from django.core.management.base import ( BaseCommand)
-from api.models import ( PCProduct )
-from api.utils.semantic.runtime.runtime_log import ( runtime_log, )
-from api.utils.semantic.runtime.compile_semantic_runtime import (  compile_semantic_runtime )
-from api.utils.semantic.runtime.persist_runtime import ( persist_runtime, ) 
+from concurrent.futures import (
+    ThreadPoolExecutor,
+    as_completed,
+)
 
+from django.core.management.base import (
+    BaseCommand,
+)
+
+from api.models import (
+    PCProduct,
+)
+
+from api.utils.semantic.runtime.runtime_log import (
+    runtime_log,
+)
+
+from api.utils.semantic.runtime.compile_semantic_runtime import (
+    compile_semantic_runtime,
+)
+
+from api.utils.semantic.runtime.persist_runtime import (
+    persist_runtime,
+)
 
 
 # =========================================================
@@ -79,6 +96,23 @@ class Command(BaseCommand):
 
             help=(
                 "Analyze products requiring semantic runtime"
+            ),
+        )
+
+        # =================================================
+        # MAKER
+        # =================================================
+
+        parser.add_argument(
+
+            "--maker",
+
+            type=str,
+
+            default="",
+
+            help=(
+                "Filter products by maker"
             ),
         )
 
@@ -220,7 +254,7 @@ class Command(BaseCommand):
             # =============================================
             # COMPILE
             # =============================================
-            
+
             runtime_result = (
                 compile_semantic_runtime(
 
@@ -229,8 +263,7 @@ class Command(BaseCommand):
                     trace_runtime=trace_runtime,
                 )
             )
-           
-            
+
             # =============================================
             # SAVE
             # =============================================
@@ -278,7 +311,7 @@ class Command(BaseCommand):
                         ),
                 },
             )
-          
+
             # =============================================
             # SUCCESS
             # =============================================
@@ -328,6 +361,10 @@ class Command(BaseCommand):
             "needs_runtime"
         )
 
+        maker = options.get(
+            "maker"
+        )
+
         skip_extraction = options.get(
             "skip_extraction"
         )
@@ -347,6 +384,18 @@ class Command(BaseCommand):
         queryset = (
             PCProduct.objects.all()
         )
+
+        # =================================================
+        # MAKER FILTER
+        # =================================================
+
+        if maker:
+
+            queryset = queryset.filter(
+
+                maker__iexact=maker.strip()
+
+            )
 
         # =================================================
         # NEEDS RUNTIME
@@ -392,6 +441,9 @@ class Command(BaseCommand):
 
                 "force":
                     force,
+
+                "maker":
+                    maker,
 
                 "needs_runtime":
                     needs_runtime,

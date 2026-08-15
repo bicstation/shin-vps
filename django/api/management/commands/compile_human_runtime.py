@@ -82,17 +82,39 @@ class Command(BaseCommand):
 
     ):
 
+        # -------------------------------------------------
+        # Single Product
+        # -------------------------------------------------
+
         parser.add_argument(
             "unique_id",
             nargs="?",
             type=str,
         )
 
+        # -------------------------------------------------
+        # Maker Filter
+        # -------------------------------------------------
+
+        parser.add_argument(
+            "--maker",
+            type=str,
+            default="",
+        )
+
+        # -------------------------------------------------
+        # Limit
+        # -------------------------------------------------
+
         parser.add_argument(
             "--limit",
             type=int,
             default=1,
         )
+
+        # -------------------------------------------------
+        # Force
+        # -------------------------------------------------
 
         parser.add_argument(
             "--force",
@@ -213,6 +235,10 @@ class Command(BaseCommand):
             options["unique_id"]
         )
 
+        maker = (
+            options["maker"]
+        )
+
         limit = (
             options["limit"]
         )
@@ -220,6 +246,10 @@ class Command(BaseCommand):
         force = (
             options["force"]
         )
+
+        # =================================================
+        # Single Product
+        # =================================================
 
         if unique_id:
 
@@ -231,9 +261,29 @@ class Command(BaseCommand):
 
             )
 
+        # =================================================
+        # Base Query
+        # =================================================
+
         query = (
             PCProduct.objects.all()
         )
+
+        # =================================================
+        # Maker Filter
+        # =================================================
+
+        if maker:
+
+            query = query.filter(
+
+                maker__iexact=maker.strip()
+
+            )
+
+        # =================================================
+        # Human Runtime Completion Filter
+        # =================================================
 
         if not force:
 
@@ -262,6 +312,10 @@ class Command(BaseCommand):
             query = query.exclude(
                 storage_gb=0
             )
+
+        # =================================================
+        # Limit
+        # =================================================
 
         return query[:limit]
 
@@ -320,6 +374,32 @@ class Command(BaseCommand):
                 bundle["summary_result"]
             )
 
+            # =================================================
+            # PRODUCT POINTS DEBUG
+            # =================================================
+
+            self.stdout.write(
+
+                self.style.WARNING(
+
+                    "\n"
+                    "==================================================\n"
+                    "🔎 PRODUCT POINTS DEBUG\n"
+                    "==================================================\n"
+                    f"PRODUCT : {product.unique_id}\n"
+                    f"TYPE    : {type(result.product_points).__name__}\n"
+                    f"COUNT   : {len(result.product_points)}\n"
+                    f"POINTS  : {result.product_points}\n"
+                    "=================================================="
+
+                )
+
+            )
+
+            # =================================================
+            # PERSIST
+            # =================================================
+
             self.persist_service.save(
 
                 product,
@@ -340,10 +420,10 @@ class Command(BaseCommand):
                     f"MODEL   : {bundle['model']}\n"
                     f"KEY     : {bundle['api_key_index']}\n"
                     f"TIME    : {bundle['elapsed']} sec\n"
-                    # f"RETRY   : {bundle['attempts']}\n"
                     "\n"
                     f"TARGET  : {result.target_user}\n"
                     f"TAGS    : {', '.join(result.usage_tags)}\n"
+                    f"POINTS  : {len(result.product_points)}\n"
                     f"SUMMARY : {result.summary[:120]}\n"
                     "=================================================="
 

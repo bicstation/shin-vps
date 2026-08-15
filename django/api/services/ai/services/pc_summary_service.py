@@ -29,6 +29,7 @@ class PCSummaryService:
     def __init__(
 
         self,
+
         model_name=None,
 
     ):
@@ -62,6 +63,7 @@ class PCSummaryService:
     def generate(
 
         self,
+
         product,
 
     ):

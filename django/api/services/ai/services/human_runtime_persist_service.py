@@ -8,6 +8,10 @@ import json
 
 class HumanRuntimePersistService:
 
+    # =====================================================
+    # SAVE
+    # =====================================================
+
     def save(
 
         self,
@@ -19,6 +23,7 @@ class HumanRuntimePersistService:
     ):
 
         product.is_active = True
+
         product.is_posted = True
 
         product.ai_summary = (
@@ -50,19 +55,29 @@ class HumanRuntimePersistService:
             )
         )
 
+        product.product_points = (
+            result.product_points
+        )
+
         product.save(
 
             update_fields=[
 
                 "is_active",
+
                 "is_posted",
 
                 "ai_summary",
+
                 "target_user",
 
                 "strengths",
+
                 "weaknesses",
+
                 "usage_tags",
+
+                "product_points",
 
             ]
 

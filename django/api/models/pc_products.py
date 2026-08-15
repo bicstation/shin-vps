@@ -421,6 +421,7 @@ class PCProduct(models.Model):
     strengths = models.JSONField( default=list, blank=True, verbose_name="AI判定強みポイント")
     weaknesses = models.JSONField( default=list, blank=True, verbose_name="AI判定弱みポイント")
     usage_tags = models.JSONField( default=list, blank=True, verbose_name="AI判定使用タグ")
+    product_points = models.JSONField( default=list, blank=True, verbose_name="AI生成製品選択ポイント")
        
     # ==========================================================
     # Specification Runtime
