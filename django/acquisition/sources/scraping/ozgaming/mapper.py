@@ -12,6 +12,13 @@ Import Contract
         │
         ▼
 ImportDocument
+
+Reality First
+
+- Preserve Observation Reality
+- No semantic interpretation
+- No AI analysis
+- No normalization of meaning
 """
 
 from __future__ import annotations
@@ -41,7 +48,9 @@ from .settings import (
 # Mapper
 # ==========================================================
 
-def map_item(item: dict) -> dict:
+def map_item(
+    item: dict,
+) -> dict:
 
     observation = item.get(
         "observation",
@@ -169,10 +178,16 @@ def map_item(item: dict) -> dict:
         ),
 
         #
-        # Observation
+        # Observation Runtime
+        #
+        # Preserve Reality as received.
+        #
+        # No semantic interpretation.
+        # No AI analysis.
+        # No normalization.
         #
 
-        "observation": observation,
+        "observation_runtime": observation,
 
     }
 
@@ -190,17 +205,29 @@ def map_item(item: dict) -> dict:
 
 def run():
 
-    print("=" * 60)
-    print("🗺️ OZ GAMING MAPPER")
-    print("=" * 60)
+    print(
+        "=" * 60
+    )
+
+    print(
+        "🗺️ OZ GAMING MAPPER"
+    )
+
+    print(
+        "=" * 60
+    )
 
     success = 0
 
-    documents = AcquisitionDocument.objects.filter(
-        source_name=SITE_NAME,
-        document_type="list",
-    ).order_by(
-        "document_key",
+    documents = (
+        AcquisitionDocument.objects
+        .filter(
+            source_name=SITE_NAME,
+            document_type="list",
+        )
+        .order_by(
+            "document_key",
+        )
     )
 
     print(
@@ -214,7 +241,8 @@ def run():
         )
 
         print(
-            f"{document.document_key} : {len(payload)} products"
+            f"{document.document_key} : "
+            f"{len(payload)} products"
         )
 
         for item in payload:
@@ -248,11 +276,17 @@ def run():
                 f"✓ {item.get('unique_id', '')}"
             )
 
-    print("=" * 60)
+    print(
+        "=" * 60
+    )
+
     print(
         f"SUCCESS : {success}"
     )
-    print("=" * 60)
+
+    print(
+        "=" * 60
+    )
 
 
 # ==========================================================

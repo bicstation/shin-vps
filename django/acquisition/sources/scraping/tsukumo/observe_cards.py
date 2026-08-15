@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 """
 ==============================================================================
 SHIN CORE LINX
@@ -14,6 +15,9 @@ Card HTML
         │
         ▼
 Observation Runtime
+        │
+        ▼
+Save
 
 Reality First
 Observation First
@@ -21,21 +25,51 @@ Observation First
 Responsibilities
 
 - Observe Published Product Cards
-- Observe Published Reality
+- Preserve Published Reality
 - Produce Observation Runtime
 
 Not Responsibilities
 
-- Formatter
-- Mapper
-- Semantic
-- AI
+- Semantic Processing
+- AI Analysis
+- CPU / GPU interpretation
+- Memory / Storage interpretation
+- Specification normalization
+- Product Construction
 - Product Integration
+
+==============================================================================
+
+IMPORTANT
+
+This Runtime does NOT interpret Reality.
+
+It simply observes what TSUKUMO publishes in the product card.
+
+IMPORTANT
+
+Observation persistence is PRODUCT CARD based.
+
+Catalog documents contain multiple cards.
+
+Therefore:
+
+    Catalog Document
+          │
+          ├── Card 001 → Observation 001
+          ├── Card 002 → Observation 002
+          ├── Card 003 → Observation 003
+          └── ...
+
+Each product card is stored independently.
+
+Reality First.
 ==============================================================================
 """
 
 from __future__ import annotations
 
+import hashlib
 import json
 
 from bs4 import BeautifulSoup
@@ -52,8 +86,9 @@ from .settings import (
     SITE_NAME,
 )
 
+
 # ==============================================================================
-# HTML Helper
+# HTML Helpers
 # ==============================================================================
 
 def select_text(
@@ -61,7 +96,9 @@ def select_text(
     selector: str,
 ) -> str:
     """
-    Extract text from selector.
+    Extract visible text from the first matching element.
+
+    No interpretation is performed.
     """
 
     element = soup.select_one(
@@ -72,6 +109,7 @@ def select_text(
         return ""
 
     return element.get_text(
+        " ",
         strip=True,
     )
 
@@ -82,7 +120,9 @@ def select_attr(
     attribute: str,
 ) -> str:
     """
-    Extract attribute from selector.
+    Extract an HTML attribute from the first matching element.
+
+    No interpretation is performed.
     """
 
     element = soup.select_one(
@@ -103,13 +143,13 @@ def select_meta(
     itemprop: str,
 ) -> str:
     """
-    Extract Schema.org meta.
+    Extract Schema.org meta content.
+
+    Published Reality only.
     """
 
     element = soup.select_one(
-
-        f'meta[itemprop="{itemprop}"]'
-
+        f'meta[itemprop="{itemprop}"]',
     )
 
     if not element:
@@ -119,7 +159,213 @@ def select_meta(
         "content",
         "",
     )
-    
+
+
+def first_text(
+    soup: BeautifulSoup,
+    selectors: tuple[str, ...],
+) -> str:
+    """
+    Try multiple visible-text selectors.
+
+    The first non-empty published value is returned.
+
+    No interpretation is performed.
+    """
+
+    for selector in selectors:
+
+        value = select_text(
+            soup,
+            selector,
+        )
+
+        if value:
+
+            return value
+
+    return ""
+
+
+def first_attr(
+    soup: BeautifulSoup,
+    selectors: tuple[str, ...],
+    attribute: str,
+) -> str:
+    """
+    Try multiple attribute selectors.
+
+    The first non-empty published value is returned.
+
+    No interpretation is performed.
+    """
+
+    for selector in selectors:
+
+        value = select_attr(
+            soup,
+            selector,
+            attribute,
+        )
+
+        if value:
+
+            return value
+
+    return ""
+
+
+def first_meta(
+    soup: BeautifulSoup,
+    itemprops: tuple[str, ...],
+) -> str:
+    """
+    Try multiple Schema.org itemprop values.
+
+    The first non-empty published value is returned.
+    """
+
+    for itemprop in itemprops:
+
+        value = select_meta(
+            soup,
+            itemprop,
+        )
+
+        if value:
+
+            return value
+
+    return ""
+
+
+# ==============================================================================
+# Specification Reality
+# ==============================================================================
+
+def select_specifications(
+    soup: BeautifulSoup,
+) -> list[str]:
+    """
+    Preserve published product Reality.
+
+    No CPU / GPU / Memory / Storage interpretation
+    is performed.
+
+    Published strings are preserved directly.
+    """
+
+    specifications: list[str] = []
+
+    # --------------------------------------------------------------------------
+    # Product title
+    # --------------------------------------------------------------------------
+
+    raw_title = first_meta(
+        soup,
+        (
+            "name",
+        ),
+    )
+
+    if not raw_title:
+
+        raw_title = first_text(
+            soup,
+            (
+                "h1.product-name",
+                "h2.product-name",
+                ".product-name",
+            ),
+        )
+
+    if raw_title:
+
+        specifications.append(
+            raw_title,
+        )
+
+    # --------------------------------------------------------------------------
+    # Product description
+    # --------------------------------------------------------------------------
+
+    raw_description = first_meta(
+        soup,
+        (
+            "description",
+        ),
+    )
+
+    if not raw_description:
+
+        raw_description = first_text(
+            soup,
+            (
+                'div[itemtype="http://schema.org/Product"]',
+            ),
+        )
+
+    if raw_description:
+
+        if raw_description not in specifications:
+
+            specifications.append(
+                raw_description,
+            )
+
+    # --------------------------------------------------------------------------
+    # Visible product summary
+    # --------------------------------------------------------------------------
+
+    raw_summary = first_text(
+        soup,
+        (
+            "div.search-box__product > div > p",
+            'div[itemtype="http://schema.org/Product"] + div p',
+        ),
+    )
+
+    if raw_summary:
+
+        if raw_summary not in specifications:
+
+            specifications.append(
+                raw_summary,
+            )
+
+    return specifications
+
+
+# ==============================================================================
+# Labels
+# ==============================================================================
+
+def select_labels(
+    soup: BeautifulSoup,
+) -> list[str]:
+    """
+    Preserve published labels.
+    """
+
+    labels: list[str] = []
+
+    for label in soup.select(
+        ".label_space span",
+    ):
+
+        value = label.get_text(
+            " ",
+            strip=True,
+        )
+
+        if value and value not in labels:
+
+            labels.append(
+                value,
+            )
+
+    return labels
+
 
 # ==============================================================================
 # Product Observation
@@ -130,296 +376,394 @@ def observe_card(
     document_key: str,
     card_html: str,
 ) -> dict:
-    
-    print("=" * 60)
-    print(card_html[:500])
-    print("=" * 60)
-    
+    """
+    Observe one TSUKUMO product card.
+
+    No semantic interpretation is performed.
+
+    The Runtime only extracts published Reality
+    from the card HTML.
+    """
 
     soup = BeautifulSoup(
-
         card_html,
-
         "html.parser",
-
     )
 
-    # ------------------------------------------------------------------
+    # ==========================================================================
     # Product
-    # ------------------------------------------------------------------
+    # ==========================================================================
 
-    raw_title = select_meta(
-
+    raw_title = first_meta(
         soup,
-
-        "name",
-
+        (
+            "name",
+        ),
     )
 
-    raw_description = select_meta(
+    if not raw_title:
 
-        soup,
-
-        "description",
-
-    )
-
-    raw_sku = select_meta(
-
-        soup,
-
-        "sku",
-
-    )
-
-    # ------------------------------------------------------------------
-    # Maker
-    # ------------------------------------------------------------------
-
-    raw_maker = select_text(
-
-        soup,
-
-        "a.no_margin",
-
-    )
-
-    # ------------------------------------------------------------------
-    # Detail URL
-    # ------------------------------------------------------------------
-    
-    raw_detail_url = select_attr(
-
-        soup,
-
-        "a.product-link",
-
-        "href",
-
-    )
-
-    #
-    # Fallback
-    #
-
-    if not raw_detail_url:
-
-        raw_detail_url = select_attr(
-
+        raw_title = first_text(
             soup,
-
-            "a[href*='/goods/']",
-
-            "href",
-
+            (
+                "h1.product-name",
+                "h2.product-name",
+                ".product-name",
+            ),
         )
-    
-    # ------------------------------------------------------------------
-    # Commerce
-    # ------------------------------------------------------------------
 
-    raw_price = select_text(
-
+    raw_description = first_meta(
         soup,
-
-        ".search-box__price .text-red__common",
-
+        (
+            "description",
+        ),
     )
 
-    #
-    # Fallback
-    #
+    # ==========================================================================
+    # Maker
+    # ==========================================================================
+
+    raw_maker = first_text(
+        soup,
+        (
+            "a.no_margin",
+            "a[href*='maker_id']",
+        ),
+    )
+
+    if not raw_maker:
+
+        raw_maker = first_meta(
+            soup,
+            (
+                "brand",
+            ),
+        )
+
+    # ==========================================================================
+    # SKU
+    # ==========================================================================
+
+    raw_sku = first_meta(
+        soup,
+        (
+            "sku",
+        ),
+    )
+
+    if not raw_sku:
+
+        raw_sku = first_text(
+            soup,
+            (
+                "[itemprop='sku']",
+                ".product-sku",
+                ".sku",
+            ),
+        )
+
+    # ==========================================================================
+    # Detail URL
+    # ==========================================================================
+
+    raw_detail_url = first_attr(
+        soup,
+        (
+            "a.product-link",
+            "a[href*='/goods/']",
+        ),
+        "href",
+    )
+
+    # ==========================================================================
+    # Commerce
+    # ==========================================================================
+
+    raw_price = first_text(
+        soup,
+        (
+            ".search-box__price .text-red__common",
+        ),
+    )
 
     if not raw_price:
 
-        raw_price = select_meta(
-
+        raw_price = first_meta(
             soup,
-
-            "price",
-
+            (
+                "price",
+            ),
         )
 
-    raw_availability = select_meta(
-
+    raw_availability = first_meta(
         soup,
-
-        "availability",
-
+        (
+            "availability",
+        ),
     )
 
-    # ------------------------------------------------------------------
+    # ==========================================================================
+    # Stock
+    # ==========================================================================
+
+    raw_stock = first_text(
+        soup,
+        (
+            ".search_stock_title span",
+            ".search_stock_title",
+        ),
+    )
+
+    # ==========================================================================
+    # Shipping
+    # ==========================================================================
+
+    raw_shipping = first_text(
+        soup,
+        (
+            ".tommorow_deliv",
+        ),
+    )
+
+    # ==========================================================================
     # Media
-    # ------------------------------------------------------------------
-    
-    raw_image = select_attr(
+    # ==========================================================================
 
+    raw_image = first_attr(
         soup,
-
-        "a.product-link img",
-
+        (
+            "a.product-link img",
+            "img",
+        ),
         "src",
-
     )
-
-    #
-    # Fallback
-    #
 
     if not raw_image:
 
-        raw_image = select_meta(
-
+        raw_image = first_meta(
             soup,
+            (
+                "image",
+            ),
+        )
 
-            "image",
-
-        )   
-
-    # ------------------------------------------------------------------
+    # ==========================================================================
     # Labels
-    # ------------------------------------------------------------------
-    
-    raw_labels = [
+    # ==========================================================================
 
-        label.get_text(
+    raw_labels = select_labels(
+        soup,
+    )
 
-            strip=True,
+    # ==========================================================================
+    # Summary
+    # ==========================================================================
 
-        )
+    raw_summary = first_text(
+        soup,
+        (
+            "div.search-box__product > div > p",
+            'div[itemtype="http://schema.org/Product"] + div p',
+        ),
+    )
 
-        for label in soup.select(
+    # ==========================================================================
+    # Description Fallback
+    # ==========================================================================
 
-            ".label_space span"
+    if not raw_description:
 
-        )
+        raw_description = raw_summary
 
-    ]
-
-    # ------------------------------------------------------------------
+    # ==========================================================================
     # Specifications
-    # ------------------------------------------------------------------
+    # ==========================================================================
 
-    raw_specs = [
-
-        spec.get_text(
-
-            " ",
-
-            strip=True,
-
-        )
-
-        for spec in soup.select(
-
-            "li"
-
-        )
-
-        if spec.get_text(
-
-            strip=True,
-
-        )
-
-    ]
-    
-    raw_stock = select_text(
-
+    raw_specs = select_specifications(
         soup,
-
-        ".search_stock_title span",
-
     )
 
-    raw_shipping = select_text(
-
-        soup,
-
-        ".tommorow_deliv",
-
-    )
-    
-    raw_summary = select_text(
-
-        soup,
-
-        'div[itemtype="http://schema.org/Product"] + div p',
-
-    )
-    
-    # ------------------------------------------------------------------
+    # ==========================================================================
     # Category
-    # ------------------------------------------------------------------
+    # ==========================================================================
 
     category = ""
 
-    # ------------------------------------------------------------------
-    # Observation Runtime
-    # ------------------------------------------------------------------
-    
+    # ==========================================================================
+    # Observation
+    # ==========================================================================
+
     observation = {
 
-        "document_key": document_key,
+        #
+        # Catalog source
+        #
+
+        "catalog_document_key":
+            document_key,
+
+        #
+        # Product Reality
+        #
+
+        "raw_title":
+            raw_title,
+
+        "raw_description":
+            raw_description,
+
+        "raw_summary":
+            raw_summary,
+
+        "raw_maker":
+            raw_maker,
+
+        "raw_sku":
+            raw_sku,
+
+        #
+        # Commerce Reality
+        #
+
+        "raw_price":
+            raw_price,
+
+        "raw_stock":
+            raw_stock,
+
+        "raw_availability":
+            raw_availability,
+
+        "raw_shipping":
+            raw_shipping,
+
+        #
+        # Media Reality
+        #
+
+        "raw_image":
+            raw_image,
+
+        "raw_detail_url":
+            raw_detail_url,
+
+        #
+        # Published Specification Reality
+        #
+
+        "raw_specs":
+            raw_specs,
+
+        "raw_labels":
+            raw_labels,
 
         #
         # Category
         #
 
-        "category": category,
+        "category":
+            category,
 
         #
-        # Product
+        # Original Reality
         #
 
-        "raw_title": raw_title,
-        "raw_description": raw_description,
-        "raw_summary": raw_summary,
-        "raw_maker": raw_maker,
-        "raw_sku": raw_sku,
-
-        #
-        # Commerce
-        #
-
-        "raw_price": raw_price,
-        "raw_stock": raw_stock,
-        "raw_availability": raw_availability,
-        "raw_shipping": raw_shipping,
-
-        #
-        # Media
-        #
-
-        "raw_image": raw_image,
-        "raw_detail_url": raw_detail_url,
-
-        #
-        # Observation
-        #
-
-        "raw_specs": raw_specs,
-        "raw_labels": raw_labels,
-
-        #
-        # Reality
-        #
-
-        "raw_html": card_html,
+        "raw_html":
+            card_html,
 
     }
 
-
-    return observation   
+    return observation
 
 
 # ==============================================================================
-# Runtime
+# Runtime Constants
 # ==============================================================================
 
 DOCUMENT_INPUT = "cards"
 
 DOCUMENT_OUTPUT = "observation"
+
+
+# ==============================================================================
+# Observation Identity
+# ==============================================================================
+
+def build_observation_key(
+    observation: dict,
+) -> str:
+    """
+    Build a stable product-card Observation key.
+
+    Priority:
+
+        raw_sku
+            ↓
+        raw_detail_url
+            ↓
+        raw_html hash
+
+    No semantic interpretation is performed.
+
+    The value is used only to identify the
+    observed card for persistence and cache control.
+    """
+
+    raw_sku = (
+        observation.get(
+            "raw_sku",
+            "",
+        )
+        or ""
+    ).strip()
+
+    if raw_sku:
+
+        return raw_sku
+
+    raw_detail_url = (
+        observation.get(
+            "raw_detail_url",
+            "",
+        )
+        or ""
+    ).strip()
+
+    if raw_detail_url:
+
+        return (
+            "url__"
+            + hashlib.sha256(
+                raw_detail_url.encode(
+                    "utf-8",
+                ),
+            ).hexdigest()[:32]
+        )
+
+    raw_html = (
+        observation.get(
+            "raw_html",
+            "",
+        )
+        or ""
+    )
+
+    if raw_html:
+
+        return (
+            "html__"
+            + hashlib.sha256(
+                raw_html.encode(
+                    "utf-8",
+                ),
+            ).hexdigest()[:32]
+        )
+
+    raise ValueError(
+        "TSUKUMO Observation has no "
+        "raw_sku, raw_detail_url, or raw_html."
+    )
+
 
 # ==============================================================================
 # Observation Contract
@@ -427,49 +771,35 @@ DOCUMENT_OUTPUT = "observation"
 
 CARD_FIELDS = (
 
-    "document_key",
-
-    #
-    # Category
-    #
+    "catalog_document_key",
 
     "category",
 
-    #
-    # Product
-    #
-
     "raw_title",
+
     "raw_description",
+
+    "raw_summary",
+
     "raw_maker",
+
     "raw_sku",
 
-    #
-    # Commerce
-    #
-
     "raw_price",
+
     "raw_stock",
+
     "raw_availability",
+
     "raw_shipping",
 
-    #
-    # Media
-    #
-
     "raw_image",
+
     "raw_detail_url",
 
-    #
-    # Observation
-    #
-
     "raw_specs",
-    "raw_labels",
 
-    #
-    # Reality
-    #
+    "raw_labels",
 
     "raw_html",
 
@@ -477,16 +807,56 @@ CARD_FIELDS = (
 
 
 # ==============================================================================
-# Cache
+# Persistence
 # ==============================================================================
 
 def save_observation(
     *,
-    document_key: str,
+    observation_key: str,
     observation: dict,
 ):
 
-    document, created = AcquisitionDocument.objects.update_or_create(
+    document, created = (
+        AcquisitionDocument.objects
+        .update_or_create(
+
+            source_type="scraping",
+
+            source_name=SITE_NAME.lower(),
+
+            document_type=DOCUMENT_OUTPUT,
+
+            document_key=observation_key,
+
+            defaults={
+
+                "content_type":
+                    "application/json",
+
+                "content":
+                    json.dumps(
+                        observation,
+                        ensure_ascii=False,
+                        indent=2,
+                    ),
+
+            },
+
+        )
+    )
+
+    return document, created
+
+
+# ==============================================================================
+# Cache Check
+# ==============================================================================
+
+def exists(
+    observation_key: str,
+) -> bool:
+
+    return AcquisitionDocument.objects.filter(
 
         source_type="scraping",
 
@@ -494,27 +864,10 @@ def save_observation(
 
         document_type=DOCUMENT_OUTPUT,
 
-        document_key=document_key,
+        document_key=observation_key,
 
-        defaults={
+    ).exists()
 
-            "content_type": "application/json",
-
-            "content": json.dumps(
-
-                observation,
-
-                ensure_ascii=False,
-
-                indent=2,
-
-            ),
-
-        },
-
-    )
-
-    return document, created
 
 # ==============================================================================
 # Runtime
@@ -529,9 +882,18 @@ def observe(
         "CARD OBSERVATION",
     )
 
-    print("=" * 70)
-    print(f"👀 {SITE_NAME} CARD OBSERVATION")
-    print("=" * 70)
+    print()
+    print(
+        "=" * 70
+    )
+
+    print(
+        f"👀 {SITE_NAME} CARD OBSERVATION"
+    )
+
+    print(
+        "=" * 70
+    )
 
     documents = (
 
@@ -548,171 +910,199 @@ def observe(
         )
 
         .order_by(
-
             "document_key",
-
         )
 
     )
 
+    success = 0
+    failed = 0
+    cached = 0
+    saved = 0
 
-    success: list[str] = []
-    failed: list[tuple[str, str]] = []
-
+    # ==========================================================================
+    # Catalog Documents
+    # ==========================================================================
 
     for document in documents:
 
-        document_key = document.document_key
+        catalog_document_key = (
+            document.document_key
+        )
 
-        if (
+        print()
+        print(
+            f"CATALOG : {catalog_document_key}"
+        )
 
-            not force
+        try:
 
-            and exists(
-
-                document_key,
-
+            runtime = json.loads(
+                document.content,
             )
 
-        ):
+            cards = runtime.get(
+                "cards",
+                [],
+            )
 
-            success.append(
+        except Exception as exc:
 
-                document_key,
+            failed += 1
 
+            print(
+                "  Status : ERROR"
             )
 
             print(
-
-                f"[CACHE] {document_key}"
-
+                f"  Reason : {exc}"
             )
 
             continue
 
         print(
-
-            document_key,
-
+            f"  Cards : {len(cards)}"
         )
 
-        runtime = json.loads(
+        # ======================================================================
+        # Cards
+        # ======================================================================
 
-            document.content,
+        for index, card in enumerate(
+            cards,
+            start=1,
+        ):
 
-        )
+            try:
 
-        cards = runtime.get(
+                card_html = card.get(
+                    "html",
+                    "",
+                )
 
-            "cards",
+                if not card_html:
 
-            [],
+                    raise ValueError(
+                        "Card HTML is empty."
+                    )
 
-        )
-
-        observations = []
-
-        try:
-
-            for card in cards:
+                # ------------------------------------------------------------------
+                # Observe Reality
+                # ------------------------------------------------------------------
 
                 observation = observe_card(
 
-                    document_key=document_key,
+                    document_key=
+                        catalog_document_key,
 
-                    card_html=card["html"],
-
-                )
-
-                observations.append(
-
-                    observation,
-
-                )
-                
-            _, created = save_observation(
-
-                document_key=document_key,
-
-                observation={
-
-                    "document_key": document_key,
-
-                    "cards": observations,
-
-                },
-
-            )
-
-            success.append(
-
-                document_key,
-
-            )
-
-            print(
-
-                f"  Cards : {len(observations)}"
-
-            )
-
-            print(
-
-                f"  Saved : {'CREATED' if created else 'UPDATED'}"
-
-            )
-
-        except Exception as e:
-
-            failed.append(
-
-                (
-
-                    document_key,
-
-                    str(e),
+                    card_html=
+                        card_html,
 
                 )
 
-            )
+                # ------------------------------------------------------------------
+                # Product Observation Key
+                # ------------------------------------------------------------------
 
-            print(
+                observation_key = (
+                    build_observation_key(
+                        observation,
+                    )
+                )
 
-                "  Status : ERROR"
+                # ------------------------------------------------------------------
+                # Cache
+                # ------------------------------------------------------------------
 
-            )
+                if (
 
-            print(
+                    not force
 
-                f"  Reason : {e}"
+                    and exists(
+                        observation_key,
+                    )
 
-            )
+                ):
 
-        print()
+                    cached += 1
 
-    print("=" * 70)
-    print("RESULT")
-    print("=" * 70)
-    print(f"SUCCESS : {len(success)}")
-    print(f"FAILED  : {len(failed)}")
-    print("=" * 70)
+                    print(
+                        f"  [{index:03}] "
+                        f"[CACHE] "
+                        f"{observation_key}"
+                    )
 
+                    continue
 
-def exists(
-    document_key: str,
-) -> bool:
+                # ------------------------------------------------------------------
+                # Persist
+                # ------------------------------------------------------------------
 
-    return AcquisitionDocument.objects.filter(
+                _, created = save_observation(
 
-        source_type="scraping",
+                    observation_key=
+                        observation_key,
 
-        source_name=SITE_NAME.lower(),
+                    observation=
+                        observation,
 
-        document_type=DOCUMENT_OUTPUT,
+                )
 
-        document_key=document_key,
+                saved += 1
 
-    ).exists()
+                success += 1
+
+                print(
+                    f"  [{index:03}] "
+                    f"{observation_key} "
+                    f""
+                    f"{'CREATED' if created else 'UPDATED'}"
+                )
+
+            except Exception as exc:
+
+                failed += 1
+
+                print(
+                    f"  [{index:03}] ERROR"
+                )
+
+                print(
+                    f"    Reason : {exc}"
+                )
+
+    # ==========================================================================
+    # Result
+    # ==========================================================================
+
+    print()
+    print(
+        "=" * 70
+    )
+
+    print(
+        "RESULT"
+    )
+
+    print(
+        "=" * 70
+    )
+
+    print(
+        f"SAVED  : {saved}"
+    )
+
+    print(
+        f"CACHED : {cached}"
+    )
+
+    print(
+        f"FAILED : {failed}"
+    )
+
+    print(
+        "=" * 70
+    )
 
 
 # ==============================================================================
@@ -725,13 +1115,14 @@ def main(
 ) -> None:
 
     observe(
-
         force=force,
-
     )
 
+
+# ==============================================================================
+# Direct Execution
+# ==============================================================================
 
 if __name__ == "__main__":
 
     main()
-

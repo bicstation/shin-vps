@@ -16,7 +16,7 @@ tsukumo	g-gear mini advanced	G-GEAR	G-GEAR mini		100
 tsukumo	g-gear neo	G-GEAR	G-GEAR		100
 tsukumo	g-gear neo advanced	G-GEAR	G-GEAR		100
 tsukumo	g-gear neo premium	G-GEAR	G-GEAR		100
-tsukumo	g-gear gaming	G-GEAR	G-GEAR		100
+tsukumo	g-gear gaming	G-GEAR	G-GEAR Gaming		100
 tsukumo	g-gear pc	G-GEAR	G-GEAR PC		100
 tsukumo	g-gear aim	G-GEAR	G-GEAR Aim		100
 tsukumo	g-gear aim gb	G-GEAR	G-GEAR Aim GB		100
@@ -77,7 +77,24 @@ tsukumo	blade 15	Razer	Blade 15		200
 tsukumo	blade 17	Razer	Blade 17		200
 tsukumo	blade pro 17	Razer	Blade Pro 17		200
 tsukumo	blade stealth	Razer	Blade Stealth		200
-tsukumo	book	Razer	Book		200
+tsukumo	zenbook	ASUS	ZenBook		100
+tsukumo	zenbook pro	ASUS	ZenBook Pro		200
+tsukumo	zenbook s	ASUS	ZenBook S		200
+tsukumo	zenbook duo	ASUS	ZenBook Duo		200
+tsukumo	zenbook sora	ASUS	ZenBook SORA		200
+tsukumo	vivobook	ASUS	VivoBook		100
+tsukumo	vivobook pro	ASUS	VivoBook Pro		200
+tsukumo	vivobook flip	ASUS	VivoBook Flip		200
+tsukumo	vivobook s	ASUS	VivoBook S		200
+tsukumo	vivobook go	ASUS	VivoBook Go		200
+tsukumo	expertbook	ASUS	ExpertBook		100
+tsukumo	proart	ASUS	ProArt		100
+tsukumo	proart studiobook	ASUS	ProArt Studiobook		200
+tsukumo	gaming v16	ASUS	Gaming V16		200
+tsukumo	rog flow	ROG	ROG Flow		200
+tsukumo	rog zephyrus	ROG	ROG Zephyrus		200
+tsukumo	rog strix	ROG	ROG Strix		200
+tsukumo	rog nuc	ROG	ROG NUC		200
 ark	aorus	AORUS	AORUS		100
 ark	aero	GIGABYTE	AERO		100
 ark	gigabyte	GIGABYTE			100

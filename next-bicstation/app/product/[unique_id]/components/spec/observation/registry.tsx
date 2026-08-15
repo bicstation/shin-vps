@@ -71,6 +71,24 @@ import FrotierObservation
 import GeekomObservation
     from './GEEKOMObservation'
 
+import GMKtecbservation
+    from './GMKtecObservation'
+
+import MINISFORUMObservation
+    from './MINISFORUMObservation'
+
+import SYCOMObservation
+    from './SYCOMObservation'
+
+import MOUSEObservation
+    from './MOUSEObservation'
+
+import OZGAMINGObservation
+    from './OZGAMINGObservation'
+
+import TSUKUMOObservation
+    from './TSUKUMOObservation'
+
 /* ============================================================================
 🔥 Types
 ============================================================================ */
@@ -229,6 +247,49 @@ const OBSERVATION_RENDERERS:
 
     geekom:
         GeekomObservation,
+
+    /* --------------------------------------------------------------------------
+    GMKtecbook
+    -------------------------------------------------------------------------- */
+
+    gmktec:
+        GMKtecbservation,
+
+    /* --------------------------------------------------------------------------
+    MINISFORUMbook
+    -------------------------------------------------------------------------- */
+
+    minisforum:
+        MINISFORUMObservation,
+    
+    /* --------------------------------------------------------------------------
+    SYCOM
+    -------------------------------------------------------------------------- */
+
+    sycom:
+        SYCOMObservation,
+
+    /* --------------------------------------------------------------------------
+    MOUSE
+    -------------------------------------------------------------------------- */
+        
+    mouse:
+        MOUSEObservation,
+
+    /* --------------------------------------------------------------------------
+    Ozgaming
+    -------------------------------------------------------------------------- */
+        
+    'oz gaming':
+        OZGAMINGObservation,
+
+    /* --------------------------------------------------------------------------
+    TSUKUMO
+    -------------------------------------------------------------------------- */
+        
+    tsukumo:
+        TSUKUMOObservation,
+
 
 }
 

@@ -4,6 +4,14 @@ OZ GAMING List Formatter
 
 Normalize AcquisitionDocument(list)
 into runtime payload.
+
+Reality First
+
+- Preserve acquired Reality
+- Build Observation payload
+- No semantic interpretation
+- No AI analysis
+- No normalization of meaning
 """
 
 from __future__ import annotations
@@ -24,7 +32,7 @@ from .settings import BASE_URL
 # Helpers
 # ==========================================================
 
-def text(node):
+def text(node) -> str:
 
     return (
         ""
@@ -54,9 +62,9 @@ def extract_unique_id(
 
 def parse_spec(
     raw: str,
-) -> dict:
+) -> dict[str, str]:
 
-    specs = {}
+    specs: dict[str, str] = {}
 
     for item in raw.split(","):
 
@@ -90,7 +98,7 @@ def normalize(
         "html.parser",
     )
 
-    results = []
+    results: list[dict] = []
 
     for card in soup.select(
         "li.item-list",
@@ -129,97 +137,109 @@ def normalize(
             raw_spec,
         )
 
+        # ==================================================
+        # Reality
+        # ==================================================
+
+        product_name = text(
+            card.select_one(
+                ".item-list-name",
+            )
+        )
+
+        price = text(
+            card.select_one(
+                ".item-list-price",
+            )
+        )
+
+        stock = text(
+            card.select_one(
+                ".item-list-stock",
+            )
+        )
+
+        delivery = text(
+            card.select_one(
+                ".item-list-delivery",
+            )
+        )
+
+        image_url = (
+            urljoin(
+                BASE_URL,
+                image.get(
+                    "src",
+                    "",
+                ),
+            )
+            if image
+            else ""
+        )
+
+        unique_id = extract_unique_id(
+            product_url,
+        )
+
+        # ==================================================
+        # Observation
+        #
+        # Preserve acquired Reality.
+        #
+        # No semantic interpretation.
+        # ==================================================
+
+        observation = {
+
+            "product_name": product_name,
+
+            "price": price,
+
+            "stock": stock,
+
+            "delivery": delivery,
+
+            "image_url": image_url,
+
+            "product_url": product_url,
+
+            "raw_spec": raw_spec,
+
+            "specifications": specs,
+
+        }
+
+        # ==================================================
+        # Runtime Payload
+        # ==================================================
+
         payload = {
 
             "maker": "OZ GAMING",
 
-            "unique_id": extract_unique_id(
-                product_url,
-            ),
+            "unique_id": unique_id,
 
             "product_url": product_url,
 
-            "image_url": (
-                urljoin(
-                    BASE_URL,
-                    image.get(
-                        "src",
-                        "",
-                    ),
-                )
-                if image
-                else ""
-            ),
+            "image_url": image_url,
 
-            "product_name": text(
-                card.select_one(
-                    ".item-list-name",
-                )
-            ),
+            "product_name": product_name,
 
-            "price": text(
-                card.select_one(
-                    ".item-list-price",
-                )
-            ),
+            "price": price,
 
-            "stock": text(
-                card.select_one(
-                    ".item-list-stock",
-                )
-            ),
+            "stock": stock,
 
-            "delivery": text(
-                card.select_one(
-                    ".item-list-delivery",
-                )
-            ),
+            "delivery": delivery,
 
             "specifications": specs,
-            
-            "observation": {
 
-                "product_name": text(
-                    card.select_one(
-                        ".item-list-name",
-                    )
-                ),
-
-                "price": text(
-                    card.select_one(
-                        ".item-list-price",
-                    )
-                ),
-
-                "stock": text(
-                    card.select_one(
-                        ".item-list-stock",
-                    )
-                ),
-
-                "delivery": text(
-                    card.select_one(
-                        ".item-list-delivery",
-                    )
-                ),
-
-                "image_url": (
-                    urljoin(
-                        BASE_URL,
-                        image.get("src", ""),
-                    )
-                    if image
-                    else ""
-                ),
-
-                "product_url": product_url,
-
-                "raw_spec": raw_spec,
-
-            },
-
+            "observation": observation,
 
         }
+
+        # ==================================================
+        # TRACE
+        # ==================================================
 
         trace(
             stage="FORMATTER",

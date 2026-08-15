@@ -60,6 +60,7 @@ from __future__ import annotations
 
 import csv
 import re
+
 from pathlib import Path
 from typing import Any
 
@@ -86,15 +87,26 @@ BASE_DIR = Path(__file__).parent
 #     collaboration
 #     priority
 #
-# All Identity Authority is represented by the maker column.
-#
-# There is NO distinction between:
+# The Runtime does NOT distinguish between:
 #
 #     Manufacturer
 #     Shop
 #     Acquisition Source
 #
-# All sources use the same Identity Runtime.
+# All Identity Authority is represented by the maker column.
+#
+# Examples:
+#
+#     sycom
+#     lenovo
+#     hp
+#     dynabook
+#
+#     tsukumo
+#     ark
+#     mouse
+#
+# The same matcher is used for all of them.
 # ============================================================================
 
 IDENTITY_TSV = (
@@ -112,7 +124,7 @@ def load_tsv(
     """
     Load Identity Authority TSV.
 
-    Priority is used for deterministic candidate ordering.
+    Priority is used only for deterministic candidate ordering.
 
     Empty / invalid priority is treated as 0.
 
@@ -195,15 +207,10 @@ def build_observation_text(
     observation_runtime: Any = None,
 ) -> str:
     """
-    Build the complete searchable Product Reality.
+    Build searchable Identity Runtime text.
 
-    Search sources:
-
-        1. product_name
-        2. description
-        3. complete observation_runtime
-
-    Observation Runtime is treated as already-observed Reality.
+    The complete Observation Runtime is included
+    as searchable Reality.
 
     This function does NOT:
 
@@ -213,13 +220,14 @@ def build_observation_text(
     - generate semantic meaning
     - infer missing information
 
-    It only converts existing Reality into searchable text.
+    It only converts already-observed values
+    into searchable text.
     """
 
     parts: list[str] = []
 
     # ------------------------------------------------------------------------
-    # Product Name
+    # Existing direct fields
     # ------------------------------------------------------------------------
 
     if product_name:
@@ -227,10 +235,6 @@ def build_observation_text(
         parts.append(
             str(product_name)
         )
-
-    # ------------------------------------------------------------------------
-    # Description
-    # ------------------------------------------------------------------------
 
     if description:
 
@@ -241,36 +245,14 @@ def build_observation_text(
     # ------------------------------------------------------------------------
     # Complete Observation Runtime
     # ------------------------------------------------------------------------
-    #
-    # This is intentionally included in the same searchable Reality.
-    #
-    # Example:
-    #
-    #     product_name:
-    #         Dell Pro Max タワー T2
-    #
-    #     observation:
-    #         Dell Pro Max Tower T2
-    #
-    # This allows:
-    #
-    #     identity.tsv
-    #         keyword = pro max
-    #
-    # to match Observation Reality directly.
-    # ------------------------------------------------------------------------
 
     if observation_runtime is not None:
 
-        observation_text = _flatten_observation(
-            observation_runtime,
-        )
-
-        if observation_text:
-
-            parts.append(
-                observation_text
+        parts.append(
+            _flatten_observation(
+                observation_runtime,
             )
+        )
 
     return " ".join(
         part
@@ -287,20 +269,17 @@ def _flatten_observation(
     value: Any,
 ) -> str:
     """
-    Convert complete Observation Runtime into searchable text.
-
-    Dictionary keys and observable values are both preserved.
-
-    Nested dictionaries and lists are recursively traversed.
+    Convert Observation Runtime into searchable text.
 
     No semantic interpretation is performed.
+
+    Dictionary keys and observable values are both preserved
+    as text.
+
+    Nested structures are recursively traversed.
     """
 
     parts: list[str] = []
-
-    # ------------------------------------------------------------------------
-    # Dictionary
-    # ------------------------------------------------------------------------
 
     if isinstance(
         value,
@@ -309,33 +288,23 @@ def _flatten_observation(
 
         for key, item in value.items():
 
-            # --------------------------------------------------------------
+            # ----------------------------------------------------------------
             # Preserve observable key
-            # --------------------------------------------------------------
+            # ----------------------------------------------------------------
 
-            if key is not None:
-
-                parts.append(
-                    str(key)
-                )
-
-            # --------------------------------------------------------------
-            # Preserve observable value
-            # --------------------------------------------------------------
-
-            flattened = _flatten_observation(
-                item,
+            parts.append(
+                str(key)
             )
 
-            if flattened:
+            # ----------------------------------------------------------------
+            # Preserve observable value
+            # ----------------------------------------------------------------
 
-                parts.append(
-                    flattened
+            parts.append(
+                _flatten_observation(
+                    item,
                 )
-
-    # ------------------------------------------------------------------------
-    # List / Tuple
-    # ------------------------------------------------------------------------
+            )
 
     elif isinstance(
         value,
@@ -344,19 +313,11 @@ def _flatten_observation(
 
         for item in value:
 
-            flattened = _flatten_observation(
-                item,
-            )
-
-            if flattened:
-
-                parts.append(
-                    flattened
+            parts.append(
+                _flatten_observation(
+                    item,
                 )
-
-    # ------------------------------------------------------------------------
-    # Scalar
-    # ------------------------------------------------------------------------
+            )
 
     elif value is not None:
 
@@ -372,44 +333,114 @@ def _flatten_observation(
 
 
 # ============================================================================
-# Text Normalization
+# Keyword Matcher
 # ============================================================================
 
-def normalize_search_text(
-    value: Any,
-) -> str:
+def keyword_match(
+    keyword: str,
+    text: str,
+) -> bool:
     """
-    Normalize searchable text.
+    Match an Identity Authority keyword against
+    observed Reality.
 
-    Current Identity Authority uses literal substring matching.
+    The matcher intentionally avoids unrestricted
+    substring matching.
 
-    Normalization is intentionally conservative:
+    Example:
 
-    - convert to string
-    - trim
-    - lowercase
-    - normalize repeated whitespace
+        book
+            matches:
+                Razer Book
+                Book 15
 
-    No semantic normalization is performed.
+            does NOT match:
+                ZenBook
+                VivoBook
+
+    This is a literal text-boundary rule.
+
+    No semantic interpretation is performed.
+    No manufacturer inference is performed.
+    No meaning is generated.
+
+    The boundary is defined around ASCII
+    alphanumeric characters so that:
+
+        ZenBook
+            does not contain standalone "Book"
+
+        VivoBook
+            does not contain standalone "Book"
+
+        Razer Book
+            does contain standalone "Book"
+
+    Hyphens, spaces, Japanese characters and other
+    non-ASCII characters remain valid boundaries.
     """
 
-    if value is None:
-
-        return ""
-
-    text = str(
-        value
+    keyword = (
+        str(keyword)
+        .strip()
+        .lower()
     )
 
-    text = text.strip().lower()
-
-    text = re.sub(
-        r"\s+",
-        " ",
-        text,
+    text = (
+        str(text)
+        .lower()
     )
 
-    return text
+    if not keyword:
+
+        return False
+
+    if not text:
+
+        return False
+
+    # ------------------------------------------------------------------------
+    # Escape Authority keyword.
+    #
+    # The keyword itself is treated literally.
+    # ------------------------------------------------------------------------
+
+    escaped_keyword = re.escape(
+        keyword
+    )
+
+    # ------------------------------------------------------------------------
+    # Literal token boundary.
+    #
+    # ASCII alphanumeric characters are treated
+    # as part of a continuous token.
+    #
+    # Therefore:
+    #
+    #     book  in ZenBook
+    #
+    # is rejected because "n" is immediately before
+    # "book".
+    #
+    #     book  in Razer Book
+    #
+    # is accepted because whitespace is the boundary.
+    # ------------------------------------------------------------------------
+
+    pattern = (
+        r"(?<![a-z0-9])"
+        + escaped_keyword
+        + r"(?![a-z0-9])"
+    )
+
+    return (
+        re.search(
+            pattern,
+            text,
+            flags=re.IGNORECASE,
+        )
+        is not None
+    )
 
 
 # ============================================================================
@@ -423,41 +454,79 @@ def match_identity(
     text: str,
 ) -> dict:
     """
-    Resolve Identity from the unified Identity Authority.
+    Resolve complete Identity from the unified Identity Authority.
 
-    Matching:
+    Identity TSV schema:
 
-        1. maker must match
-        2. keyword must exist in searchable Reality
-        3. the row must provide a value for the field
-        4. higher priority wins
-        5. same priority -> longer keyword wins
-        6. same priority and keyword length ->
-           earlier TSV row wins
+        maker
+        keyword
+        brand
+        series
+        collaboration
+        priority
 
-    Searchable Reality contains:
+    The matcher is used for ALL sources.
 
-        Product Name
-        Description
-        Observation Runtime
+    There is no distinction between:
 
-    No source-specific branch exists.
+        - manufacturer
+        - shop
+        - acquisition source
 
+    That distinction is represented only by the
+    `maker` column in identity.tsv.
+
+    Example:
+
+        sycom    aqua-master    Aqua-Master    Aqua-Master
+
+        tsukumo  blade 16       Razer          Blade 16
+
+        ark      msi prestige   MSI            MSI Prestige
+
+        mouse    daiv           DAIV           DAIV
+
+        lenovo   ...            Lenovo         ...
+
+    Matching uses literal keyword-boundary matching.
+
+    Candidate selection for each Identity field:
+
+        1. Maker must match.
+        2. Keyword must match.
+        3. The row must provide a value for that field.
+        4. Higher priority wins.
+        5. Same priority -> longer keyword wins.
+        6. Same priority and keyword length ->
+           earlier TSV row wins.
+
+    No semantic interpretation.
     No inference.
     No guessing.
-    No semantic interpretation.
     """
 
-    normalized_maker = normalize_search_text(
-        maker,
+    maker = (
+        str(maker)
+        .strip()
+        .lower()
     )
 
-    normalized_text = normalize_search_text(
-        text,
+    text = (
+        str(text)
+        .lower()
     )
 
     # ------------------------------------------------------------------------
-    # Independent candidates
+    # Candidates are maintained independently for each Identity field.
+    #
+    # This allows:
+    #
+    #     brand
+    #     series
+    #     collaboration
+    #
+    # to be resolved independently while using
+    # the same Authority.
     # ------------------------------------------------------------------------
 
     field_candidates: dict[
@@ -467,7 +536,6 @@ def match_identity(
                 int,
                 int,
                 int,
-                str,
                 str,
             ]
         ],
@@ -482,46 +550,77 @@ def match_identity(
     }
 
     # ------------------------------------------------------------------------
-    # Authority Matching
+    # Authority Rows
     # ------------------------------------------------------------------------
 
     for index, row in enumerate(
         runtime,
     ):
 
-        row_maker = normalize_search_text(
+        # --------------------------------------------------------------------
+        # Maker Authority
+        # --------------------------------------------------------------------
+
+        row_maker = (
             row.get(
                 "maker",
                 "",
             )
-        )
+            or ""
+        ).strip().lower()
 
-        if row_maker != normalized_maker:
+        if row_maker != maker:
 
             continue
 
-        keyword = normalize_search_text(
+        # --------------------------------------------------------------------
+        # Keyword Authority
+        # --------------------------------------------------------------------
+
+        keyword = (
             row.get(
                 "keyword",
                 "",
             )
-        )
+            or ""
+        ).strip().lower()
 
         if not keyword:
 
             continue
 
-        # --------------------------------------------------------------
-        # Literal substring matching
-        # --------------------------------------------------------------
+        # --------------------------------------------------------------------
+        # Literal Keyword Match
+        #
+        # IMPORTANT
+        #
+        # This is the only behavioral change from
+        # unrestricted substring matching.
+        #
+        # Example:
+        #
+        #     book
+        #
+        # does not match:
+        #
+        #     ZenBook
+        #     VivoBook
+        #
+        # but does match:
+        #
+        #     Razer Book
+        # --------------------------------------------------------------------
 
-        if keyword not in normalized_text:
+        if not keyword_match(
+            keyword,
+            text,
+        ):
 
             continue
 
-        # --------------------------------------------------------------
+        # --------------------------------------------------------------------
         # Priority
-        # --------------------------------------------------------------
+        # --------------------------------------------------------------------
 
         value = row.get(
             "priority",
@@ -546,9 +645,12 @@ def match_identity(
 
             priority = 0
 
-        # --------------------------------------------------------------
-        # Each Identity field receives the matching row independently.
-        # --------------------------------------------------------------
+        # --------------------------------------------------------------------
+        # Each Identity field receives
+        # the matching row independently.
+        #
+        # Empty field values are NOT candidates.
+        # --------------------------------------------------------------------
 
         for field in (
             "brand",
@@ -556,13 +658,16 @@ def match_identity(
             "collaboration",
         ):
 
-            result = str(
-                row.get(
-                    field,
-                    "",
+            result = (
+                str(
+                    row.get(
+                        field,
+                        "",
+                    )
+                    or ""
                 )
-                or ""
-            ).strip()
+                .strip()
+            )
 
             if not result:
 
@@ -572,17 +677,20 @@ def match_identity(
 
                 (
                     priority,
+
                     len(keyword),
+
                     -index,
+
                     result,
-                    keyword,
+
                 )
 
             )
 
-    # =========================================================================
+    # ------------------------------------------------------------------------
     # Resolve One Field
-    # =========================================================================
+    # ------------------------------------------------------------------------
 
     def resolve_field(
         candidates: list[
@@ -590,7 +698,6 @@ def match_identity(
                 int,
                 int,
                 int,
-                str,
                 str,
             ]
         ],
@@ -618,9 +725,9 @@ def match_identity(
 
         return candidates[0][3]
 
-    # =========================================================================
+    # ------------------------------------------------------------------------
     # Runtime Result
-    # =========================================================================
+    # ------------------------------------------------------------------------
 
     return {
 
@@ -699,7 +806,7 @@ def classify_identity(
     observation_runtime: Any = None,
 ) -> dict:
     """
-    Resolve Identity from complete Product Reality.
+    Resolve Identity from complete Observation Reality.
 
     Input:
 
@@ -729,7 +836,8 @@ def classify_identity(
 
     All manufacturers and shops use the same Runtime.
 
-    The maker value selects the corresponding Authority rows.
+    The maker value selects the corresponding
+    Authority rows.
 
     No source-specific branching.
     No guessing.

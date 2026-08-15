@@ -1,14 +1,14 @@
 // ============================================================================
 // FILE:
-// next-bicstation/app/product/[unique_id]/components/spec/observation/GEEKOMObservation.tsx
+// next-bicstation/app/product/[unique_id]/components/spec/observation/GMKtecObservation.tsx
 // ============================================================================
 //
 // SHIN CORE LINX
-// GEEKOM Observation Renderer
+// GMKtec Observation Renderer
 //
 // PURPOSE
 //
-// GEEKOM が提供した Observation Reality を表示する。
+// GMKtec が提供した Observation Reality を表示する。
 //
 // Backend / Observation
 //      ↓
@@ -16,25 +16,25 @@
 //      ↓
 // tables[]
 //      ↓
-// GEEKOMObservation
+// GMKtecObservation
 //      ↓
 // UI
 //
 // IMPORTANT
 //
-// ✓ GEEKOM Observation Reality の表示のみ
-// ✓ tables[] に含まれるメーカー提供情報をそのまま表示
-// ✓ メーカーが提供した表示順を維持
-// ✓ メーカーの項目 / 値の境界をUI上で復元
-// ✓ Object / JSON String の両方に対応
+// ✓ メーカー提供情報をそのまま表示
+// ✓ tables[] の順序を維持
+// ✓ 項目名と値の構造だけをUI用に復元
+// ✓ 複数行の値を1つの項目として保持
+// ✓ JSON String / Object の両方に対応
 // ✓ Null / malformed data を防御
 //
 // ✗ CPU / GPU等の意味生成
 // ✗ Semantic Classification
 // ✗ Realityの推測
-// ✗ Runtime生成
 // ✗ scripts[] の解析
-// ✗ JSON-LD の表示
+// ✗ JSON-LDの解析
+// ✗ Runtime生成
 //
 // ============================================================================
 
@@ -42,22 +42,8 @@ import styles
     from '../spec.module.css'
 
 /* ============================================================================
-// Types
+Types
 ============================================================================ */
-
-type GEEKOMObservation = {
-
-    tables?: unknown
-
-}
-
-type GEEKOMSpecification = {
-
-    label: string
-
-    value: string
-
-}
 
 type Props = {
 
@@ -65,13 +51,21 @@ type Props = {
 
 }
 
+type ObservationSpecification = {
+
+    label: string
+
+    value: string
+
+}
+
 /* ============================================================================
-// getObservation
+getObservation
 ============================================================================ */
 
 function getObservation(
     product: any,
-): GEEKOMObservation | null {
+): any {
 
     const rawObservation =
         product?.observationRuntime
@@ -79,18 +73,12 @@ function getObservation(
         product?.observation_runtime
 
     if (
-        rawObservation === null
-        ||
-        rawObservation === undefined
+        !rawObservation
     ) {
 
         return null
 
     }
-
-    /* --------------------------------------------------------------------------
-    Object
-    -------------------------------------------------------------------------- */
 
     if (
         typeof rawObservation === 'object'
@@ -100,15 +88,9 @@ function getObservation(
         )
     ) {
 
-        return (
-            rawObservation as GEEKOMObservation
-        )
+        return rawObservation
 
     }
-
-    /* --------------------------------------------------------------------------
-    JSON String
-    -------------------------------------------------------------------------- */
 
     if (
         typeof rawObservation === 'string'
@@ -131,9 +113,7 @@ function getObservation(
                 )
             ) {
 
-                return (
-                    parsed as GEEKOMObservation
-                )
+                return parsed
 
             }
 
@@ -150,21 +130,8 @@ function getObservation(
 }
 
 /* ============================================================================
-// getTables
+getTables
 ============================================================================ */
-
-/**
- * ============================================================================
- * getTables
- * ============================================================================
- *
- * GEEKOM Observation Reality に存在する
- * tables[] を取得する。
- *
- * tables[] の内容そのものは変更しない。
- *
- * ============================================================================
- */
 
 function getTables(
     product: any,
@@ -212,129 +179,51 @@ function getTables(
 }
 
 /* ============================================================================
-// getLines
+parseTable
 ============================================================================ */
-
-/**
- * ============================================================================
- * getLines
- * ============================================================================
- *
- * table文字列を行単位に分解する。
- *
- * ここでは意味を解釈しない。
- *
- * ============================================================================
- */
-
-function getLines(
-    table: string,
-): string[] {
-
-    return table
-        .split(/\r?\n/)
-        .map(
-            (
-                line
-            ) =>
-                line
-                    .replace(
-                        /\s+/g,
-                        ' '
-                    )
-                    .trim()
-        )
-        .filter(
-            (
-                line
-            ) =>
-                line.length > 0
-        )
-
-}
-
-/* ============================================================================
-// isLikelyLabel
-============================================================================ */
-
-/**
- * ============================================================================
- * isLikelyLabel
- * ============================================================================
- *
- * メーカーの表における「項目名」と「値」の境界を
- * UI表示上で復元するための構造判定。
- *
- * これはCPU/GPU等の意味分類ではない。
- *
- * 長い値を誤ってlabelとして扱わないため、
- * 短い行を項目候補として扱う。
- *
- * ============================================================================
- */
-
-function isLikelyLabel(
-    line: string,
-): boolean {
-
-    if (
-        !line
-    ) {
-
-        return false
-
-    }
-
-    if (
-        line.length > 40
-    ) {
-
-        return false
-
-    }
-
-    return true
-
-}
-
-/* ============================================================================
-// parseTable
-// ============================================================================ */
 
 /**
  * ============================================================================
  * parseTable
  * ============================================================================
  *
- * GEEKOMのメーカー表を
+ * GMKtecのメーカー表は、
  *
  * label
  * value
+ * label
+ * value
  *
- * のペアへ変換する。
+ * という順序で構成されている。
  *
- * 重要：
+ * valueが複数行の場合は、
+ * 次のlabelが出現するまで同じvalueへ追加する。
  *
- * ここで行っているのは「表示上の表構造の復元」のみ。
- *
- * CPU
- * GPU
- * Memory
- * Storage
- *
- * などの意味分類は行わない。
+ * これは意味解析ではなく、
+ * メーカーが提供した表構造の復元である。
  *
  * ============================================================================
  */
 
 function parseTable(
     table: string,
-): GEEKOMSpecification[] {
+): ObservationSpecification[] {
 
     const lines =
-        getLines(
-            table
-        )
+        table
+            .split(/\r?\n/)
+            .map(
+                (
+                    line
+                ) =>
+                    line.trim()
+            )
+            .filter(
+                (
+                    line
+                ) =>
+                    line.length > 0
+            )
 
     if (
         lines.length === 0
@@ -345,7 +234,7 @@ function parseTable(
     }
 
     const specifications:
-        GEEKOMSpecification[]
+        ObservationSpecification[]
         = []
 
     let currentLabel:
@@ -362,19 +251,8 @@ function parseTable(
 
             if (
                 !currentLabel
-            ) {
-
-                return
-
-            }
-
-            const value =
-                currentValue
-                    .join(' ')
-                    .trim()
-
-            if (
-                !value
+                ||
+                currentValue.length === 0
             ) {
 
                 return
@@ -386,7 +264,10 @@ function parseTable(
                 label:
                     currentLabel,
 
-                value,
+                value:
+                    currentValue.join(
+                        '\n'
+                    ),
 
             })
 
@@ -396,59 +277,34 @@ function parseTable(
         const line of lines
     ) {
 
-        /* ----------------------------------------------------------------------
-        最初の行
-        ---------------------------------------------------------------------- */
+        /*
+         * GMKtecの現在のRealityでは、
+         * 項目名は短い独立行として現れる。
+         *
+         * ただしvalueにも短い文字列があり得るため、
+         * 「現在valueが存在している状態で次の短い行が来た」
+         * 場合だけ新しいlabelとして扱う。
+         */
 
         if (
-            !currentLabel
+            currentLabel === null
         ) {
 
-            if (
-                isLikelyLabel(
-                    line
-                )
-            ) {
-
-                currentLabel =
-                    line
-
-            } else {
-
-                /*
-                 * 想定外の構造でも
-                 * Realityを捨てない。
-                 *
-                 * 値だけの場合は表示可能な
-                 * フォールバックとして保持する。
-                 */
-
-                specifications.push({
-
-                    label:
-                        'メーカー提供情報',
-
-                    value:
-                        line,
-
-                })
-
-            }
+            currentLabel =
+                line
 
             continue
 
         }
 
-        /* ----------------------------------------------------------------------
-        次の項目名と判断
-        ---------------------------------------------------------------------- */
-
         if (
-            isLikelyLabel(
-                line
-            )
-            &&
             currentValue.length > 0
+            &&
+            line.length <= 20
+            &&
+            !line.includes(' ')
+            &&
+            !line.startsWith('•')
         ) {
 
             flush()
@@ -463,19 +319,11 @@ function parseTable(
 
         }
 
-        /* ----------------------------------------------------------------------
-        現在の項目の値
-        ---------------------------------------------------------------------- */
-
         currentValue.push(
             line
         )
 
     }
-
-    /* --------------------------------------------------------------------------
-    最後の項目
-    -------------------------------------------------------------------------- */
 
     flush()
 
@@ -484,54 +332,34 @@ function parseTable(
 }
 
 /* ============================================================================
-// getSpecifications
+getSpecifications
 ============================================================================ */
-
-/**
- * ============================================================================
- * getSpecifications
- * ============================================================================
- *
- * tables[] の各表をメーカー提供順のまま
- * UI表示用の項目へ変換する。
- *
- * ============================================================================
- */
 
 function getSpecifications(
     product: any,
-): GEEKOMSpecification[] {
+): ObservationSpecification[] {
 
     const tables =
         getTables(
             product
         )
 
-    if (
-        tables.length === 0
-    ) {
-
-        return []
-
-    }
-
-    return tables
-        .flatMap(
-            (
+    return tables.flatMap(
+        (
+            table
+        ) =>
+            parseTable(
                 table
-            ) =>
-                parseTable(
-                    table
-                )
-        )
+            )
+    )
 
 }
 
 /* ============================================================================
-// Component
+Component
 ============================================================================ */
 
-export default function GEEKOMObservation({
+export default function GMKtecObservation({
 
     product,
 
@@ -550,10 +378,6 @@ export default function GEEKOMObservation({
             product
         )
 
-    /* ========================================================================
-    Empty
-    ======================================================================== */
-
     if (
         specifications.length === 0
     ) {
@@ -566,10 +390,6 @@ export default function GEEKOMObservation({
         product?.name
         ||
         'この製品'
-
-    /* ========================================================================
-    Render
-    ======================================================================== */
 
     return (
 
@@ -594,7 +414,7 @@ export default function GEEKOMObservation({
                         styles.specLabel
                     }
                 >
-                    GEEKOM OBSERVATION
+                    GMKTEC OBSERVATION
                 </div>
 
                 <h2
@@ -617,7 +437,7 @@ export default function GEEKOMObservation({
             </div>
 
             {/* ================================================================
-            OBSERVATION GRID
+            SPEC GRID
             ================================================================ */}
 
             <div

@@ -357,11 +357,11 @@ run_django import_products gmktec
 run_django import_products minisforum
 # minisforum　◯ ◯
 run_django import_products tsukumo
-# minisforum　◯ ◯
+# tsukumo　◯ ◯ オブザーブ表示あとまわし
 run_django import_products ozgaming
-# ozgaming　◯ ◯ 
+# ozgaming　◯ ◯ オブザーブ確認
 run_django import_products storm
-# storm　◯ あとで、、ブランドごとの再構築を考えよう
+# storm　◯ あとで、、ブランドごとの再構築を考えよう あとまわし
 run_django import_products sycom
 # sycom　◯ 
 run_django import_products mouse
@@ -390,6 +390,9 @@ run_django import_products hp
 #   --observation \
 #   --limit 20
 
+# djmanage inspect_observation gmktec
+# djmanage inspect_observation gmktec --limit 5
+# djmanage inspect_observation gmktec --all
 
 
 # ==========================================================
