@@ -96,10 +96,10 @@ export default function ProductCTASection({
       Final CTA
       ========================================================== */}
 
-      <ProductFinalCTA
+      {/* <ProductFinalCTA
         product={ product }
         semanticRuntime={semanticRuntime}
-      />
+      /> */}
 
       {/* ==========================================================
       Sticky CTA

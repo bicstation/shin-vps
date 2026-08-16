@@ -69,10 +69,10 @@ import type {
 type FAQItem = {
 
   question:
-    string
+  string
 
   answer:
-    string
+  string
 
 }
 
@@ -84,7 +84,7 @@ type FAQItem = {
 type Props = {
 
   product:
-    ProjectedProduct
+  ProjectedProduct
 
 }
 
@@ -345,7 +345,7 @@ function buildFaqs(
     faqs.push({
 
       question:
-        `${productName}はどんなPCですか？`,
+        `どんなPCですか？`,
 
       answer:
         `${productName}の製品情報と主要スペックを、このページで確認できます。`,
@@ -366,7 +366,7 @@ function buildFaqs(
     faqs.push({
 
       question:
-        `${productName}のCPUは何ですか？`,
+        `CPUは何ですか？`,
 
       answer:
         `CPUには${cpu}を搭載しています。`,
@@ -387,7 +387,7 @@ function buildFaqs(
     faqs.push({
 
       question:
-        `${productName}のGPUは何ですか？`,
+        `GPUは何ですか？`,
 
       answer:
         `GPUには${gpu}を搭載しています。`,
@@ -408,7 +408,7 @@ function buildFaqs(
     faqs.push({
 
       question:
-        `${productName}のメモリー容量はどのくらいですか？`,
+        `メモリー容量はどのくらいですか？`,
 
       answer:
         `メモリー容量は${memory}です。`,
@@ -429,7 +429,7 @@ function buildFaqs(
     faqs.push({
 
       question:
-        `${productName}のストレージ容量はどのくらいですか？`,
+        `ストレージ容量はどのくらいですか？`,
 
       answer:
         `ストレージ容量は${storage}です。`,
@@ -450,7 +450,7 @@ function buildFaqs(
     faqs.push({
 
       question:
-        `${productName}のディスプレイ仕様は？`,
+        `ディスプレイ仕様は？`,
 
       answer:
         `ディスプレイは${display}です。`,

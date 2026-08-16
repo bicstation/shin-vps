@@ -24,6 +24,7 @@ import ProductHeroSection from './section/ProductHeroSection'
 import ProductSpecSection from './section/ProductSpecSection'
 import ProductRelatedSection from './section/ProductRelatedSection'
 import ProductCTASection from './section/ProductCTASection'
+import ProductEvaluationSection from './section/ProductEvaluationSection'
 
 /* ============================================================================
 🔥 Common
@@ -235,6 +236,10 @@ export default async function ProductPage({ params }: Props) {
         />
 
         <ProductFaq
+          product={product}
+        />
+
+        <ProductEvaluationSection
           product={product}
         />
 

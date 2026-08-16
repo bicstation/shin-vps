@@ -16,8 +16,22 @@
 // ✓ Maker
 // ✓ Product Image
 // ✓ Product Name
-// ✓ Price
+// ✓ Product Price
+// ✓ Product Points
 // ✓ Section Navigation
+//
+// Product Points
+//
+// Backend / AI Analysis
+//        ↓
+// product_points
+//        ↓
+// Product Runtime
+//        ↓
+// ProductHero
+//
+// Product Points are displayed as provided.
+// No semantic generation or inference is performed here.
 //
 // ✗ Semantic Summary rendering
 // ✗ Target User interpretation
@@ -35,6 +49,10 @@
 //
 //      ProductHeroCapability
 //
+// Product Evaluation is handled by:
+//
+//      ProductEvaluationSection
+//
 // ============================================================================
 
 'use client'
@@ -45,8 +63,9 @@ import Link
 import styles
   from './styles/ProductHero.module.css'
 
+
 /* ============================================================================
-// Projection Types
+🔥 Projection Types
 ============================================================================ */
 
 import type {
@@ -55,8 +74,40 @@ import type {
 
 } from '@/shared/lib/api/django/pc/product-detail'
 
+
 /* ============================================================================
-// Props
+🔥 Product Type
+============================================================================ */
+
+/**
+ * ProductHero receives the projected product.
+ *
+ * Product Points may currently exist under either:
+ *
+ *   productPoints
+ *
+ * or:
+ *
+ *   product_points
+ *
+ * depending on the current projection shape.
+ *
+ * This compatibility type does not generate semantic meaning.
+ */
+
+type ProductHeroProduct =
+  ProjectedProduct
+  & {
+
+    productPoints?: unknown
+
+    product_points?: unknown
+
+  }
+
+
+/* ============================================================================
+🔥 Props
 ============================================================================ */
 
 type Props = {
@@ -66,8 +117,225 @@ type Props = {
 
 }
 
+
 /* ============================================================================
-// Component
+🔥 Resolve Product
+============================================================================ */
+
+/**
+ * Resolve the actual product object.
+ *
+ * This follows the same defensive resolution pattern
+ * already used by the existing FinalCta.
+ *
+ * Supported shapes:
+ *
+ *   product
+ *
+ *   product.product
+ *
+ *   product.data.product
+ *
+ * No semantic transformation is performed.
+ */
+
+function resolveProduct(
+  input: ProductHeroProduct,
+): ProductHeroProduct {
+
+  if (
+    (input as any)?.data?.product
+  ) {
+
+    return (
+      (input as any).data.product
+    )
+
+  }
+
+  if (
+    (input as any)?.product
+  ) {
+
+    return (
+      (input as any).product
+    )
+
+  }
+
+  return input
+
+}
+
+
+/* ============================================================================
+🔥 Normalize Product Points
+============================================================================ */
+
+/**
+ * Normalize Product Points for presentation.
+ *
+ * This follows the existing CTA behavior.
+ *
+ * Supported:
+ *
+ * ✓ string[]
+ * ✓ number[]
+ * ✓ JSON array string
+ * ✓ newline separated string
+ * ✓ comma separated string
+ * ✓ Japanese comma separated string
+ *
+ * This is presentation normalization only.
+ *
+ * No semantic meaning is generated.
+ */
+
+function normalizeProductPoints(
+  value:
+    unknown,
+): string[] {
+
+  /* ==========================================================================
+  ARRAY
+  ========================================================================== */
+
+  if (
+    Array.isArray(
+      value
+    )
+  ) {
+
+    return (
+
+      value
+
+        .filter(
+          (
+            item
+          ): item is string | number =>
+
+            typeof item === 'string'
+            ||
+            typeof item === 'number'
+
+        )
+
+        .map(
+          item =>
+            String(
+              item
+            ).trim()
+        )
+
+        .filter(Boolean)
+
+    )
+
+  }
+
+
+  /* ==========================================================================
+  STRING
+  ========================================================================== */
+
+  if (
+    typeof value !== 'string'
+    ||
+    !value.trim()
+  ) {
+
+    return []
+
+  }
+
+
+  const text =
+    value.trim()
+
+
+  /* ==========================================================================
+  JSON ARRAY
+  ========================================================================== */
+
+  try {
+
+    const parsed =
+      JSON.parse(
+        text
+      )
+
+    if (
+      Array.isArray(
+        parsed
+      )
+    ) {
+
+      return (
+
+        parsed
+
+          .filter(
+            (
+              item
+            ): item is string | number =>
+
+              typeof item === 'string'
+              ||
+              typeof item === 'number'
+
+          )
+
+          .map(
+            item =>
+              String(
+                item
+              ).trim()
+          )
+
+          .filter(Boolean)
+
+      )
+
+    }
+
+  } catch {
+
+    /*
+     * Not a JSON array.
+     *
+     * Continue as a normal string.
+     */
+
+  }
+
+
+  /* ==========================================================================
+  DELIMITED STRING
+  ========================================================================== */
+
+  return (
+
+    text
+
+      .split(
+        /\n|、|，|,/
+      )
+
+      .map(
+        item =>
+          item.trim()
+      )
+
+      .filter(Boolean)
+
+  )
+
+}
+
+
+/* ============================================================================
+🔥 Component
 ============================================================================ */
 
 export default function ProductHero({
@@ -77,28 +345,106 @@ export default function ProductHero({
 }: Props) {
 
   /* ==========================================================================
-// Product Identity
-============================================================================ */
+  Product Resolution
+  ========================================================================== */
+
+  const resolvedProduct =
+    resolveProduct(
+      product as ProductHeroProduct
+    )
+
+
+  /* ==========================================================================
+  🔥 DEBUG — PRODUCT HERO PRODUCT POINTS
+  ========================================================================== */
+  console.log(
+    '🔥 FINAL CTA PRODUCT POINTS OBSERVATION',
+    {
+      product,
+      resolvedProduct,
+
+      productPoints:
+        resolvedProduct?.productPoints,
+
+      product_points:
+        resolvedProduct?.product_points,
+
+      strengths:
+        resolvedProduct?.strengths,
+
+      keys:
+        Object.keys(
+          resolvedProduct || {}
+        ),
+    }
+  )
+
+  /* ==========================================================================
+  Product Identity
+  ========================================================================== */
 
   const title =
+    resolvedProduct?.name
+    ||
     product?.name
     ||
     'PRODUCT'
 
+
   const image =
+    resolvedProduct?.imageUrl
+    ||
     product?.imageUrl
 
+
   const maker =
+    resolvedProduct?.maker
+    ||
     product?.maker
     ||
     'UNKNOWN'
 
+
   const price =
+    resolvedProduct?.price
+    ??
     product?.price
 
+
   /* ==========================================================================
-// Render
-============================================================================ */
+  Product Points
+  ========================================================================== */
+
+  const productPoints =
+
+    normalizeProductPoints(
+
+      resolvedProduct?.productPoints
+
+      ??
+
+      resolvedProduct?.product_points
+
+    )
+
+
+  /*
+   * Hero displays the three Product Points
+   * supplied by the Product Runtime.
+   *
+   * No additional points are generated.
+   */
+
+  const visibleProductPoints =
+    productPoints.slice(
+      0,
+      3
+    )
+
+
+  /* ==========================================================================
+  Render
+  ========================================================================== */
 
   return (
 
@@ -143,7 +489,9 @@ export default function ProductHero({
             }
           >
 
-            {maker}
+            {
+              maker
+            }
 
           </div>
 
@@ -167,7 +515,9 @@ export default function ProductHero({
         ==================================================================== */}
 
         {
-          image && (
+          image
+          &&
+          (
 
             <div
               className={
@@ -176,9 +526,14 @@ export default function ProductHero({
             >
 
               <img
-                src={image}
 
-                alt={title}
+                src={
+                  image
+                }
+
+                alt={
+                  title
+                }
 
                 className={
                   styles.productHeroImage
@@ -219,10 +574,109 @@ export default function ProductHero({
             }
           >
 
-            {title}
+            {
+              title
+            }
 
           </h1>
 
+
+          {/* ================================================================
+          PRODUCT POINTS
+          ================================================================ */}
+
+          {
+            visibleProductPoints.length > 0
+            &&
+            (
+
+              <div
+                className={
+                  styles.productHeroPoints
+                }
+
+                aria-label={
+                  'このPCのポイント'
+                }
+              >
+
+                <div
+                  className={
+                    styles.productHeroPointsLabel
+                  }
+                >
+
+                  このPCのポイント
+
+                </div>
+
+
+                <div
+                  className={
+                    styles.productHeroPointsList
+                  }
+                >
+
+                  {
+                    visibleProductPoints.map(
+                      (
+                        point,
+                        index
+                      ) => (
+
+                        <div
+                          key={
+                            `${point}-${index}`
+                          }
+
+                          className={
+                            styles.productHeroPoint
+                          }
+                        >
+
+                          <div
+                            className={
+                              styles.productHeroPointNumber
+                            }
+                          >
+
+                            {
+                              String(
+                                index + 1
+                              ).padStart(
+                                2,
+                                '0'
+                              )
+                            }
+
+                          </div>
+
+
+                          <div
+                            className={
+                              styles.productHeroPointText
+                            }
+                          >
+
+                            {
+                              point
+                            }
+
+                          </div>
+
+                        </div>
+
+                      )
+                    )
+
+                  }
+
+                </div>
+
+              </div>
+
+            )
+          }
 
         </div>
 
@@ -259,10 +713,12 @@ export default function ProductHero({
 
           </div>
 
+
           {
 
             price != null
-            && (
+            &&
+            (
 
               <div
                 className={
@@ -271,6 +727,7 @@ export default function ProductHero({
               >
 
                 ¥
+
                 {
                   Number(
                     price
@@ -297,7 +754,10 @@ export default function ProductHero({
         >
 
           <Link
-            href="#semantic"
+            href={
+              '#semantic'
+            }
+
             className={
               styles.productHeroPrimary
             }
@@ -309,7 +769,10 @@ export default function ProductHero({
 
 
           <Link
-            href="#related"
+            href={
+              '#related'
+            }
+
             className={
               styles.productHeroSecondary
             }

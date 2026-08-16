@@ -388,6 +388,166 @@ Product Detail Hero
 
 }
 
+/* ============================================================================
+🔥 PRODUCT POINTS
+============================================================================ */
+
+.productHeroPoints {
+
+  display:
+    flex;
+
+  flex-direction:
+    column;
+
+  gap:
+    12px;
+
+  margin-top:
+    6px;
+
+}
+
+
+.productHeroPointsLabel {
+
+  color:
+    #94a3b8;
+
+  font-size:
+    11px;
+
+  font-weight:
+    800;
+
+  line-height:
+    1.4;
+
+  letter-spacing:
+    .08em;
+
+  text-transform:
+    uppercase;
+
+}
+
+
+.productHeroPointsList {
+
+  display:
+    flex;
+
+  flex-direction:
+    column;
+
+  gap:
+    10px;
+
+}
+
+
+.productHeroPoint {
+
+  display:
+    grid;
+
+  grid-template-columns:
+    34px
+    minmax(0, 1fr);
+
+  align-items:
+    start;
+
+  gap:
+    12px;
+
+  padding:
+    14px 16px;
+
+  border-radius:
+    16px;
+
+  background:
+    rgba(255,255,255,.045);
+
+  border:
+    1px solid
+    rgba(125,211,252,.10);
+
+  box-sizing:
+    border-box;
+
+}
+
+
+.productHeroPointNumber {
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    center;
+
+  width:
+    34px;
+
+  height:
+    34px;
+
+  border-radius:
+    10px;
+
+  background:
+    rgba(125,211,252,.08);
+
+  border:
+    1px solid
+    rgba(125,211,252,.14);
+
+  color:
+    #7dd3fc;
+
+  font-size:
+    10px;
+
+  font-weight:
+    900;
+
+  letter-spacing:
+    .04em;
+
+}
+
+
+.productHeroPointText {
+
+  min-width:
+    0;
+
+  color:
+    #e2e8f0;
+
+  font-size:
+    14px;
+
+  font-weight:
+    700;
+
+  line-height:
+    1.7;
+
+  overflow-wrap:
+    anywhere;
+
+  word-break:
+    break-word;
+
+}
+
+
 
 /* ============================================================================
 🔥 BOTTOM
