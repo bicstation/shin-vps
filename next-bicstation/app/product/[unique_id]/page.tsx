@@ -78,6 +78,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const product = runtime.product
+
+  console.log(
+    '🔥 [BREADCRUMB DEBUG]',
+    {
+      uniqueId: product.uniqueId,
+      name: product.name,
+      breadcrumbs: (product as any)?.breadcrumbs,
+    }
+  )
+
   const semanticRuntime = runtime.semanticRuntime
 
   const title = `${product.name} | SHIN CORE LINX`

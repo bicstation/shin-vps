@@ -1,9 +1,45 @@
 // ============================================================================
 // FILE:
 // /home/maya/shin-vps/next-bicstation/app/product/[unique_id]/components/recommendation/ProductRelated.tsx
+//
+// SHIN CORE LINX
+// Related Configuration Experience
+//
+// Responsibility
+//
+// Related Product Runtime
+//        ↓
+// ProductRelated
+//        ↓
+// Related Configuration Observation
+//
+// ProductRelated = Related Product Configuration Experience
+//
+// ✓ Displays related-product identity
+// ✓ Displays observable product configuration
+// ✓ Provides product navigation
+// ✓ Handles empty / partial configuration safely
+//
+// ✗ Semantic generation
+// ✗ Similarity calculation
+// ✗ Workflow inference
+// ✗ Recommendation generation
+// ✗ Runtime generation
+//
+// Authority
+//
+// Related Product Runtime
+//        ↓
+// Adapter / Projection
+//        ↓
+// ProductRelated
+//
 // ============================================================================
 
 'use client'
+
+import Link
+  from 'next/link'
 
 /* ============================================================================
 🔥 Styles
@@ -12,230 +48,327 @@
 import styles
   from './recommendation.module.css'
 
+
 /* ============================================================================
 🔥 Props
 ============================================================================ */
 
 type Props = {
 
-  product: any
+  product:
+    any
 
-  related: any[]
+  related:
+    any[]
 
 }
+
+
+/* ============================================================================
+🔥 Types
+============================================================================ */
+
+type ConfigurationItem = {
+
+  label:
+    string
+
+  value:
+    string
+
+}
+
 
 /* ============================================================================
 🔥 Helpers
 ============================================================================ */
 
 /**
- * Extract attributes that are actually present in the related product.
+ * ============================================================================
+ * Product Name
+ * ============================================================================
  *
- * IMPORTANT
+ * Related Runtimeから提供された製品名を表示する。
  *
- * This component does NOT generate semantic meaning.
+ * ここでは製品名を生成しない。
  *
- * It only presents observable / already-classified attributes
- * supplied by the related-product runtime.
+ * ============================================================================
  */
 
-function extractRelatedAttributes(
+function getProductName(
   item: any,
-): string[] {
+): string {
 
-  const attributes: string[] = []
+  return (
+
+    item?.name
+
+    ||
+
+    item?.product_name
+
+    ||
+
+    '関連PC'
+
+  )
+
+}
+
+
+/**
+ * ============================================================================
+ * Product URL
+ * ============================================================================
+ *
+ * unique_id が存在する場合のみProduct Detailへ遷移する。
+ *
+ * ============================================================================
+ */
+
+function getProductHref(
+  item: any,
+): string | null {
+
+  const uniqueId =
+
+    item?.unique_id
+
+    ||
+
+    item?.uniqueId
+
+
+  if (
+    !uniqueId
+  ) {
+
+    return null
+
+  }
+
+
+  return (
+
+    `/product/${encodeURIComponent(
+      String(uniqueId)
+    )}`
+
+  )
+
+}
+
+
+/**
+ * ============================================================================
+ * Configuration
+ * ============================================================================
+ *
+ * Related Product Runtimeから取得された
+ * 実際の製品構成だけを表示用データへ変換する。
+ *
+ * ここでは以下を行わない。
+ *
+ * ✗ Similarity inference
+ * ✗ Workflow inference
+ * ✗ Recommendation generation
+ * ✗ Semantic interpretation
+ *
+ * ============================================================================
+ */
+
+function buildConfiguration(
+  item: any,
+): ConfigurationItem[] {
+
+  const configuration:
+    ConfigurationItem[] = []
+
 
   /* ==========================================================================
   CPU
   ========================================================================== */
 
   const cpu =
+
     item?.cpu_model
-    || item?.cpuModel
+
+    ||
+
+    item?.cpuModel
+
 
   if (cpu) {
 
-    attributes.push(
-      `CPU: ${cpu}`
-    )
+    configuration.push({
+
+      label:
+        'CPU',
+
+      value:
+        String(cpu),
+
+    })
 
   }
+
 
   /* ==========================================================================
   GPU
   ========================================================================== */
 
   const gpu =
+
     item?.gpu_model
-    || item?.gpuModel
+
+    ||
+
+    item?.gpuModel
+
 
   if (gpu) {
 
-    attributes.push(
-      `GPU: ${gpu}`
-    )
+    configuration.push({
+
+      label:
+        'GPU',
+
+      value:
+        String(gpu),
+
+    })
 
   }
+
 
   /* ==========================================================================
   MEMORY
   ========================================================================== */
 
   const memory =
+
     item?.memory_gb
-    ?? item?.memoryGb
+
+    ??
+
+    item?.memoryGb
+
 
   if (
+
     memory !== undefined
-    && memory !== null
+
+    &&
+
+    memory !== null
+
   ) {
 
-    attributes.push(
-      `MEMORY: ${memory}GB`
-    )
+    configuration.push({
+
+      label:
+        'MEMORY',
+
+      value:
+        `${memory}GB`,
+
+    })
 
   }
+
 
   /* ==========================================================================
   STORAGE
   ========================================================================== */
 
   const storage =
+
     item?.storage_gb
-    ?? item?.storageGb
+
+    ??
+
+    item?.storageGb
+
 
   if (
+
     storage !== undefined
-    && storage !== null
+
+    &&
+
+    storage !== null
+
   ) {
 
-    attributes.push(
-      `STORAGE: ${storage}GB`
-    )
+    configuration.push({
+
+      label:
+        'STORAGE',
+
+      value:
+        `${storage}GB`,
+
+    })
 
   }
 
-  /* ==========================================================================
-  DISPLAY
-  ========================================================================== */
 
-  const display =
-    item?.display_info
-    || item?.displayInfo
-
-  if (display) {
-
-    attributes.push(
-      `DISPLAY: ${display}`
-    )
-
-  }
-
-  /* ==========================================================================
-  BRAND
-  ========================================================================== */
-
-  if (item?.brand) {
-
-    attributes.push(
-      `BRAND: ${item.brand}`
-    )
-
-  }
-
-  /* ==========================================================================
-  SERIES
-  ========================================================================== */
-
-  if (item?.series) {
-
-    attributes.push(
-      `SERIES: ${item.series}`
-    )
-
-  }
-
-  /* ==========================================================================
-  PRODUCT TYPE
-  ========================================================================== */
-
-  const productType =
-    item?.product_type
-    || item?.productType
-
-  if (productType) {
-
-    attributes.push(
-      `TYPE: ${productType}`
-    )
-
-  }
-
-  return attributes
+  return configuration
 
 }
 
-/* ============================================================================
-🔥 Build Related Narratives
-============================================================================ */
 
 /**
- * Build display text from actual related-product attributes.
+ * ============================================================================
+ * Related Products
+ * ============================================================================
  *
- * No workflow inference.
- * No AI / gaming / creator inference.
- * No JSON keyword inspection.
- * No semantic meaning generation.
+ * Related Runtimeから取得された配列を
+ * UI表示可能な製品だけに整理する。
+ *
+ * ============================================================================
  */
 
-function buildRelatedNarratives(
+function normalizeRelatedProducts(
   related: any[],
-) {
-
-  const narratives: string[] = []
+): any[] {
 
   if (
-    !Array.isArray(related)
+    !Array.isArray(
+      related
+    )
   ) {
 
-    return narratives
+    return []
 
   }
 
-  related.forEach(
-    (
-      item: any
-    ) => {
 
-      const attributes =
-        extractRelatedAttributes(
+  return (
+
+    related
+
+      .filter(
+        (
           item
+        ) => (
+
+          item
+          &&
+          typeof item === 'object'
+
         )
-
-      if (
-        attributes.length === 0
-      ) {
-
-        return
-
-      }
-
-      narratives.push(
-        attributes
-          .slice(0, 4)
-          .join(' ・ ')
       )
 
-    }
+      .slice(
+        0,
+        4
+      )
+
   )
 
-  return Array.from(
-    new Set(
-      narratives
-    )
-  ).slice(0, 4)
-
 }
+
 
 /* ============================================================================
 🔥 Component
@@ -244,28 +377,48 @@ function buildRelatedNarratives(
 export default function ProductRelated({
 
   product,
+
   related,
 
 }: Props) {
 
+  /* ==========================================================================
+  Current Product
+  ========================================================================== */
+
+  /*
+   * 現在のProductRelatedでは
+   * current productそのものを表示対象として使用しない。
+   *
+   * Props契約はProductRelatedSectionとの互換性のため維持する。
+   */
+
   void product
 
-  const narratives =
-    buildRelatedNarratives(
+
+  /* ==========================================================================
+  Related Products
+  ========================================================================== */
+
+  const relatedProducts =
+
+    normalizeRelatedProducts(
       related
     )
 
+
   /* ==========================================================================
-  Empty
+  Empty Guard
   ========================================================================== */
 
   if (
-    narratives.length === 0
+    relatedProducts.length === 0
   ) {
 
     return null
 
   }
+
 
   /* ==========================================================================
   Render
@@ -274,14 +427,20 @@ export default function ProductRelated({
   return (
 
     <section
+
       className={
         styles.relatedSection
       }
+
+      aria-labelledby="
+        related-configuration-title
+      "
+
     >
 
-      {/* ================================================================
+      {/* ======================================================================
       HEADER
-      ================================================================ */}
+      ====================================================================== */}
 
       <div
         className={
@@ -289,37 +448,64 @@ export default function ProductRelated({
         }
       >
 
+        {/* ====================================================================
+        LABEL
+        ==================================================================== */}
+
         <div
           className={
             styles.relatedLabel
           }
         >
-          SEMANTIC RELATION
+
+          RELATED CONFIGURATION
+
         </div>
 
+
+        {/* ====================================================================
+        TITLE
+        ==================================================================== */}
+
         <h2
+
+          id="
+            related-configuration-title
+          "
+
           className={
             styles.relatedTitle
           }
+
         >
-          このPCと近い構成
+
+          このPCと近い構成のPC
+
         </h2>
+
+
+        {/* ====================================================================
+        DESCRIPTION
+        ==================================================================== */}
 
         <p
           className={
             styles.relatedDescription
           }
         >
-          CPU・GPU・メモリー・ストレージなど、
-          主要な製品構成をもとに、
-          近い構成を持つPCを整理しています。
+
+          関連PCとして取得された製品について、
+          CPU・GPU・メモリー・ストレージなどの
+          実際の構成を確認できます。
+
         </p>
 
       </div>
 
-      {/* ================================================================
-      GRID
-      ================================================================ */}
+
+      {/* ======================================================================
+      RELATED PRODUCT GRID
+      ====================================================================== */}
 
       <div
         className={
@@ -328,28 +514,239 @@ export default function ProductRelated({
       >
 
         {
-          narratives.map(
+
+          relatedProducts.map(
+
             (
-              narrative,
+              item,
               index
-            ) => (
+            ) => {
 
-              <div
-                key={
-                  `${narrative}-${index}`
-                }
-                className={
-                  styles.relatedNarrativeCard
-                }
-              >
+              /* ================================================================
+              PRODUCT
+              ================================================================ */
 
-                {narrative}
+              const name =
+                getProductName(
+                  item
+                )
 
-              </div>
 
-            )
+              const href =
+                getProductHref(
+                  item
+                )
+
+
+              /* ================================================================
+              CONFIGURATION
+              ================================================================ */
+
+              const configuration =
+                buildConfiguration(
+                  item
+                )
+
+
+              /*
+               * 構成情報が存在しない製品は、
+               * このExperienceでは表示しない。
+               */
+
+              if (
+                configuration.length === 0
+              ) {
+
+                return null
+
+              }
+
+
+              /* ================================================================
+              KEY
+              ================================================================ */
+
+              const uniqueId =
+
+                item?.unique_id
+
+                ||
+
+                item?.uniqueId
+
+
+              const key =
+
+                uniqueId
+
+                  ? String(
+                      uniqueId
+                    )
+
+                  : `${name}-${index}`
+
+
+              /* ================================================================
+              CARD
+              ================================================================ */
+
+              return (
+
+                <article
+
+                  key={key}
+
+                  className={
+                    styles.relatedNarrativeCard
+                  }
+
+                >
+
+                  {/* ============================================================
+                  PRODUCT IDENTITY
+                  ============================================================ */}
+
+                  {
+
+                    href
+
+                      ? (
+
+                        <Link
+
+                          href={href}
+
+                          className={
+                            styles.relatedProductLink
+                          }
+
+                        >
+
+                          {
+                            name
+                          }
+
+                        </Link>
+
+                      )
+
+                      : (
+
+                        <div
+                          className={
+                            styles.relatedProductName
+                          }
+                        >
+
+                          {
+                            name
+                          }
+
+                        </div>
+
+                      )
+
+                  }
+
+
+                  {/* ============================================================
+                  CONFIGURATION
+                  ============================================================ */}
+
+                  <div
+                    className={
+                      styles.relatedConfiguration
+                    }
+                  >
+
+                    {
+
+                      configuration.map(
+
+                        (
+                          spec
+                        ) => (
+
+                          <div
+
+                            key={
+                              spec.label
+                            }
+
+                            className={
+                              styles.relatedConfigurationItem
+                            }
+
+                          >
+
+                            {/* ==================================================
+                            LABEL
+                            ================================================== */}
+
+                            <div
+                              className={
+                                styles.relatedConfigurationLabel
+                              }
+                            >
+
+                              {
+                                spec.label
+                              }
+
+                            </div>
+
+
+                            {/* ==================================================
+                            VALUE
+                            ================================================== */}
+
+                            <div
+                              className={
+                                styles.relatedConfigurationValue
+                              }
+                            >
+
+                              {
+                                spec.value
+                              }
+
+                            </div>
+
+                          </div>
+
+                        )
+
+                      )
+
+                    }
+
+                  </div>
+
+                </article>
+
+              )
+
+            }
+
           )
+
         }
+
+      </div>
+
+
+      {/* ======================================================================
+      FOOTER
+      ====================================================================== */}
+
+      <div
+        className={
+          styles.relatedFooter
+        }
+      >
+
+        関連PCとして取得された構成情報を
+        表示しています。
 
       </div>
 

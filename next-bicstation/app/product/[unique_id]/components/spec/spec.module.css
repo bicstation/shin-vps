@@ -1,457 +1,1017 @@
-/* =========================================
-🔥 PRODUCT SPEC
-specification + balance visualization
-========================================= */
+/* ============================================================================
+🔥 FILE:
+next-bicstation/app/product/[unique_id]/components/spec/spec.module.css
 
-/* =========================================
+SHIN CORE LINX
+Product Specification Experience
+
+Structure
+
+Product Specification Experience
+        │
+        ├── Quick Specification
+        │      └── ProductCompactSpec
+        │
+        ├── Basic Specification
+        │      └── ProductSpec
+        │
+        └── Observation Reality
+               └── ProductRadar
+
+Visual Roles
+
+Quick Spec
+    → Fast recognition
+    → Orange accent
+
+Product Spec
+    → Detailed product information
+    → Purple accent
+
+Observation
+    → Reality / manufacturer information
+    → Cyan accent
+
+============================================================================ */
+
+
+/* ============================================================================
 🔥 COMMON SECTION
-========================================= */
+============================================================================ */
 
 .compactSpecSection,
 .radarSection,
 .specSection {
-  display: flex;
-  flex-direction: column;
-  gap: 28px;
-  padding: 30px;
-  border-radius: 30px;
-  background: linear-gradient(
-    180deg,
-    rgba(15, 23, 42, .94),
-    rgba(2, 6, 23, 1)
-  );
-  border: 1px solid rgba(148, 163, 184, .08);
-  box-shadow: 0 18px 48px rgba(0, 0, 0, .22);
+
+  display:
+    flex;
+
+  flex-direction:
+    column;
+
+  gap:
+    28px;
+
+  padding:
+    30px;
+
+  border-radius:
+    30px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(15,23,42,.94),
+      rgba(2,6,23,1)
+    );
+
+  border:
+    1px solid
+    rgba(148,163,184,.08);
+
+  box-shadow:
+    0 18px 48px
+    rgba(0,0,0,.22);
+
 }
 
-/* =========================================
+
+/* ============================================================================
 🔥 COMMON HEADER
-========================================= */
+============================================================================ */
 
 .compactSpecHeader,
 .radarHeader,
 .specHeader {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+
+  display:
+    flex;
+
+  flex-direction:
+    column;
+
+  gap:
+    12px;
+
 }
 
-/* =========================================
+
+/* ============================================================================
 🔥 LABELS
-========================================= */
+============================================================================ */
 
 .compactSpecLabel,
 .radarLabel,
 .specLabel {
-  display: inline-flex;
-  width: fit-content;
-  min-height: 30px;
-  align-items: center;
-  justify-content: center;
-  padding: 0 14px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: .08em;
-  text-transform: uppercase;
+
+  display:
+    inline-flex;
+
+  width:
+    fit-content;
+
+  min-height:
+    30px;
+
+  align-items:
+    center;
+
+  justify-content:
+    center;
+
+  padding:
+    0 14px;
+
+  border-radius:
+    999px;
+
+  font-size:
+    11px;
+
+  font-weight:
+    800;
+
+  letter-spacing:
+    .08em;
+
+  line-height:
+    1.4;
+
+  text-transform:
+    uppercase;
+
 }
+
+
+/* ============================================================================
+🔥 QUICK SPEC LABEL
+============================================================================ */
 
 .compactSpecLabel {
-  background: rgba(249, 115, 22, .08);
-  border: 1px solid rgba(249, 115, 22, .18);
-  color: #fdba74;
+
+  background:
+    rgba(249,115,22,.08);
+
+  border:
+    1px solid
+    rgba(249,115,22,.18);
+
+  color:
+    #fdba74;
+
 }
+
+
+/* ============================================================================
+🔥 OBSERVATION LABEL
+============================================================================ */
 
 .radarLabel {
-  background: rgba(56, 189, 248, .08);
-  border: 1px solid rgba(56, 189, 248, .18);
-  color: #7dd3fc;
+
+  background:
+    rgba(56,189,248,.08);
+
+  border:
+    1px solid
+    rgba(56,189,248,.18);
+
+  color:
+    #7dd3fc;
+
 }
+
+
+/* ============================================================================
+🔥 PRODUCT SPEC LABEL
+============================================================================ */
 
 .specLabel {
-  background: rgba(168, 85, 247, .08);
-  border: 1px solid rgba(168, 85, 247, .18);
-  color: #d8b4fe;
+
+  background:
+    rgba(168,85,247,.08);
+
+  border:
+    1px solid
+    rgba(168,85,247,.18);
+
+  color:
+    #d8b4fe;
+
 }
 
-/* =========================================
+
+/* ============================================================================
 🔥 TITLES
-========================================= */
+============================================================================ */
 
 .compactSpecTitle,
 .radarTitle,
 .specTitle {
-  margin: 0;
-  color: #fff;
-  font-size: clamp(28px, 4vw, 44px);
-  font-weight: 900;
-  line-height: 1.12;
-  letter-spacing: -.04em;
+
+  margin:
+    0;
+
+  color:
+    #ffffff;
+
+  font-size:
+    clamp(
+      28px,
+      4vw,
+      44px
+    );
+
+  font-weight:
+    900;
+
+  line-height:
+    1.12;
+
+  letter-spacing:
+    -.04em;
+
 }
 
-/* =========================================
+
+/* ============================================================================
 🔥 DESCRIPTIONS
-========================================= */
+============================================================================ */
 
 .compactSpecDescription,
 .radarDescription,
 .specDescription {
-  max-width: 760px;
-  margin: 0;
-  color: #94a3b8;
-  font-size: 15px;
-  line-height: 1.9;
+
+  max-width:
+    760px;
+
+  margin:
+    0;
+
+  color:
+    #94a3b8;
+
+  font-size:
+    15px;
+
+  line-height:
+    1.9;
+
 }
 
-/* =========================================
-🔥 COMPACT SPEC GRID
-========================================= */
+
+/* ============================================================================
+🔥 QUICK SPEC GRID
+============================================================================ */
 
 .compactSpecGrid {
-  display: grid;
-  grid-template-columns: repeat(
-    auto-fit,
-    minmax(220px, 1fr)
-  );
-  gap: 18px;
+
+  display:
+    grid;
+
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(
+        220px,
+        1fr
+      )
+    );
+
+  gap:
+    18px;
+
 }
 
-/* =========================================
-🔥 COMPACT SPEC CARD
-========================================= */
+
+/* ============================================================================
+🔥 QUICK SPEC CARD
+============================================================================ */
 
 .compactSpecCard {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  min-height: 140px;
-  padding: 22px;
-  border-radius: 24px;
-  background: linear-gradient(
-    180deg,
-    rgba(249, 115, 22, .06),
-    rgba(15, 23, 42, .96)
-  );
-  border: 1px solid rgba(249, 115, 22, .10);
-  transition:
-    transform .18s ease,
-    border-color .18s ease;
-}
 
-.compactSpecCard:hover {
-  transform: translateY(-3px);
-  border-color: rgba(249, 115, 22, .24);
-}
+  display:
+    flex;
 
-/* =========================================
-🔥 COMPACT SPEC CONTENT
-========================================= */
+  flex-direction:
+    column;
 
-.compactSpecCardLabel {
-  color: #fdba74;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-}
+  gap:
+    14px;
 
-.compactSpecCardValue {
-  color: #fff;
-  font-size: 20px;
-  font-weight: 800;
-  line-height: 1.5;
-  overflow-wrap: anywhere;
-}
+  min-width:
+    0;
 
-/* =========================================
-🔥 RADAR GRID
-========================================= */
+  min-height:
+    140px;
 
-.radarGrid {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
+  padding:
+    22px;
 
-/* =========================================
-🔥 RADAR CARD
-========================================= */
+  border-radius:
+    24px;
 
-.radarCard {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding: 20px 22px;
-  border-radius: 22px;
-  background: linear-gradient(
-    180deg,
-    rgba(56, 189, 248, .05),
-    rgba(15, 23, 42, .96)
-  );
-  border: 1px solid rgba(56, 189, 248, .10);
-}
+  background:
+    linear-gradient(
+      180deg,
+      rgba(249,115,22,.06),
+      rgba(15,23,42,.96)
+    );
 
-/* =========================================
-🔥 RADAR TOP
-========================================= */
+  border:
+    1px solid
+    rgba(249,115,22,.10);
 
-.radarCardTop {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-}
-
-.radarCardLabel {
-  color: #fff;
-  font-size: 15px;
-  font-weight: 700;
-}
-
-.radarCardValue {
-  color: #7dd3fc;
-  font-size: 16px;
-  font-weight: 900;
-}
-
-/* =========================================
-🔥 RADAR BAR
-========================================= */
-
-.radarBar {
-  width: 100%;
-  height: 12px;
-  overflow: hidden;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, .06);
-}
-
-.radarBarFill {
-  height: 100%;
-  border-radius: 999px;
-  background: linear-gradient(
-    90deg,
-    #38bdf8,
-    #818cf8
-  );
-}
-
-/* =========================================
-🔥 FULL SPEC GRID
-========================================= */
-
-.specGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-}
-
-/* =========================================
-🔥 FULL SPEC CARD
-========================================= */
-
-.specCard {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 12px;
-  min-width: 0;
-  min-height: 112px;
-  padding: 20px 22px;
-  border-radius: 20px;
-  background: linear-gradient(
-    180deg,
-    rgba(168, 85, 247, .055),
-    rgba(15, 23, 42, .96)
-  );
-  border: 1px solid rgba(168, 85, 247, .11);
   transition:
     transform .18s ease,
     border-color .18s ease,
-    background .18s ease;
+    box-shadow .18s ease;
+
 }
+
+
+.compactSpecCard:hover {
+
+  transform:
+    translateY(-3px);
+
+  border-color:
+    rgba(249,115,22,.24);
+
+  box-shadow:
+    0 14px 34px
+    rgba(249,115,22,.07);
+
+}
+
+
+/* ============================================================================
+🔥 QUICK SPEC CARD LABEL
+============================================================================ */
+
+.compactSpecCardLabel {
+
+  color:
+    #fdba74;
+
+  font-size:
+    11px;
+
+  font-weight:
+    800;
+
+  letter-spacing:
+    .08em;
+
+  line-height:
+    1.4;
+
+  text-transform:
+    uppercase;
+
+}
+
+
+/* ============================================================================
+🔥 QUICK SPEC CARD VALUE
+============================================================================ */
+
+.compactSpecCardValue {
+
+  min-width:
+    0;
+
+  color:
+    #ffffff;
+
+  font-size:
+    20px;
+
+  font-weight:
+    800;
+
+  line-height:
+    1.5;
+
+  overflow-wrap:
+    anywhere;
+
+  word-break:
+    break-word;
+
+}
+
+
+/* ============================================================================
+🔥 OBSERVATION GRID
+============================================================================ */
+
+.radarGrid {
+
+  display:
+    flex;
+
+  flex-direction:
+    column;
+
+  gap:
+    18px;
+
+}
+
+
+/* ============================================================================
+🔥 OBSERVATION CARD
+============================================================================ */
+
+.radarCard {
+
+  display:
+    flex;
+
+  flex-direction:
+    column;
+
+  gap:
+    14px;
+
+  padding:
+    20px 22px;
+
+  border-radius:
+    22px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(56,189,248,.05),
+      rgba(15,23,42,.96)
+    );
+
+  border:
+    1px solid
+    rgba(56,189,248,.10);
+
+}
+
+
+/* ============================================================================
+🔥 OBSERVATION CARD TOP
+============================================================================ */
+
+.radarCardTop {
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    space-between;
+
+  gap:
+    20px;
+
+}
+
+
+.radarCardLabel {
+
+  color:
+    #ffffff;
+
+  font-size:
+    15px;
+
+  font-weight:
+    700;
+
+}
+
+
+.radarCardValue {
+
+  color:
+    #7dd3fc;
+
+  font-size:
+    16px;
+
+  font-weight:
+    900;
+
+}
+
+
+/* ============================================================================
+🔥 OBSERVATION BAR
+============================================================================ */
+
+.radarBar {
+
+  width:
+    100%;
+
+  height:
+    12px;
+
+  overflow:
+    hidden;
+
+  border-radius:
+    999px;
+
+  background:
+    rgba(255,255,255,.06);
+
+}
+
+
+.radarBarFill {
+
+  height:
+    100%;
+
+  border-radius:
+    999px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #38bdf8,
+      #818cf8
+    );
+
+}
+
+
+/* ============================================================================
+🔥 PRODUCT SPEC GRID
+============================================================================ */
+
+.specGrid {
+
+  display:
+    grid;
+
+  grid-template-columns:
+    repeat(
+      2,
+      minmax(
+        0,
+        1fr
+      )
+    );
+
+  gap:
+    14px;
+
+}
+
+
+/* ============================================================================
+🔥 PRODUCT SPEC CARD
+============================================================================ */
+
+.specCard {
+
+  display:
+    flex;
+
+  flex-direction:
+    column;
+
+  justify-content:
+    space-between;
+
+  gap:
+    12px;
+
+  min-width:
+    0;
+
+  min-height:
+    112px;
+
+  padding:
+    20px 22px;
+
+  border-radius:
+    20px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(168,85,247,.055),
+      rgba(15,23,42,.96)
+    );
+
+  border:
+    1px solid
+    rgba(168,85,247,.11);
+
+  transition:
+    transform .18s ease,
+    border-color .18s ease,
+    box-shadow .18s ease;
+
+}
+
 
 .specCard:hover {
-  transform: translateY(-2px);
-  border-color: rgba(168, 85, 247, .25);
-  background: linear-gradient(
-    180deg,
-    rgba(168, 85, 247, .08),
-    rgba(15, 23, 42, .98)
-  );
+
+  transform:
+    translateY(-2px);
+
+  border-color:
+    rgba(168,85,247,.25);
+
+  box-shadow:
+    0 14px 34px
+    rgba(168,85,247,.07);
+
 }
 
-/* =========================================
-🔥 FULL SPEC CARD LABEL
-========================================= */
+
+/* ============================================================================
+🔥 PRODUCT SPEC LABEL
+============================================================================ */
 
 .specCardLabel {
-  color: #c4b5fd;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: .08em;
-  text-transform: uppercase;
+
+  color:
+    #c4b5fd;
+
+  font-size:
+    11px;
+
+  font-weight:
+    800;
+
+  letter-spacing:
+    .08em;
+
+  line-height:
+    1.4;
+
+  text-transform:
+    uppercase;
+
 }
 
-/* =========================================
-🔥 FULL SPEC CARD VALUE
-========================================= */
+
+/* ============================================================================
+🔥 PRODUCT SPEC VALUE
+============================================================================ */
 
 .specCardValue {
-  color: #fff;
-  font-size: 18px;
-  font-weight: 800;
-  line-height: 1.5;
-  overflow-wrap: anywhere;
-  word-break: break-word;
+
+  min-width:
+    0;
+
+  color:
+    #ffffff;
+
+  font-size:
+    18px;
+
+  font-weight:
+    800;
+
+  line-height:
+    1.5;
+
+  overflow-wrap:
+    anywhere;
+
+  word-break:
+    break-word;
+
 }
 
-/* =========================================
-🔥 LONG VALUE
-========================================= */
 
-.specCardValue:empty {
-  display: none;
-}
-
-/* =========================================
-🔥 LEGACY SPEC TABLE
-========================================= */
-
-.specTable {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.specRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  padding: 20px 22px;
-  border-radius: 22px;
-  background: linear-gradient(
-    180deg,
-    rgba(168, 85, 247, .05),
-    rgba(15, 23, 42, .96)
-  );
-  border: 1px solid rgba(168, 85, 247, .10);
-}
-
-.specRowLabel {
-  color: #c4b5fd;
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-}
-
-.specRowValue {
-  max-width: 70%;
-  color: #fff;
-  font-size: 15px;
-  font-weight: 700;
-  text-align: right;
-  line-height: 1.7;
-  overflow-wrap: anywhere;
-  word-break: break-word;
-}
-
-/* =========================================
+/* ============================================================================
 🔥 FOOTERS
-========================================= */
+============================================================================ */
 
 .compactSpecFooter,
 .radarFooter,
 .specFooter {
-  display: flex;
-  align-items: center;
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
 }
+
 
 .compactSpecFooterText,
 .radarFooterText,
 .specFooterText {
-  color: #94a3b8;
-  font-size: 13px;
-  font-weight: 700;
-  line-height: 1.8;
+
+  margin:
+    0;
+
+  color:
+    #94a3b8;
+
+  font-size:
+    13px;
+
+  font-weight:
+    600;
+
+  line-height:
+    1.8;
+
 }
+
 
 .specFooter {
-  margin-top: -4px;
+
+  margin-top:
+    -4px;
+
 }
 
-.specFooterText {
-  color: #7184aa;
-  font-weight: 600;
+
+/* ============================================================================
+🔥 LEGACY TABLE
+============================================================================ */
+
+/*
+ * Retained only for components that still reference the legacy table.
+ *
+ * New ProductSpec experience uses:
+ *
+ *      .specGrid
+ *      .specCard
+ *
+ * Do not introduce new usage of these classes.
+ */
+
+.specTable {
+
+  display:
+    flex;
+
+  flex-direction:
+    column;
+
+  gap:
+    14px;
+
 }
 
-/* =========================================
-🔥 MOBILE
-========================================= */
+
+.specRow {
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    space-between;
+
+  gap:
+    20px;
+
+  padding:
+    20px 22px;
+
+  border-radius:
+    22px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(168,85,247,.05),
+      rgba(15,23,42,.96)
+    );
+
+  border:
+    1px solid
+    rgba(168,85,247,.10);
+
+}
+
+
+.specRowLabel {
+
+  color:
+    #c4b5fd;
+
+  font-size:
+    12px;
+
+  font-weight:
+    800;
+
+  letter-spacing:
+    .08em;
+
+  text-transform:
+    uppercase;
+
+}
+
+
+.specRowValue {
+
+  max-width:
+    70%;
+
+  color:
+    #ffffff;
+
+  font-size:
+    15px;
+
+  font-weight:
+    700;
+
+  text-align:
+    right;
+
+  line-height:
+    1.7;
+
+  overflow-wrap:
+    anywhere;
+
+  word-break:
+    break-word;
+
+}
+
+
+/* ============================================================================
+🔥 RESPONSIVE — TABLET
+============================================================================ */
 
 @media (max-width: 760px) {
 
   .specGrid {
-    grid-template-columns: 1fr;
+
+    grid-template-columns:
+      1fr;
+
   }
 
+
   .specCard {
-    min-height: auto;
+
+    min-height:
+      auto;
+
   }
 
 }
+
+
+/* ============================================================================
+🔥 RESPONSIVE — MOBILE
+============================================================================ */
 
 @media (max-width: 640px) {
 
   .compactSpecSection,
   .radarSection,
   .specSection {
-    padding: 22px;
-    border-radius: 24px;
-    gap: 24px;
+
+    padding:
+      22px;
+
+    border-radius:
+      24px;
+
+    gap:
+      24px;
+
   }
+
 
   .compactSpecGrid {
-    grid-template-columns: 1fr;
+
+    grid-template-columns:
+      1fr;
+
   }
 
+
   .compactSpecCard {
-    min-height: auto;
-    padding: 20px;
+
+    min-height:
+      auto;
+
+    padding:
+      20px;
+
   }
+
 
   .compactSpecTitle,
   .radarTitle,
   .specTitle {
-    font-size: clamp(26px, 8vw, 38px);
+
+    font-size:
+      clamp(
+        26px,
+        8vw,
+        38px
+      );
+
   }
+
 
   .compactSpecDescription,
   .radarDescription,
   .specDescription {
-    font-size: 14px;
-    line-height: 1.8;
+
+    font-size:
+      14px;
+
+    line-height:
+      1.8;
+
   }
+
 
   .specCard {
-    padding: 18px 20px;
-    border-radius: 18px;
+
+    padding:
+      18px 20px;
+
+    border-radius:
+      18px;
+
   }
+
 
   .specCardValue {
-    font-size: 17px;
+
+    font-size:
+      17px;
+
   }
+
+
+  .radarCardTop {
+
+    align-items:
+      flex-start;
+
+  }
+
 
   .specRow {
-    flex-direction: column;
-    align-items: flex-start;
+
+    flex-direction:
+      column;
+
+    align-items:
+      flex-start;
+
   }
 
+
   .specRowValue {
-    max-width: 100%;
-    text-align: left;
+
+    max-width:
+      100%;
+
+    text-align:
+      left;
+
+  }
+
+}
+
+
+/* ============================================================================
+🔥 ACCESSIBILITY
+============================================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+
+  .compactSpecCard,
+  .specCard {
+
+    transition:
+      none;
+
+  }
+
+  .compactSpecCard:hover,
+  .specCard:hover {
+
+    transform:
+      none;
+
   }
 
 }

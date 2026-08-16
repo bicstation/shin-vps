@@ -1,7 +1,43 @@
 // ============================================================================
 // FILE:
 // /home/maya/shin-vps/next-bicstation/app/product/[unique_id]/section/ProductRelatedSection.tsx
+//
+// SHIN CORE LINX
+// Product Discovery Experience Orchestrator
+//
+// Structure
+//
+// Product Detail
+//      ↓
+// Product Related Section
+//      │
+//      ├── Related Configuration
+//      │      └── ProductRelated
+//      │
+//      ├── Similar Workflow
+//      │      └── ProductSimilarUsage
+//      │
+//      ├── Next Exploration
+//      │      └── ProductNextIntent
+//      │
+//      └── Related Products
+//             └── RelatedProducts
+//
+// Authority
+//
+// Product Runtime
+// Product Semantic Runtime
+// Related Product Runtime
+//        ↓
+// ProductRelatedSection
+//        ↓
+// Experience Components
+//
+// This component orchestrates.
+// It does not generate semantic meaning.
+//
 // ============================================================================
+
 
 /* ============================================================================
 🔥 Components
@@ -19,8 +55,6 @@ import ProductNextIntent
 import RelatedProducts
   from '../components/recommendation/RelatedProducts'
 
-import ProductRelatedIntents
-  from '../components/intent/ProductRelatedIntents'
 
 /* ============================================================================
 🔥 Projection
@@ -33,19 +67,24 @@ import type {
 
 } from '@/shared/lib/api/django/pc/product-detail'
 
+
 /* ============================================================================
 🔥 Types
 ============================================================================ */
 
 type Props = {
 
-  product: ProjectedProduct
+  product:
+    ProjectedProduct
 
-  related: any[]
+  related:
+    any[]
 
-  semanticRuntime?: ProjectedSemanticRuntime
+  semanticRuntime?:
+    ProjectedSemanticRuntime
 
 }
+
 
 /* ============================================================================
 🔥 Product Related Section
@@ -71,6 +110,7 @@ export default function ProductRelatedSection({
 
   }
 
+
   /* ==========================================================================
   Render
   ========================================================================== */
@@ -79,48 +119,75 @@ export default function ProductRelatedSection({
 
     <section>
 
-      {/* ==========================================================
-      Related Discovery
-      ========================================================== */}
-
-      {/* <ProductRelatedIntents
-        semanticRuntime={ semanticRuntime  }
-      /> */}
-
-      {/* ==========================================================
-      Related Narrative
-      ========================================================== */}
+      {/* ======================================================================
+      RELATED CONFIGURATION
+      ====================================================================== */}
 
       <ProductRelated
-        product={ product }
-        related={ related }
+
+        product={
+          product
+        }
+
+        related={
+          related
+        }
+
       />
 
-      {/* ==========================================================
-      Similar Workflow
-      ========================================================== */}
 
-      <ProductSimilarUsage
-        product={ product }
-        related={ related }
-        semanticRuntime={ semanticRuntime }
-      />
+      {/* ======================================================================
+      SIMILAR WORKFLOW
+      ====================================================================== */}
 
-      {/* ==========================================================
-      Next Intent
-      ========================================================== */}
+      {/* <ProductSimilarUsage
 
-      <ProductNextIntent
-        product={ product }
-        related={ related }
-      />
+        product={
+          product
+        }
 
-      {/* ==========================================================
-      Exploration Products
-      ========================================================== */}
+        related={
+          related
+        }
+
+        semanticRuntime={
+          semanticRuntime
+        }
+
+      /> */}
+
+
+      {/* ======================================================================
+      NEXT EXPLORATION
+      ====================================================================== */}
+
+      {/* <ProductNextIntent
+
+        product={
+          product
+        }
+
+        related={
+          related
+        }
+
+        semanticRuntime={
+          semanticRuntime
+        }
+
+      /> */}
+
+
+      {/* ======================================================================
+      RELATED PRODUCTS
+      ====================================================================== */}
 
       <RelatedProducts
-        related={ related }
+
+        related={
+          related
+        }
+
       />
 
     </section>

@@ -1,8 +1,9 @@
 /* ============================================================================
 🔥 ProductAISummary.module.css
 SHIN CORE LINX
-Product Summary Experience V2
+Product Semantic Understanding Experience
 ============================================================================ */
+
 
 /* ============================================================================
 🔥 ROOT
@@ -10,26 +11,73 @@ Product Summary Experience V2
 
 .aiSummary {
 
+  position: relative;
+
   display: flex;
+
   flex-direction: column;
 
-  gap: 20px;
+  gap: 24px;
 
-  padding: 28px;
+  padding: 30px;
 
-  border-radius: 24px;
+  border-radius: 26px;
 
   background:
     linear-gradient(
       180deg,
-      rgba(15,23,42,.92),
+      rgba(15,23,42,.94),
       rgba(2,6,23,1)
     );
 
   border:
-    1px solid rgba(148,163,184,.08);
+    1px solid rgba(148,163,184,.10);
+
+  box-shadow:
+    0 20px 52px rgba(0,0,0,.20);
+
+  overflow:
+    hidden;
 
 }
+
+
+/* ============================================================================
+🔥 SUBTLE ACCENT
+============================================================================ */
+
+.aiSummary::before {
+
+  content:
+    '';
+
+  position:
+    absolute;
+
+  top:
+    -120px;
+
+  left:
+    -100px;
+
+  width:
+    300px;
+
+  height:
+    240px;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(125,211,252,.08),
+      transparent 70%
+    );
+
+  pointer-events:
+    none;
+
+}
+
 
 /* ============================================================================
 🔥 HEADER
@@ -37,71 +85,155 @@ Product Summary Experience V2
 
 .aiSummaryHeader {
 
-  display: flex;
-  flex-direction: column;
+  position:
+    relative;
 
-  gap: 8px;
+  z-index:
+    1;
+
+  display:
+    flex;
+
+  flex-direction:
+    column;
+
+  gap:
+    8px;
 
 }
+
+
+/* ============================================================================
+🔥 LABEL
+============================================================================ */
 
 .aiSummaryLabel {
 
-  color: #7dd3fc;
+  color:
+    #7dd3fc;
 
-  font-size: 11px;
+  font-size:
+    11px;
 
-  font-weight: 800;
+  font-weight:
+    800;
 
-  letter-spacing: .08em;
+  line-height:
+    1.4;
 
-  text-transform: uppercase;
+  letter-spacing:
+    .08em;
+
+  text-transform:
+    uppercase;
 
 }
 
+
+/* ============================================================================
+🔥 TITLE
+============================================================================ */
+
 .aiSummaryTitle {
 
-  margin: 0;
+  margin:
+    0;
 
-  color: #ffffff;
+  color:
+    #ffffff;
 
   font-size:
     clamp(28px, 4vw, 42px);
 
-  font-weight: 900;
+  font-weight:
+    900;
 
-  line-height: 1.15;
+  line-height:
+    1.12;
+
+  letter-spacing:
+    -.035em;
 
 }
 
+
 /* ============================================================================
-🔥 SUMMARY CARD
+🔥 DESCRIPTION
+============================================================================ */
+
+.aiSummaryDescription {
+
+  max-width:
+    720px;
+
+  margin:
+    0;
+
+  color:
+    #94a3b8;
+
+  font-size:
+    13px;
+
+  line-height:
+    1.8;
+
+}
+
+
+/* ============================================================================
+🔥 SUMMARY BLOCK
 ============================================================================ */
 
 .aiSummaryBlock {
 
-  padding: 24px;
+  position:
+    relative;
 
-  border-radius: 20px;
+  z-index:
+    1;
+
+  padding:
+    26px;
+
+  border-radius:
+    20px;
 
   background:
-    rgba(255,255,255,.03);
+    rgba(255,255,255,.035);
 
   border:
-    1px solid rgba(255,255,255,.06);
+    1px solid rgba(255,255,255,.07);
 
 }
+
+
+/* ============================================================================
+🔥 SUMMARY TEXT
+============================================================================ */
 
 .aiSummaryText {
 
-  margin: 0;
+  margin:
+    0;
 
-  color: #e2e8f0;
+  color:
+    #e2e8f0;
 
-  font-size: 16px;
+  font-size:
+    16px;
 
-  line-height: 1.9;
+  font-weight:
+    500;
+
+  line-height:
+    1.95;
+
+  letter-spacing:
+    .01em;
 
 }
+
 
 /* ============================================================================
 🔥 RESPONSIVE
@@ -111,29 +243,91 @@ Product Summary Experience V2
 
   .aiSummary {
 
-    padding: 20px;
+    gap:
+      20px;
 
-    border-radius: 20px;
+    padding:
+      22px;
 
-  }
-
-  .aiSummaryBlock {
-
-    padding: 18px;
-
-    border-radius: 16px;
+    border-radius:
+      22px;
 
   }
 
   .aiSummaryTitle {
 
-    font-size: 24px;
+    font-size:
+      26px;
+
+  }
+
+  .aiSummaryDescription {
+
+    font-size:
+      12px;
+
+  }
+
+  .aiSummaryBlock {
+
+    padding:
+      20px;
+
+    border-radius:
+      17px;
 
   }
 
   .aiSummaryText {
 
-    font-size: 14px;
+    font-size:
+      14px;
+
+    line-height:
+      1.85;
+
+  }
+
+}
+
+
+/* ============================================================================
+🔥 SMALL MOBILE
+============================================================================ */
+
+@media (max-width: 480px) {
+
+  .aiSummary {
+
+    padding:
+      18px;
+
+    border-radius:
+      20px;
+
+  }
+
+  .aiSummaryTitle {
+
+    font-size:
+      24px;
+
+  }
+
+  .aiSummaryBlock {
+
+    padding:
+      17px;
+
+    border-radius:
+      16px;
+
+  }
+
+  .aiSummaryText {
+
+    font-size:
+      13px;
 
   }
 

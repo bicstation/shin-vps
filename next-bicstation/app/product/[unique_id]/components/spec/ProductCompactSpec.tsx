@@ -1,103 +1,307 @@
 // ============================================================================
 // FILE:
 // next-bicstation/app/product/[unique_id]/components/spec/ProductCompactSpec.tsx
+//
+// SHIN CORE LINX
+// Product Quick Specification Experience
+//
+// RESPONSIBILITY
+//
+// Projected Product
+//        ↓
+// ProductCompactSpec
+//        ↓
+// Quick Product Configuration
+//
+// PURPOSE
+//
+// ProductCompactSpec provides a fast visual understanding of the
+// most important hardware configuration.
+//
+// ✓ CPU
+// ✓ GPU
+// ✓ Memory
+// ✓ Storage
+// ✓ Product identity in heading
+// ✓ Null-safe rendering
+//
+// ✗ Semantic generation
+// ✗ Product classification
+// ✗ Recommendation generation
+// ✗ Observation parsing
+// ✗ Runtime generation
+//
+// Detailed specification is handled by:
+//      ProductSpec
+//
+// Observation Reality is handled by:
+//      ProductRadar
+//
 // ============================================================================
 
-import styles from './spec.module.css'
+/* ============================================================================
+🔥 Styles
+============================================================================ */
+
+import styles
+  from './spec.module.css'
+
+
+/* ============================================================================
+🔥 Projection
+============================================================================ */
+
+import type {
+
+  ProjectedProduct,
+
+} from '@/shared/lib/api/django/pc/product-detail'
+
+
+/* ============================================================================
+🔥 Types
+============================================================================ */
 
 type Props = {
-  product: any
+
+  product:
+    ProjectedProduct
+
 }
 
-/* =========================================
-🔥 HELPERS
-========================================= */
 
-function buildCompactSpecs(product: any) {
+type CompactSpec = {
 
-  const specs = []
+  label:
+    string
 
-  const gpu =
-    product?.gpuModel
-    || product?.gpu_model
-    || product?.gpu_name
+  value:
+    string
+
+}
+
+
+/* ============================================================================
+🔥 Helpers
+============================================================================ */
+
+/**
+ * ============================================================================
+ * Build Quick Specifications
+ * ============================================================================
+ *
+ * ProductCompactSpec only reads canonical ProjectedProduct fields.
+ *
+ * It does not inspect:
+ *
+ * ✗ observation runtime
+ * ✗ semantic runtime
+ * ✗ compiled runtime
+ *
+ * It does not generate meaning.
+ *
+ * ============================================================================
+ */
+
+function buildCompactSpecs(
+  product:
+    ProjectedProduct
+): CompactSpec[] {
+
+  const specs:
+    CompactSpec[] = []
+
+
+  /* ==========================================================================
+  CPU
+  ========================================================================== */
 
   const cpu =
-    product?.cpuModel
-    || product?.cpu_model
-    || product?.cpu_name
+    product.cpuModel?.trim()
+    ||
+    ''
 
-  const memory =
-    product?.memoryGb != null
-      ? `${product.memoryGb}GB`
-      : product?.memory_gb != null
-        ? `${product.memory_gb}GB`
-        : product?.memory
-
-  const storage =
-    product?.storageGb != null
-      ? `${product.storageGb}GB`
-      : product?.storage_gb != null
-        ? `${product.storage_gb}GB`
-        : product?.storage
 
   if (cpu) {
+
     specs.push({
-      label: 'CPU',
-      value: cpu,
+
+      label:
+        'CPU',
+
+      value:
+        cpu,
+
     })
+
   }
+
+
+  /* ==========================================================================
+  GPU
+  ========================================================================== */
+
+  const gpu =
+    product.gpuModel?.trim()
+    ||
+    ''
+
 
   if (gpu) {
+
     specs.push({
-      label: 'GPU',
-      value: gpu,
+
+      label:
+        'GPU',
+
+      value:
+        gpu,
+
     })
+
   }
 
-  if (memory) {
+
+  /* ==========================================================================
+  MEMORY
+  ========================================================================== */
+
+  const memory =
+    product.memoryGb
+
+
+  if (
+    typeof memory === 'number'
+    &&
+    Number.isFinite(memory)
+    &&
+    memory > 0
+  ) {
+
     specs.push({
-      label: 'MEMORY',
-      value: memory,
+
+      label:
+        'MEMORY',
+
+      value:
+        `${memory}GB`,
+
     })
+
   }
 
-  if (storage) {
+
+  /* ==========================================================================
+  STORAGE
+  ========================================================================== */
+
+  const storage =
+    product.storageGb
+
+
+  if (
+    typeof storage === 'number'
+    &&
+    Number.isFinite(storage)
+    &&
+    storage > 0
+  ) {
+
     specs.push({
-      label: 'SSD',
-      value: storage,
+
+      label:
+        'STORAGE',
+
+      value:
+        `${storage}GB`,
+
     })
+
   }
 
-  return specs.slice(0, 4)
+
+  return specs.slice(
+    0,
+    4
+  )
+
 }
 
-/* =========================================
-🔥 COMPONENT
-========================================= */
+
+/* ============================================================================
+🔥 Component
+============================================================================ */
 
 export default function ProductCompactSpec({
+
   product,
+
 }: Props) {
 
+
+  /* ==========================================================================
+  Guard
+  ========================================================================== */
+
   if (!product) {
+
     return null
+
   }
+
+
+  /* ==========================================================================
+  Product Identity
+  ========================================================================== */
+
+  const productName =
+    product.name?.trim()
+    ||
+    'このPC'
+
+
+  /* ==========================================================================
+  Quick Specifications
+  ========================================================================== */
 
   const specs =
-    buildCompactSpecs(product)
+    buildCompactSpecs(
+      product
+    )
 
-  if (!specs.length) {
+
+  /* ==========================================================================
+  Empty Guard
+  ========================================================================== */
+
+  if (
+    specs.length === 0
+  ) {
+
     return null
+
   }
+
+
+  /* ==========================================================================
+  Render
+  ========================================================================== */
 
   return (
 
     <section
+
       className={
         styles.compactSpecSection
       }
+
+      aria-labelledby="product-quick-spec-title"
+
     >
+
+      {/* ======================================================================
+      HEADER
+      ====================================================================== */}
 
       <div
         className={
@@ -110,66 +314,109 @@ export default function ProductCompactSpec({
             styles.compactSpecLabel
           }
         >
+
           QUICK SPECS
+
         </div>
 
+
         <h2
+
+          id="product-quick-spec-title"
+
           className={
             styles.compactSpecTitle
           }
         >
-          主要スペック
+
+          {productName}
+          の主要スペック
+
         </h2>
+
 
         <p
           className={
             styles.compactSpecDescription
           }
         >
-          比較しやすいよう、重要スペックだけを
-          コンパクトに整理しています。
+
+          CPU・GPU・メモリー・ストレージから、
+          このPCの主要な構成をすばやく確認できます。
+
         </p>
 
       </div>
+
+
+      {/* ======================================================================
+      SPEC GRID
+      ====================================================================== */}
 
       <div
         className={
           styles.compactSpecGrid
         }
+
+        aria-label="主要スペック"
+
       >
 
-        {specs.map(
-          (spec) => (
-
-            <div
-              key={spec.label}
-              className={
-                styles.compactSpecCard
-              }
-            >
+        {
+          specs.map(
+            (
+              spec
+            ) => (
 
               <div
-                className={
-                  styles.compactSpecCardLabel
+
+                key={
+                  spec.label
                 }
+
+                className={
+                  styles.compactSpecCard
+                }
+
               >
-                {spec.label}
+
+                <div
+                  className={
+                    styles.compactSpecCardLabel
+                  }
+                >
+
+                  {
+                    spec.label
+                  }
+
+                </div>
+
+
+                <div
+                  className={
+                    styles.compactSpecCardValue
+                  }
+                >
+
+                  {
+                    spec.value
+                  }
+
+                </div>
+
               </div>
 
-              <div
-                className={
-                  styles.compactSpecCardValue
-                }
-              >
-                {spec.value}
-              </div>
-
-            </div>
-
+            )
           )
-        )}
+        }
 
       </div>
+
+
+      {/* ======================================================================
+      FOOTER
+      ====================================================================== */}
 
       <div
         className={
@@ -182,8 +429,9 @@ export default function ProductCompactSpec({
             styles.compactSpecFooterText
           }
         >
-          ✔ CPU・GPU・メモリー・ストレージの
-          主要構成を表示しています。
+
+          基本構成をひと目で確認できます。
+
         </div>
 
       </div>
@@ -191,4 +439,5 @@ export default function ProductCompactSpec({
     </section>
 
   )
+
 }

@@ -1,20 +1,21 @@
 // ============================================================================
 // FILE:
 // next-bicstation/app/product/[unique_id]/components/spec/ProductSpec.tsx
-// ============================================================================
 //
 // SHIN CORE LINX
-// Product Basic Specification
+// Product Basic Specification Experience
 //
-// PURPOSE
+// RESPONSIBILITY
 //
-// Product Detail
-//      ↓
 // ProjectedProduct
 //      ↓
 // ProductSpec
+//      ↓
+// Product Basic Specification Experience
 //
-// ProductSpec = Basic Product Information UI
+// PURPOSE
+//
+// ProductSpec presents the normalized product specification itself.
 //
 // ✓ Maker
 // ✓ Brand
@@ -25,12 +26,15 @@
 // ✓ Memory
 // ✓ Storage
 // ✓ Display
+// ✓ Product identity in heading
+// ✓ Stable section anchor
 //
 // ✗ Observation Runtime
 // ✗ Manufacturer-specific Reality
 // ✗ Semantic Generation
+// ✗ Workflow Generation
+// ✗ Recommendation Generation
 // ✗ Runtime Generation
-// ✗ Meaning Generation
 //
 // Manufacturer-specific Observation is handled by:
 //
@@ -39,17 +43,44 @@
 //      ├── DefaultObservation
 //      └── future manufacturer renderers
 //
+// Authority
+//
+// Backend Reality
+//      ↓
+// Adapter / Projection
+//      ↓
+// ProjectedProduct
+//      ↓
+// ProductSpec
+//
 // ============================================================================
 
-import styles from './spec.module.css'
+import styles
+  from './spec.module.css'
+
+
+/* ============================================================================
+🔥 Projection
+============================================================================ */
+
+import type {
+
+  ProjectedProduct,
+
+} from '@/shared/lib/api/django/pc/product-detail'
+
 
 /* ============================================================================
 🔥 Props
 ============================================================================ */
 
 type Props = {
-  product: any
+
+  product:
+    ProjectedProduct
+
 }
+
 
 /* ============================================================================
 🔥 Specification
@@ -57,11 +88,14 @@ type Props = {
 
 type ProductSpecification = {
 
-  label: string
+  label:
+    string
 
-  value: string
+  value:
+    string
 
 }
+
 
 /* ============================================================================
 🔥 Helpers
@@ -72,36 +106,37 @@ type ProductSpecification = {
  * Product Basic Specifications
  * ============================================================================
  *
- * Product model itself already contains these normalized fields.
+ * ProductSpec reads only canonical ProjectedProduct fields.
  *
- * This function does NOT inspect:
+ * It does NOT inspect:
  *
- * observation_runtime
- * semantic_runtime
- * compiled_runtime
+ * ✗ observation_runtime
+ * ✗ semantic_runtime
+ * ✗ compiled_runtime
  *
- * It only prepares the basic Product View Model for presentation.
+ * It does NOT generate semantic meaning.
  *
  * ============================================================================
  */
 
 function buildSpecs(
-  product: any,
+  product:
+    ProjectedProduct
 ): ProductSpecification[] {
 
   const specs:
     ProductSpecification[] = []
 
-  /* ========================================================================
+
+  /* ==========================================================================
   MAKER
-  ======================================================================== */
+  ========================================================================== */
 
   const maker =
-    product?.maker
+    product.maker?.trim()
     ||
-    product?.makerName
-    ||
-    product?.maker_name
+    ''
+
 
   if (maker) {
 
@@ -111,19 +146,24 @@ function buildSpecs(
         'MAKER',
 
       value:
-        String(maker),
+        maker,
 
     })
 
   }
 
-  /* ========================================================================
-  BRAND
-  ======================================================================== */
 
-  if (
-    product?.brand
-  ) {
+  /* ==========================================================================
+  BRAND
+  ========================================================================== */
+
+  const brand =
+    product.brand?.trim()
+    ||
+    ''
+
+
+  if (brand) {
 
     specs.push({
 
@@ -131,19 +171,24 @@ function buildSpecs(
         'BRAND',
 
       value:
-        String(product.brand),
+        brand,
 
     })
 
   }
 
-  /* ========================================================================
-  SERIES
-  ======================================================================== */
 
-  if (
-    product?.series
-  ) {
+  /* ==========================================================================
+  SERIES
+  ========================================================================== */
+
+  const series =
+    product.series?.trim()
+    ||
+    ''
+
+
+  if (series) {
 
     specs.push({
 
@@ -151,19 +196,24 @@ function buildSpecs(
         'SERIES',
 
       value:
-        String(product.series),
+        series,
 
     })
 
   }
 
-  /* ========================================================================
-  COLLABORATION
-  ======================================================================== */
 
-  if (
-    product?.collaboration
-  ) {
+  /* ==========================================================================
+  COLLABORATION
+  ========================================================================== */
+
+  const collaboration =
+    product.collaboration?.trim()
+    ||
+    ''
+
+
+  if (collaboration) {
 
     specs.push({
 
@@ -171,20 +221,22 @@ function buildSpecs(
         'COLLABORATION',
 
       value:
-        String(product.collaboration),
+        collaboration,
 
     })
 
   }
 
-  /* ========================================================================
+
+  /* ==========================================================================
   CPU
-  ======================================================================== */
+  ========================================================================== */
 
   const cpu =
-    product?.cpuModel
+    product.cpuModel?.trim()
     ||
-    product?.cpu_model
+    ''
+
 
   if (cpu) {
 
@@ -194,20 +246,22 @@ function buildSpecs(
         'CPU',
 
       value:
-        String(cpu),
+        cpu,
 
     })
 
   }
 
-  /* ========================================================================
+
+  /* ==========================================================================
   GPU
-  ======================================================================== */
+  ========================================================================== */
 
   const gpu =
-    product?.gpuModel
+    product.gpuModel?.trim()
     ||
-    product?.gpu_model
+    ''
+
 
   if (gpu) {
 
@@ -217,23 +271,33 @@ function buildSpecs(
         'GPU',
 
       value:
-        String(gpu),
+        gpu,
 
     })
 
   }
 
-  /* ========================================================================
+
+  /* ==========================================================================
   MEMORY
-  ======================================================================== */
+  ========================================================================== */
 
   const memory =
-    product?.memoryGb
-    ??
-    product?.memory_gb
+    product.memoryGb
+
 
   if (
-    memory != null
+
+    typeof memory === 'number'
+
+    &&
+
+    Number.isFinite(memory)
+
+    &&
+
+    memory > 0
+
   ) {
 
     specs.push({
@@ -248,17 +312,27 @@ function buildSpecs(
 
   }
 
-  /* ========================================================================
+
+  /* ==========================================================================
   STORAGE
-  ======================================================================== */
+  ========================================================================== */
 
   const storage =
-    product?.storageGb
-    ??
-    product?.storage_gb
+    product.storageGb
+
 
   if (
-    storage != null
+
+    typeof storage === 'number'
+
+    &&
+
+    Number.isFinite(storage)
+
+    &&
+
+    storage > 0
+
   ) {
 
     specs.push({
@@ -273,14 +347,16 @@ function buildSpecs(
 
   }
 
-  /* ========================================================================
+
+  /* ==========================================================================
   DISPLAY
-  ======================================================================== */
+  ========================================================================== */
 
   const display =
-    product?.displayInfo
+    product.displayInfo?.trim()
     ||
-    product?.display_info
+    ''
+
 
   if (display) {
 
@@ -290,15 +366,17 @@ function buildSpecs(
         'DISPLAY',
 
       value:
-        String(display),
+        display,
 
     })
 
   }
 
+
   return specs
 
 }
+
 
 /* ============================================================================
 🔥 Component
@@ -310,26 +388,27 @@ export default function ProductSpec({
 
 }: Props) {
 
+
   /* ==========================================================================
   Guard
   ========================================================================== */
 
-  if (
-    !product
-  ) {
+  if (!product) {
 
     return null
 
   }
 
+
   /* ==========================================================================
-  Product Name
+  Product Identity
   ========================================================================== */
 
   const productName =
-    product?.name
+    product.name?.trim()
     ||
     'このPC'
+
 
   /* ==========================================================================
   Basic Specifications
@@ -340,8 +419,9 @@ export default function ProductSpec({
       product
     )
 
+
   /* ==========================================================================
-  Empty
+  Empty Guard
   ========================================================================== */
 
   if (
@@ -352,6 +432,7 @@ export default function ProductSpec({
 
   }
 
+
   /* ==========================================================================
   Render
   ========================================================================== */
@@ -359,9 +440,15 @@ export default function ProductSpec({
   return (
 
     <section
+
       className={
         styles.specSection
       }
+
+      id="specifications"
+
+      aria-labelledby="product-specifications-title"
+
     >
 
       {/* ======================================================================
@@ -374,79 +461,124 @@ export default function ProductSpec({
         }
       >
 
+        {/* ====================================================================
+        LABEL
+        ==================================================================== */}
+
         <div
           className={
             styles.specLabel
           }
         >
+
           PRODUCT SPECIFICATIONS
+
         </div>
 
+
+        {/* ====================================================================
+        TITLE
+        ==================================================================== */}
+
         <h2
+
+          id="product-specifications-title"
+
           className={
             styles.specTitle
           }
         >
+
           {productName}
           の基本仕様
+
         </h2>
+
+
+        {/* ====================================================================
+        DESCRIPTION
+        ==================================================================== */}
 
         <p
           className={
             styles.specDescription
           }
         >
+
           {productName}
-          の主要な製品情報と構成を確認できます。
+          のメーカー・シリーズ・主要ハードウェア構成など、
+          基本的な製品仕様を確認できます。
+
         </p>
 
       </div>
+
 
       {/* ======================================================================
       SPEC GRID
       ====================================================================== */}
 
       <div
+
         className={
           styles.specGrid
         }
+
+        aria-label={
+          `${productName}の基本仕様`
+        }
+
       >
 
         {
           specs.map(
             (
-              spec,
-              index,
+              spec
             ) => (
 
               <div
+
                 key={
-                  `${spec.label}-${index}`
+                  spec.label
                 }
 
                 className={
                   styles.specCard
                 }
+
               >
+
+                {/* ============================================================
+                LABEL
+                ============================================================ */}
 
                 <div
                   className={
                     styles.specCardLabel
                   }
                 >
+
                   {
                     spec.label
                   }
+
                 </div>
+
+
+                {/* ============================================================
+                VALUE
+                ============================================================ */}
 
                 <div
                   className={
                     styles.specCardValue
                   }
                 >
+
                   {
                     spec.value
                   }
+
                 </div>
 
               </div>
@@ -456,6 +588,7 @@ export default function ProductSpec({
         }
 
       </div>
+
 
       {/* ======================================================================
       FOOTER

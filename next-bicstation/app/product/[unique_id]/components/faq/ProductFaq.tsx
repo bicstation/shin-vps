@@ -1,14 +1,53 @@
 // ============================================================================
 // FILE:
-// /home/maya/shin-vps/next-bicstation/app/product/[unique_id]/components/faq/ProductFaq.tsx
+// app/product/[unique_id]/components/faq/ProductFaq.tsx
+//
+// SHIN CORE LINX
+// Product Detail FAQ Experience
+//
+// RESPONSIBILITY
+//
+// Projected Product
+//        ↓
+// ProductFaq
+//        ↓
+// Product-specific FAQ Experience
+//
+// ProductFaq = Product Reality FAQ Presentation
+//
+// ✓ Product-specific questions
+// ✓ Product-specific answers
+// ✓ Uses projected product information
+// ✓ Handles missing specifications
+// ✓ Stable FAQ interaction
+//
+// ✗ Semantic generation
+// ✗ Workflow inference
+// ✗ Recommendation generation
+// ✗ Usage suitability inference
+// ✗ AI generation
+// ✗ Runtime generation
+//
+// IMPORTANT
+//
+// FAQ answers must be grounded in fields already available
+// in ProjectedProduct.
+//
+// Do not infer:
+//
+//   ✓ gaming suitability
+//   ✓ AI suitability
+//   ✓ creator suitability
+//   ✓ performance level
+//
+// from CPU / GPU names alone.
+//
 // ============================================================================
 
 'use client'
 
 import {
-
   useState,
-
 } from 'react'
 
 import styles
@@ -19,10 +58,9 @@ import styles
 ============================================================================ */
 
 import type {
-
   ProjectedProduct,
-
 } from '@/shared/lib/api/django/pc/product-detail'
+
 
 /* ============================================================================
 🔥 Types
@@ -30,66 +68,402 @@ import type {
 
 type FAQItem = {
 
-  question: string
+  question:
+    string
 
-  answer: string
+  answer:
+    string
 
 }
+
+
+/* ============================================================================
+🔥 Props
+============================================================================ */
 
 type Props = {
 
-  product: ProjectedProduct
+  product:
+    ProjectedProduct
 
 }
+
+
+/* ============================================================================
+🔥 Helpers
+============================================================================ */
+
+/**
+ * Normalize display value.
+ *
+ * FAQ should never render empty / meaningless values.
+ */
+
+function getStringValue(
+  value: unknown,
+): string {
+
+  if (
+    value === undefined
+    || value === null
+  ) {
+
+    return ''
+
+  }
+
+  const text =
+    String(value)
+      .trim()
+
+  return text
+
+}
+
+
+/* ============================================================================
+🔥 Product Name
+============================================================================ */
+
+function getProductName(
+  product: ProjectedProduct,
+): string {
+
+  return (
+
+    getStringValue(
+      product?.name
+    )
+
+    ||
+
+    'このPC'
+
+  )
+
+}
+
+
+/* ============================================================================
+🔥 CPU
+============================================================================ */
+
+function getCpu(
+  product: ProjectedProduct,
+): string {
+
+  return (
+
+    getStringValue(
+      product?.cpuModel
+    )
+
+    ||
+
+    getStringValue(
+      (product as any)?.cpu_model
+    )
+
+  )
+
+}
+
+
+/* ============================================================================
+🔥 GPU
+============================================================================ */
+
+function getGpu(
+  product: ProjectedProduct,
+): string {
+
+  return (
+
+    getStringValue(
+      product?.gpuModel
+    )
+
+    ||
+
+    getStringValue(
+      (product as any)?.gpu_model
+    )
+
+  )
+
+}
+
+
+/* ============================================================================
+🔥 Memory
+============================================================================ */
+
+function getMemory(
+  product: ProjectedProduct,
+): string {
+
+  const memory =
+
+    product?.memoryGb
+
+    ??
+
+    (product as any)?.memory_gb
+
+  if (
+    memory === undefined
+    || memory === null
+    || memory === ''
+  ) {
+
+    return ''
+
+  }
+
+  return `${memory}GB`
+
+}
+
+
+/* ============================================================================
+🔥 Storage
+============================================================================ */
+
+function getStorage(
+  product: ProjectedProduct,
+): string {
+
+  const storage =
+
+    product?.storageGb
+
+    ??
+
+    (product as any)?.storage_gb
+
+  if (
+    storage === undefined
+    || storage === null
+    || storage === ''
+  ) {
+
+    return ''
+
+  }
+
+  return `${storage}GB`
+
+}
+
+
+/* ============================================================================
+🔥 Display
+============================================================================ */
+
+function getDisplay(
+  product: ProjectedProduct,
+): string {
+
+  return (
+
+    getStringValue(
+      product?.displayInfo
+    )
+
+    ||
+
+    getStringValue(
+      (product as any)?.display_info
+    )
+
+  )
+
+}
+
 
 /* ============================================================================
 🔥 FAQ Builder
 ============================================================================ */
 
+/**
+ * Build FAQ items only from information that actually exists.
+ *
+ * No usage inference.
+ * No performance inference.
+ * No semantic generation.
+ */
+
 function buildFaqs(
 
-  product: ProjectedProduct
+  product:
+    ProjectedProduct
 
 ): FAQItem[] {
 
-  return [
+  const faqs:
+    FAQItem[] = []
 
-    {
+  const productName =
+    getProductName(
+      product
+    )
+
+  const cpu =
+    getCpu(
+      product
+    )
+
+  const gpu =
+    getGpu(
+      product
+    )
+
+  const memory =
+    getMemory(
+      product
+    )
+
+  const storage =
+    getStorage(
+      product
+    )
+
+  const display =
+    getDisplay(
+      product
+    )
+
+
+  /* ========================================================================
+  PRODUCT OVERVIEW
+  ======================================================================== */
+
+  if (
+    productName
+  ) {
+
+    faqs.push({
 
       question:
-        'このPCはどんな用途に向いていますか？',
+        `${productName}はどんなPCですか？`,
 
       answer:
+        `${productName}の製品情報と主要スペックを、このページで確認できます。`,
 
-        `${product.name} は用途に応じた構成を備えたモデルです。`
+    })
 
-    },
+  }
 
-    {
+
+  /* ========================================================================
+  CPU
+  ======================================================================== */
+
+  if (
+    cpu
+  ) {
+
+    faqs.push({
 
       question:
-        'ゲーム用途にも使えますか？',
+        `${productName}のCPUは何ですか？`,
 
       answer:
+        `CPUには${cpu}を搭載しています。`,
 
-        'GPU構成やCPU性能によって快適に利用できます。'
+    })
 
-    },
+  }
 
-    {
+
+  /* ========================================================================
+  GPU
+  ======================================================================== */
+
+  if (
+    gpu
+  ) {
+
+    faqs.push({
 
       question:
-        '生成AIや動画編集にも対応できますか？',
+        `${productName}のGPUは何ですか？`,
 
       answer:
+        `GPUには${gpu}を搭載しています。`,
 
-        '用途に応じてAI・動画編集・クリエイティブ用途にも利用できます。'
+    })
 
-    },
+  }
 
-  ]
+
+  /* ========================================================================
+  MEMORY
+  ======================================================================== */
+
+  if (
+    memory
+  ) {
+
+    faqs.push({
+
+      question:
+        `${productName}のメモリー容量はどのくらいですか？`,
+
+      answer:
+        `メモリー容量は${memory}です。`,
+
+    })
+
+  }
+
+
+  /* ========================================================================
+  STORAGE
+  ======================================================================== */
+
+  if (
+    storage
+  ) {
+
+    faqs.push({
+
+      question:
+        `${productName}のストレージ容量はどのくらいですか？`,
+
+      answer:
+        `ストレージ容量は${storage}です。`,
+
+    })
+
+  }
+
+
+  /* ========================================================================
+  DISPLAY
+  ======================================================================== */
+
+  if (
+    display
+  ) {
+
+    faqs.push({
+
+      question:
+        `${productName}のディスプレイ仕様は？`,
+
+      answer:
+        `ディスプレイは${display}です。`,
+
+    })
+
+  }
+
+
+  return faqs
 
 }
+
 
 /* ============================================================================
 🔥 COMPONENT
@@ -101,13 +475,46 @@ export default function ProductFaq({
 
 }: Props) {
 
+
+  /* ==========================================================================
+  Guard
+  ========================================================================== */
+
+  if (
+    !product
+  ) {
+
+    return null
+
+  }
+
+
+  /* ==========================================================================
+  FAQ
+  ========================================================================== */
+
   const faqs =
-
     buildFaqs(
-
       product
-
     )
+
+
+  /* ==========================================================================
+  Empty
+  ========================================================================== */
+
+  if (
+    faqs.length === 0
+  ) {
+
+    return null
+
+  }
+
+
+  /* ==========================================================================
+  State
+  ========================================================================== */
 
   const [
 
@@ -117,23 +524,26 @@ export default function ProductFaq({
 
   ] = useState<number | null>(0)
 
-  if (
 
-    faqs.length === 0
-
-  ) {
-
-    return null
-
-  }
+  /* ==========================================================================
+  Render
+  ========================================================================== */
 
   return (
 
     <section
+
       className={
         styles.faqSection
       }
+
+      aria-labelledby="product-faq-title"
+
     >
+
+      {/* ======================================================================
+      HEADER
+      ====================================================================== */}
 
       <div
         className={
@@ -151,15 +561,22 @@ export default function ProductFaq({
 
         </div>
 
+
         <h2
+
+          id="product-faq-title"
+
           className={
             styles.faqTitle
           }
+
         >
 
-          よくある質問
+          {getProductName(product)}
+          のよくある質問
 
         </h2>
+
 
         <p
           className={
@@ -167,13 +584,18 @@ export default function ProductFaq({
           }
         >
 
-          AI用途・ゲーム・動画編集など、
-          実際の利用シーンで
-          よくある質問を整理しています。
+          {getProductName(product)}
+          の製品情報や主要スペックについて、
+          よく確認されるポイントを整理しています。
 
         </p>
 
       </div>
+
+
+      {/* ======================================================================
+      FAQ LIST
+      ====================================================================== */}
 
       <div
         className={
@@ -186,22 +608,21 @@ export default function ProductFaq({
           faqs.map(
 
             (
-
               faq,
-
-              index
-
+              index,
             ) => {
 
               const isOpen =
-
                 openIndex === index
+
 
               return (
 
                 <div
 
-                  key={index}
+                  key={
+                    `${faq.question}-${index}`
+                  }
 
                   className={
                     styles.faqItem
@@ -209,9 +630,17 @@ export default function ProductFaq({
 
                 >
 
+                  {/* ============================================================
+                  QUESTION
+                  ============================================================ */}
+
                   <button
 
                     type="button"
+
+                    aria-expanded={
+                      isOpen
+                    }
 
                     onClick={() =>
 
@@ -235,14 +664,18 @@ export default function ProductFaq({
 
                     <span>
 
-                      {faq.question}
+                      {
+                        faq.question
+                      }
 
                     </span>
+
 
                     <span
                       className={
                         styles.faqIcon
                       }
+                      aria-hidden="true"
                     >
 
                       {
@@ -259,6 +692,11 @@ export default function ProductFaq({
 
                   </button>
 
+
+                  {/* ==========================================================
+                  ANSWER
+                  ========================================================== */}
+
                   {
 
                     isOpen && (
@@ -269,7 +707,9 @@ export default function ProductFaq({
                         }
                       >
 
-                        {faq.answer}
+                        {
+                          faq.answer
+                        }
 
                       </div>
 

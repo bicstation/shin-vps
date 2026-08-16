@@ -1,6 +1,40 @@
 // ============================================================================
 // FILE:
 // app/product/[unique_id]/components/hero/ProductHero.tsx
+//
+// SHIN CORE LINX
+// Product Detail Hero
+//
+// RESPONSIBILITY
+//
+// Product Runtime
+//      ↓
+// ProductHero
+//
+// ProductHero = Product Identity Experience
+//
+// ✓ Maker
+// ✓ Product Image
+// ✓ Product Name
+// ✓ Price
+// ✓ Section Navigation
+//
+// ✗ Semantic Summary rendering
+// ✗ Target User interpretation
+// ✗ Workflow rendering
+// ✗ Semantic generation
+// ✗ Workflow inference
+// ✗ Recommendation generation
+// ✗ Runtime generation
+//
+// Detailed semantic understanding is handled by:
+//
+//      ProductAISummary
+//
+// Detailed capability / recommendation evidence is handled by:
+//
+//      ProductHeroCapability
+//
 // ============================================================================
 
 'use client'
@@ -12,103 +46,59 @@ import styles
   from './styles/ProductHero.module.css'
 
 /* ============================================================================
-🔥 Projection Types
+// Projection Types
 ============================================================================ */
 
 import type {
 
   ProjectedProduct,
-  ProjectedSemanticRuntime,
-  ProjectedCompiledRuntime,
 
 } from '@/shared/lib/api/django/pc/product-detail'
 
 /* ============================================================================
-🔥 Workflow Label
-============================================================================ */
-
-function getWorkflowLabel(
-  tag: string
-): string {
-
-  const labels:
-    Record<string, string> = {
-
-    'usage-ai':
-      'AI',
-
-    'usage-gaming':
-      'Gaming',
-
-    'usage-creator':
-      'Creator',
-
-    'usage-business':
-      'Business',
-
-    'usage-mobile':
-      'Mobile',
-
-  }
-
-  return (
-    labels[tag]
-    || tag
-  )
-
-}
-
-/* ============================================================================
-🔥 Props
+// Props
 ============================================================================ */
 
 type Props = {
 
-  product: ProjectedProduct
-
-  semanticRuntime?: ProjectedSemanticRuntime
-
-  compiledRuntime?: ProjectedCompiledRuntime
+  product:
+    ProjectedProduct
 
 }
 
 /* ============================================================================
-🔥 Component
+// Component
 ============================================================================ */
 
 export default function ProductHero({
 
   product,
 
-  semanticRuntime,
-
-  compiledRuntime,
-
 }: Props) {
 
+  /* ==========================================================================
+// Product Identity
+============================================================================ */
+
   const title =
-    product.name || 'PRODUCT'
+    product?.name
+    ||
+    'PRODUCT'
 
   const image =
-    product.imageUrl
+    product?.imageUrl
 
   const maker =
-    product.maker || 'UNKNOWN'
+    product?.maker
+    ||
+    'UNKNOWN'
 
   const price =
-    product.price
+    product?.price
 
-  const semanticSummary =
-    semanticRuntime?.semanticSummary || ''
-
-  const workflowTags =
-    semanticRuntime?.workflowTags || []
-
-  // 将来利用予定
-  void compiledRuntime
-
-  const targetUser =
-    (product as any)?.target_user
+  /* ==========================================================================
+// Render
+============================================================================ */
 
   return (
 
@@ -118,19 +108,22 @@ export default function ProductHero({
       }
     >
 
-      {/* ==========================================================
+      {/* ======================================================================
       BACKGROUND
-      ========================================================== */}
+      ====================================================================== */}
 
       <div
         className={
           styles.productHeroBackgroundOverlay
         }
+
+        aria-hidden="true"
       />
 
-      {/* ==========================================================
-      TOP
-      ========================================================== */}
+
+      {/* ======================================================================
+      TOP — MAKER
+      ====================================================================== */}
 
       <div
         className={
@@ -149,16 +142,19 @@ export default function ProductHero({
               styles.productHeroTag
             }
           >
+
             {maker}
+
           </div>
 
         </div>
 
       </div>
 
-      {/* ==========================================================
+
+      {/* ======================================================================
       MAIN
-      ========================================================== */}
+      ====================================================================== */}
 
       <div
         className={
@@ -166,12 +162,11 @@ export default function ProductHero({
         }
       >
 
-        {/* ======================================================
+        {/* ====================================================================
         IMAGE
-        ====================================================== */}
+        ==================================================================== */}
 
         {
-
           image && (
 
             <div
@@ -182,21 +177,24 @@ export default function ProductHero({
 
               <img
                 src={image}
+
                 alt={title}
+
                 className={
                   styles.productHeroImage
                 }
+
               />
 
             </div>
 
           )
-
         }
 
-        {/* ======================================================
-        CONTENT
-        ====================================================== */}
+
+        {/* ====================================================================
+        PRODUCT IDENTITY
+        ==================================================================== */}
 
         <div
           className={
@@ -209,130 +207,41 @@ export default function ProductHero({
               styles.productHeroLabel
             }
           >
-            SEMANTIC PRODUCT EXPERIENCE
+
+            PRODUCT
+
           </div>
+
 
           <h1
             className={
               styles.productHeroTitle
             }
           >
+
             {title}
+
           </h1>
 
-          {
-
-            semanticSummary && (
-
-              <p
-                className={
-                  styles.productHeroSummary
-                }
-              >
-                {semanticSummary}
-              </p>
-
-            )
-
-          }
-
-          {/* ======================================================
-          TARGET USER
-          ====================================================== */}
-
-          {
-
-            targetUser && (
-
-              <div
-                className={
-                  styles.productHeroTargetUser
-                }
-              >
-
-                <div
-                  className={
-                    styles.productHeroMiniLabel
-                  }
-                >
-                  FOR WHO
-                </div>
-
-                <p
-                  className={
-                    styles.productHeroTargetUserText
-                  }
-                >
-                  {targetUser}
-                </p>
-
-              </div>
-
-            )
-
-          }
-
-          {
-
-            workflowTags.length > 0 && (
-
-              <div
-                className={
-                  styles.productHeroCapabilities
-                }
-              >
-
-                {
-
-                  workflowTags.map(
-
-                    (
-                      tag,
-                      index
-                    ) => (
-
-                      <div
-                        key={index}
-                        className={
-                          styles.productHeroCapability
-                        }
-                      >
-
-                        {
-
-                          getWorkflowLabel(
-                            tag
-                          )
-
-                        }
-
-                      </div>
-
-                    )
-
-                  )
-
-                }
-
-              </div>
-
-            )
-
-          }
 
         </div>
 
       </div>
 
-      {/* ==========================================================
-      BOTTOM
-      ========================================================== */}
+
+      {/* ======================================================================
+      BOTTOM — PRICE / NAVIGATION
+      ====================================================================== */}
 
       <div
         className={
           styles.productHeroBottom
         }
       >
+
+        {/* ====================================================================
+        PRICE
+        ==================================================================== */}
 
         <div
           className={
@@ -345,28 +254,41 @@ export default function ProductHero({
               styles.productHeroPriceLabel
             }
           >
+
             PRICE
-          </div>
-
-          <div
-            className={
-              styles.productHeroPrice
-            }
-          >
-
-            ¥
-
-            {
-
-              Number(
-                price || 0
-              ).toLocaleString()
-
-            }
 
           </div>
+
+          {
+
+            price != null
+            && (
+
+              <div
+                className={
+                  styles.productHeroPrice
+                }
+              >
+
+                ¥
+                {
+                  Number(
+                    price
+                  ).toLocaleString()
+                }
+
+              </div>
+
+            )
+
+          }
 
         </div>
+
+
+        {/* ====================================================================
+        NAVIGATION
+        ==================================================================== */}
 
         <div
           className={
@@ -380,8 +302,11 @@ export default function ProductHero({
               styles.productHeroPrimary
             }
           >
+
             選ばれる理由を見る
+
           </Link>
+
 
           <Link
             href="#related"
@@ -389,7 +314,9 @@ export default function ProductHero({
               styles.productHeroSecondary
             }
           >
+
             関連製品を見る
+
           </Link>
 
         </div>

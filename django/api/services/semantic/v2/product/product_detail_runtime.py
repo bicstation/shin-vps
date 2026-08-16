@@ -19,6 +19,10 @@ from api.services.semantic.v2.product.product_semantic_runtime import (
     build_product_semantic_runtime,
 )
 
+from api.services.semantic.v2.product.product_breadcrumb_runtime import (
+    build_product_breadcrumbs,
+)
+
 
 # ==========================================================
 # PRODUCT DETAIL
@@ -30,10 +34,20 @@ def build_product_detail_runtime(
 
     import inspect
 
-    print("FILE :", __file__)
-    print("FUNC :", inspect.getfile(build_product_detail_runtime))
+    print(
+        "FILE :",
+        __file__,
+    )
+
+    print(
+        "FUNC :",
+        inspect.getfile(
+            build_product_detail_runtime
+        ),
+    )
 
     authority = build_authority_runtime()
+
     meaning = build_product_meaning()
 
     # ------------------------------------------------------
@@ -127,7 +141,10 @@ def build_product_detail_runtime(
 
     product_data = {
 
-        field.name: getattr(product, field.name)
+        field.name: getattr(
+            product,
+            field.name,
+        )
 
         for field in product._meta.fields
 
@@ -136,12 +153,23 @@ def build_product_detail_runtime(
     }
 
     # ------------------------------------------------------
+    # BREADCRUMBS
+    # ------------------------------------------------------
+
+    breadcrumbs = build_product_breadcrumbs(
+        product=product,
+    )
+
+    product_data["breadcrumbs"] = breadcrumbs
+
+    # ------------------------------------------------------
     # RUNTIMES
     # ------------------------------------------------------
 
     compiled_runtime = (
 
         product.semantic_runtime
+
         or {}
 
     )
@@ -149,7 +177,9 @@ def build_product_detail_runtime(
     product_semantic_runtime = (
 
         build_product_semantic_runtime(
+
             product
+
         )
 
     )
@@ -184,27 +214,35 @@ def build_product_detail_runtime(
 
             "compiled_runtime": compiled_runtime,
 
-            "product_semantic_runtime": product_semantic_runtime,
+            "product_semantic_runtime": (
+                product_semantic_runtime
+            ),
 
         },
 
-        "semantic_schema_version":
+        "semantic_schema_version": (
 
             authority.get(
                 "semantic_schema_version"
-            ),
+            )
 
-        "authority_version":
+        ),
+
+        "authority_version": (
 
             authority.get(
                 "authority_version"
-            ),
+            )
 
-        "semantic_authority":
+        ),
+
+        "semantic_authority": (
 
             authority.get(
                 "semantic_authority"
-            ),
+            )
+
+        ),
 
         "ready": True,
 

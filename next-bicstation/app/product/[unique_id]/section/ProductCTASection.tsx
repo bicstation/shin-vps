@@ -98,6 +98,7 @@ export default function ProductCTASection({
 
       <ProductFinalCTA
         product={ product }
+        semanticRuntime={semanticRuntime}
       />
 
       {/* ==========================================================
@@ -114,6 +115,7 @@ export default function ProductCTASection({
 
       <FinalCta
         product={ product }
+        semanticRuntime={semanticRuntime}
       />
 
     </section>

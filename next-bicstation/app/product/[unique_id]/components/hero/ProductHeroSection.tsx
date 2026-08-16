@@ -1,7 +1,40 @@
 // ============================================================================
 // FILE:
 // app/product/[unique_id]/components/hero/ProductHeroSection.tsx
-// Product Runtime Hero Orchestrator V5
+// Product Runtime Hero Orchestrator V6
+// ============================================================================
+//
+// SHIN CORE LINX
+//
+// Product Detail Hero Experience
+//
+// Product
+//      ↓
+// ProductHero
+//      ↓
+// ProductAISummary
+//      ↓
+// ProductHeroCapability
+//
+// Experience Structure
+//
+// ① Product Identity
+//      └─ 製品名 / メーカー / 画像 / 価格
+//
+// ② Product Understanding
+//      └─ {product.name} は、どんなPC？
+//
+// ③ Product Capability / Evidence
+//      ├─ {product.name} でできること
+//      └─ {product.name} が選ばれる理由
+//
+// Authority
+//
+// ProjectedProduct
+// ProjectedSemanticRuntime
+//      ↓
+// Product Experience
+//
 // ============================================================================
 
 import ProductBreadcrumb
@@ -28,19 +61,24 @@ import type {
 
 } from '@/shared/lib/api/django/pc/product-detail'
 
+
 /* ============================================================================
 🔥 Props
 ============================================================================ */
 
 type Props = {
 
-  product: ProjectedProduct
+  product:
+    ProjectedProduct
 
-  semanticRuntime?: ProjectedSemanticRuntime
+  semanticRuntime?:
+    ProjectedSemanticRuntime
 
-  compiledRuntime?: ProjectedCompiledRuntime
+  compiledRuntime?:
+    ProjectedCompiledRuntime
 
 }
+
 
 /* ============================================================================
 🔥 Component
@@ -60,50 +98,68 @@ export default function ProductHeroSection({
 
     <>
 
-      {/* ==========================================================
+      {/* ======================================================================
       BREADCRUMB
-      ========================================================== */}
+      ====================================================================== */}
 
       <ProductBreadcrumb
 
         breadcrumbs={
 
-          (product as any)?.breadcrumbs
+          product?.breadcrumbs
 
         }
 
       />
 
-      {/* ==========================================================
+
+      {/* ======================================================================
       HERO
-      ========================================================== */}
+      ====================================================================== */}
 
       <ProductHero
 
-        product={product}
-        semanticRuntime={semanticRuntime}
-        compiledRuntime={compiledRuntime}
+        product={
+          product
+        }
+
+        // semanticRuntime={
+        //   semanticRuntime
+        // }
 
       />
 
-      {/* ==========================================================
-      AI SUMMARY
-      ========================================================== */}
+
+      {/* ======================================================================
+      PRODUCT UNDERSTANDING
+      ====================================================================== */}
 
       <ProductAISummary
 
-        semanticRuntime={semanticRuntime}
+        product={
+          product
+        }
+
+        semanticRuntime={
+          semanticRuntime
+        }
 
       />
 
-      {/* ==========================================================
-      CAPABILITY
-      ========================================================== */}
+
+      {/* ======================================================================
+      PRODUCT CAPABILITY / EVIDENCE
+      ====================================================================== */}
 
       <ProductHeroCapability
 
-        semanticRuntime={semanticRuntime}
-        compiledRuntime={compiledRuntime}
+        product={
+          product
+        }
+
+        semanticRuntime={
+          semanticRuntime
+        }
 
       />
 

@@ -1,13 +1,66 @@
 // ============================================================================
 // FILE:
 // app/product/[unique_id]/components/cta/ProductFinalCTA.tsx
+//
+// SHIN CORE LINX
+// Product Final Decision Experience
+//
+// RESPONSIBILITY
+//
+// Product
+//      +
+// Product Semantic Runtime
+//      ↓
+// ProductFinalCTA
+//      ↓
+// Final Decision Experience
+//
+// ProductFinalCTA = 最終意思決定 / 購入導線
+//
+// ✓ Product Identity
+// ✓ Semantic Summary
+// ✓ Workflow Tags
+// ✓ Price
+// ✓ Affiliate / Product URL
+// ✓ Final Navigation
+//
+// ✗ Semantic generation
+// ✗ AI inference
+// ✗ Workflow inference
+// ✗ Recommendation generation
+// ✗ Runtime generation
+// ✗ Product classification
+//
+// Meaning is already provided by:
+//      Backend
+//          ↓
+//      Adapter
+//          ↓
+//      Projection
+//
 // ============================================================================
 
 import Link
   from 'next/link'
 
+/* ============================================================================
+🔥 Styles
+============================================================================ */
+
 import styles
   from './cta.module.css'
+
+/* ============================================================================
+🔥 Projection
+============================================================================ */
+
+import type {
+
+  ProjectedProduct,
+  ProjectedSemanticRuntime,
+
+} from '@/shared/lib/api/django/pc/product-detail'
+
 
 /* ============================================================================
 🔥 Props
@@ -15,59 +68,25 @@ import styles
 
 type Props = {
 
-  product: any
+  product:
+    ProjectedProduct
 
-  semanticRuntime?: {
-
-    semantic_summary?: string
-
-    workflow_tags?: string[]
-
-  }
+  semanticRuntime?:
+    ProjectedSemanticRuntime
 
 }
+
 
 /* ============================================================================
-🔥 Helpers
+🔥 Workflow Label
 ============================================================================ */
 
-function buildPriceText(
-  product: any
-) {
-
-  if (
-    !product?.price
-  ) {
-
-    return null
-
-  }
-
-  return `¥${Number(
-    product.price
-  ).toLocaleString()}`
-
-}
-
-function buildCTA(
-  product: any
-) {
-
-  return (
-
-    product?.affiliate_url
-
-    ||
-
-    product?.url
-
-    ||
-
-    '#'
-
-  )
-
-}
+/**
+ * Backend / Adapterから提供された
+ * workflow tagをUI表示用ラベルへ変換する。
+ *
+ * ここでは新しい意味を生成しない。
+ */
 
 function getWorkflowLabel(
   tag: string
@@ -76,29 +95,31 @@ function getWorkflowLabel(
   const labels:
     Record<string, string> = {
 
-      'usage-ai':
-        'AI開発',
+    'usage-ai':
+      'AI開発・生成AI',
 
-      'usage-creator':
-        '動画編集',
+    'usage-gaming':
+      'Gaming',
 
-      'usage-gaming':
-        'FPS Gaming',
+    'usage-creator':
+      '動画編集・制作',
 
-      'usage-business':
-        'ビジネス',
+    'usage-business':
+      'ビジネス',
 
-      'usage-mobile':
-        'モバイル',
+    'usage-mobile':
+      'モバイル',
 
-    }
+  }
 
   return (
     labels[tag]
-    || tag
+    ||
+    tag
   )
 
 }
+
 
 /* ============================================================================
 🔥 Component
@@ -112,35 +133,158 @@ export default function ProductFinalCTA({
 
 }: Props) {
 
-  const price =
 
-    buildPriceText(
-      product
-    )
+  /* ==========================================================================
 
-  const href =
+  Guard
 
-    buildCTA(
-      product
-    )
+  ========================================================================== */
 
-  const summary =
+  if (
+    !product
+  ) {
+
+    return null
+
+  }
+
+
+  /* ==========================================================================
+
+  Product Identity
+
+  ========================================================================== */
+
+  const productName =
+
+    product.name
+    ?.trim()
+    ||
+    'このPC'
+
+
+  /* ==========================================================================
+
+  Semantic Summary
+
+  ========================================================================== */
+
+  const semanticSummary =
 
     semanticRuntime
-      ?.semantic_summary
-
+      ?.semanticSummary
+      ?.trim()
     ||
-
     ''
+
+
+  /* ==========================================================================
+
+  Workflow Tags
+
+  ========================================================================== */
 
   const workflowTags =
 
-    semanticRuntime
-      ?.workflow_tags
+    Array.isArray(
+      semanticRuntime
+        ?.workflowTags
+    )
 
+      ? Array.from(
+          new Set(
+            semanticRuntime.workflowTags
+              .filter(
+                (
+                  tag
+                ) =>
+                  typeof tag === 'string'
+                  &&
+                  tag.trim()
+              )
+              .map(
+                (
+                  tag
+                ) =>
+                  tag.trim()
+              )
+          )
+        )
+
+      : []
+
+
+  /* ==========================================================================
+
+  Commerce
+
+  ========================================================================== */
+
+  const price =
+
+    product.price
+
+
+  const affiliateUrl =
+
+    product.affiliateUrl
     ||
+    ''
 
-    []
+
+  const productUrl =
+
+    product.url
+    ||
+    ''
+
+
+  const finalUrl =
+
+    affiliateUrl
+    ||
+    productUrl
+
+
+  /* ==========================================================================
+
+  Price Text
+
+  ========================================================================== */
+
+  const priceText =
+
+    price != null
+    &&
+    Number(price) > 0
+
+      ? `¥${Number(
+          price
+        ).toLocaleString()}`
+
+      : ''
+
+
+  /* ==========================================================================
+
+  Meaning Availability
+
+  ========================================================================== */
+
+  const hasMeaning =
+
+    Boolean(
+      semanticSummary
+    )
+    ||
+    workflowTags.length > 0
+
+
+  /* ==========================================================================
+
+  Render
+
+  ========================================================================== */
 
   return (
 
@@ -148,6 +292,8 @@ export default function ProductFinalCTA({
       className={
         styles.finalCTASection
       }
+
+      aria-labelledby="product-final-cta-title"
     >
 
       <div
@@ -156,57 +302,106 @@ export default function ProductFinalCTA({
         }
       >
 
-        {/* ======================================================
+
+        {/* ====================================================================
         LABEL
-        ====================================================== */}
+        ==================================================================== */}
 
         <div
           className={
             styles.finalCTALabel
           }
         >
+
           FINAL DECISION
+
         </div>
 
-        {/* ======================================================
+
+        {/* ====================================================================
         TITLE
-        ====================================================== */}
+        ==================================================================== */}
 
         <h2
+          id="product-final-cta-title"
+
           className={
             styles.finalCTATitle
           }
         >
-          このPCを最終候補として確認する
+
+          {productName}
+          を最終候補として確認する
+
         </h2>
 
-        {/* ======================================================
-        SUMMARY
-        ====================================================== */}
+
+        {/* ====================================================================
+        DESCRIPTION
+        ==================================================================== */}
+
+        <p
+          className={
+            styles.finalCTADescription
+          }
+        >
+
+          このPCの特徴を確認したうえで、
+          最新の価格・在庫・販売条件を確認できます。
+
+        </p>
+
+
+        {/* ====================================================================
+        SEMANTIC SUMMARY
+        ==================================================================== */}
 
         {
 
-          summary && (
+          semanticSummary
+          && (
 
-            <p
+            <div
               className={
-                styles.finalCTADescription
+                styles.finalCTASummary
               }
             >
-              {summary}
-            </p>
+
+              <div
+                className={
+                  styles.finalCTASummaryLabel
+                }
+              >
+
+                PRODUCT INSIGHT
+
+              </div>
+
+              <p
+                className={
+                  styles.finalCTASummaryText
+                }
+              >
+
+                {semanticSummary}
+
+              </p>
+
+            </div>
 
           )
 
         }
 
-        {/* ======================================================
+
+        {/* ====================================================================
         WORKFLOW
-        ====================================================== */}
+        ==================================================================== */}
 
         {
 
-          workflowTags.length > 0 && (
+          workflowTags.length > 0
+          && (
 
             <div
               className={
@@ -224,16 +419,21 @@ export default function ProductFinalCTA({
                   ) => (
 
                     <div
-                      key={index}
+                      key={
+                        `${tag}-${index}`
+                      }
+
                       className={
                         styles.finalCTAChip
                       }
                     >
+
                       {
                         getWorkflowLabel(
                           tag
                         )
                       }
+
                     </div>
 
                   )
@@ -248,29 +448,52 @@ export default function ProductFinalCTA({
 
         }
 
-        {/* ======================================================
+
+        {/* ====================================================================
         PRICE
-        ====================================================== */}
+        ==================================================================== */}
 
         {
 
-          price && (
+          priceText
+          && (
 
             <div
               className={
-                styles.finalCTAPrice
+                styles.finalCTAPriceArea
               }
             >
-              {price}
+
+              <div
+                className={
+                  styles.finalCTAPriceLabel
+                }
+              >
+
+                CURRENT PRICE
+
+              </div>
+
+              <div
+                className={
+                  styles.finalCTAPrice
+                }
+              >
+
+                {priceText}
+
+              </div>
+
             </div>
 
           )
 
         }
 
-        {/* ======================================================
+
+        {/* ====================================================================
         ACTIONS
-        ====================================================== */}
+        ==================================================================== */}
 
         <div
           className={
@@ -278,19 +501,54 @@ export default function ProductFinalCTA({
           }
         >
 
-          <Link
-            href={href}
+          {
 
-            target="_blank"
+            finalUrl
+            ? (
 
-            rel="noopener noreferrer"
+              <a
+                href={
+                  finalUrl
+                }
 
-            className={
-              styles.finalCTAPrimary
-            }
-          >
-            最新価格・在庫を確認する
-          </Link>
+                target="_blank"
+
+                rel="nofollow noopener noreferrer"
+
+                className={
+                  styles.finalCTAPrimary
+                }
+              >
+
+                <span>
+                  最新価格・在庫を確認する
+                </span>
+
+                <span
+                  aria-hidden="true"
+                >
+                  →
+                </span>
+
+              </a>
+
+            )
+            : (
+
+              <div
+                className={
+                  styles.finalCTAUnavailable
+                }
+              >
+
+                販売ページを確認できません
+
+              </div>
+
+            )
+
+          }
+
 
           <Link
             href="/discover"
@@ -299,14 +557,53 @@ export default function ProductFinalCTA({
               styles.finalCTASecondary
             }
           >
+
             他のおすすめ製品も比較する
+
           </Link>
 
         </div>
 
-        {/* ======================================================
-        FOOTER
-        ====================================================== */}
+
+        {/* ====================================================================
+        STORE INFORMATION
+        ==================================================================== */}
+
+        {
+
+          finalUrl
+          && (
+
+            <div
+              className={
+                styles.finalCTAStore
+              }
+            >
+
+              {
+
+                affiliateUrl
+
+                  ?
+
+                  '販売元の商品ページへ移動します。'
+
+                  :
+
+                  '商品ページを開きます。'
+
+              }
+
+            </div>
+
+          )
+
+        }
+
+
+        {/* ====================================================================
+        TRUST
+        ==================================================================== */}
 
         <div
           className={
@@ -319,11 +616,38 @@ export default function ProductFinalCTA({
               styles.finalCTAFooterText
             }
           >
-            購入前に価格・在庫・販売条件を
-            公式販売ページで確認できます。
+
+            価格・在庫・販売条件は
+            販売ページでご確認ください。
+
           </div>
 
         </div>
+
+
+        {/* ====================================================================
+        EMPTY MEANING NOTE
+        ==================================================================== */}
+
+        {
+
+          !hasMeaning
+          && (
+
+            <div
+              className={
+                styles.finalCTAEmptyMeaning
+              }
+            >
+
+              製品の詳細情報を確認してから
+              販売ページへ進めます。
+
+            </div>
+
+          )
+
+        }
 
       </div>
 

@@ -13,45 +13,41 @@
  *
  * PURPOSE
  *
- * Convert Backend Product Detail JSON into the
- * Canonical Product Detail Backend Contract.
- *
- * Backend Product Detail Runtime
- *      ↓
- * Contract Guarantee
- *      ↓
- * Product Detail Backend Contract
- *
- * Normalize Responsibilities
- *
- * ✓ Preserve Backend Reality
- * ✓ Guarantee Contract Safety
- * ✓ Null Safety
- * ✓ Object Safety
- *
- * Normalize SHALL NOT
- *
- * ✗ Generate Meaning
- * ✗ Generate Presentation
- * ✗ Generate Authority
- * ✗ Generate UI
- * ✗ Generate Runtime
+ * Safely normalize the Backend Product Detail Runtime
+ * without removing or generating Backend information.
  *
  * Backend remains:
  *
  * Reality Authority
  *
+ * Adapter remains:
+ *
+ * Translation Authority
+ *
+ * IMPORTANT
+ *
+ * Normalize SHALL preserve Backend Runtime information.
+ *
+ * It may provide safe defaults only where required by
+ * the TypeScript Contract.
+ *
+ * Normalize SHALL NOT:
+ *
+ * ✗ Generate Meaning
+ * ✗ Generate Semantic Meaning
+ * ✗ Generate Runtime
+ * ✗ Generate UI
+ * ✗ Remove Backend Runtime information
+ *
  * ============================================================================
  */
 
 import type {
-
     ProductDetailRuntimeContract,
     ProductDetailData,
     ProductDetail,
     CompiledRuntime,
     ProductSemanticRuntime,
-
 } from './contracts'
 
 /* ============================================================================
@@ -59,59 +55,32 @@ import type {
 ============================================================================ */
 
 export function normalizeProductDetail(
-
-    runtime?: Partial<ProductDetailRuntimeContract>
-
+    runtime?: Partial<ProductDetailRuntimeContract>,
 ): ProductDetailRuntimeContract {
 
     return {
 
-        /* --------------------------------------------------------------------
-        Meaning
-        -------------------------------------------------------------------- */
-
         meaning:
-
             runtime?.meaning,
 
-        /* --------------------------------------------------------------------
-        SEO
-        -------------------------------------------------------------------- */
-
         seo:
-
             runtime?.seo,
 
-        /* --------------------------------------------------------------------
-        Data
-        -------------------------------------------------------------------- */
-
         data:
-
             normalizeData(
-
                 runtime?.data
-
             ),
 
-        /* --------------------------------------------------------------------
-        Authority
-        -------------------------------------------------------------------- */
-
         semantic_schema_version:
-
             runtime?.semantic_schema_version,
 
         authority_version:
-
             runtime?.authority_version,
 
         semantic_authority:
-
             runtime?.semantic_authority,
 
         ready:
-
             runtime?.ready ?? false,
 
     }
@@ -123,39 +92,27 @@ export function normalizeProductDetail(
 ============================================================================ */
 
 function normalizeData(
-
-    data?: Partial<ProductDetailData>
-
+    data?: Partial<ProductDetailData>,
 ): ProductDetailData {
 
     return {
 
         found:
-
             data?.found ?? false,
 
         product:
-
             normalizeProduct(
-
                 data?.product
-
             ),
 
         compiled_runtime:
-
             normalizeCompiledRuntime(
-
                 data?.compiled_runtime
-
             ),
 
         product_semantic_runtime:
-
             normalizeProductSemanticRuntime(
-
                 data?.product_semantic_runtime
-
             ),
 
     }
@@ -167,22 +124,29 @@ function normalizeData(
 ============================================================================ */
 
 function normalizeProduct(
-
-    product?: Partial<ProductDetail>
-
+    product?: Partial<ProductDetail>,
 ): ProductDetail {
 
     return {
 
-        unique_id:
+        ...product,
 
+        /* --------------------------------------------------------------------
+        Required Identity
+        -------------------------------------------------------------------- */
+
+        unique_id:
             product?.unique_id ?? '',
 
         name:
-
             product?.name ?? '',
 
-        ...product,
+        /* --------------------------------------------------------------------
+        Navigation
+        -------------------------------------------------------------------- */
+
+        breadcrumbs:
+            product?.breadcrumbs ?? [],
 
     }
 
@@ -193,10 +157,14 @@ function normalizeProduct(
 ============================================================================ */
 
 function normalizeCompiledRuntime(
+    runtime?: Partial<CompiledRuntime>,
+): CompiledRuntime | undefined {
 
-    runtime?: Partial<CompiledRuntime>
+    if (!runtime) {
 
-): CompiledRuntime {
+        return undefined
+
+    }
 
     return {
 
@@ -211,34 +179,18 @@ function normalizeCompiledRuntime(
 ============================================================================ */
 
 function normalizeProductSemanticRuntime(
+    runtime?: Partial<ProductSemanticRuntime>,
+): ProductSemanticRuntime | undefined {
 
-    runtime?: Partial<ProductSemanticRuntime>
+    if (!runtime) {
 
-): ProductSemanticRuntime {
+        return undefined
+
+    }
 
     return {
 
         ...runtime,
-
-        grouped_attributes:
-
-            runtime?.grouped_attributes ?? {},
-
-        workflow_tags:
-
-            runtime?.workflow_tags ?? [],
-
-        semantic_labels:
-
-            runtime?.semantic_labels ?? [],
-
-        semantic_reasons:
-
-            runtime?.semantic_reasons ?? [],
-
-        related_intents:
-
-            runtime?.related_intents ?? [],
 
     }
 
@@ -249,7 +201,6 @@ function normalizeProductSemanticRuntime(
 ============================================================================ */
 
 export const normalizeProductDetailRuntime =
-
     normalizeProductDetail
 
 /* ============================================================================

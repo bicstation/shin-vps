@@ -16,14 +16,29 @@
  * Defines the canonical TypeScript contract that represents the
  * Backend Product Detail JSON.
  *
- * This file mirrors Backend Reality.
+ * IMPORTANT
  *
- * It does NOT define:
+ * This contract mirrors Backend Runtime.
  *
- * ✗ Frontend UI
- * ✗ Projection Models
- * ✗ Runtime Helpers
- * ✗ Future Architecture
+ * Adapter MUST NOT:
+ *
+ * ✗ Generate Meaning
+ * ✗ Generate Semantic Meaning
+ * ✗ Remove Backend Runtime information
+ * ✗ Reinterpret Backend information
+ * ✗ Generate Frontend UI meaning
+ *
+ * Adapter responsibility:
+ *
+ * Backend Runtime
+ *      ↓
+ * Transport
+ *      ↓
+ * Normalize
+ *      ↓
+ * Projection
+ *      ↓
+ * Frontend
  *
  * Backend remains:
  *
@@ -77,7 +92,7 @@ export interface ProductDetailSEO {
 }
 
 /* ============================================================================
-🔥 Observation Runtime
+🔥 Observation Specification
 ============================================================================ */
 
 export interface ProductObservationSpecification {
@@ -87,6 +102,10 @@ export interface ProductObservationSpecification {
     value?: string
 
 }
+
+/* ============================================================================
+🔥 Observation Runtime
+============================================================================ */
 
 export interface ProductObservationRuntime {
 
@@ -106,7 +125,19 @@ export interface ProductObservationRuntime {
 }
 
 /* ============================================================================
-🔥 Product Related Intent
+🔥 Breadcrumb
+============================================================================ */
+
+export interface ProductBreadcrumb {
+
+    name: string
+
+    url: string
+
+}
+
+/* ============================================================================
+🔥 Related Intent
 ============================================================================ */
 
 export interface ProductRelatedIntent {
@@ -125,6 +156,10 @@ export interface ProductRelatedIntent {
 
 export interface ProductDetail {
 
+    /* ------------------------------------------------------------------------
+    Identity
+    ------------------------------------------------------------------------ */
+
     id?: number
 
     unique_id: string
@@ -132,47 +167,167 @@ export interface ProductDetail {
     site_prefix?: string
 
     maker?: string
+
     brand?: string
+
     series?: string
+
     collaboration?: string
 
+    model?: string
+
+    product_no?: string
+
+    pc_id?: string
+
     raw_genre?: string
+
     unified_genre?: string
 
     name: string
 
-    description?: string
+    product_type?: string
 
-    image_url?: string
+    /* ------------------------------------------------------------------------
+    Navigation
+    ------------------------------------------------------------------------ */
+
+    breadcrumbs?: ProductBreadcrumb[]
+
+    /* ------------------------------------------------------------------------
+    Commercial
+    ------------------------------------------------------------------------ */
+
+    price?: number
 
     url?: string
 
     affiliate_url?: string
-    affiliate_updated_at?: string
 
-    price?: number
+    affiliate_updated_at?: string | null
 
     stock_status?: string
 
     is_posted?: boolean
+
     is_active?: boolean
 
-    created_at?: string
-    updated_at?: string
+    /* ------------------------------------------------------------------------
+    Media
+    ------------------------------------------------------------------------ */
+
+    image_url?: string
+
+    /* ------------------------------------------------------------------------
+    Description
+    ------------------------------------------------------------------------ */
+
+    description?: string
+
+    /* ------------------------------------------------------------------------
+    Observation
+    ------------------------------------------------------------------------ */
 
     observation_runtime?:
         string | ProductObservationRuntime
 
+    /* ------------------------------------------------------------------------
+    Hardware
+    ------------------------------------------------------------------------ */
+
     cpu_model?: string
+
     gpu_model?: string
 
+    normalized_gpu?: string
+
     memory_gb?: number
+
     storage_gb?: number
+
+    weight_kg?: number | null
+
+    npu_tops?: number | null
+
+    display_info?: string
+
+    cpu_socket?: string | null
+
+    motherboard_chipset?: string | null
+
+    ram_type?: string | null
+
+    power_recommendation?: string | null
+
+    /* ------------------------------------------------------------------------
+    Operating / Software
+    ------------------------------------------------------------------------ */
+
+    os_support?: string | null
+
+    license_term?: string | null
+
+    device_count?: number | null
+
+    edition?: string | null
+
+    is_download?: boolean
+
+    target_segment?: string | null
+
+    /* ------------------------------------------------------------------------
+    Semantic / Classification
+    ------------------------------------------------------------------------ */
 
     semantic_schema_version?: string
 
-    product_type?: string
     semantic_score?: number
+
+    spec_score?: number
+
+    is_ai_pc?: boolean
+
+    ai_summary?: string | null
+
+    target_user?: string | null
+
+    strengths?: string | string[] | null
+
+    weaknesses?: string | string[] | null
+
+    usage_tags?: string | string[] | null
+
+    /* ------------------------------------------------------------------------
+    Semantic Scores
+    ------------------------------------------------------------------------ */
+
+    score_cpu?: number
+
+    score_gpu?: number
+
+    score_cost?: number
+
+    score_portable?: number
+
+    score_ai?: number
+
+    /* ------------------------------------------------------------------------
+    Spec Runtime State
+    ------------------------------------------------------------------------ */
+
+    spec_processed?: boolean
+
+    spec_complete?: boolean
+
+    last_spec_parsed_at?: string | null
+
+    /* ------------------------------------------------------------------------
+    Lifecycle
+    ------------------------------------------------------------------------ */
+
+    created_at?: string
+
+    updated_at?: string
 
 }
 
@@ -187,36 +342,52 @@ export interface CompiledRuntime {
     base_type?: string
 
     cpu_model?: string
-    gpu_model?: string
+
+    gpu_model?: string | null
 
     memory_gb?: string
+
     storage_gb?: string
 
     display_type?: string | null
+
     refresh_rate?: string | null
 
     product_type?: string
 
     runtime_mode?: string
+
     runtime_valid?: boolean
 
     workflows?: any[]
+
     workflow_tags?: string[]
 
     primary_workflow?: string
+
     workflow_score?: number
 
     reality_labels?: string[]
+
     reality_scores?: Record<string, number>
 
+    semantic_graph?: any[]
+
     semantic_groups?: string[]
+
     semantic_labels?: string[]
+
+    normalized_tokens?: string[]
+
     semantic_attributes?: string[]
 
     adaptive_runtime?: any
 
     semantic_version?: string
+
     semantic_authority?: string
+
+    reality_workflow_tags?: string[]
 
 }
 
@@ -226,18 +397,26 @@ export interface CompiledRuntime {
 
 export interface ProductSemanticRuntime {
 
-    presentation?: any
+    semantic_labels?: string[]
+
+    presentation?: {
+
+        title?: string
+
+        subtitle?: string
+
+        description?: string
+
+    }
+
+    workflow_tags?: string[]
 
     grouped_attributes?:
         Record<string, any[]>
 
     semantic_summary?: string
 
-    semantic_labels?: string[]
-
     semantic_reasons?: any[]
-
-    workflow_tags?: string[]
 
     related_intents?:
         ProductRelatedIntent[]

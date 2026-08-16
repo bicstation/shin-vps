@@ -1,11 +1,39 @@
 // ============================================================================
 // FILE:
 // app/product/[unique_id]/section/ProductHeroSection.tsx
-// Product Runtime Hero Orchestrator V6
+//
+// SHIN CORE LINX
+// Product Detail Hero Experience
+//
+// RESPONSIBILITY
+//
+// Product Detail Runtime
+//        ↓
+// ProductHeroSection
+//        ↓
+// ┌──────────────────────────────┐
+// │ ProductHero                  │
+// │ Product Identity             │
+// ├──────────────────────────────┤
+// │ ProductAISummary             │
+// │ Semantic Understanding       │
+// ├──────────────────────────────┤
+// │ ProductHeroCapability        │
+// │ Workflow / Recommendation    │
+// └──────────────────────────────┘
+//
+// ProductHeroSection = Experience Orchestrator
+//
+// ✓ Controls section order
+// ✓ Passes Runtime data to responsible components
+// ✓ Does not generate semantic meaning
+// ✓ Does not transform Product Reality
+//
 // ============================================================================
 
-import ProductBreadcrumb
-  from '../components/common/ProductBreadcrumb'
+/* ============================================================================
+🔥 Components
+============================================================================ */
 
 import ProductHero
   from '../components/hero/ProductHero'
@@ -34,11 +62,14 @@ import type {
 
 type Props = {
 
-  product: ProjectedProduct
+  product:
+    ProjectedProduct
 
-  semanticRuntime?: ProjectedSemanticRuntime
+  semanticRuntime?:
+    ProjectedSemanticRuntime
 
-  compiledRuntime?: ProjectedCompiledRuntime
+  compiledRuntime?:
+    ProjectedCompiledRuntime
 
 }
 
@@ -56,81 +87,55 @@ export default function ProductHeroSection({
 
 }: Props) {
 
+  /* ==========================================================================
+  Guard
+  ========================================================================== */
+
+  if (!product) {
+
+    return null
+
+  }
+
+  /* ==========================================================================
+  Render
+  ========================================================================== */
+
   return (
 
     <>
 
-      {/* ==========================================================
-      BREADCRUMB
-      ========================================================== */}
-
-      <ProductBreadcrumb
-
-        breadcrumbs={
-
-          (product as any).breadcrumbs
-
-        }
-
-      />
-
-      {/* ==========================================================
-      HERO
-      ========================================================== */}
+      {/* ======================================================================
+      01 — PRODUCT IDENTITY
+      ====================================================================== */}
 
       <ProductHero
 
         product={
-
           product
-
-        }
-
-        semanticRuntime={
-
-          semanticRuntime
-
-        }
-
-        compiledRuntime={
-
-          compiledRuntime
-
         }
 
       />
 
-      {/* ==========================================================
-      AI SUMMARY
-      ========================================================== */}
+      {/* ======================================================================
+      02 — PRODUCT UNDERSTANDING
+      ====================================================================== */}
 
       <ProductAISummary
 
-        semanticRuntime={
-
-          semanticRuntime
-
-        }
+        product={ product }
+        semanticRuntime={ semanticRuntime }
 
       />
 
-      {/* ==========================================================
-      CAPABILITY
-      ========================================================== */}
+      {/* ======================================================================
+      03 — PRODUCT CAPABILITY
+      ====================================================================== */}
 
       <ProductHeroCapability
 
-        semanticRuntime={
-
-          semanticRuntime
-
-        }
-
-        compiledRuntime={
-
-          compiledRuntime
-
-        }
+        product={ product }
+        semanticRuntime={ semanticRuntime }
 
       />
 

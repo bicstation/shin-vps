@@ -1,6 +1,38 @@
 // ============================================================================
 // FILE:
 // app/product/[unique_id]/components/hero/ProductHeroCapability.tsx
+//
+// SHIN CORE LINX
+// Product Hero Capability Experience
+//
+// RESPONSIBILITY
+//
+// Projected Product
+//      ↓
+// Projected Semantic Runtime
+//      ↓
+// ProductHeroCapability
+//      ↓
+// Workflow Experience
+//      ↓
+// Recommendation Evidence
+//
+// ProductHeroCapability = Semantic Evidence Experience
+//
+// ✓ Product name presentation
+// ✓ Workflow tags
+// ✓ Semantic reasons
+// ✓ UI label translation
+// ✓ Empty / duplicate safety
+// ✓ Section navigation anchor
+//
+// ✗ Semantic generation
+// ✗ Workflow inference
+// ✗ Recommendation generation
+// ✗ Score generation
+// ✗ Runtime generation
+// ✗ Backend Reality modification
+//
 // ============================================================================
 
 import styles
@@ -12,10 +44,11 @@ import styles
 
 import type {
 
+  ProjectedProduct,
   ProjectedSemanticRuntime,
-  ProjectedCompiledRuntime,
 
 } from '@/shared/lib/api/django/pc/product-detail'
+
 
 /* ============================================================================
 🔥 Types
@@ -23,15 +56,20 @@ import type {
 
 type SemanticReason = {
 
-  slug?: string
+  slug?:
+    string
 
-  title?: string
+  title?:
+    string
 
-  description?: string
+  description?:
+    string
 
-  role?: string
+  role?:
+    string
 
 }
+
 
 /* ============================================================================
 🔥 Props
@@ -39,15 +77,25 @@ type SemanticReason = {
 
 type Props = {
 
-  semanticRuntime?: ProjectedSemanticRuntime
+  product:
+    ProjectedProduct
 
-  compiledRuntime?: ProjectedCompiledRuntime
+  semanticRuntime?:
+    ProjectedSemanticRuntime
 
 }
+
 
 /* ============================================================================
 🔥 Workflow Labels
 ============================================================================ */
+
+/**
+ * Backend / Adapterから提供された
+ * workflow tagをUI表示用ラベルへ変換する。
+ *
+ * ここでは新しい意味を生成しない。
+ */
 
 function getWorkflowLabel(
   tag: string
@@ -75,10 +123,162 @@ function getWorkflowLabel(
 
   return (
     labels[tag]
-    || tag
+    ||
+    tag
   )
 
 }
+
+
+/* ============================================================================
+🔥 Workflow Observation
+============================================================================ */
+
+/**
+ * Semantic Runtimeから提供された
+ * workflow tagsを表示用データとして整理する。
+ *
+ * ✗ 新しいworkflowを生成しない
+ * ✗ 推測しない
+ */
+
+function buildWorkflowTags(
+  semanticRuntime?:
+    ProjectedSemanticRuntime,
+): string[] {
+
+  const workflowTags =
+    Array.isArray(
+      semanticRuntime?.workflowTags
+    )
+      ? semanticRuntime.workflowTags
+      : []
+
+  return Array.from(
+    new Set(
+
+      workflowTags
+
+        .filter(
+          (
+            tag
+          ): tag is string =>
+
+            typeof tag === 'string'
+            &&
+            tag.trim().length > 0
+
+        )
+
+        .map(
+          (
+            tag
+          ) =>
+            tag.trim()
+        )
+
+    )
+  )
+
+}
+
+
+/* ============================================================================
+🔥 Semantic Reason Observation
+============================================================================ */
+
+/**
+ * Semantic Runtimeから提供された
+ * recommendation evidenceを表示用に整理する。
+ *
+ * ✗ 推薦理由を新規生成しない
+ * ✗ title / descriptionを推測しない
+ */
+
+function buildSemanticReasons(
+  semanticRuntime?:
+    ProjectedSemanticRuntime,
+): SemanticReason[] {
+
+  const reasons =
+    semanticRuntime?.semanticReasons
+
+  if (
+    !Array.isArray(
+      reasons
+    )
+  ) {
+
+    return []
+
+  }
+
+  return reasons
+
+    .filter(
+      (
+        reason
+      ): reason is SemanticReason => {
+
+        if (
+          !reason
+          ||
+          typeof reason !== 'object'
+        ) {
+
+          return false
+
+        }
+
+        const title =
+          (reason as SemanticReason).title
+
+        return (
+
+          typeof title === 'string'
+          &&
+          title.trim().length > 0
+
+        )
+
+      }
+    )
+
+    .map(
+      (
+        reason
+      ) => ({
+
+        slug:
+          typeof reason.slug === 'string'
+            ? reason.slug
+            : undefined,
+
+        title:
+          reason.title?.trim(),
+
+        description:
+          typeof reason.description === 'string'
+            && reason.description.trim()
+              ? reason.description.trim()
+              : undefined,
+
+        role:
+          typeof reason.role === 'string'
+            && reason.role.trim()
+              ? reason.role.trim()
+              : undefined,
+
+      })
+    )
+
+    .slice(
+      0,
+      6
+    )
+
+}
+
 
 /* ============================================================================
 🔥 Component
@@ -86,64 +286,93 @@ function getWorkflowLabel(
 
 export default function ProductHeroCapability({
 
-  semanticRuntime,
+  product,
 
-  compiledRuntime,
+  semanticRuntime,
 
 }: Props) {
 
-  // 将来利用予定
-  void compiledRuntime
+  /* ==========================================================================
+  Product Identity
+  ========================================================================== */
+
+  const productName =
+    product.name?.trim()
+    ||
+    'このPC'
+
+
+  /* ==========================================================================
+  Observation
+  ========================================================================== */
 
   const workflowTags =
-
-    semanticRuntime
-      ?.workflowTags
-
-    ||
-
-    []
+    buildWorkflowTags(
+      semanticRuntime
+    )
 
   const semanticReasons =
+    buildSemanticReasons(
+      semanticRuntime
+    )
 
-    (semanticRuntime
-      ?.semanticReasons as SemanticReason[])
+  const hasWorkflow =
+    workflowTags.length > 0
 
-    ||
+  const hasReasons =
+    semanticReasons.length > 0
 
-    []
+
+  /* ==========================================================================
+  Empty
+  ========================================================================== */
 
   if (
-
-    workflowTags.length === 0
-
+    !hasWorkflow
     &&
-
-    semanticReasons.length === 0
-
+    !hasReasons
   ) {
 
     return null
 
   }
 
+
+  /* ==========================================================================
+  Render
+  ========================================================================== */
+
   return (
 
     <section
+
+      id="semantic"
+
       className={
         styles.heroCapabilitySection
       }
+
+      aria-labelledby="product-capability-title"
+
     >
 
-      {/* ==========================================================
-      WORKFLOW
-      ========================================================== */}
+      {/* ======================================================================
+      WORKFLOW EXPERIENCE
+      ====================================================================== */}
 
       {
 
-        workflowTags.length > 0 && (
+        hasWorkflow && (
 
-          <>
+          <div
+            className={
+              styles.heroCapabilityGroup
+            }
+          >
+
+            {/* ================================================================
+            HEADER
+            ================================================================ */}
 
             <div
               className={
@@ -156,15 +385,24 @@ export default function ProductHeroCapability({
                   styles.heroCapabilityLabel
                 }
               >
+
                 WORKFLOW EXPERIENCE
+
               </div>
 
               <h2
+
+                id="product-capability-title"
+
                 className={
                   styles.heroCapabilityTitle
                 }
+
               >
-                このPCでできること
+
+                {productName}
+                でできること
+
               </h2>
 
               <p
@@ -172,10 +410,18 @@ export default function ProductHeroCapability({
                   styles.heroCapabilityDescription
                 }
               >
-                このPCが得意とする利用シーンです。
+
+                {productName}
+                が対応する主な利用シーンです。
+
               </p>
 
             </div>
+
+
+            {/* ================================================================
+            WORKFLOW GRID
+            ================================================================ */}
 
             <div
               className={
@@ -188,15 +434,19 @@ export default function ProductHeroCapability({
                 workflowTags.map(
 
                   (
-                    tag,
-                    index
+                    tag
                   ) => (
 
                     <div
-                      key={index}
+
+                      key={
+                        tag
+                      }
+
                       className={
                         styles.heroCapabilityCard
                       }
+
                     >
 
                       <div
@@ -204,7 +454,13 @@ export default function ProductHeroCapability({
                           styles.heroCapabilityText
                         }
                       >
-                        {getWorkflowLabel(tag)}
+
+                        {
+                          getWorkflowLabel(
+                            tag
+                          )
+                        }
+
                       </div>
 
                     </div>
@@ -217,21 +473,30 @@ export default function ProductHeroCapability({
 
             </div>
 
-          </>
+          </div>
 
         )
 
       }
 
-      {/* ==========================================================
-      REASONS
-      ========================================================== */}
+
+      {/* ======================================================================
+      WHY THIS PRODUCT
+      ====================================================================== */}
 
       {
 
-        semanticReasons.length > 0 && (
+        hasReasons && (
 
-          <>
+          <div
+            className={
+              styles.heroCapabilityGroup
+            }
+          >
+
+            {/* ================================================================
+            HEADER
+            ================================================================ */}
 
             <div
               className={
@@ -244,7 +509,9 @@ export default function ProductHeroCapability({
                   styles.heroCapabilityLabel
                 }
               >
+
                 WHY THIS PRODUCT
+
               </div>
 
               <h2
@@ -252,7 +519,10 @@ export default function ProductHeroCapability({
                   styles.heroCapabilityTitle
                 }
               >
-                このPCが選ばれる理由
+
+                {productName}
+                が選ばれる理由
+
               </h2>
 
               <p
@@ -260,11 +530,19 @@ export default function ProductHeroCapability({
                   styles.heroCapabilityDescription
                 }
               >
-                Semantic Runtime が判定した
-                推薦根拠です。
+
+                {productName}
+                を候補として検討するための
+                主なポイントです。
+
               </p>
 
             </div>
+
+
+            {/* ================================================================
+            REASON GRID
+            ================================================================ */}
 
             <div
               className={
@@ -274,59 +552,73 @@ export default function ProductHeroCapability({
 
               {
 
-                semanticReasons
+                semanticReasons.map(
 
-                  .slice(0, 6)
+                  (
+                    reason,
+                    index
+                  ) => (
 
-                  .map(
+                    <article
 
-                    (
-                      reason,
-                      index
-                    ) => (
+                      key={
+
+                        reason.slug
+                        ||
+                        `${reason.title}-${index}`
+
+                      }
+
+                      className={
+                        styles.heroCapabilityCard
+                      }
+
+                    >
 
                       <div
-                        key={index}
                         className={
-                          styles.heroCapabilityCard
+                          styles.heroCapabilityText
                         }
                       >
 
-                        <div
-                          className={
-                            styles.heroCapabilityText
-                          }
-                        >
-                          {reason.title}
-                        </div>
-
                         {
-
-                          reason.description && (
-
-                            <div
-                              className={
-                                styles.heroCapabilitySubText
-                              }
-                            >
-                              {reason.description}
-                            </div>
-
-                          )
-
+                          reason.title
                         }
 
                       </div>
 
-                    )
+
+                      {
+
+                        reason.description && (
+
+                          <div
+                            className={
+                              styles.heroCapabilitySubText
+                            }
+                          >
+
+                            {
+                              reason.description
+                            }
+
+                          </div>
+
+                        )
+
+                      }
+
+                    </article>
 
                   )
+
+                )
 
               }
 
             </div>
 
-          </>
+          </div>
 
         )
 
