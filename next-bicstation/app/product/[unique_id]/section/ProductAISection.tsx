@@ -1,45 +1,30 @@
+// /home/maya/shin-dev/shin-vps/next-bicstation/app/product/[unique_id]/section/ProductAISection.tsx
 // ============================================================================
 // FILE:
-// app/product/[unique_id]/section/ProductHeroSection.tsx
+// /home/maya/shin-dev/shin-vps/next-bicstation/app/product/[unique_id]/section/ProductAISection.tsx
 //
 // SHIN CORE LINX
-// Product Detail Hero Experience
+// Product Detail AI Summary Section
 //
 // RESPONSIBILITY
 //
 // Product Detail Runtime
 //        ↓
-// ProductHeroSection
+// ProductAISection
 //        ↓
-// ┌──────────────────────────────┐
-// │ ProductHero                  │
-// │ Product Identity             │
-// └──────────────────────────────┘
+// ProductAISummary
 //
-// ProductHeroSection = Product Identity Orchestrator
+// ProductAISection = Experience Orchestrator
 //
-// ✓ Controls Product Identity presentation
-// ✓ Passes Product Reality to ProductHero
+// ✓ Controls AI Summary section placement
+// ✓ Passes Product Runtime data
+// ✓ Reuses existing ProductAISummary
 //
-// ✗ Semantic Summary rendering
-// ✗ Product Points rendering
-// ✗ Target User interpretation
-// ✗ Workflow rendering
-// ✗ Semantic generation
-// ✗ Workflow inference
-// ✗ Recommendation generation
-// ✗ Runtime generation
-//
-// Detailed semantic understanding is handled by:
-//
-//      ProductAISummarySection
-//
-// Product Points are handled by:
-//
-//      ProductPointsSection
-//
-// Workflow / Capability information is handled by
-// a dedicated section to be defined separately.
+// ✗ Does not generate semantic meaning
+// ✗ Does not transform Product Reality
+// ✗ Does not generate AI summary
+// ✗ Does not infer workflow
+// ✗ Does not generate recommendations
 //
 // ============================================================================
 
@@ -48,8 +33,8 @@
 🔥 Components
 ============================================================================ */
 
-import ProductHero
-  from '../components/hero/ProductHero'
+import ProductAISummary
+  from '../components/hero/ProductAISummary'
 
 
 /* ============================================================================
@@ -59,6 +44,7 @@ import ProductHero
 import type {
 
   ProjectedProduct,
+  ProjectedSemanticRuntime,
 
 } from '@/shared/lib/api/django/pc/product-detail'
 
@@ -72,16 +58,21 @@ type Props = {
   product:
     ProjectedProduct
 
+  semanticRuntime?:
+    ProjectedSemanticRuntime
+
 }
 
 
 /* ============================================================================
-🔥 Component
+🔥 Product AI Section
 ============================================================================ */
 
-export default function ProductHeroSection({
+export default function ProductAISection({
 
   product,
+
+  semanticRuntime,
 
 }: Props) {
 
@@ -102,21 +93,25 @@ export default function ProductHeroSection({
 
   return (
 
-    <>
+    <section>
 
       {/* ======================================================================
-      01 — PRODUCT IDENTITY
+      PRODUCT AI SUMMARY
       ====================================================================== */}
 
-      <ProductHero
+      <ProductAISummary
 
         product={
           product
         }
 
+        semanticRuntime={
+          semanticRuntime
+        }
+
       />
 
-    </>
+    </section>
 
   )
 

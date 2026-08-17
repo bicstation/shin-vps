@@ -1099,6 +1099,28 @@ export default function FinalCta({
     resolveProduct(
       product as FinalCtaProduct
     )
+  
+  console.log(
+    '🔥 FINAL CTA PRODUCT POINTS OBSERVATION',
+    {
+      product,
+
+      resolvedProduct,
+
+      productPoints:
+        resolvedProduct?.productPoints,
+
+      product_points:
+        resolvedProduct?.product_points,
+
+      keys:
+        Object.keys(
+          resolvedProduct || {}
+        ),
+
+    }
+  )
+  
 
 
   /* ==========================================================================

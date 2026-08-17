@@ -148,6 +148,13 @@ function normalizeProduct(
         breadcrumbs:
             product?.breadcrumbs ?? [],
 
+        /* --------------------------------------------------------------------
+        Product Points
+        -------------------------------------------------------------------- */
+
+        product_points:
+            product?.product_points ?? [],
+
     }
 
 }

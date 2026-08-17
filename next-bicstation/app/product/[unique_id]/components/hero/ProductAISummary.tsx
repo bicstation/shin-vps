@@ -3,26 +3,29 @@
 // app/product/[unique_id]/components/hero/ProductAISummary.tsx
 //
 // SHIN CORE LINX
-// Product Semantic Understanding
+// Product AI Summary
 //
 // RESPONSIBILITY
 //
 // Product
 //        +
-// Product Semantic Runtime
+// Product AI Runtime
 //        ↓
 // ProductAISummary
 //        ↓
 // "{product.name} は、どんなPC？"
 //
-// ProductAISummary = Semantic Understanding Experience
+// ProductAISummary = AI Product Understanding Experience
 //
-// ✓ Displays Backend-derived semanticSummary
+// ✓ Displays Backend-derived AI Summary
+// ✓ Uses Product AI Summary as the primary source
+// ✓ Falls back to Backend-derived semanticSummary
 // ✓ Displays Product Identity
 // ✓ Handles empty / unavailable semantic data
-// ✓ Presents semantic understanding clearly
+// ✓ Presents product understanding clearly
 // ✓ Provides a stable section anchor
 //
+// ✗ AI summary generation
 // ✗ Semantic generation
 // ✗ AI inference
 // ✗ Product classification
@@ -94,11 +97,14 @@ export default function ProductAISummary({
 
 
   /* ==========================================================================
-  Semantic Observation
+  AI Summary
   ========================================================================== */
 
   const summary =
 
+    product?.aiSummary
+      ?.trim()
+    ||
     semanticRuntime
       ?.semanticSummary
       ?.trim()

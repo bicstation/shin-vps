@@ -1,7 +1,12 @@
 /* ============================================================================
 🔥 FILE
 /home/maya/shin-vps/next-bicstation/app/product/[unique_id]/components/recommendation/recommendation.module.css
+
+SHIN CORE LINX
+Recommendation / Related Product Experience
+
 ============================================================================ */
+
 
 /* ============================================================================
 🔥 SECTION
@@ -11,26 +16,29 @@
 .similarUsageSection,
 .nextIntentSection {
 
-display: flex;
+  display: flex;
 
-flex-direction: column;
+  flex-direction: column;
 
-gap: 32px;
+  gap: 32px;
 
-padding: 36px;
+  padding: 36px;
 
-border-radius: 32px;
+  border-radius: 32px;
 
-background:
-linear-gradient(
-180deg,
-rgba(15,23,42,.94),
-rgba(2,6,23,1)
-);
+  background:
+    linear-gradient(
+      180deg,
+      rgba(15,23,42,.94),
+      rgba(2,6,23,1)
+    );
 
-border:
-1px solid rgba(255,255,255,.06);
+  border:
+    1px solid
+    rgba(255,255,255,.06);
+
 }
+
 
 /* ============================================================================
 🔥 HEADER
@@ -40,12 +48,14 @@ border:
 .similarUsageHeader,
 .nextIntentHeader {
 
-display: flex;
+  display: flex;
 
-flex-direction: column;
+  flex-direction: column;
 
-gap: 16px;
+  gap: 16px;
+
 }
+
 
 /* ============================================================================
 🔥 LABEL
@@ -55,17 +65,23 @@ gap: 16px;
 .similarUsageLabel,
 .nextIntentLabel {
 
-color:
-#7dd3fc;
+  color:
+    #7dd3fc;
 
-font-size: 11px;
+  font-size:
+    11px;
 
-font-weight: 800;
+  font-weight:
+    800;
 
-letter-spacing: .08em;
+  letter-spacing:
+    .08em;
 
-text-transform: uppercase;
+  text-transform:
+    uppercase;
+
 }
+
 
 /* ============================================================================
 🔥 TITLE
@@ -75,18 +91,27 @@ text-transform: uppercase;
 .similarUsageTitle,
 .nextIntentTitle {
 
-margin: 0;
+  margin:
+    0;
 
-color:
-#ffffff;
+  color:
+    #ffffff;
 
-font-size:
-clamp(28px, 4vw, 42px);
+  font-size:
+    clamp(
+      28px,
+      4vw,
+      42px
+    );
 
-font-weight: 900;
+  font-weight:
+    900;
 
-line-height: 1.1;
+  line-height:
+    1.1;
+
 }
+
 
 /* ============================================================================
 🔥 DESCRIPTION
@@ -96,87 +121,485 @@ line-height: 1.1;
 .similarUsageDescription,
 .nextIntentDescription {
 
-max-width: 760px;
+  max-width:
+    760px;
 
-color:
-#94a3b8;
+  margin:
+    0;
 
-font-size: 15px;
+  color:
+    #94a3b8;
 
-line-height: 1.9;
+  font-size:
+    15px;
+
+  line-height:
+    1.9;
+
 }
 
+
 /* ============================================================================
-🔥 GRID
+🔥 RELATED PRODUCT GRID
 ============================================================================ */
 
-.relatedNarratives,
+.relatedNarratives {
+
+  display:
+    grid;
+
+  grid-template-columns:
+    repeat(
+      4,
+      minmax(
+        0,
+        1fr
+      )
+    );
+
+  gap:
+    16px;
+
+  align-items:
+    stretch;
+
+}
+
+
+/* ============================================================================
+🔥 RELATED PRODUCT CARD
+============================================================================ */
+
+.relatedNarrativeCard {
+
+  display:
+    flex;
+
+  flex-direction:
+    column;
+
+  min-width:
+    0;
+
+  min-height:
+    360px;
+
+  padding:
+    22px;
+
+  box-sizing:
+    border-box;
+
+  border-radius:
+    22px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,.045),
+      rgba(255,255,255,.018)
+    );
+
+  border:
+    1px solid
+    rgba(255,255,255,.07);
+
+  color:
+    #ffffff;
+
+  transition:
+    transform .18s ease,
+    border-color .18s ease,
+    background .18s ease;
+
+}
+
+
+/* ============================================================================
+🔥 RELATED PRODUCT CARD HOVER
+============================================================================ */
+
+.relatedNarrativeCard:hover {
+
+  transform:
+    translateY(-3px);
+
+  border-color:
+    rgba(125,211,252,.22);
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,.065),
+      rgba(255,255,255,.025)
+    );
+
+}
+
+
+/* ============================================================================
+🔥 PRODUCT IDENTITY
+============================================================================ */
+
+.relatedProductIdentity {
+
+  display:
+    flex;
+
+  flex-direction:
+    column;
+
+  gap:
+    10px;
+
+  min-width:
+    0;
+
+  margin-bottom:
+    24px;
+
+  padding-bottom:
+    18px;
+
+  border-bottom:
+    1px solid
+    rgba(255,255,255,.07);
+
+}
+
+
+/* ============================================================================
+🔥 PRODUCT LABEL
+============================================================================ */
+
+.relatedProductLabel {
+
+  color:
+    #7dd3fc;
+
+  font-size:
+    10px;
+
+  font-weight:
+    800;
+
+  letter-spacing:
+    .12em;
+
+  line-height:
+    1.2;
+
+  text-transform:
+    uppercase;
+
+}
+
+
+/* ============================================================================
+🔥 PRODUCT LINK
+============================================================================ */
+
+.relatedProductLink {
+
+  display:
+    block;
+
+  min-width:
+    0;
+
+  color:
+    #ffffff;
+
+  font-size:
+    15px;
+
+  font-weight:
+    800;
+
+  line-height:
+    1.55;
+
+  text-decoration:
+    none;
+
+  overflow-wrap:
+    anywhere;
+
+}
+
+
+/* ============================================================================
+🔥 PRODUCT LINK HOVER
+============================================================================ */
+
+.relatedProductLink:hover {
+
+  color:
+    #bae6fd;
+
+}
+
+
+/* ============================================================================
+🔥 PRODUCT NAME
+============================================================================ */
+
+.relatedProductName {
+
+  display:
+    block;
+
+  min-width:
+    0;
+
+  color:
+    #ffffff;
+
+  font-size:
+    15px;
+
+  font-weight:
+    800;
+
+  line-height:
+    1.55;
+
+  overflow-wrap:
+    anywhere;
+
+}
+
+
+/* ============================================================================
+🔥 CONFIGURATION
+============================================================================ */
+
+.relatedConfiguration {
+
+  display:
+    flex;
+
+  flex-direction:
+    column;
+
+  gap:
+    16px;
+
+  min-width:
+    0;
+
+}
+
+
+/* ============================================================================
+🔥 CONFIGURATION ITEM
+============================================================================ */
+
+.relatedConfigurationItem {
+
+  display:
+    flex;
+
+  flex-direction:
+    column;
+
+  gap:
+    5px;
+
+  min-width:
+    0;
+
+}
+
+
+/* ============================================================================
+🔥 CONFIGURATION LABEL
+============================================================================ */
+
+.relatedConfigurationLabel {
+
+  color:
+    #64748b;
+
+  font-size:
+    10px;
+
+  font-weight:
+    800;
+
+  letter-spacing:
+    .08em;
+
+  line-height:
+    1.2;
+
+  text-transform:
+    uppercase;
+
+}
+
+
+/* ============================================================================
+🔥 CONFIGURATION VALUE
+============================================================================ */
+
+.relatedConfigurationValue {
+
+  min-width:
+    0;
+
+  color:
+    #f8fafc;
+
+  font-size:
+    14px;
+
+  font-weight:
+    700;
+
+  line-height:
+    1.5;
+
+  overflow-wrap:
+    anywhere;
+
+  word-break:
+    normal;
+
+}
+
+
+/* ============================================================================
+🔥 MEMORY / STORAGE VISUAL SEPARATION
+============================================================================ */
+
+.relatedConfigurationItem:nth-last-child(-n + 2) {
+
+  padding-top:
+    12px;
+
+  border-top:
+    1px solid
+    rgba(255,255,255,.045);
+
+}
+
+
+/* ============================================================================
+🔥 FOOTER
+============================================================================ */
+
+.relatedFooter {
+
+  margin-top:
+    0;
+
+  color:
+    #94a3b8;
+
+  font-size:
+    13px;
+
+  font-weight:
+    600;
+
+  line-height:
+    1.8;
+
+}
+
+
+/* ============================================================================
+🔥 SIMILAR USAGE / NEXT INTENT GRID
+============================================================================ */
+
 .similarUsageGrid,
 .nextIntentGrid {
 
-display: grid;
+  display:
+    grid;
 
-grid-template-columns:
-repeat(
-auto-fit,
-minmax(220px, 1fr)
-);
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(
+        220px,
+        1fr
+      )
+    );
 
-gap: 18px;
+  gap:
+    18px;
+
 }
 
+
 /* ============================================================================
-🔥 NARRATIVE CARD
+🔥 SIMILAR USAGE / NEXT INTENT CARD
 ============================================================================ */
 
-.relatedNarrativeCard,
 .similarUsageCard,
 .nextIntentCard {
 
-display: flex;
+  display:
+    flex;
 
-align-items: center;
+  flex-direction:
+    column;
 
-min-height: 130px;
+  justify-content:
+    center;
 
-padding: 24px;
+  min-height:
+    130px;
 
-border-radius: 26px;
+  padding:
+    24px;
 
-background:
-rgba(255,255,255,.03);
+  border-radius:
+    26px;
 
-border:
-1px solid rgba(255,255,255,.06);
+  background:
+    rgba(255,255,255,.03);
 
-color:
-#ffffff;
+  border:
+    1px solid
+    rgba(255,255,255,.06);
 
-font-size: 15px;
+  color:
+    #ffffff;
 
-font-weight: 700;
+  font-size:
+    15px;
 
-line-height: 1.9;
+  font-weight:
+    700;
 
-transition:
-transform .18s ease,
-border-color .18s ease,
-background .18s ease;
+  line-height:
+    1.9;
+
+  transition:
+    transform .18s ease,
+    border-color .18s ease,
+    background .18s ease;
+
 }
 
-.relatedNarrativeCard:hover,
+
 .similarUsageCard:hover,
 .nextIntentCard:hover {
 
-transform:
-translateY(-2px);
+  transform:
+    translateY(-2px);
 
-border-color:
-rgba(125,211,252,.18);
+  border-color:
+    rgba(125,211,252,.18);
 
-background:
-rgba(255,255,255,.05);
+  background:
+    rgba(255,255,255,.05);
+
 }
+
 
 /* ============================================================================
 🔥 RELATION REASONS
@@ -184,14 +607,20 @@ rgba(255,255,255,.05);
 
 .relationReasons {
 
-display: flex;
+  display:
+    flex;
 
-flex-wrap: wrap;
+  flex-wrap:
+    wrap;
 
-gap: 10px;
+  gap:
+    10px;
 
-margin-top: 16px;
+  margin-top:
+    16px;
+
 }
+
 
 /* ============================================================================
 🔥 RELATION REASON
@@ -199,35 +628,48 @@ margin-top: 16px;
 
 .relationReason {
 
-display: inline-flex;
+  display:
+    inline-flex;
 
-align-items: center;
+  align-items:
+    center;
 
-justify-content: center;
+  justify-content:
+    center;
 
-min-height: 36px;
+  min-height:
+    36px;
 
-padding: 0 14px;
+  padding:
+    0 14px;
 
-border-radius: 999px;
+  border-radius:
+    999px;
 
-background:
-rgba(34,197,94,.10);
+  background:
+    rgba(34,197,94,.10);
 
-border:
-1px solid rgba(34,197,94,.16);
+  border:
+    1px solid
+    rgba(34,197,94,.16);
 
-color:
-#86efac;
+  color:
+    #86efac;
 
-font-size: 11px;
+  font-size:
+    11px;
 
-font-weight: 800;
+  font-weight:
+    800;
 
-line-height: 1.2;
+  line-height:
+    1.2;
 
-letter-spacing: .02em;
+  letter-spacing:
+    .02em;
+
 }
+
 
 /* ============================================================================
 🔥 EXPLORATION CARD
@@ -235,49 +677,63 @@ letter-spacing: .02em;
 
 .explorationCard {
 
-display: flex;
+  display:
+    flex;
 
-flex-direction: column;
+  flex-direction:
+    column;
 
-gap: 20px;
+  gap:
+    20px;
 
-height: 100%;
+  height:
+    100%;
 
-padding: 20px;
+  padding:
+    20px;
 
-border-radius: 28px;
+  border-radius:
+    28px;
 
-background:
-linear-gradient(
-180deg,
-rgba(15,23,42,.96),
-rgba(2,6,23,1)
-);
+  background:
+    linear-gradient(
+      180deg,
+      rgba(15,23,42,.96),
+      rgba(2,6,23,1)
+    );
 
-border:
-1px solid rgba(255,255,255,.06);
+  border:
+    1px solid
+    rgba(255,255,255,.06);
 
-text-decoration: none;
+  text-decoration:
+    none;
 
-overflow: hidden;
+  overflow:
+    hidden;
 
-transition:
-transform .2s ease,
-border-color .2s ease,
-box-shadow .2s ease;
+  transition:
+    transform .2s ease,
+    border-color .2s ease,
+    box-shadow .2s ease;
+
 }
+
 
 .explorationCard:hover {
 
-transform:
-translateY(-4px);
+  transform:
+    translateY(-4px);
 
-border-color:
-rgba(125,211,252,.24);
+  border-color:
+    rgba(125,211,252,.24);
 
-box-shadow:
-0 24px 48px rgba(0,0,0,.34);
+  box-shadow:
+    0 24px 48px
+    rgba(0,0,0,.34);
+
 }
+
 
 /* ============================================================================
 🔥 IMAGE AREA
@@ -285,23 +741,32 @@ box-shadow:
 
 .explorationImageArea {
 
-display: flex;
+  display:
+    flex;
 
-align-items: center;
+  align-items:
+    center;
 
-justify-content: center;
+  justify-content:
+    center;
 
-min-height: 220px;
+  min-height:
+    220px;
 
-padding: 18px;
+  padding:
+    18px;
 
-border-radius: 24px;
+  border-radius:
+    24px;
 
-background:
-rgba(255,255,255,.03);
+  background:
+    rgba(255,255,255,.03);
 
-overflow: hidden;
+  overflow:
+    hidden;
+
 }
+
 
 /* ============================================================================
 🔥 IMAGE
@@ -309,24 +774,32 @@ overflow: hidden;
 
 .explorationImage {
 
-width: 100%;
+  width:
+    100%;
 
-height: auto;
+  height:
+    auto;
 
-max-height: 220px;
+  max-height:
+    220px;
 
-object-fit: contain;
+  object-fit:
+    contain;
 
-transition:
-transform .2s ease;
+  transition:
+    transform .2s ease;
+
 }
+
 
 .explorationCard:hover
 .explorationImage {
 
-transform:
-scale(1.03);
+  transform:
+    scale(1.03);
+
 }
+
 
 /* ============================================================================
 🔥 BODY
@@ -334,12 +807,17 @@ scale(1.03);
 
 .explorationBody {
 
-display: flex;
+  display:
+    flex;
 
-flex-direction: column;
+  flex-direction:
+    column;
 
-gap: 16px;
+  gap:
+    16px;
+
 }
+
 
 /* ============================================================================
 🔥 MAKER
@@ -347,35 +825,47 @@ gap: 16px;
 
 .explorationMaker {
 
-color:
-#7dd3fc;
+  color:
+    #7dd3fc;
 
-font-size: 11px;
+  font-size:
+    11px;
 
-font-weight: 800;
+  font-weight:
+    800;
 
-letter-spacing: .08em;
+  letter-spacing:
+    .08em;
 
-text-transform: uppercase;
+  text-transform:
+    uppercase;
+
 }
 
+
 /* ============================================================================
-🔥 TITLE
+🔥 EXPLORATION TITLE
 ============================================================================ */
 
 .explorationTitle {
 
-margin: 0;
+  margin:
+    0;
 
-color:
-#ffffff;
+  color:
+    #ffffff;
 
-font-size: 18px;
+  font-size:
+    18px;
 
-font-weight: 900;
+  font-weight:
+    900;
 
-line-height: 1.6;
+  line-height:
+    1.6;
+
 }
+
 
 /* ============================================================================
 🔥 REASON
@@ -383,15 +873,20 @@ line-height: 1.6;
 
 .explorationReason {
 
-margin: 0;
+  margin:
+    0;
 
-color:
-#cbd5e1;
+  color:
+    #cbd5e1;
 
-font-size: 14px;
+  font-size:
+    14px;
 
-line-height: 1.9;
+  line-height:
+    1.9;
+
 }
+
 
 /* ============================================================================
 🔥 CHIPS
@@ -399,12 +894,17 @@ line-height: 1.9;
 
 .explorationChips {
 
-display: flex;
+  display:
+    flex;
 
-flex-wrap: wrap;
+  flex-wrap:
+    wrap;
 
-gap: 10px;
+  gap:
+    10px;
+
 }
+
 
 /* ============================================================================
 🔥 CHIP
@@ -412,31 +912,42 @@ gap: 10px;
 
 .explorationChip {
 
-display: inline-flex;
+  display:
+    inline-flex;
 
-align-items: center;
+  align-items:
+    center;
 
-justify-content: center;
+  justify-content:
+    center;
 
-min-height: 34px;
+  min-height:
+    34px;
 
-padding: 0 14px;
+  padding:
+    0 14px;
 
-border-radius: 999px;
+  border-radius:
+    999px;
 
-background:
-rgba(59,130,246,.10);
+  background:
+    rgba(59,130,246,.10);
 
-border:
-1px solid rgba(59,130,246,.18);
+  border:
+    1px solid
+    rgba(59,130,246,.18);
 
-color:
-#93c5fd;
+  color:
+    #93c5fd;
 
-font-size: 11px;
+  font-size:
+    11px;
 
-font-weight: 800;
+  font-weight:
+    800;
+
 }
+
 
 /* ============================================================================
 🔥 CONFIDENCE
@@ -444,28 +955,38 @@ font-weight: 800;
 
 .explorationConfidence {
 
-color:
-#facc15;
+  color:
+    #facc15;
 
-font-size: 12px;
+  font-size:
+    12px;
 
-font-weight: 800;
+  font-weight:
+    800;
 
-letter-spacing: .04em;
+  letter-spacing:
+    .04em;
 
-text-transform: uppercase;
+  text-transform:
+    uppercase;
+
 }
 
+
 /* ============================================================================
-🔥 FOOTER
+🔥 EXPLORATION FOOTER
 ============================================================================ */
 
 .explorationFooter {
 
-margin-top: auto;
+  margin-top:
+    auto;
 
-padding-top: 12px;
+  padding-top:
+    12px;
+
 }
+
 
 /* ============================================================================
 🔥 PRICE
@@ -473,15 +994,20 @@ padding-top: 12px;
 
 .explorationPrice {
 
-color:
-#fb923c;
+  color:
+    #fb923c;
 
-font-size: 28px;
+  font-size:
+    28px;
 
-font-weight: 900;
+  font-weight:
+    900;
 
-line-height: 1;
+  line-height:
+    1;
+
 }
+
 
 /* ============================================================================
 🔥 RELATED PRODUCTS
@@ -489,12 +1015,17 @@ line-height: 1;
 
 .relatedProductsSection {
 
-display: flex;
+  display:
+    flex;
 
-flex-direction: column;
+  flex-direction:
+    column;
 
-gap: 28px;
+  gap:
+    28px;
+
 }
+
 
 /* ============================================================================
 🔥 RELATED PRODUCTS HEADER
@@ -502,12 +1033,17 @@ gap: 28px;
 
 .relatedProductsHeader {
 
-display: flex;
+  display:
+    flex;
 
-flex-direction: column;
+  flex-direction:
+    column;
 
-gap: 14px;
+  gap:
+    14px;
+
 }
+
 
 /* ============================================================================
 🔥 RELATED PRODUCTS LABEL
@@ -515,17 +1051,23 @@ gap: 14px;
 
 .relatedProductsLabel {
 
-color:
-#7dd3fc;
+  color:
+    #7dd3fc;
 
-font-size: 11px;
+  font-size:
+    11px;
 
-font-weight: 800;
+  font-weight:
+    800;
 
-letter-spacing: .08em;
+  letter-spacing:
+    .08em;
 
-text-transform: uppercase;
+  text-transform:
+    uppercase;
+
 }
+
 
 /* ============================================================================
 🔥 RELATED PRODUCTS TITLE
@@ -533,18 +1075,27 @@ text-transform: uppercase;
 
 .relatedProductsTitle {
 
-margin: 0;
+  margin:
+    0;
 
-color:
-#ffffff;
+  color:
+    #ffffff;
 
-font-size:
-clamp(28px, 4vw, 42px);
+  font-size:
+    clamp(
+      28px,
+      4vw,
+      42px
+    );
 
-font-weight: 900;
+  font-weight:
+    900;
 
-line-height: 1.1;
+  line-height:
+    1.1;
+
 }
+
 
 /* ============================================================================
 🔥 RELATED PRODUCTS DESCRIPTION
@@ -552,15 +1103,20 @@ line-height: 1.1;
 
 .relatedProductsDescription {
 
-max-width: 760px;
+  max-width:
+    760px;
 
-color:
-#94a3b8;
+  color:
+    #94a3b8;
 
-font-size: 15px;
+  font-size:
+    15px;
 
-line-height: 1.9;
+  line-height:
+    1.9;
+
 }
+
 
 /* ============================================================================
 🔥 HORIZONTAL SLIDER
@@ -568,21 +1124,32 @@ line-height: 1.9;
 
 .relatedProductsSlider {
 
-display: grid;
+  display:
+    grid;
 
-grid-auto-flow: column;
+  grid-auto-flow:
+    column;
 
-grid-auto-columns:
-minmax(320px, 360px);
+  grid-auto-columns:
+    minmax(
+      320px,
+      360px
+    );
 
-gap: 24px;
+  gap:
+    24px;
 
-overflow-x: auto;
+  overflow-x:
+    auto;
 
-padding-bottom: 12px;
+  padding-bottom:
+    12px;
 
-scroll-snap-type: x mandatory;
+  scroll-snap-type:
+    x mandatory;
+
 }
+
 
 /* ============================================================================
 🔥 SLIDER ITEM
@@ -590,14 +1157,20 @@ scroll-snap-type: x mandatory;
 
 .relatedProductsItem {
 
-display: flex;
+  display:
+    flex;
 
-flex-direction: column;
+  flex-direction:
+    column;
 
-gap: 18px;
+  gap:
+    18px;
 
-scroll-snap-align: start;
+  scroll-snap-align:
+    start;
+
 }
+
 
 /* ============================================================================
 🔥 SCROLLBAR
@@ -605,107 +1178,30 @@ scroll-snap-align: start;
 
 .relatedProductsSlider::-webkit-scrollbar {
 
-height: 10px;
+  height:
+    10px;
+
 }
+
 
 .relatedProductsSlider::-webkit-scrollbar-track {
 
-background:
-rgba(255,255,255,.04);
+  background:
+    rgba(255,255,255,.04);
 
-border-radius: 999px;
+  border-radius:
+    999px;
+
 }
+
 
 .relatedProductsSlider::-webkit-scrollbar-thumb {
 
-background:
-rgba(125,211,252,.22);
+  background:
+    rgba(125,211,252,.22);
 
-border-radius: 999px;
-}
-
-/* ============================================================================
-🔥 MOBILE
-============================================================================ */
-
-@media (max-width: 768px) {
-
-.relatedSection,
-.similarUsageSection,
-.nextIntentSection {
-
-
-padding: 24px;
-
-border-radius: 28px;
-
-
-}
-
-.relatedNarrativeCard,
-.similarUsageCard,
-.nextIntentCard {
-
-
-min-height: auto;
-
-padding: 18px;
-
-font-size: 14px;
-
-
-}
-
-.explorationCard {
-
-
-padding: 18px;
-
-border-radius: 24px;
-
-
-}
-
-.explorationImageArea {
-
-
-min-height: 180px;
-
-
-}
-
-.explorationTitle {
-
-
-font-size: 16px;
-
-
-}
-
-.explorationReason {
-
-
-font-size: 13px;
-
-
-}
-
-.explorationPrice {
-
-
-font-size: 24px;
-
-
-}
-
-.relatedProductsSlider {
-
-
-grid-auto-columns:
-  minmax(280px, 88vw);
-
-
-}
+  border-radius:
+    999px;
 
 }
 
@@ -716,19 +1212,26 @@ grid-auto-columns:
 
 .nextIntentCardLabel {
 
-color:
-#7dd3fc;
+  color:
+    #7dd3fc;
 
-font-size: 10px;
+  font-size:
+    10px;
 
-font-weight: 800;
+  font-weight:
+    800;
 
-letter-spacing: .08em;
+  letter-spacing:
+    .08em;
 
-text-transform: uppercase;
+  text-transform:
+    uppercase;
 
-margin-bottom: 8px;
+  margin-bottom:
+    8px;
+
 }
+
 
 /* ============================================================================
 🔥 NEXT INTENT CARD VALUE
@@ -736,15 +1239,20 @@ margin-bottom: 8px;
 
 .nextIntentCardValue {
 
-color:
-#ffffff;
+  color:
+    #ffffff;
 
-font-size: 15px;
+  font-size:
+    15px;
 
-font-weight: 700;
+  font-weight:
+    700;
 
-line-height: 1.9;
+  line-height:
+    1.9;
+
 }
+
 
 /* ============================================================================
 🔥 NEXT INTENT TAGS
@@ -752,12 +1260,17 @@ line-height: 1.9;
 
 .nextIntentTags {
 
-display: flex;
+  display:
+    flex;
 
-flex-wrap: wrap;
+  flex-wrap:
+    wrap;
 
-gap: 10px;
+  gap:
+    10px;
+
 }
+
 
 /* ============================================================================
 🔥 NEXT INTENT TAG
@@ -765,35 +1278,45 @@ gap: 10px;
 
 .nextIntentTag {
 
-display: inline-flex;
+  display:
+    inline-flex;
 
-align-items: center;
+  align-items:
+    center;
 
-justify-content: center;
+  justify-content:
+    center;
 
-min-height: 34px;
+  min-height:
+    34px;
 
-padding:
-0 14px;
+  padding:
+    0 14px;
 
-border-radius:
-999px;
+  border-radius:
+    999px;
 
-background:
-rgba(125,211,252,.08);
+  background:
+    rgba(125,211,252,.08);
 
-border:
-1px solid rgba(125,211,252,.16);
+  border:
+    1px solid
+    rgba(125,211,252,.16);
 
-color:
-#bae6fd;
+  color:
+    #bae6fd;
 
-font-size: 11px;
+  font-size:
+    11px;
 
-font-weight: 800;
+  font-weight:
+    800;
 
-line-height: 1.2;
+  line-height:
+    1.2;
+
 }
+
 
 /* ============================================================================
 🔥 NEXT INTENT FOOTER
@@ -801,12 +1324,185 @@ line-height: 1.2;
 
 .nextIntentFooter {
 
-padding-top: 8px;
+  padding-top:
+    8px;
 
-color:
-#64748b;
+  color:
+    #64748b;
 
-font-size: 12px;
+  font-size:
+    12px;
 
-line-height: 1.7;
+  line-height:
+    1.7;
+
+}
+
+
+/* ============================================================================
+🔥 MOBILE
+============================================================================ */
+
+@media (max-width: 1100px) {
+
+  .relatedNarratives {
+
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(
+          0,
+          1fr
+        )
+      );
+
+  }
+
+}
+
+
+@media (max-width: 768px) {
+
+  .relatedSection,
+  .similarUsageSection,
+  .nextIntentSection {
+
+    padding:
+      24px;
+
+    border-radius:
+      28px;
+
+  }
+
+
+  .relatedNarratives {
+
+    grid-template-columns:
+      1fr;
+
+    gap:
+      14px;
+
+  }
+
+
+  .relatedNarrativeCard {
+
+    min-height:
+      auto;
+
+    padding:
+      20px;
+
+    border-radius:
+      20px;
+
+  }
+
+
+  .relatedProductIdentity {
+
+    margin-bottom:
+      20px;
+
+    padding-bottom:
+      16px;
+
+  }
+
+
+  .relatedProductLink,
+  .relatedProductName {
+
+    font-size:
+      15px;
+
+  }
+
+
+  .relatedConfiguration {
+
+    gap:
+      14px;
+
+  }
+
+
+  .relatedConfigurationItem:nth-last-child(-n + 2) {
+
+    padding-top:
+      10px;
+
+  }
+
+
+  .similarUsageCard,
+  .nextIntentCard {
+
+    min-height:
+      auto;
+
+    padding:
+      18px;
+
+    font-size:
+      14px;
+
+  }
+
+
+  .explorationCard {
+
+    padding:
+      18px;
+
+    border-radius:
+      24px;
+
+  }
+
+
+  .explorationImageArea {
+
+    min-height:
+      180px;
+
+  }
+
+
+  .explorationTitle {
+
+    font-size:
+      16px;
+
+  }
+
+
+  .explorationReason {
+
+    font-size:
+      13px;
+
+  }
+
+
+  .explorationPrice {
+
+    font-size:
+      24px;
+
+  }
+
+
+  .relatedProductsSlider {
+
+    grid-auto-columns:
+      minmax(
+        280px,
+        88vw
+      );
+
+  }
+
 }

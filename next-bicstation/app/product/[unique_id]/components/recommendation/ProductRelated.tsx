@@ -1,6 +1,6 @@
 // ============================================================================
 // FILE:
-// /home/maya/shin-vps/next-bicstation/app/product/[unique_id]/components/recommendation/ProductRelated.tsx
+// /home/maya/shin-dev/shin-vps/next-bicstation/app/product/[unique_id]/components/recommendation/ProductRelated.tsx
 //
 // SHIN CORE LINX
 // Related Configuration Experience
@@ -40,6 +40,7 @@
 
 import Link
   from 'next/link'
+
 
 /* ============================================================================
 🔥 Styles
@@ -382,6 +383,7 @@ export default function ProductRelated({
 
 }: Props) {
 
+
   /* ==========================================================================
   Current Product
   ========================================================================== */
@@ -432,9 +434,7 @@ export default function ProductRelated({
         styles.relatedSection
       }
 
-      aria-labelledby="
-        related-configuration-title
-      "
+      aria-labelledby="related-configuration-title"
 
     >
 
@@ -443,9 +443,11 @@ export default function ProductRelated({
       ====================================================================== */}
 
       <div
+
         className={
           styles.relatedHeader
         }
+
       >
 
         {/* ====================================================================
@@ -453,9 +455,11 @@ export default function ProductRelated({
         ==================================================================== */}
 
         <div
+
           className={
             styles.relatedLabel
           }
+
         >
 
           RELATED CONFIGURATION
@@ -469,9 +473,7 @@ export default function ProductRelated({
 
         <h2
 
-          id="
-            related-configuration-title
-          "
+          id="related-configuration-title"
 
           className={
             styles.relatedTitle
@@ -489,9 +491,11 @@ export default function ProductRelated({
         ==================================================================== */}
 
         <p
+
           className={
             styles.relatedDescription
           }
+
         >
 
           関連PCとして取得された製品について、
@@ -508,9 +512,11 @@ export default function ProductRelated({
       ====================================================================== */}
 
       <div
+
         className={
           styles.relatedNarratives
         }
+
       >
 
         {
@@ -519,7 +525,7 @@ export default function ProductRelated({
 
             (
               item,
-              index
+              index,
             ) => {
 
               /* ================================================================
@@ -594,7 +600,9 @@ export default function ProductRelated({
 
                 <article
 
-                  key={key}
+                  key={
+                    key
+                  }
 
                   className={
                     styles.relatedNarrativeCard
@@ -603,50 +611,77 @@ export default function ProductRelated({
                 >
 
                   {/* ============================================================
-                  PRODUCT IDENTITY
+                  RELATED PRODUCT
                   ============================================================ */}
 
-                  {
+                  <div
 
-                    href
+                    className={
+                      styles.relatedProductIdentity
+                    }
 
-                      ? (
+                  >
 
-                        <Link
+                    <div
 
-                          href={href}
+                      className={
+                        styles.relatedProductLabel
+                      }
 
-                          className={
-                            styles.relatedProductLink
-                          }
+                    >
 
-                        >
+                      RELATED PC
 
-                          {
-                            name
-                          }
+                    </div>
 
-                        </Link>
 
-                      )
+                    {
 
-                      : (
+                      href
 
-                        <div
-                          className={
-                            styles.relatedProductName
-                          }
-                        >
+                        ? (
 
-                          {
-                            name
-                          }
+                          <Link
 
-                        </div>
+                            href={
+                              href
+                            }
 
-                      )
+                            className={
+                              styles.relatedProductLink
+                            }
 
-                  }
+                          >
+
+                            {
+                              name
+                            }
+
+                          </Link>
+
+                        )
+
+                        : (
+
+                          <div
+
+                            className={
+                              styles.relatedProductName
+                            }
+
+                          >
+
+                            {
+                              name
+                            }
+
+                          </div>
+
+                        )
+
+                    }
+
+                  </div>
 
 
                   {/* ============================================================
@@ -654,9 +689,11 @@ export default function ProductRelated({
                   ============================================================ */}
 
                   <div
+
                     className={
                       styles.relatedConfiguration
                     }
+
                   >
 
                     {
@@ -684,9 +721,11 @@ export default function ProductRelated({
                             ================================================== */}
 
                             <div
+
                               className={
                                 styles.relatedConfigurationLabel
                               }
+
                             >
 
                               {
@@ -701,9 +740,11 @@ export default function ProductRelated({
                             ================================================== */}
 
                             <div
+
                               className={
                                 styles.relatedConfigurationValue
                               }
+
                             >
 
                               {
@@ -721,6 +762,7 @@ export default function ProductRelated({
                     }
 
                   </div>
+
 
                 </article>
 
@@ -740,9 +782,11 @@ export default function ProductRelated({
       ====================================================================== */}
 
       <div
+
         className={
           styles.relatedFooter
         }
+
       >
 
         関連PCとして取得された構成情報を

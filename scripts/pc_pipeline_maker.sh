@@ -175,7 +175,7 @@ log "③ HUMAN RUNTIME"
 
 run_django compile_human_runtime \
     --maker "$MAKER" \
-    --limit 400
+    --limit 100
 
 # ==========================================================
 # ④ SEMANTIC RUNTIME
@@ -186,7 +186,7 @@ log "④ SEMANTIC RUNTIME"
 run_django compile_semantic_runtime \
     --maker "$MAKER" \
     --needs-runtime \
-    --limit 400 \
+    --limit 100 \
     --workers 4
 
 # ==========================================================

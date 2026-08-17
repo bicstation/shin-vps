@@ -297,6 +297,8 @@ export interface ProductDetail {
 
     usage_tags?: string | string[] | null
 
+    product_points?: string[]
+
     /* ------------------------------------------------------------------------
     Semantic Scores
     ------------------------------------------------------------------------ */

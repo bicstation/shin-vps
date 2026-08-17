@@ -293,6 +293,8 @@ export interface ProjectedProduct {
 
     usageTags?: string | string[] | null
 
+    productPoints?: string[]
+
     /* ------------------------------------------------------------------------
     Semantic Scores
     ------------------------------------------------------------------------ */
@@ -710,6 +712,9 @@ function projectProduct(
 
         usageTags:
             product.usage_tags,
+
+        productPoints:
+            product.product_points,
 
         scoreCpu:
             product.score_cpu,
