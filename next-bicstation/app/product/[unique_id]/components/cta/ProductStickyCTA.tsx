@@ -70,7 +70,7 @@ export default function ProductStickyCTA({
       ================================== */}
 
       <Link
-        href="/discover"
+        href="/ranking/"
 
         className={
           styles.stickySecondary

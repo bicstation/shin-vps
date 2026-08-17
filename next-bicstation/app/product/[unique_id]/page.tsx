@@ -713,13 +713,13 @@ export default async function ProductPage({
             product
           }
 
-          semanticRuntime={
-            semanticRuntime
-          }
+          // semanticRuntime={
+          //   semanticRuntime
+          // }
 
-          compiledRuntime={
-            compiledRuntime
-          }
+          // compiledRuntime={
+          //   compiledRuntime
+          // }
 
         />
 

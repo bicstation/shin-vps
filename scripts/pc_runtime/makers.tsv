@@ -1,0 +1,17 @@
+maker	acquisition_type	acquisition_target	mid	enabled
+dell	linkshare_ftp	dell	2557	1
+hp	official_api	hp		1
+lenovo	official_api	lenovo		1
+asus	linkshare_api	asus	43708	1
+fujitsu	linkshare_ftp	fujitsu	2543	1
+dynabook	linkshare_ftp	dynabook	36508	1
+lavie	official_api	lavie		1
+frontier	official_api	frontier		1
+geekom	official_api	geekom		1
+gmktec	official_api	gmktec		1
+minisforum	official_api	minisforum		1
+tsukumo	official_api	tsukumo		1
+ozgaming	official_api	ozgaming		1
+storm	official_api	storm		1
+sycom	official_api	sycom		1
+mouse	official_api	mouse		1

@@ -277,12 +277,35 @@ class Command(BaseCommand):
 
             query = query.filter(
 
-                maker__iexact=maker.strip()
+                maker__iexact=(
+                    maker.strip()
+                )
 
             )
 
         # =================================================
         # Human Runtime Completion Filter
+        #
+        # IMPORTANT:
+        #
+        # Human Runtime uses Observation Runtime
+        # as the primary Reality Authority.
+        #
+        # Therefore:
+        #
+        #   CPU
+        #   Memory
+        #   Storage
+        #
+        # must NOT be required here.
+        #
+        # A product can still have valid public
+        # Observation Reality even when Specification
+        # Runtime is incomplete.
+        #
+        # Human Runtime completion is determined by
+        # whether Human Runtime content already exists.
+        #
         # =================================================
 
         if not force:
@@ -301,20 +324,8 @@ class Command(BaseCommand):
 
             )
 
-            query = query.exclude(
-                cpu_model=""
-            )
-
-            query = query.exclude(
-                memory_gb=0
-            )
-
-            query = query.exclude(
-                storage_gb=0
-            )
-
         # =================================================
-        # Limit
+        # LIMIT
         # =================================================
 
         return query[:limit]
@@ -343,9 +354,14 @@ class Command(BaseCommand):
 
                 f"📤 "
                 f"({count}/{total}) "
+                f"【{product.maker}】"
                 f"{product.name}"
 
             )
+
+            # =================================================
+            # HUMAN GENERATION
+            # =================================================
 
             bundle = (
 
@@ -354,6 +370,10 @@ class Command(BaseCommand):
                 )
 
             )
+
+            # =================================================
+            # EMPTY RESULT
+            # =================================================
 
             if not bundle:
 
@@ -387,9 +407,12 @@ class Command(BaseCommand):
                     "🔎 PRODUCT POINTS DEBUG\n"
                     "==================================================\n"
                     f"PRODUCT : {product.unique_id}\n"
-                    f"TYPE    : {type(result.product_points).__name__}\n"
-                    f"COUNT   : {len(result.product_points)}\n"
-                    f"POINTS  : {result.product_points}\n"
+                    f"TYPE    : "
+                    f"{type(result.product_points).__name__}\n"
+                    f"COUNT   : "
+                    f"{len(result.product_points)}\n"
+                    f"POINTS  : "
+                    f"{result.product_points}\n"
                     "=================================================="
 
                 )
@@ -408,6 +431,10 @@ class Command(BaseCommand):
 
             )
 
+            # =================================================
+            # COMPLETE
+            # =================================================
+
             self.stdout.write(
 
                 self.style.SUCCESS(
@@ -422,9 +449,12 @@ class Command(BaseCommand):
                     f"TIME    : {bundle['elapsed']} sec\n"
                     "\n"
                     f"TARGET  : {result.target_user}\n"
-                    f"TAGS    : {', '.join(result.usage_tags)}\n"
-                    f"POINTS  : {len(result.product_points)}\n"
-                    f"SUMMARY : {result.summary[:120]}\n"
+                    f"TAGS    : "
+                    f"{', '.join(result.usage_tags)}\n"
+                    f"POINTS  : "
+                    f"{len(result.product_points)}\n"
+                    f"SUMMARY : "
+                    f"{result.summary[:120]}\n"
                     "=================================================="
 
                 )
