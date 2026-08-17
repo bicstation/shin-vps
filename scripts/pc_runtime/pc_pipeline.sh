@@ -538,13 +538,7 @@ PIPELINE_END_EPOCH="$(
     date +%s
 )"
 
-PIPELINE_ELAPSED="$(
-    (
-        PIPELINE_END_EPOCH
-        -
-        PIPELINE_START_EPOCH
-    )
-)"
+PIPELINE_ELAPSED=$((PIPELINE_END_EPOCH - PIPELINE_START_EPOCH))
 
 # ==========================================================
 # COMPLETE
