@@ -10,23 +10,37 @@
 #
 #   Pipeline Start
 #      ↓
-#   ⓪ Reset Product Stock   ← ALL PRODUCTS
+#   ⓪ Reset Product Stock   ← ALL PRODUCTS / ONCE
 #      ↓
-#   Maker
+#   Maker Loop
+#      ├─ ① Reality Acquisition
+#      ├─ ② Spec Runtime
+#      ├─ ③ Human Runtime
+#      └─ ④ Semantic Runtime
 #      ↓
-#   ① Reality Acquisition
+#   ⑤ TSV Mapping           ← ALL PRODUCTS / ONCE
 #      ↓
-#   ② Spec Runtime
+#   ⑥ Semantic Authority    ← GLOBAL / ONCE
 #      ↓
-#   ③ Human Runtime
-#      ↓
-#   ④ Semantic Runtime
-#      ↓
-#   ⑤ TSV Mapping           ← ALL PRODUCTS
-#      ↓
-#   ⑥ Semantic Authority    ← ALL PRODUCTS
-#      ↓
-#   ⑦ Unified Runtime       ← ALL PRODUCTS
+#   ⑦ Unified Runtime       ← GLOBAL / ONCE
+#
+# ==========================================================
+#
+# Modes
+#
+#   Single Maker:
+#
+#     $0 --maker dell
+#
+#   All Enabled Makers:
+#
+#     $0 --all
+#
+# Runtime:
+#
+#     RUNTIME=local $0 --maker dell
+#     RUNTIME=stg   $0 --maker dell
+#     RUNTIME=prod  $0 --all
 #
 # ==========================================================
 
@@ -70,10 +84,16 @@ source "$SCRIPT_DIR/unified.sh"
 
 MAKER=""
 
+RUN_ALL=0
+
 while [ $# -gt 0 ]
 do
 
     case "$1" in
+
+        # --------------------------------------------------
+        # SINGLE MAKER
+        # --------------------------------------------------
 
         --maker)
 
@@ -83,11 +103,39 @@ do
 
             fi
 
+            if [ "$RUN_ALL" -eq 1 ]; then
+
+                fail "--maker and --all cannot be used together"
+
+            fi
+
             MAKER="$2"
 
             shift 2
 
             ;;
+
+        # --------------------------------------------------
+        # ALL ENABLED MAKERS
+        # --------------------------------------------------
+
+        --all)
+
+            if [ -n "$MAKER" ]; then
+
+                fail "--maker and --all cannot be used together"
+
+            fi
+
+            RUN_ALL=1
+
+            shift
+
+            ;;
+
+        # --------------------------------------------------
+        # LIMIT
+        # --------------------------------------------------
 
         --limit)
 
@@ -103,6 +151,10 @@ do
 
             ;;
 
+        # --------------------------------------------------
+        # WORKERS
+        # --------------------------------------------------
+
         --workers)
 
             if [ -z "${2:-}" ]; then
@@ -116,6 +168,10 @@ do
             shift 2
 
             ;;
+
+        # --------------------------------------------------
+        # HELP
+        # --------------------------------------------------
 
         -h|--help)
 
@@ -131,6 +187,10 @@ do
             echo ""
             echo "  $0 --maker dell --limit 100 --workers 4"
             echo ""
+            echo "  $0 --all"
+            echo ""
+            echo "  $0 --all --limit 100 --workers 5"
+            echo ""
             echo "Runtime:"
             echo ""
             echo "  RUNTIME=local $0 --maker dell"
@@ -139,10 +199,16 @@ do
             echo ""
             echo "  RUNTIME=prod $0 --maker dell"
             echo ""
+            echo "  RUNTIME=prod $0 --all"
+            echo ""
 
             exit 0
 
             ;;
+
+        # --------------------------------------------------
+        # UNKNOWN
+        # --------------------------------------------------
 
         *)
 
@@ -155,6 +221,16 @@ do
 done
 
 # ==========================================================
+# ARGUMENT VALIDATION
+# ==========================================================
+
+if [ "$RUN_ALL" -eq 0 ] && [ -z "$MAKER" ]; then
+
+    fail "Either --maker or --all is required"
+
+fi
+
+# ==========================================================
 # INITIALIZE
 # ==========================================================
 
@@ -164,21 +240,52 @@ initialize_runtime
 # MAKER VALIDATION
 # ==========================================================
 
-validate_maker "$MAKER"
+if [ "$RUN_ALL" -eq 0 ]; then
+
+    validate_maker "$MAKER"
+
+fi
 
 # ==========================================================
-# START
+# PIPELINE START TIME
 # ==========================================================
 
-log "🚀 SHIN CORE LINX PC RUNTIME PIPELINE START"
+PIPELINE_START_TIME="$(
+    date '+%Y-%m-%d %H:%M:%S %Z'
+)"
+
+PIPELINE_START_EPOCH="$(
+    date +%s
+)"
+
+# ==========================================================
+# PIPELINE START
+# ==========================================================
 
 echo ""
-echo "MAKER   : $MAKER"
+echo "=========================================================="
+echo "🌌 SHIN CORE LINX PC RUNTIME PIPELINE START"
+echo "=========================================================="
+
+echo "START   : $PIPELINE_START_TIME"
 echo "RUNTIME : $RUNTIME"
 echo "PROJECT : $PROJECT_NAME"
 echo "SERVICE : $DJANGO_SERVICE"
 echo "LIMIT   : $PIPELINE_LIMIT"
 echo "WORKERS : $SEMANTIC_WORKERS"
+
+if [ "$RUN_ALL" -eq 1 ]; then
+
+    echo "MODE    : ALL ENABLED MAKERS"
+
+else
+
+    echo "MODE    : SINGLE MAKER"
+    echo "MAKER   : $MAKER"
+
+fi
+
+echo "=========================================================="
 echo ""
 
 # ==========================================================
@@ -188,52 +295,208 @@ echo ""
 #
 # This is a GLOBAL operation.
 #
-# The maker filter does NOT apply here.
+# It executes ONCE before any maker acquisition.
 #
 # Existing logic:
 #
 #   reset_pc_stock
 #
-# must execute BEFORE Reality Acquisition.
-#
 # ==========================================================
+
+log "⓪ RESET PRODUCT STOCK : ALL PRODUCTS"
 
 run_reset_stock
 
 # ==========================================================
-# ① REALITY ACQUISITION
+# MAKER PIPELINE
 # ==========================================================
 
-run_acquisition "$MAKER"
+if [ "$RUN_ALL" -eq 1 ]; then
 
-# ==========================================================
-# ② SPEC RUNTIME
-# ==========================================================
+    # ======================================================
+    # ALL ENABLED MAKERS
+    #
+    # Read makers.tsv directly.
+    #
+    # Format:
+    #
+    #   maker
+    #   acquisition_type
+    #   acquisition_target
+    #   mid
+    #   enabled
+    #
+    # Only enabled=1 is executed.
+    #
+    # ======================================================
 
-run_spec_runtime "$MAKER"
+    check_maker_registry
 
-# ==========================================================
-# ③ HUMAN RUNTIME
-# ==========================================================
+    MAKER_COUNT=0
 
-run_human_runtime "$MAKER"
+    echo ""
+    echo "=========================================================="
+    echo "🌌 ENABLED MAKER PIPELINE"
+    echo "=========================================================="
+    echo ""
 
-# ==========================================================
-# ④ SEMANTIC RUNTIME
-# ==========================================================
+    while IFS=$'\t' read -r \
+        REGISTRY_MAKER \
+        REGISTRY_ACQUISITION_TYPE \
+        REGISTRY_ACQUISITION_TARGET \
+        REGISTRY_MID \
+        REGISTRY_ENABLED
+    do
 
-run_semantic_runtime "$MAKER"
+        # --------------------------------------------------
+        # Skip empty lines
+        # --------------------------------------------------
+
+        if [ -z "$REGISTRY_MAKER" ]; then
+
+            continue
+
+        fi
+
+        # --------------------------------------------------
+        # Skip header
+        # --------------------------------------------------
+
+        if [ "$REGISTRY_MAKER" = "maker" ]; then
+
+            continue
+
+        fi
+
+        # --------------------------------------------------
+        # Skip disabled makers
+        # --------------------------------------------------
+
+        if [ "$REGISTRY_ENABLED" != "1" ]; then
+
+            continue
+
+        fi
+
+        MAKER_COUNT=$((MAKER_COUNT + 1))
+
+        # --------------------------------------------------
+        # Current Maker
+        # --------------------------------------------------
+
+        CURRENT_MAKER="$REGISTRY_MAKER"
+
+        log "🚀 MAKER PIPELINE : ${CURRENT_MAKER^^}"
+
+        echo ""
+        echo "MAKER              : $CURRENT_MAKER"
+        echo "ACQUISITION TYPE   : $REGISTRY_ACQUISITION_TYPE"
+        echo "ACQUISITION TARGET : $REGISTRY_ACQUISITION_TARGET"
+
+        if [ -n "$REGISTRY_MID" ]; then
+
+            echo "MID                : $REGISTRY_MID"
+
+        else
+
+            echo "MID                : <none>"
+
+        fi
+
+        echo "ENABLED            : $REGISTRY_ENABLED"
+        echo ""
+
+        # ==================================================
+        # ① REALITY ACQUISITION
+        # ==================================================
+
+        run_acquisition "$CURRENT_MAKER"
+
+        # ==================================================
+        # ② SPEC RUNTIME
+        # ==================================================
+
+        run_spec_runtime "$CURRENT_MAKER"
+
+        # ==================================================
+        # ③ HUMAN RUNTIME
+        # ==================================================
+
+        run_human_runtime "$CURRENT_MAKER"
+
+        # ==================================================
+        # ④ SEMANTIC RUNTIME
+        # ==================================================
+
+        run_semantic_runtime "$CURRENT_MAKER"
+
+        # ==================================================
+        # MAKER COMPLETE
+        # ==================================================
+
+        log "✅ MAKER COMPLETE : ${CURRENT_MAKER^^}"
+
+    done < "$MAKER_REGISTRY"
+
+    # ======================================================
+    # NO ENABLED MAKERS
+    # ======================================================
+
+    if [ "$MAKER_COUNT" -eq 0 ]; then
+
+        fail "No enabled makers found in registry"
+
+    fi
+
+else
+
+    # ======================================================
+    # SINGLE MAKER
+    # ======================================================
+
+    CURRENT_MAKER="$MAKER"
+
+    log "🚀 MAKER PIPELINE : ${CURRENT_MAKER^^}"
+
+    # ======================================================
+    # ① REALITY ACQUISITION
+    # ======================================================
+
+    run_acquisition "$CURRENT_MAKER"
+
+    # ======================================================
+    # ② SPEC RUNTIME
+    # ======================================================
+
+    run_spec_runtime "$CURRENT_MAKER"
+
+    # ======================================================
+    # ③ HUMAN RUNTIME
+    # ======================================================
+
+    run_human_runtime "$CURRENT_MAKER"
+
+    # ======================================================
+    # ④ SEMANTIC RUNTIME
+    # ======================================================
+
+    run_semantic_runtime "$CURRENT_MAKER"
+
+fi
 
 # ==========================================================
 # ⑤ TSV MAPPING
 #
 # IMPORTANT:
 #
-# Maker is only the pipeline trigger.
+# TSV mapping is GLOBAL.
 #
-# TSV mapping itself targets ALL PRODUCTS.
+# It executes ONCE after all maker Semantic Runtime
+# processing has completed.
 #
 # ==========================================================
+
+log "⑤ TSV MAPPING : ALL PRODUCTS"
 
 run_tsv_mapping "$MAKER"
 
@@ -241,9 +504,12 @@ run_tsv_mapping "$MAKER"
 # ⑥ SEMANTIC AUTHORITY
 #
 # Global runtime.
-# No maker filter.
+#
+# Executes ONCE.
 #
 # ==========================================================
+
+log "⑥ SEMANTIC AUTHORITY : GLOBAL"
 
 run_semantic_authority
 
@@ -251,21 +517,64 @@ run_semantic_authority
 # ⑦ UNIFIED RUNTIME
 #
 # Global runtime.
-# No maker filter.
+#
+# Executes ONCE.
 #
 # ==========================================================
 
+log "⑦ UNIFIED RUNTIME : GLOBAL"
+
 run_unified_runtime
+
+# ==========================================================
+# PIPELINE END TIME
+# ==========================================================
+
+PIPELINE_END_TIME="$(
+    date '+%Y-%m-%d %H:%M:%S %Z'
+)"
+
+PIPELINE_END_EPOCH="$(
+    date +%s
+)"
+
+PIPELINE_ELAPSED="$(
+    (
+        PIPELINE_END_EPOCH
+        -
+        PIPELINE_START_EPOCH
+    )
+)"
 
 # ==========================================================
 # COMPLETE
 # ==========================================================
 
-log "✅ SHIN CORE LINX PC RUNTIME PIPELINE COMPLETE"
+echo ""
+echo "=========================================================="
+echo "✅ SHIN CORE LINX PC RUNTIME PIPELINE COMPLETE"
+echo "=========================================================="
+
+echo "START   : $PIPELINE_START_TIME"
+echo "END     : $PIPELINE_END_TIME"
+echo "ELAPSED : ${PIPELINE_ELAPSED} sec"
 
 echo ""
-echo "MAKER : $MAKER"
+
+if [ "$RUN_ALL" -eq 1 ]; then
+
+    echo "MODE    : ALL ENABLED MAKERS"
+    echo "MAKERS  : $MAKER_COUNT"
+
+else
+
+    echo "MODE    : SINGLE MAKER"
+    echo "MAKER   : $MAKER"
+
+fi
+
 echo ""
+
 echo "✓ PRODUCT STOCK RESET : ALL PRODUCTS"
 echo "✓ REALITY ACQUISITION"
 echo "✓ SPEC RUNTIME"
@@ -274,5 +583,6 @@ echo "✓ SEMANTIC RUNTIME"
 echo "✓ TSV MAPPING       : ALL PRODUCTS"
 echo "✓ SEMANTIC AUTHORITY: GLOBAL"
 echo "✓ UNIFIED RUNTIME   : GLOBAL"
+
 echo ""
 echo "=========================================================="
