@@ -1,11 +1,6 @@
 /* =====================================================================
- * 🏗️ [BICSTATION-HEADER-CSS] - Complete Pro Edition
- * ---------------------------------------------------------------------
- * 💡 修正内容:
- * 1. ドロップダウンのホバー・アニメーション実装
- * 2. 一般(General)/アダルト(Adult)の配色完全分離
- * 3. モバイルメニューのアコーディオン・レイアウト最適化
- * 4. PCサイズでのモバイル要素強制排除
+ * 🏗️ BIC STATION HEADER
+ * Complete Runtime Header CSS
  * ===================================================================== */
 
 .header {
@@ -19,10 +14,13 @@
   align-items: center;
   box-shadow: 0 2px 15px rgba(0, 0, 0, 0.15);
   transition: all 0.3s ease;
-  overflow: visible; /* ドロップダウン表示のため必須 */
+  overflow: visible;
 }
 
-/* 🎨 背景バリエーション */
+/* =====================================================================
+ * 🎨 BACKGROUND
+ * ===================================================================== */
+
 .generalBg {
   background: #0a0a0a;
   color: #ffffff;
@@ -35,7 +33,10 @@
   border-bottom: 1px solid #333;
 }
 
-/* 🌟 コンテナ：左右 4% 余白（layout.module.cssと同期） */
+/* =====================================================================
+ * 📦 CONTAINER
+ * ===================================================================== */
+
 .container {
   width: 100%;
   max-width: 100%;
@@ -48,7 +49,10 @@
   position: relative;
 }
 
-/* ロゴ・ブランド */
+/* =====================================================================
+ * 🏷️ DESKTOP BRAND
+ * ===================================================================== */
+
 .logoWrapper {
   display: flex;
   align-items: center;
@@ -57,11 +61,26 @@
   cursor: pointer;
 }
 
-.brandInfo { line-height: 1.2; }
-.siteName { font-weight: 900; font-size: 1.15rem; letter-spacing: -0.5px; }
-.tagline { font-size: 0.65rem; font-weight: 800; opacity: 0.9; }
+.brandInfo {
+  line-height: 1.2;
+}
 
-/* 🖥️ PCナビゲーション */
+.siteName {
+  font-weight: 900;
+  font-size: 1.15rem;
+  letter-spacing: -0.5px;
+}
+
+.tagline {
+  font-size: 0.65rem;
+  font-weight: 800;
+  opacity: 0.9;
+}
+
+/* =====================================================================
+ * 🖥️ DESKTOP NAVIGATION
+ * ===================================================================== */
+
 .desktopNav {
   display: flex;
   align-items: center;
@@ -87,11 +106,19 @@
   transition: opacity 0.2s;
 }
 
-.arrow { font-size: 0.6rem; opacity: 0.5; transition: transform 0.3s; }
-.navGroup:hover .arrow { transform: rotate(180deg); }
+.arrow {
+  font-size: 0.6rem;
+  opacity: 0.5;
+  transition: transform 0.3s;
+}
 
+.navGroup:hover .arrow {
+  transform: rotate(180deg);
+}
 
-/* 🔽 Unified Dropdown */
+/* =====================================================================
+ * 🔽 DROPDOWN
+ * ===================================================================== */
 
 .dropdown {
   position: absolute;
@@ -129,13 +156,10 @@
   padding-left: 25px;
 }
 
-/* 🔽 ドロップダウン本体 */
+/* =====================================================================
+ * 🔐 AUTHENTICATION
+ * ===================================================================== */
 
-/* .adultBg .dropdown { background: #1a1a1a; border: 1px solid #333; }
-.adultBg .dropdownItem { color: #ccc; }
-.adultBg .dropdownItem:hover { background: #252525; color: #fff; } */
-
-/* 🔐 認証・アクション */
 .authSection {
   display: flex;
   align-items: center;
@@ -143,8 +167,18 @@
   flex-shrink: 0;
 }
 
-.guestLinks { display: flex; align-items: center; gap: 15px; }
-.loginLink { font-size: 0.85rem; font-weight: 600; text-decoration: none; }
+.guestLinks {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.loginLink {
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+}
 
 .regBtn {
   padding: 8px 18px;
@@ -156,11 +190,21 @@
   transition: filter 0.2s;
 }
 
-.regBtn:hover { filter: brightness(1.1); }
+.regBtn:hover {
+  filter: brightness(1.1);
+}
 
-/* 👤 ログイン後状態 */
-.loggedInWrapper { display: flex; align-items: center; gap: 12px; }
-.userNameDisplay { font-size: 0.85rem; font-weight: 700; }
+.loggedInWrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.userNameDisplay {
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
 .mypageLink {
   width: 32px;
   height: 32px;
@@ -175,92 +219,426 @@
 }
 
 .logoutBtn {
-  background: none; border: none; font-size: 1.2rem; cursor: pointer;
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
 }
 
-/* 📱 スマホ用トグル */
-.menuToggle {
-  display: none; background: none; border: none; font-size: 1.5rem; cursor: pointer;
-}
+/* =====================================================================
+ * 📱 MOBILE HEADER
+ * ===================================================================== */
 
-/* 📱 スマホ用展開メニュー */
-.mobileMenu {
+.mobileHeader {
   display: none;
-  position: fixed;
-  top: 70px;
-  left: 0;
-  width: 100%;
-  height: 0;
+}
+
+/* =====================================================================
+ * 📱 MOBILE MENU
+ * ===================================================================== */
+
+.mobileMenuOverlay {
+  display: none;
+}
+
+.mobileMenuPanel {
+  display: none;
+}
+
+.mobileMenuButton,
+.mobileMenuClose,
+.mobileMenuBottomClose {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.mobileMenuIcon {
+  display: block;
+  line-height: 1;
+}
+
+.mobileBrand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #ffffff;
+  text-decoration: none;
+  min-width: 0;
+}
+
+.mobileBrandMark {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #ffffff;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 900;
+}
+
+.mobileBrandName {
+  font-size: 0.95rem;
+  font-weight: 900;
+  letter-spacing: -0.4px;
+  white-space: nowrap;
   overflow: hidden;
-  transition: height 0.3s ease;
-  z-index: 999;
+  text-overflow: ellipsis;
 }
 
-.loginLink {
+.mobileSearchButton {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
   color: #ffffff;
+  text-decoration: none;
+  border: 1px solid #333;
+  border-radius: 10px;
+  font-size: 1.05rem;
 }
 
-.loginLink {
+/* =====================================================================
+ * 📱 MOBILE PRIMARY DISCOVERY
+ * ===================================================================== */
+
+.mobilePrimaryDiscovery {
+  margin-bottom: 22px;
+}
+
+.mobilePrimaryDiscovery a {
+  width: 100%;
+  min-height: 58px;
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
   color: #ffffff;
+  background: #181818;
+  border: 1px solid #333;
+  border-radius: 14px;
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 900;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
 }
 
-/* ---------------------------------------------------------------------
- * 🖥️ PC表示時のガード
- * --------------------------------------------------------------------- */
+.mobilePrimaryDiscovery a:active {
+  background: #242424;
+  transform: scale(0.99);
+}
+
+.mobilePrimaryArrow {
+  font-size: 1.2rem;
+  opacity: 0.7;
+}
+
+/* =====================================================================
+ * 📱 MOBILE PANEL HEADER
+ * ===================================================================== */
+
+.mobileMenuPanelHeader {
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #2a2a2a;
+}
+
+.mobileMenuPanelHeader > span {
+  font-size: 0.95rem;
+  font-weight: 900;
+}
+
+.mobileMenuClose {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 1.2rem;
+}
+
+/* =====================================================================
+ * 📱 MOBILE MENU SECTIONS
+ * ===================================================================== */
+
+.mobileMenuSections {
+  display: flex;
+  flex-direction: column;
+}
+
+.mobileMenuSection {
+  padding: 20px 0;
+  border-bottom: 1px solid #242424;
+}
+
+.mobileMenuSectionTitle {
+  margin: 0 0 12px;
+  color: #999999;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+
+.mobileMenuSectionLinks {
+  display: flex;
+  flex-direction: column;
+}
+
+.mobileMenuLink {
+  min-height: 46px;
+  padding: 11px 4px;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  color: #eeeeee;
+  text-decoration: none;
+  font-size: 0.88rem;
+  font-weight: 650;
+  border-radius: 8px;
+  transition:
+    background 0.2s ease,
+    padding-left 0.2s ease;
+}
+
+.mobileMenuLink:active {
+  background: #1d1d1d;
+  padding-left: 10px;
+}
+
+.mobileDivider {
+  height: 1px;
+  margin: 8px 0;
+  background: #2a2a2a;
+}
+
+/* =====================================================================
+ * 👤 MOBILE ACCOUNT
+ * ===================================================================== */
+
+.mobileAccountSection {
+  padding: 20px 0;
+  border-bottom: 1px solid #242424;
+}
+
+.mobileAccountLinks {
+  display: flex;
+  flex-direction: column;
+}
+
+.mobileUserName {
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+  color: #ffffff;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.mobileLogoutButton {
+  width: 100%;
+  min-height: 46px;
+  padding: 11px 4px;
+  color: #eeeeee;
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  text-align: left;
+  font-size: 0.88rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+/* =====================================================================
+ * 📱 MOBILE BOTTOM CLOSE
+ * ===================================================================== */
+
+.mobileMenuBottomClose {
+  width: 100%;
+  margin-top: 20px;
+  padding: 14px;
+  color: #bbbbbb;
+  background: #181818;
+  border: 1px solid #2d2d2d;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+/* =====================================================================
+ * 🖥️ PC GUARD
+ * ===================================================================== */
+
 @media (min-width: 993px) {
-  .mobileMenu { display: none !important; }
+  .mobileHeader {
+    display: none !important;
+  }
+
+  .mobileMenuOverlay {
+    display: none !important;
+  }
+
+  .mobileMenuPanel {
+    display: none !important;
+  }
 }
 
-/* ---------------------------------------------------------------------
- * 📱 スマホ表示時 (992px以下)
- * --------------------------------------------------------------------- */
+/* =====================================================================
+ * 📱 MOBILE
+ * ===================================================================== */
+
 @media (max-width: 992px) {
-  .desktopNav { display: none !important; }
-  .menuToggle { display: block; }
-  .guestLinks { display: none; } /* スマホはメニュー内に移動 */
-
-  .mobileMenu.open {
-    display: block;
-    height: calc(100vh - 70px);
-    overflow-y: auto;
-    padding: 20px 4%;
+  .header {
+    height: 62px;
   }
 
-  .menuSection { margin-bottom: 25px; }
-  .sectionTitle {
-    font-size: 0.8rem; font-weight: 900; margin-bottom: 12px; text-transform: uppercase;
+  .container {
+    height: 62px;
+    padding: 0 4%;
   }
 
-  .mobileLinkGrid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
+  .logoWrapper {
+    display: none;
   }
 
-  .mobileLinkGrid a {
-    padding: 12px;
-    background: rgba(128, 128, 128, 0.05);
-    border-radius: 8px;
-    text-decoration: none;
-    font-size: 0.85rem;
-    font-weight: 600;
+  .desktopNav {
+    display: none !important;
   }
 
-  .mobileAuthActions {
-    margin-top: 30px;
+  .authSection {
+    display: none !important;
+  }
+
+  .mobileHeader {
+    width: 100%;
+    height: 62px;
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
     gap: 10px;
   }
 
-  .mobileLoginBtn, .mobileRegBtn {
-    padding: 15px; text-align: center; border-radius: 10px; font-weight: 900; text-decoration: none;
+  .mobileMenuButton {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: #ffffff;
+    font-size: 1.35rem;
+    border-radius: 10px;
   }
-  .mobileLoginBtn { border: 1px solid #ccc; color: #666; }
+
+  .mobileMenuButton:active {
+    background: #1c1c1c;
+  }
+
+  .mobileBrand {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .mobileSearchButton {
+    width: 40px;
+    height: 40px;
+  }
+
+  /* ---------------------------------------------------------------
+   * Overlay
+   * --------------------------------------------------------------- */
+
+  .mobileMenuOverlay {
+    position: fixed;
+    top: 62px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: block;
+    background: rgba(0, 0, 0, 0.72);
+    z-index: 1001;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .mobileMenuPanel {
+    width: 100%;
+    min-height: calc(100vh - 62px);
+    padding: 0 5%;
+    box-sizing: border-box;
+    display: block;
+    color: #ffffff;
+    background: #0d0d0d;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55);
+  }
+
+  .mobileMenuPanelHeader {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: #0d0d0d;
+  }
+
+  .mobilePrimaryDiscovery {
+    padding-top: 20px;
+  }
+
+  .mobileMenuSection:first-child {
+    padding-top: 4px;
+  }
 }
 
-/* アニメーション */
+/* =====================================================================
+ * 📱 SMALL MOBILE
+ * ===================================================================== */
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0 3.5%;
+  }
+
+  .mobileMenuPanel {
+    padding: 0 5%;
+  }
+
+  .mobileBrandName {
+    font-size: 0.88rem;
+  }
+
+  .mobileMenuLink {
+    font-size: 0.86rem;
+  }
+
+  .mobilePrimaryDiscovery a {
+    min-height: 56px;
+    padding: 0 15px;
+    font-size: 0.88rem;
+  }
+}
+
+/* =====================================================================
+ * 🎞️ ANIMATION
+ * ===================================================================== */
+
 @keyframes slideDown {
-  from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
-  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
 }
