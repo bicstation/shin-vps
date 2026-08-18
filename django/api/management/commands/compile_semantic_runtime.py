@@ -256,12 +256,14 @@ class Command(BaseCommand):
             # =============================================
 
             runtime_result = (
+
                 compile_semantic_runtime(
 
                     product=product,
 
                     trace_runtime=trace_runtime,
                 )
+
             )
 
             # =============================================
@@ -310,19 +312,6 @@ class Command(BaseCommand):
                             )
                         ),
                 },
-            )
-
-            # =============================================
-            # SUCCESS
-            # =============================================
-
-            runtime_log(
-
-                True,
-
-                "PERSISTED",
-
-                product.name,
             )
 
         except Exception as e:

@@ -119,6 +119,7 @@ class Command(BaseCommand):
             "business": 0,
 
             "errors": 0,
+
         }
 
         # =================================================
@@ -142,19 +143,8 @@ class Command(BaseCommand):
                 print()
 
                 print(
-                    "=" * 56
-                )
-
-                print(
-                    f"PRODUCT [{index}/{total}]"
-                )
-
-                print(
-                    "=" * 56
-                )
-
-                print(
-                    product.name
+                    f"📤 [{index}/{total}] "
+                    f"{product.name}"
                 )
 
                 # =========================================
@@ -165,27 +155,18 @@ class Command(BaseCommand):
                     product
                 )
 
-                runtime_log(
-                    False,
-                    "SPECS",
-                    specs,
-                )
-
                 # =========================================
                 # NORMALIZE
                 # =========================================
 
                 normalized_tokens = (
                     normalize_runtime(
-                        specs,
-                        semantic_master,
-                    )
-                )
 
-                runtime_log(
-                    True,
-                    "NORMALIZED",
-                    normalized_tokens,
+                        specs,
+
+                        semantic_master,
+
+                    )
                 )
 
                 # =========================================
@@ -194,8 +175,11 @@ class Command(BaseCommand):
 
                 semantic_attributes = (
                     resolve_alias_runtime(
+
                         normalized_tokens,
+
                         semantic_master,
+
                     )
                 )
 
@@ -227,30 +211,21 @@ class Command(BaseCommand):
                     )
                 )
 
-                runtime_log(
-                    True,
-                    "ATTRIBUTES",
-                    semantic_attributes,
-                )
-
                 # =========================================
                 # GROUP TRAVERSAL
                 # =========================================
 
                 semantic_groups = (
                     detect_usage_runtime(
+
                         {
                             "semantic_attributes":
                                 semantic_attributes
                         },
-                        semantic_master,
-                    )
-                )
 
-                runtime_log(
-                    True,
-                    "GROUPS",
-                    semantic_groups,
+                        semantic_master,
+
+                    )
                 )
 
                 # =========================================
@@ -259,29 +234,32 @@ class Command(BaseCommand):
 
                 workflow_runtime = (
                     compile_workflow_runtime(
+
                         semantic_groups,
+
                         semantic_master,
+
                     )
                 )
 
                 workflow_tags = (
                     workflow_runtime.get(
+
                         "workflow_tags",
+
                         []
+
                     )
                 )
 
                 semantic_labels = (
                     workflow_runtime.get(
-                        "semantic_labels",
-                        []
-                    )
-                )
 
-                runtime_log(
-                    False,
-                    "WORKFLOW",
-                    workflow_runtime,
+                        "semantic_labels",
+
+                        []
+
+                    )
                 )
 
                 # =========================================
@@ -310,6 +288,7 @@ class Command(BaseCommand):
 
                     "semantic_labels":
                         semantic_labels,
+
                 }
 
                 # =========================================
@@ -379,36 +358,55 @@ class Command(BaseCommand):
                     summary["business"] += 1
 
                 # =========================================
+                # TSV MAPPING RESULT
+                # =========================================
+
+                print()
+
+                print(
+                    "🔗 TSV MAPPING"
+                )
+
+                print(
+                    f"   ATTRIBUTES : "
+                    f"{len(semantic_attributes)}"
+                )
+
+                print(
+                    f"   GROUPS     : "
+                    f"{len(semantic_groups)}"
+                )
+
+                print(
+                    f"   WORKFLOWS  : "
+                    f"{len(workflow_tags)}"
+                )
+
+                # =========================================
                 # DONE
                 # =========================================
 
                 print()
 
                 print(
-                    "=" * 56
+                    f"✅ SEMANTIC COMPLETED "
+                    f"[{index}/{total}]"
                 )
 
                 print(
-                    f"DONE [{index}/{total}]"
+                    f"   PRODUCT : "
+                    f"{product.name}"
                 )
 
                 print(
-                    "=" * 56
+                    f"   WORKFLOW: "
+                    f"{workflow_tags}"
                 )
 
-                print({
-
-                    "product":
-                        product.name,
-
-                    "workflow":
-                        workflow_tags,
-
-                    "attributes":
-                        len(
-                            semantic_attributes
-                        ),
-                })
+                print(
+                    f"   ATTRIBUTES: "
+                    f"{len(semantic_attributes)}"
+                )
 
             except Exception as error:
 
@@ -421,15 +419,21 @@ class Command(BaseCommand):
                 )
 
                 print(
-                    "RUNTIME ERROR"
+                    "❌ SEMANTIC RUNTIME ERROR"
+                )
+
+                print(
+                    f"PRODUCT : "
+                    f"{product.name}"
+                )
+
+                print(
+                    f"ERROR   : "
+                    f"{error}"
                 )
 
                 print(
                     "=" * 56
-                )
-
-                print(
-                    str(error)
                 )
 
         # =================================================
@@ -443,23 +447,7 @@ class Command(BaseCommand):
         )
 
         print(
-            "SEMANTIC SUMMARY"
-        )
-
-        print(
-            "=" * 56
-        )
-
-        print(summary)
-
-        print()
-
-        print(
-            "=" * 56
-        )
-
-        print(
-            "AUTO MAP ATTRIBUTES V2"
+            "🧠 SEMANTIC RUNTIME COMPLETE"
         )
 
         print(
@@ -467,5 +455,35 @@ class Command(BaseCommand):
         )
 
         print(
-            "COMPLETED"
+            f"TOTAL    : "
+            f"{summary['total']}"
+        )
+
+        print(
+            f"AI       : "
+            f"{summary['ai']}"
+        )
+
+        print(
+            f"GAMING   : "
+            f"{summary['gaming']}"
+        )
+
+        print(
+            f"CREATOR  : "
+            f"{summary['creator']}"
+        )
+
+        print(
+            f"BUSINESS : "
+            f"{summary['business']}"
+        )
+
+        print(
+            f"ERRORS   : "
+            f"{summary['errors']}"
+        )
+
+        print(
+            "=" * 56
         )

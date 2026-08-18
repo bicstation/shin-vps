@@ -395,31 +395,6 @@ class Command(BaseCommand):
             )
 
             # =================================================
-            # PRODUCT POINTS DEBUG
-            # =================================================
-
-            self.stdout.write(
-
-                self.style.WARNING(
-
-                    "\n"
-                    "==================================================\n"
-                    "🔎 PRODUCT POINTS DEBUG\n"
-                    "==================================================\n"
-                    f"PRODUCT : {product.unique_id}\n"
-                    f"TYPE    : "
-                    f"{type(result.product_points).__name__}\n"
-                    f"COUNT   : "
-                    f"{len(result.product_points)}\n"
-                    f"POINTS  : "
-                    f"{result.product_points}\n"
-                    "=================================================="
-
-                )
-
-            )
-
-            # =================================================
             # PERSIST
             # =================================================
 
