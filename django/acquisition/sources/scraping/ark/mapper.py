@@ -1,44 +1,47 @@
 #!/usr/bin/env python3
-"""
-==============================================================================
-SHIN CORE LINX
 
-ARK Mapper Runtime
-
-Mapper Runtime
-
-AcquisitionDocument (formatter)
-        │
-        ▼
-Formatter Runtime
-        │
-        ▼
-Import Contract Builder
-        │
-        ▼
-ImportDocument
-
-Reality First
-Translation First
-
-Responsibilities
-
-- Translate Formatter Runtime
-- Build Import Contract
-- Generate Affiliate Runtime
-- Persist ImportDocument
-
-Not Responsibilities
-
-- HTML Parsing
-- Observation
-- Formatter
-- Semantic Runtime
-- AI Runtime
-- Database Import
-
-==============================================================================
-"""
+# ============================================================================
+#
+# FILE:
+# acquisition/sources/scraping/ark/mapper.py
+#
+# SHIN CORE LINX
+#
+# ARK Mapper Runtime
+#
+# Mapper Runtime
+#
+# AcquisitionDocument (formatter)
+#         │
+#         ▼
+# Formatter Runtime
+#         │
+#         ▼
+# Import Contract Builder
+#         │
+#         ▼
+# ImportDocument
+#
+# Reality First
+# Translation First
+#
+# Responsibilities
+#
+# - Translate Formatter Runtime
+# - Build Import Contract
+# - Generate Affiliate Runtime
+# - Persist ImportDocument
+#
+# Not Responsibilities
+#
+# - HTML Parsing
+# - Observation
+# - Formatter
+# - Semantic Runtime
+# - AI Runtime
+# - Database Import
+#
+# ============================================================================
 
 from __future__ import annotations
 
@@ -78,6 +81,7 @@ SOURCE_PREFIX = SITE_NAME.upper()
 
 BASE_URL = "https://www.ark-pc.co.jp"
 
+
 # ==============================================================================
 # URL Helper
 # ==============================================================================
@@ -92,40 +96,28 @@ def absolute_url(
     """
 
     if not url:
-
         return ""
 
     if url.startswith(
-
         "http://",
-
     ):
-
         return url
 
     if url.startswith(
-
         "https://",
-
     ):
-
         return url
 
     if url.startswith(
-
         "/",
-
     ):
-
         return (
-
             BASE_URL
-
             + url
-
         )
 
     return url
+
 
 # ==============================================================================
 # Identity Builder
@@ -144,15 +136,10 @@ def build_identity(
     """
 
     product_url = absolute_url(
-
         formatter.get(
-
             "detail_url",
-
             "",
-
         )
-
     )
 
     return {
@@ -162,11 +149,8 @@ def build_identity(
         # ---------------------------------------------------------------------
 
         "unique_id": (
-
             f"{SOURCE_PREFIX}_"
-
             f"{formatter.get('pc_id', '')}"
-
         ),
 
         # ---------------------------------------------------------------------
@@ -174,61 +158,40 @@ def build_identity(
         # ---------------------------------------------------------------------
 
         "maker": formatter.get(
-
             "maker",
-
             "",
-
         ),
 
         "brand": formatter.get(
-
             "brand",
-
             "",
-
         ),
 
         "series": formatter.get(
-
             "series",
-
             "",
-
         ),
 
         "collaboration": "",
 
         "product_name": formatter.get(
-
             "product_name",
-
             "",
-
         ),
 
         "model": formatter.get(
-
             "model",
-
             "",
-
         ),
 
         "product_no": formatter.get(
-
             "product_no",
-
             "",
-
         ),
 
         "pc_id": formatter.get(
-
             "pc_id",
-
             "",
-
         ),
 
         "sku": "",
@@ -236,8 +199,8 @@ def build_identity(
         "jan": "",
 
         "product_url": product_url,
-
     }
+
 
 # ==============================================================================
 # Commerce Builder
@@ -262,11 +225,8 @@ def build_commerce(
         # ---------------------------------------------------------------------
 
         "price": formatter.get(
-
             "price",
-
             "",
-
         ),
 
         # ---------------------------------------------------------------------
@@ -286,14 +246,11 @@ def build_commerce(
         # ---------------------------------------------------------------------
 
         "release_date": formatter.get(
-
             "release_date",
-
             "",
-
         ),
-
     }
+
 
 # ==============================================================================
 # Media Builder
@@ -312,15 +269,10 @@ def build_media(
     """
 
     image_url = absolute_url(
-
         formatter.get(
-
             "image_url",
-
             "",
-
         )
-
     )
 
     return {
@@ -336,12 +288,84 @@ def build_media(
         # ---------------------------------------------------------------------
 
         "images": [
-
             image_url,
-
         ] if image_url else [],
-
     }
+
+
+# ==============================================================================
+# Specification Builder
+# ==============================================================================
+
+def build_specifications(
+    formatter: dict,
+) -> dict:
+    """
+    Build Import Specifications.
+
+    Formatter Runtime
+            │
+            ▼
+    Import Specifications
+    """
+
+    return {
+
+        # ---------------------------------------------------------------------
+        # OS
+        # ---------------------------------------------------------------------
+
+        "os": formatter.get(
+            "os",
+            "",
+        ),
+
+        # ---------------------------------------------------------------------
+        # CPU
+        # ---------------------------------------------------------------------
+
+        "cpu": formatter.get(
+            "cpu",
+            "",
+        ),
+
+        # ---------------------------------------------------------------------
+        # Memory
+        # ---------------------------------------------------------------------
+
+        "memory": formatter.get(
+            "memory",
+            "",
+        ),
+
+        # ---------------------------------------------------------------------
+        # Storage
+        # ---------------------------------------------------------------------
+
+        "storage": formatter.get(
+            "storage",
+            "",
+        ),
+
+        # ---------------------------------------------------------------------
+        # Graphics
+        # ---------------------------------------------------------------------
+
+        "graphics": formatter.get(
+            "graphics",
+            "",
+        ),
+
+        # ---------------------------------------------------------------------
+        # Power
+        # ---------------------------------------------------------------------
+
+        "power": formatter.get(
+            "power",
+            "",
+        ),
+    }
+
 
 # ==============================================================================
 # Affiliate Builder
@@ -360,24 +384,17 @@ def build_affiliate(
     """
 
     product_url = absolute_url(
-
         formatter.get(
-
             "detail_url",
-
             "",
-
         )
-
     )
 
     return AffiliateBuilder.build(
-
         product_url=product_url,
-
         config=AFFILIATE,
-
     )
+
 
 # ==============================================================================
 # Import Contract Builder
@@ -395,6 +412,15 @@ def build_contract(
     Import Contract
     """
 
+    observation_runtime = formatter.get(
+        "observation",
+        {},
+    )
+
+    specifications = build_specifications(
+        formatter,
+    )
+
     return {
 
         # ---------------------------------------------------------------------
@@ -402,9 +428,7 @@ def build_contract(
         # ---------------------------------------------------------------------
 
         "identity": build_identity(
-
             formatter,
-
         ),
 
         # ---------------------------------------------------------------------
@@ -412,9 +436,7 @@ def build_contract(
         # ---------------------------------------------------------------------
 
         "commerce": build_commerce(
-
             formatter,
-
         ),
 
         # ---------------------------------------------------------------------
@@ -422,34 +444,32 @@ def build_contract(
         # ---------------------------------------------------------------------
 
         "media": build_media(
-
             formatter,
-
         ),
+
+        # ---------------------------------------------------------------------
+        # Specifications
+        # ---------------------------------------------------------------------
+
+        "specifications": specifications,
 
         # ---------------------------------------------------------------------
         # Affiliate
         # ---------------------------------------------------------------------
 
         "affiliate": build_affiliate(
-
             formatter,
-
         ),
 
         # ---------------------------------------------------------------------
         # Observation Runtime
+        #
+        # Preserve original Reality.
         # ---------------------------------------------------------------------
 
-        "observation_runtime": formatter.get(
-
-            "observation",
-
-            {},
-
-        ),
-
+        "observation_runtime": observation_runtime,
     }
+
 
 # ==============================================================================
 # Cache
@@ -460,13 +480,9 @@ def exists(
 ) -> bool:
 
     return ImportDocument.objects.filter(
-
         source_name=SITE_NAME.lower(),
-
         document_type=DOCUMENT_OUTPUT,
-
         document_key=document_key,
-
     ).exists()
 
 
@@ -482,44 +498,36 @@ def save_contract(
     """
 
     identity = contract.get(
-
         "identity",
-
         {},
-
     )
 
     document_key = identity.get(
-
         "unique_id",
-
         "",
-
     )
 
-    document, created = ImportDocument.objects.update_or_create(
+    document, created = (
+        ImportDocument.objects.update_or_create(
 
-        source_name=SITE_NAME.lower(),
+            source_name=SITE_NAME.lower(),
 
-        document_type=DOCUMENT_OUTPUT,
+            document_type=DOCUMENT_OUTPUT,
 
-        document_key=document_key,
+            document_key=document_key,
 
-        defaults={
+            defaults={
+                "contract": contract,
+            },
 
-            "contract": contract,
-
-        },
-
+        )
     )
 
     print(
-
         f"{document_key} :",
-
         "CREATED" if created else "UPDATED",
-
     )
+
 
 # ==============================================================================
 # Runtime
@@ -534,41 +542,27 @@ def run(
 ) -> None:
 
     trace_pipeline(
-
         "MAPPER",
-
     )
 
     print("=" * 70)
 
     print(
-
         f"🗺️ {SITE_NAME} MAPPER"
-
     )
 
     print("=" * 70)
 
     documents = (
-
         AcquisitionDocument.objects
-
         .filter(
-
             source_type="scraping",
-
             source_name=SITE_NAME.lower(),
-
             document_type=DOCUMENT_INPUT,
-
         )
-
         .order_by(
-
             "document_key",
-
         )
-
     )
 
     success = 0
@@ -580,45 +574,32 @@ def run(
         document_key = document.document_key
 
         print(
-
             document_key,
-
         )
 
         try:
 
             formatter_runtime = json.loads(
-
                 document.content,
-
             )
 
             products = formatter_runtime.get(
-
                 "products",
-
                 [],
-
             )
 
             print(
-
                 f"  Products : {len(products)}"
-
             )
 
             for formatter in products:
 
                 contract = build_contract(
-
                     formatter,
-
                 )
 
                 save_contract(
-
                     contract,
-
                 )
 
                 success += 1
@@ -628,27 +609,18 @@ def run(
         except Exception as e:
 
             failed.append(
-
                 (
-
                     document_key,
-
                     str(e),
-
                 )
-
             )
 
             print(
-
                 "  Status : ERROR"
-
             )
 
             print(
-
                 f"  Reason : {e}"
-
             )
 
             print()
@@ -656,26 +628,21 @@ def run(
     print("=" * 70)
 
     print(
-
         "RESULT"
-
     )
 
     print("=" * 70)
 
     print(
-
         f"SUCCESS : {success}"
-
     )
 
     print(
-
         f"FAILED  : {len(failed)}"
-
     )
 
     print("=" * 70)
+
 
 # ==============================================================================
 # Entry Point
@@ -690,17 +657,16 @@ def main(
 ) -> None:
 
     run(
-
         method=method,
-
         mid=mid,
-
         list_only=list_only,
-
         force=force,
-
     )
 
+
+# ==============================================================================
+# Standalone Execution
+# ==============================================================================
 
 if __name__ == "__main__":
 

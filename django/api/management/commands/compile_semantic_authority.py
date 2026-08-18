@@ -1,6 +1,6 @@
 # =========================================================
 # FILE:
-# /home/maya/shin-dev/shin-vps/django/api/management/commands/compile_semantic_runtime_v2.py
+# /home/maya/shin-vps/django/api/management/commands/compile_semantic_authority.py
 # =========================================================
 
 from django.core.management.base import (
@@ -51,10 +51,6 @@ from api.utils.semantic.runtime.persist_runtime import (
     persist_runtime,
 )
 
-from api.utils.semantic.runtime.runtime_log import (
-    runtime_log,
-)
-
 
 # =========================================================
 # COMMAND
@@ -71,13 +67,9 @@ class Command(BaseCommand):
     # =====================================================
 
     def handle(
-
         self,
-
         *args,
-
         **options,
-
     ):
 
         # =================================================
@@ -90,6 +82,9 @@ class Command(BaseCommand):
 
         # =================================================
         # PRODUCTS
+        #
+        # Semantic Runtime is intentionally executed
+        # against all active PC products.
         # =================================================
 
         products = (
@@ -123,15 +118,25 @@ class Command(BaseCommand):
         }
 
         # =================================================
+        # START
+        # =================================================
+
+        print()
+        print("=" * 56)
+        print("🧠 SEMANTIC RUNTIME")
+        print("=" * 56)
+        print(
+            f"TARGET : {total:,} ACTIVE PRODUCTS"
+        )
+        print("=" * 56)
+
+        # =================================================
         # LOOP
         # =================================================
 
         for index, product in enumerate(
-
             products,
-
             start=1,
-
         ):
 
             try:
@@ -140,11 +145,10 @@ class Command(BaseCommand):
                 # PRODUCT
                 # =========================================
 
-                print()
-
                 print(
-                    f"📤 [{index}/{total}] "
-                    f"{product.name}"
+                    f"[{index:,}/{total:,}] "
+                    f"SEMANTIC "
+                    f"{product.unique_id}"
                 )
 
                 # =========================================
@@ -161,11 +165,8 @@ class Command(BaseCommand):
 
                 normalized_tokens = (
                     normalize_runtime(
-
                         specs,
-
                         semantic_master,
-
                     )
                 )
 
@@ -175,11 +176,8 @@ class Command(BaseCommand):
 
                 semantic_attributes = (
                     resolve_alias_runtime(
-
                         normalized_tokens,
-
                         semantic_master,
-
                     )
                 )
 
@@ -217,14 +215,11 @@ class Command(BaseCommand):
 
                 semantic_groups = (
                     detect_usage_runtime(
-
                         {
                             "semantic_attributes":
                                 semantic_attributes
                         },
-
                         semantic_master,
-
                     )
                 )
 
@@ -234,31 +229,22 @@ class Command(BaseCommand):
 
                 workflow_runtime = (
                     compile_workflow_runtime(
-
                         semantic_groups,
-
                         semantic_master,
-
                     )
                 )
 
                 workflow_tags = (
                     workflow_runtime.get(
-
                         "workflow_tags",
-
-                        []
-
+                        [],
                     )
                 )
 
                 semantic_labels = (
                     workflow_runtime.get(
-
                         "semantic_labels",
-
-                        []
-
+                        [],
                     )
                 )
 
@@ -296,11 +282,8 @@ class Command(BaseCommand):
                 # =========================================
 
                 persist_runtime(
-
                     product,
-
                     semantic_runtime,
-
                 )
 
                 # =========================================
@@ -310,180 +293,93 @@ class Command(BaseCommand):
                 summary["total"] += 1
 
                 if (
-
                     "usage-ai"
-
                     in
-
                     workflow_tags
-
                 ):
-
                     summary["ai"] += 1
 
                 if (
-
                     "usage-gaming"
-
                     in
-
                     workflow_tags
-
                 ):
-
                     summary["gaming"] += 1
 
                 if (
-
                     "usage-creator"
-
                     in
-
                     workflow_tags
-
                 ):
-
                     summary["creator"] += 1
 
                 if (
-
                     "usage-business"
-
                     in
-
                     workflow_tags
-
                 ):
-
                     summary["business"] += 1
-
-                # =========================================
-                # TSV MAPPING RESULT
-                # =========================================
-
-                print()
-
-                print(
-                    "🔗 TSV MAPPING"
-                )
-
-                print(
-                    f"   ATTRIBUTES : "
-                    f"{len(semantic_attributes)}"
-                )
-
-                print(
-                    f"   GROUPS     : "
-                    f"{len(semantic_groups)}"
-                )
-
-                print(
-                    f"   WORKFLOWS  : "
-                    f"{len(workflow_tags)}"
-                )
-
-                # =========================================
-                # DONE
-                # =========================================
-
-                print()
-
-                print(
-                    f"✅ SEMANTIC COMPLETED "
-                    f"[{index}/{total}]"
-                )
-
-                print(
-                    f"   PRODUCT : "
-                    f"{product.name}"
-                )
-
-                print(
-                    f"   WORKFLOW: "
-                    f"{workflow_tags}"
-                )
-
-                print(
-                    f"   ATTRIBUTES: "
-                    f"{len(semantic_attributes)}"
-                )
 
             except Exception as error:
 
                 summary["errors"] += 1
 
                 print()
-
                 print(
-                    "=" * 56
+                    f"❌ SEMANTIC ERROR "
+                    f"[{index:,}/{total:,}]"
                 )
-
                 print(
-                    "❌ SEMANTIC RUNTIME ERROR"
+                    f"   PRODUCT : "
+                    f"{product.unique_id}"
                 )
-
                 print(
-                    f"PRODUCT : "
+                    f"   NAME    : "
                     f"{product.name}"
                 )
-
                 print(
-                    f"ERROR   : "
+                    f"   ERROR   : "
                     f"{error}"
                 )
-
-                print(
-                    "=" * 56
-                )
+                print()
 
         # =================================================
         # SUMMARY
         # =================================================
 
         print()
-
-        print(
-            "=" * 56
-        )
-
-        print(
-            "🧠 SEMANTIC RUNTIME COMPLETE"
-        )
-
-        print(
-            "=" * 56
-        )
+        print("=" * 56)
+        print("🧠 SEMANTIC RUNTIME COMPLETE")
+        print("=" * 56)
 
         print(
             f"TOTAL    : "
-            f"{summary['total']}"
+            f"{summary['total']:,}"
         )
 
         print(
             f"AI       : "
-            f"{summary['ai']}"
+            f"{summary['ai']:,}"
         )
 
         print(
             f"GAMING   : "
-            f"{summary['gaming']}"
+            f"{summary['gaming']:,}"
         )
 
         print(
             f"CREATOR  : "
-            f"{summary['creator']}"
+            f"{summary['creator']:,}"
         )
 
         print(
             f"BUSINESS : "
-            f"{summary['business']}"
+            f"{summary['business']:,}"
         )
 
         print(
             f"ERRORS   : "
-            f"{summary['errors']}"
+            f"{summary['errors']:,}"
         )
 
-        print(
-            "=" * 56
-        )
+        print("=" * 56)

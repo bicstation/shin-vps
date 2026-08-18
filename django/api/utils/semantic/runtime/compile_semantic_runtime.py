@@ -52,7 +52,7 @@ def compile_semantic_runtime(
 
     product,
 
-    trace_runtime=True,
+    trace_runtime=False,
 
     runtime_mode="production",
 

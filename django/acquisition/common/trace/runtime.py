@@ -35,4 +35,4 @@ TRACE_PRODUCT_NO: str | None = "72002746"
 #     - Timing
 #     - Debug
 # ============================================================================
-TRACE_LEVEL = 2
+TRACE_LEVEL = 1

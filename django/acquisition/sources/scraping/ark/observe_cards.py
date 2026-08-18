@@ -109,6 +109,7 @@ def select_attr(
         "",
     )
 
+
 # ==============================================================================
 # Image Observation
 # ==============================================================================
@@ -238,6 +239,7 @@ def observe_image(
 
     }
 
+
 # ==============================================================================
 # Title Observation
 # ==============================================================================
@@ -347,6 +349,7 @@ def observe_title(
 
     }
 
+
 # ==============================================================================
 # Description Observation
 # ==============================================================================
@@ -375,6 +378,7 @@ def observe_description(
         "raw_description": raw_description,
 
     }
+
 
 # ==============================================================================
 # Product Information Observation
@@ -469,6 +473,7 @@ def observe_product_information(
 
     }
 
+
 # ==============================================================================
 # Commerce Observation
 # ==============================================================================
@@ -548,6 +553,7 @@ def observe_commerce(
 
     }
 
+
 # ==============================================================================
 # Specifications Observation
 # ==============================================================================
@@ -557,33 +563,77 @@ def observe_specifications(
 ) -> dict:
     """
     Observe specification table reality.
+
+    ARK HTML Specification Structure
+
+        .mdl_spec_list
+            └── tbody
+                └── tr
+                    ├── td : specification name
+                    └── td : specification value
+
+    Reality First
+    - Read only the dedicated specification table
+    - Do not scan unrelated tables
     """
 
     raw_specs = {}
 
-    rows = soup.select(
+    # -------------------------------------------------------------------------
+    # Specification Table
+    # -------------------------------------------------------------------------
 
-        "table.table-condensed tr",
+    spec_table = soup.select_one(
+
+        ".mdl_spec_list",
 
     )
 
+    if spec_table is None:
+
+        return {
+
+            "raw_specs": raw_specs,
+
+        }
+
+    # -------------------------------------------------------------------------
+    # Specification Rows
+    # -------------------------------------------------------------------------
+
+    rows = spec_table.select(
+
+        "tbody tr",
+
+    )
+
+    #
+    # Fallback
+    #
+    # Some HTML may omit an explicit tbody.
+    #
+
+    if not rows:
+
+        rows = spec_table.select(
+
+            "tr",
+
+        )
+
+    # -------------------------------------------------------------------------
+    # Specification Cells
+    # -------------------------------------------------------------------------
+
     for row in rows:
 
-        columns = row.find_all(
+        columns = row.select(
 
             "td",
 
         )
 
-        #
-        # Skip invalid rows
-        #
-
-        if len(
-
-            columns,
-
-        ) != 2:
+        if len(columns) < 2:
 
             continue
 
@@ -607,6 +657,10 @@ def observe_specifications(
 
             continue
 
+        if not value:
+
+            continue
+
         raw_specs[key] = value
 
     # -------------------------------------------------------------------------
@@ -618,6 +672,7 @@ def observe_specifications(
         "raw_specs": raw_specs,
 
     }
+
 
 # ==============================================================================
 # Card Observation
@@ -846,6 +901,7 @@ def observe_card(
 
     return observation
 
+
 # ==============================================================================
 # Cache
 # ==============================================================================
@@ -906,6 +962,7 @@ def save_observation(
     )
 
     return document, created
+
 
 # ==============================================================================
 # Runtime
@@ -1131,6 +1188,7 @@ def main(
 if __name__ == "__main__":
 
     main()
+
 
 # ==============================================================================
 # Validation
