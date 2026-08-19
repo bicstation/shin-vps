@@ -19,6 +19,7 @@ gpu-integrated	gpu-amd-graphics
 cpu-ai	amd-ryzen-ai
 cpu-ai	intel-core-ultra-9
 cpu-ai	intel-core-ultra-7
+cpu-ai	intel-core-ultra-5
 cpu-ai	arm-snapdragon-x
 cpu-ai	cpu-npu
 cpu-highend	intel-core-ultra-9
@@ -29,9 +30,10 @@ cpu-mainstream	intel-core-ultra-7
 cpu-mainstream	intel-core-ultra-5
 cpu-mainstream	intel-core-i7
 cpu-mainstream	intel-core-i5
-cpu-mainstream	amd-ryzen-7
-cpu-mainstream	amd-ryzen-5
+cpu-mainstream	intel-core-7
+cpu-mainstream	intel-core-5
 cpu-entry	intel-core-i3
+cpu-entry	intel-core-3
 cpu-entry	amd-ryzen-3
 cpu-entry	intel-low-end
 cpu-workstation	amd-threadripper

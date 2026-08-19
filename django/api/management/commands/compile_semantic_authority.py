@@ -1,7 +1,6 @@
-# =========================================================
-# FILE:
-# /home/maya/shin-vps/django/api/management/commands/compile_semantic_authority.py
-# =========================================================
+# -*- coding: utf-8 -*-
+
+from collections import Counter
 
 from django.core.management.base import (
     BaseCommand,
@@ -122,13 +121,16 @@ class Command(BaseCommand):
         # =================================================
 
         print()
-        print("=" * 56)
+        print("=" * 72)
         print("🧠 SEMANTIC RUNTIME")
-        print("=" * 56)
+        print("=" * 72)
+
         print(
-            f"TARGET : {total:,} ACTIVE PRODUCTS"
+            f"TARGET : "
+            f"{total:,} ACTIVE PRODUCTS"
         )
-        print("=" * 56)
+
+        print("=" * 72)
 
         # =================================================
         # LOOP
@@ -140,16 +142,6 @@ class Command(BaseCommand):
         ):
 
             try:
-
-                # =========================================
-                # PRODUCT
-                # =========================================
-
-                print(
-                    f"[{index:,}/{total:,}] "
-                    f"SEMANTIC "
-                    f"{product.unique_id}"
-                )
 
                 # =========================================
                 # EXTRACTION
@@ -320,27 +312,54 @@ class Command(BaseCommand):
                 ):
                     summary["business"] += 1
 
+                # =========================================
+                # PROGRESS
+                #
+                # Normal success logs are suppressed.
+                # Show progress every 100 products.
+                # =========================================
+
+                if (
+                    index % 100 == 0
+                    or index == total
+                ):
+
+                    print(
+                        f"PROGRESS "
+                        f"{index:,}/{total:,}"
+                    )
+
             except Exception as error:
 
                 summary["errors"] += 1
+
+                # =========================================
+                # ERROR
+                #
+                # Errors are displayed immediately.
+                # =========================================
 
                 print()
                 print(
                     f"❌ SEMANTIC ERROR "
                     f"[{index:,}/{total:,}]"
                 )
+
                 print(
                     f"   PRODUCT : "
                     f"{product.unique_id}"
                 )
+
                 print(
                     f"   NAME    : "
                     f"{product.name}"
                 )
+
                 print(
                     f"   ERROR   : "
                     f"{error}"
                 )
+
                 print()
 
         # =================================================
@@ -348,9 +367,9 @@ class Command(BaseCommand):
         # =================================================
 
         print()
-        print("=" * 56)
+        print("=" * 72)
         print("🧠 SEMANTIC RUNTIME COMPLETE")
-        print("=" * 56)
+        print("=" * 72)
 
         print(
             f"TOTAL    : "
@@ -382,4 +401,80 @@ class Command(BaseCommand):
             f"{summary['errors']:,}"
         )
 
-        print("=" * 56)
+        print("=" * 72)
+
+        # =================================================
+        # SEMANTIC GROUP PRODUCT COUNTS
+        #
+        # Re-read persisted semantic_runtime so that the
+        # displayed counts represent the actual Runtime
+        # state after compilation.
+        # =================================================
+
+        group_counter = Counter()
+
+        runtime_products = (
+            PCProduct.objects
+            .filter(
+                is_active=True,
+            )
+            .exclude(
+                semantic_runtime__isnull=True,
+            )
+            .values_list(
+                "semantic_runtime",
+                flat=True,
+            )
+        )
+
+        for runtime in runtime_products:
+
+            if not runtime:
+                continue
+
+            for group_slug in (
+                runtime.get(
+                    "semantic_groups",
+                    [],
+                )
+            ):
+
+                group_counter[group_slug] += 1
+
+        # =================================================
+        # GROUP COUNT OUTPUT
+        # =================================================
+
+        print()
+        print("=" * 80)
+        print("📊 SEMANTIC GROUP PRODUCT COUNTS")
+        print("=" * 80)
+
+        print(
+            f"{'GROUP SLUG':<36}"
+            f"{'PRODUCTS':>12}"
+        )
+
+        print("-" * 80)
+
+        for group_slug, count in sorted(
+            group_counter.items(),
+            key=lambda item: (
+                -item[1],
+                item[0],
+            ),
+        ):
+
+            print(
+                f"{group_slug:<36}"
+                f"{count:>12,}"
+            )
+
+        print("-" * 80)
+
+        print(
+            f"{'TOTAL GROUPS':<36}"
+            f"{len(group_counter):>12,}"
+        )
+
+        print("=" * 80)

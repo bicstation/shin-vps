@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from collections import Counter
+
 from django.core.management.base import (
     BaseCommand,
 )
@@ -107,7 +109,7 @@ class Command(BaseCommand):
         self.stdout.write("=" * 80)
 
         self.stdout.write(
-            f"products={total}"
+            f"products={total:,}"
         )
 
         self.stdout.write(
@@ -154,32 +156,38 @@ class Command(BaseCommand):
 
                 success += 1
 
-                self.stdout.write(
+                # ------------------------------------------
+                # Progress
+                #
+                # Keep normal output compact.
+                # Show progress every 100 products.
+                # ------------------------------------------
 
-                    f"[{index}/{total}] "
+                if (
+                    index % 100 == 0
+                    or index == total
+                ):
 
-                    f"OK "
-
-                    f"{product.unique_id} "
-
-                    f"score="
-
-                    f"{product.semantic_score}"
-                )
+                    self.stdout.write(
+                        f"PROGRESS "
+                        f"{index:,}/{total:,}"
+                    )
 
             except Exception as e:
 
                 failed += 1
 
+                # ------------------------------------------
+                # Errors are always displayed immediately.
+                # ------------------------------------------
+
                 self.stdout.write(
 
                     self.style.ERROR(
 
-                        f"[{index}/{total}] "
-
                         f"FAILED "
 
-                        f"{product.unique_id} "
+                        f"{product.unique_id}: "
 
                         f"{str(e)}"
                     )
@@ -197,15 +205,15 @@ class Command(BaseCommand):
         self.stdout.write("=" * 80)
 
         self.stdout.write(
-            f"success={success}"
+            f"success={success:,}"
         )
 
         self.stdout.write(
-            f"failed={failed}"
+            f"failed={failed:,}"
         )
 
         self.stdout.write(
-            f"total={total}"
+            f"total={total:,}"
         )
 
         if dry_run:
@@ -225,3 +233,86 @@ class Command(BaseCommand):
                     "Unified Runtime Rebuild Complete"
                 )
             )
+
+        # ==================================================
+        # SEMANTIC GROUP PRODUCT COUNTS
+        #
+        # Read the persisted Unified Runtime from DB
+        # after the rebuild has completed.
+        #
+        # This represents the actual Runtime state stored
+        # in PCProduct.semantic_runtime.
+        # ==================================================
+
+        group_counter = Counter()
+
+        runtimes = (
+            PCProduct.objects
+            .filter(
+                is_active=True,
+            )
+            .exclude(
+                semantic_runtime__isnull=True,
+            )
+            .values_list(
+                "semantic_runtime",
+                flat=True,
+            )
+        )
+
+        for runtime in runtimes:
+
+            if not runtime:
+                continue
+
+            for group_slug in (
+                runtime.get(
+                    "semantic_groups",
+                    [],
+                )
+            ):
+
+                group_counter[group_slug] += 1
+
+        # ==================================================
+        # GROUP COUNT OUTPUT
+        # ==================================================
+
+        self.stdout.write("")
+        self.stdout.write("=" * 80)
+        self.stdout.write(
+            "SEMANTIC GROUP PRODUCT COUNTS"
+        )
+        self.stdout.write("=" * 80)
+
+        self.stdout.write(
+            f"{'GROUP SLUG':<36}"
+            f"{'PRODUCTS':>12}"
+        )
+
+        self.stdout.write(
+            "-" * 80
+        )
+
+        for group_slug, count in sorted(
+            group_counter.items(),
+            key=lambda item: item[0],
+        ):
+
+            self.stdout.write(
+                f"{group_slug:<36}"
+                f"{count:>12,}"
+            )
+
+        self.stdout.write(
+            "-" * 80
+        )
+
+        self.stdout.write(
+            f"{'TOTAL GROUPS':<36}"
+            f"{len(group_counter):>12,}"
+        )
+
+        self.stdout.write(
+            "=" * 80
+        )

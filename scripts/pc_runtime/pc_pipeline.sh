@@ -522,9 +522,9 @@ run_semantic_authority
 #
 # ==========================================================
 
-# log "⑦ UNIFIED RUNTIME : GLOBAL"
+log "⑦ UNIFIED RUNTIME : GLOBAL"
 
-# run_unified_runtime
+run_unified_runtime
 
 # ==========================================================
 # PIPELINE END TIME
