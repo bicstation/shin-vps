@@ -303,11 +303,46 @@ def build_specifications(
     """
     Build Import Specifications.
 
-    Formatter Runtime
+    Formatter Contract
             │
             ▼
-    Import Specifications
+    published
+        └── specifications
+                │
+                ▼
+    Import Contract
+        └── specifications
+
+    This method translates the API-compatible
+    Formatter Contract into the common
+    Import Contract.
+
+    No semantic interpretation is performed here.
     """
+
+    published = formatter.get(
+        "published",
+        {},
+    )
+
+    if not isinstance(
+        published,
+        dict,
+    ):
+
+        published = {}
+
+    source_specifications = published.get(
+        "specifications",
+        {},
+    )
+
+    if not isinstance(
+        source_specifications,
+        dict,
+    ):
+
+        source_specifications = {}
 
     return {
 
@@ -315,8 +350,8 @@ def build_specifications(
         # OS
         # ---------------------------------------------------------------------
 
-        "os": formatter.get(
-            "os",
+        "os": source_specifications.get(
+            "OS",
             "",
         ),
 
@@ -324,8 +359,8 @@ def build_specifications(
         # CPU
         # ---------------------------------------------------------------------
 
-        "cpu": formatter.get(
-            "cpu",
+        "cpu": source_specifications.get(
+            "CPU",
             "",
         ),
 
@@ -333,8 +368,8 @@ def build_specifications(
         # Memory
         # ---------------------------------------------------------------------
 
-        "memory": formatter.get(
-            "memory",
+        "memory": source_specifications.get(
+            "Memory",
             "",
         ),
 
@@ -342,8 +377,8 @@ def build_specifications(
         # Storage
         # ---------------------------------------------------------------------
 
-        "storage": formatter.get(
-            "storage",
+        "storage": source_specifications.get(
+            "Storage",
             "",
         ),
 
@@ -351,8 +386,8 @@ def build_specifications(
         # Graphics
         # ---------------------------------------------------------------------
 
-        "graphics": formatter.get(
-            "graphics",
+        "graphics": source_specifications.get(
+            "Graphics",
             "",
         ),
 
@@ -360,8 +395,8 @@ def build_specifications(
         # Power
         # ---------------------------------------------------------------------
 
-        "power": formatter.get(
-            "power",
+        "power": source_specifications.get(
+            "Power",
             "",
         ),
     }
@@ -412,10 +447,18 @@ def build_contract(
     Import Contract
     """
 
+    # -------------------------------------------------------------------------
+    # Preserve original Reality.
+    # -------------------------------------------------------------------------
+
     observation_runtime = formatter.get(
         "observation",
         {},
     )
+
+    # -------------------------------------------------------------------------
+    # Translate specifications.
+    # -------------------------------------------------------------------------
 
     specifications = build_specifications(
         formatter,
@@ -480,9 +523,13 @@ def exists(
 ) -> bool:
 
     return ImportDocument.objects.filter(
+
         source_name=SITE_NAME.lower(),
+
         document_type=DOCUMENT_OUTPUT,
+
         document_key=document_key,
+
     ).exists()
 
 

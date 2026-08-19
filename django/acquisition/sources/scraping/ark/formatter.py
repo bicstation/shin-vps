@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 """
 ==============================================================================
 SHIN CORE LINX
@@ -19,12 +20,14 @@ Formatter Runtime
 AcquisitionDocument (formatter)
 
 Reality First
-Normalization First
+Contract First
 
 Responsibilities
 
 - Normalize Observation Runtime
 - Produce Formatter Runtime
+- Preserve Reality
+- Produce API-compatible Formatter Contract
 
 Not Responsibilities
 
@@ -60,6 +63,7 @@ DOCUMENT_INPUT = "observation"
 
 DOCUMENT_OUTPUT = "formatter"
 
+
 # ==============================================================================
 # Identity Normalization
 # ==============================================================================
@@ -69,6 +73,8 @@ def normalize_identity(
 ) -> dict:
     """
     Normalize product identity.
+
+    Contract-compatible identity structure.
     """
 
     return {
@@ -83,51 +89,46 @@ def normalize_identity(
         # Brand
         # ---------------------------------------------------------------------
 
-        "brand": "",
+        "brand": observation.get(
+            "brand",
+            "",
+        ),
 
         # ---------------------------------------------------------------------
         # Series
         # ---------------------------------------------------------------------
 
-        "series": "",
+        "series": observation.get(
+            "series",
+            "",
+        ),
 
         # ---------------------------------------------------------------------
         # Product
         # ---------------------------------------------------------------------
 
         "product_name": observation.get(
-
             "raw_product_name",
-
             "",
-
         ),
 
         "model": observation.get(
-
             "raw_model",
-
             "",
-
         ),
 
         "product_no": observation.get(
-
             "raw_product_no",
-
             "",
-
         ),
 
         "pc_id": observation.get(
-
             "raw_pc_id",
-
             "",
-
         ),
 
     }
+
 
 # ==============================================================================
 # Commerce Normalization
@@ -147,11 +148,8 @@ def normalize_commerce(
         # ---------------------------------------------------------------------
 
         "price": observation.get(
-
             "raw_price",
-
             "",
-
         ),
 
         # ---------------------------------------------------------------------
@@ -159,14 +157,12 @@ def normalize_commerce(
         # ---------------------------------------------------------------------
 
         "release_date": observation.get(
-
             "raw_release_date",
-
             "",
-
         ),
 
     }
+
 
 # ==============================================================================
 # Media Normalization
@@ -186,19 +182,13 @@ def normalize_media(
         # ---------------------------------------------------------------------
 
         "image_url": observation.get(
-
             "raw_image",
-
             "",
-
         ),
 
         "image_alt": observation.get(
-
             "raw_image_alt",
-
             "",
-
         ),
 
         # ---------------------------------------------------------------------
@@ -206,14 +196,12 @@ def normalize_media(
         # ---------------------------------------------------------------------
 
         "detail_url": observation.get(
-
             "raw_detail_url",
-
             "",
-
         ),
 
     }
+
 
 # ==============================================================================
 # Specification Normalization
@@ -224,15 +212,34 @@ def normalize_specifications(
 ) -> dict:
     """
     Normalize specification information.
+
+    Contract:
+
+        published
+            └── specifications
+                    ├── OS
+                    ├── CPU
+                    ├── Memory
+                    ├── Storage
+                    ├── Graphics
+                    └── Power
+
+    Reality Source:
+
+        observation.raw_specs
     """
 
     specs = observation.get(
-
         "raw_specs",
-
         {},
-
     )
+
+    if not isinstance(
+        specs,
+        dict,
+    ):
+
+        specs = {}
 
     return {
 
@@ -240,75 +247,84 @@ def normalize_specifications(
         # Platform
         # ---------------------------------------------------------------------
 
-        "os": specs.get(
-
+        "OS": specs.get(
             "OS",
-
             "",
-
         ),
 
         # ---------------------------------------------------------------------
         # CPU
         # ---------------------------------------------------------------------
 
-        "cpu": specs.get(
-
+        "CPU": specs.get(
             "CPU",
-
             "",
-
         ),
 
         # ---------------------------------------------------------------------
         # Memory
         # ---------------------------------------------------------------------
 
-        "memory": specs.get(
-
+        "Memory": specs.get(
             "Memory",
-
             "",
-
         ),
 
         # ---------------------------------------------------------------------
         # Storage
         # ---------------------------------------------------------------------
 
-        "storage": specs.get(
-
+        "Storage": specs.get(
             "Storage",
-
             "",
-
         ),
 
         # ---------------------------------------------------------------------
         # Graphics
         # ---------------------------------------------------------------------
 
-        "graphics": specs.get(
-
+        "Graphics": specs.get(
             "Graphics",
-
             "",
-
         ),
 
         # ---------------------------------------------------------------------
         # Power
         # ---------------------------------------------------------------------
 
-        "power": specs.get(
-
+        "Power": specs.get(
             "Power",
-
             "",
-
         ),
 
     }
+
+
+# ==============================================================================
+# Published Normalization
+# ==============================================================================
+
+def normalize_published(
+    observation: dict,
+) -> dict:
+    """
+    Build API-compatible published contract.
+
+    Reality
+        ↓
+    published
+        ↓
+    specifications
+    """
+
+    return {
+
+        "specifications": normalize_specifications(
+            observation,
+        ),
+
+    }
+
 
 # ==============================================================================
 # Cache
@@ -341,32 +357,34 @@ def save_formatter(
     runtime: dict,
 ):
 
-    document, created = AcquisitionDocument.objects.update_or_create(
+    document, created = (
+        AcquisitionDocument.objects.update_or_create(
 
-        source_type="scraping",
+            source_type="scraping",
 
-        source_name=SITE_NAME.lower(),
+            source_name=SITE_NAME.lower(),
 
-        document_type=DOCUMENT_OUTPUT,
+            document_type=DOCUMENT_OUTPUT,
 
-        document_key=document_key,
+            document_key=document_key,
 
-        defaults={
+            defaults={
 
-            "content_type": "application/json",
+                "content_type": "application/json",
 
-            "content": json.dumps(
+                "content": json.dumps(
 
-                runtime,
+                    runtime,
 
-                ensure_ascii=False,
+                    ensure_ascii=False,
 
-                indent=2,
+                    indent=2,
 
-            ),
+                ),
 
-        },
+            },
 
+        )
     )
 
     return document, created
@@ -382,31 +400,33 @@ def build_formatter(
     observation: dict,
 ) -> dict:
     """
-    Build formatter runtime.
+    Build API-compatible formatter runtime.
+
+    Observation
+        │
+        ├── identity
+        ├── commerce
+        ├── media
+        ├── specifications
+        │
+        ▼
+    Formatter Contract
     """
 
     identity = normalize_identity(
-
         observation,
-
     )
 
     commerce = normalize_commerce(
-
         observation,
-
     )
 
     media = normalize_media(
-
         observation,
-
     )
 
-    specifications = normalize_specifications(
-
+    published = normalize_published(
         observation,
-
     )
 
     # -------------------------------------------------------------------------
@@ -415,45 +435,48 @@ def build_formatter(
 
     runtime = {
 
-        #
+        # ---------------------------------------------------------------------
         # Runtime
-        #
+        # ---------------------------------------------------------------------
 
         "document_key": document_key,
 
-        #
+        # ---------------------------------------------------------------------
         # Identity
-        #
+        # ---------------------------------------------------------------------
 
         **identity,
 
-        #
+        # ---------------------------------------------------------------------
         # Commerce
-        #
+        # ---------------------------------------------------------------------
 
         **commerce,
 
-        #
+        # ---------------------------------------------------------------------
         # Media
-        #
+        # ---------------------------------------------------------------------
 
         **media,
 
-        #
-        # Specifications
-        #
+        # ---------------------------------------------------------------------
+        # Published
+        # ---------------------------------------------------------------------
 
-        **specifications,
+        "published": published,
 
-        #
+        # ---------------------------------------------------------------------
         # Reality
         #
+        # Preserve original Observation.
+        # ---------------------------------------------------------------------
 
         "observation": observation,
 
     }
 
     return runtime
+
 
 # ==============================================================================
 # Runtime
@@ -468,41 +491,27 @@ def format_runtime(
 ) -> None:
 
     trace_pipeline(
-
         "FORMATTER",
-
     )
 
     print("=" * 70)
 
     print(
-
         f"🧹 {SITE_NAME} FORMATTER"
-
     )
 
     print("=" * 70)
 
     documents = (
-
         AcquisitionDocument.objects
-
         .filter(
-
             source_type="scraping",
-
             source_name=SITE_NAME.lower(),
-
             document_type=DOCUMENT_INPUT,
-
         )
-
         .order_by(
-
             "document_key",
-
         )
-
     )
 
     success: list[str] = []
@@ -514,55 +523,37 @@ def format_runtime(
         document_key = document.document_key
 
         if (
-
             not force
-
-            and
-
-            exists(
-
+            and exists(
                 document_key,
-
             )
-
         ):
 
             success.append(
-
                 document_key,
-
             )
 
             print(
-
                 f"[CACHE] {document_key}"
-
             )
 
             continue
 
         print(
-
             document_key,
-
         )
 
         try:
 
             observation_runtime = json.loads(
-
                 document.content,
-
             )
 
             formatter_products = []
 
             for observation in observation_runtime.get(
-
                 "products",
-
                 [],
-
             ):
 
                 formatter_products.append(
@@ -594,21 +585,17 @@ def format_runtime(
             )
 
             success.append(
-
                 document_key,
-
             )
 
             print(
-
-                f"  Products : {len(formatter_products)}"
-
+                f"  Products : "
+                f"{len(formatter_products)}"
             )
 
             print(
-
-                f"  Saved : {'CREATED' if created else 'UPDATED'}"
-
+                f"  Saved : "
+                f"{'CREATED' if created else 'UPDATED'}"
             )
 
         except Exception as e:
@@ -616,25 +603,18 @@ def format_runtime(
             failed.append(
 
                 (
-
                     document_key,
-
                     str(e),
-
                 )
 
             )
 
             print(
-
                 "  Status : ERROR"
-
             )
 
             print(
-
                 f"  Reason : {e}"
-
             )
 
         print()
@@ -642,27 +622,22 @@ def format_runtime(
     print("=" * 70)
 
     print(
-
         "RESULT"
-
     )
 
     print("=" * 70)
 
     print(
-
         f"SUCCESS : {len(success)}"
-
     )
 
     print(
-
         f"FAILED  : {len(failed)}"
-
     )
 
     print("=" * 70)
-    
+
+
 # ==============================================================================
 # Entry Point
 # ==============================================================================
@@ -688,7 +663,10 @@ def main(
     )
 
 
+# ==============================================================================
+# Standalone Execution
+# ==============================================================================
+
 if __name__ == "__main__":
 
     main()
-    

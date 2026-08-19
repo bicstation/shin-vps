@@ -201,19 +201,16 @@ class Command(BaseCommand):
     ):
 
         if options["unique_id"]:
-
             return PCProduct.objects.filter(
                 unique_id=options["unique_id"]
             )
 
         if options["maker"]:
-
             return PCProduct.objects.filter(
-                maker=options["maker"]
+                maker__iexact=options["maker"]
             )
-
+        
         if options["all"]:
-
             return PCProduct.objects.all()
 
         return PCProduct.objects.all()
