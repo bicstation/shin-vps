@@ -53,8 +53,37 @@ tsukumo	blade	Razer	Blade		200
 tsukumo	blade 14	Razer	Blade 14		200
 tsukumo	blade 16	Razer	Blade 16		200
 tsukumo	blade 18	Razer	Blade 18		200
+tsukumo	razer blade 16	Razer	Blade 16		100
+tsukumo	razer blade 18	Razer	Blade 18		100
+tsukumo	razer blade 15	Razer	Blade 15		100
+tsukumo	razer blade 14	Razer	Blade 14		100
+tsukumo	razer book	Razer	Book		100
+tsukumo	razer blade 17	Razer	Blade 17		100
+tsukumo	razer blade pro 17	Razer	Blade Pro 17		100
+tsukumo	razer blade stealth	Razer	Blade Stealth		100
 tsukumo	book	Razer	Book		200
 tsukumo	msi	MSI			100
+tsukumo	katana	MSI	Katana		100
+tsukumo	cyborg	MSI	Cyborg		100
+tsukumo	thin	MSI	Thin		100
+tsukumo	modern	MSI	Modern		100
+tsukumo	summit	MSI	Summit		100
+tsukumo	mag	MSI	MAG		100
+tsukumo	mag codex	MSI	MAG Codex		100
+tsukumo	mag infinite	MSI	MAG Infinite		100
+tsukumo	mpg	MSI	MPG		100
+tsukumo	mpg trident	MSI	MPG Trident		100
+tsukumo	mpg infinite	MSI	MPG Infinite		100
+tsukumo	trident	MSI	Trident		100
+tsukumo	creatorpro	MSI	CreatorPro		100
+tsukumo	alpha	MSI	Alpha		100
+tsukumo	sword	MSI	Sword		100
+tsukumo	pulse	MSI	Pulse		100
+tsukumo	aegis	MSI	Aegis		100
+tsukumo	venture	MSI	Venture		100
+tsukumo	venturepro	MSI	VenturePro		100
+tsukumo	cubi	MSI	Cubi		100
+tsukumo	pro	MSI	PRO		100
 tsukumo	stealth	MSI	Stealth		100
 tsukumo	crosshair	MSI	Crosshair		100
 tsukumo	vector	MSI	Vector		100
@@ -66,6 +95,9 @@ tsukumo	asus	ASUS			100
 tsukumo	rog	ROG			100
 tsukumo	tuf	ASUS	TUF Gaming		100
 tsukumo	nec	NEC			100
+tsukumo	lavie	NEC	LAVIE		100
+tsukumo	lavie sol	NEC	LAVIE SOL		100
+tsukumo	lavie nextreme carbon	NEC	LAVIE NEXTREME Carbon		100
 tsukumo	lenovo	Lenovo			100
 tsukumo	fujitsu	FUJITSU			100
 tsukumo	dell	DELL			100
@@ -95,6 +127,74 @@ tsukumo	rog flow	ROG	ROG Flow		200
 tsukumo	rog zephyrus	ROG	ROG Zephyrus		200
 tsukumo	rog strix	ROG	ROG Strix		200
 tsukumo	rog nuc	ROG	ROG NUC		200
+tsukumo	imac	Apple	iMac		100
+tsukumo	macbook	Apple	MacBook		100
+tsukumo	mac mini	Apple	Mac mini		100
+tsukumo	mac studio	Apple	Mac Studio		100
+tsukumo	ideapad	Lenovo	IdeaPad		100
+tsukumo	yoga	Lenovo	Yoga		100
+tsukumo	legion	Lenovo	Legion		100
+tsukumo	loq	Lenovo	LOQ		100
+tsukumo	ideacentre	Lenovo	IdeaCentre		100
+tsukumo	ideapad gaming	Lenovo	IdeaPad Gaming		100
+tsukumo	ideapad pro	Lenovo	IdeaPad Pro		100
+tsukumo	ideapad duet	Lenovo	IdeaPad Duet		100
+tsukumo	yoga slim	Lenovo	Yoga Slim		100
+tsukumo	yoga pro	Lenovo	Yoga Pro		100
+tsukumo	loq tower	Lenovo	LOQ Tower		100
+tsukumo	legion slim	Lenovo	Legion Slim		100
+tsukumo	lifebook	FUJITSU	LIFEBOOK		100
+tsukumo	esprimo	FUJITSU	ESPRIMO		100
+tsukumo	loox	FUJITSU	LOOX		100
+tsukumo	fmv lite	FUJITSU	FMV Lite		100
+tsukumo	fmv note	FUJITSU	FMV Note		100
+tsukumo	fmv desktop	FUJITSU	FMV Desktop		100
+tsukumo	lifebook ah	FUJITSU	LIFEBOOK AH		100
+tsukumo	lifebook uh	FUJITSU	LIFEBOOK UH		100
+tsukumo	lifebook ch	FUJITSU	LIFEBOOK CH		100
+tsukumo	lifebook mh	FUJITSU	LIFEBOOK MH		100
+tsukumo	lifebook nh	FUJITSU	LIFEBOOK NH		100
+tsukumo	lifebook th	FUJITSU	LIFEBOOK TH		100
+tsukumo	lifebook ph	FUJITSU	LIFEBOOK PH		100
+tsukumo	esprimo fh	FUJITSU	ESPRIMO FH		100
+tsukumo	inspiron	DELL	Inspiron		100
+tsukumo	xps	DELL	XPS		100
+tsukumo	alienware	DELL	Alienware		100
+tsukumo	g15	DELL	G15		100
+tsukumo	minisforum	MINISFORUM			100
+tsukumo	geekom	GEEKOM			100
+tsukumo	gpd	GPD			100
+tsukumo	gpd micro pc	GPD	GPD Micro PC		100
+tsukumo	gpd win mini	GPD	GPD WIN Mini		100
+tsukumo	gpd win max	GPD	GPD WIN Max		100
+tsukumo	gpd win 4	GPD	GPD WIN 4		100
+tsukumo	gpd pocket	GPD	GPD Pocket		100
+tsukumo	gpd duo	GPD	GPD DUO		100
+tsukumo	letsnote	Panasonic	Let's note		100
+tsukumo	letsnote fv	Panasonic	Let's note FV		100
+tsukumo	letsnote sr	Panasonic	Let's note SR		100
+tsukumo	letsnote qr	Panasonic	Let's note QR		100
+tsukumo	letsnote sc	Panasonic	Let's note SC		100
+tsukumo	letsnote fc	Panasonic	Let's note FC		100
+tsukumo	surface laptop	Microsoft	Surface Laptop		100
+tsukumo	surface pro	Microsoft	Surface Pro		100
+tsukumo	surface laptop go	Microsoft	Surface Laptop Go		100
+tsukumo	surface laptop studio	Microsoft	Surface Laptop Studio		100
+tsukumo	aorus	GIGABYTE	AORUS		100
+tsukumo	aorus master	GIGABYTE	AORUS MASTER		100
+tsukumo	aorus elite	GIGABYTE	AORUS ELITE		100
+tsukumo	aorus prime	GIGABYTE	AORUS PRIME		100
+tsukumo	aero	GIGABYTE	AERO		100
+tsukumo	g5	GIGABYTE	G5		100
+tsukumo	g6	GIGABYTE	G6		100
+tsukumo	g6x	GIGABYTE	G6X		100
+tsukumo	g7	GIGABYTE	G7		100
+tsukumo	gaming a16	GIGABYTE	GAMING A16		100
+tsukumo	gaming a16 pro	GIGABYTE	GAMING A16 PRO		100
+tsukumo	gaming a18	GIGABYTE	GAMING A18		100
+tsukumo	gaming a18 pro	GIGABYTE	GAMING A18 PRO		100
+tsukumo	gmktec	GMKtec			100
+tsukumo	nucbox	GMKtec	NucBox		100
 ark	aorus	AORUS	AORUS		100
 ark	aero	GIGABYTE	AERO		100
 ark	gigabyte	GIGABYTE			100
