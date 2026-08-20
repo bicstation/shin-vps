@@ -43,7 +43,7 @@ def semantic_product_list_v2(
     # ------------------------------------------------------
     # FILTERS
     # ------------------------------------------------------
-
+    
     filters = {
 
         "site_prefix":
@@ -51,6 +51,9 @@ def semantic_product_list_v2(
 
         "maker":
             request.GET.get("maker"),
+
+        "brand":
+            request.GET.get("brand"),
 
         "category":
             request.GET.get("category"),

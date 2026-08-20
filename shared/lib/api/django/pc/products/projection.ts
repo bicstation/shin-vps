@@ -104,6 +104,10 @@ export interface ProjectedProduct {
 
     maker?: string
 
+    brand?: string
+
+    series?: string
+
     description?: string
 
     imageUrl?: string
@@ -150,7 +154,10 @@ export function projectProducts(
 
     return {
 
-        data: projectData(contract.data),
+        data:
+            projectData(
+                contract.data
+            ),
 
     }
 
@@ -166,19 +173,28 @@ function projectData(
 
     return {
 
-        count: data.count,
+        count:
+            data.count,
 
-        page: data.page,
+        page:
+            data.page,
 
-        pageSize: data.page_size,
+        pageSize:
+            data.page_size,
 
-        sort: data.sort,
+        sort:
+            data.sort,
 
-        search: data.search,
+        search:
+            data.search,
 
-        hasNext: data.has_next,
+        hasNext:
+            data.has_next,
 
-        products: data.products.map(projectProduct),
+        products:
+            data.products.map(
+                projectProduct
+            ),
 
     }
 
@@ -194,49 +210,77 @@ function projectProduct(
 
     return {
 
-        id: product.id,
+        id:
+            product.id,
 
-        uniqueId: product.unique_id,
+        uniqueId:
+            product.unique_id,
 
-        sitePrefix: product.site_prefix,
+        sitePrefix:
+            product.site_prefix,
 
-        name: product.name,
+        name:
+            product.name,
 
-        maker: product.maker,
+        maker:
+            product.maker,
 
-        description: product.description,
+        brand:
+            product.brand,
 
-        imageUrl: product.image_url,
+        series:
+            product.series,
 
-        url: product.url,
+        description:
+            product.description,
 
-        affiliateUrl: product.affiliate_url,
+        imageUrl:
+            product.image_url,
 
-        price: product.price,
+        url:
+            product.url,
 
-        cpuModel: product.cpu_model,
+        affiliateUrl:
+            product.affiliate_url,
 
-        gpuModel: product.gpu_model,
+        price:
+            product.price,
 
-        memoryGb: product.memory_gb,
+        cpuModel:
+            product.cpu_model,
 
-        storageGb: product.storage_gb,
+        gpuModel:
+            product.gpu_model,
 
-        semanticScore: product.semantic_score,
+        memoryGb:
+            product.memory_gb,
 
-        semanticRole: product.semantic_role,
+        storageGb:
+            product.storage_gb,
 
-        semanticWeight: product.semantic_weight,
+        semanticScore:
+            product.semantic_score,
 
-        recommendationReason: product.recommendation_reason,
+        semanticRole:
+            product.semantic_role,
 
-        confidence: product.confidence,
+        semanticWeight:
+            product.semantic_weight,
 
-        groupedAttributes: product.grouped_attributes,
+        recommendationReason:
+            product.recommendation_reason,
 
-        createdAt: product.created_at,
+        confidence:
+            product.confidence,
 
-        updatedAt: product.updated_at,
+        groupedAttributes:
+            product.grouped_attributes,
+
+        createdAt:
+            product.created_at,
+
+        updatedAt:
+            product.updated_at,
 
     }
 
@@ -246,7 +290,8 @@ function projectProduct(
 🔥 Legacy Compatibility
 ============================================================================ */
 
-export const projectProductsRuntime = projectProducts
+export const projectProductsRuntime =
+    projectProducts
 
 /* ============================================================================
 🔥 Default Export

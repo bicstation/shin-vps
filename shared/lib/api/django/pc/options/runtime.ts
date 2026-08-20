@@ -1,5 +1,3 @@
-// /home/maya/shin-dev/shin-vps/shared/lib/api/django/pc/options/runtime.ts
-
 // ============================================================================
 // FILE:
 // /shared/lib/api/django/pc/options/runtime.ts
@@ -38,7 +36,10 @@
  * ============================================================================
  */
 
-import { fetchCatalogOptions } from './options'
+import {
+    fetchCatalogOptions,
+    type CatalogOptionsFilters,
+} from './options'
 
 import {
     projectCatalogOptions,
@@ -50,10 +51,13 @@ import {
 ============================================================================ */
 
 export async function getCatalogOptionsRuntime(
+    filters: CatalogOptionsFilters = {},
 ): Promise<ProjectedCatalogOptionsRuntime> {
 
     const runtime =
-        await fetchCatalogOptions()
+        await fetchCatalogOptions(
+            filters
+        )
 
     return projectCatalogOptions(
         runtime

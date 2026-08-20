@@ -17,71 +17,247 @@ import { normalizeCatalogOptions } from './normalize'
 const OPTIONS_ENDPOINT = '/pc/options/'
 
 /* ============================================================================
+🔥 Catalog Options Filters
+============================================================================ */
+
+export type CatalogOptionsFilters = {
+
+    maker?: string
+
+    brand?: string
+
+    series?: string
+
+    cpu?: string
+
+    gpu?: string
+
+    memory?: string | number
+
+    storage?: string | number
+
+}
+
+/* ============================================================================
 🔥 Fetch Catalog Options Runtime
 ============================================================================ */
 
 export async function fetchCatalogOptions(
+    filters: CatalogOptionsFilters = {},
 ): Promise<CatalogOptionsRuntimeContract> {
 
-    const endpoint = buildEndpoint(
-        OPTIONS_ENDPOINT
+    const params =
+        new URLSearchParams()
+
+    /* ------------------------------------------------------------------------
+    Maker
+    ------------------------------------------------------------------------ */
+
+    if (filters.maker !== undefined) {
+
+        params.set(
+            'maker',
+            String(filters.maker),
+        )
+
+    }
+
+    /* ------------------------------------------------------------------------
+    Brand
+    ------------------------------------------------------------------------ */
+
+    if (filters.brand !== undefined) {
+
+        params.set(
+            'brand',
+            String(filters.brand),
+        )
+
+    }
+
+    /* ------------------------------------------------------------------------
+    Series
+    ------------------------------------------------------------------------ */
+
+    if (filters.series !== undefined) {
+
+        params.set(
+            'series',
+            String(filters.series),
+        )
+
+    }
+
+    /* ------------------------------------------------------------------------
+    CPU
+    ------------------------------------------------------------------------ */
+
+    if (filters.cpu !== undefined) {
+
+        params.set(
+            'cpu',
+            String(filters.cpu),
+        )
+
+    }
+
+    /* ------------------------------------------------------------------------
+    GPU
+    ------------------------------------------------------------------------ */
+
+    if (filters.gpu !== undefined) {
+
+        params.set(
+            'gpu',
+            String(filters.gpu),
+        )
+
+    }
+
+    /* ------------------------------------------------------------------------
+    Memory
+    ------------------------------------------------------------------------ */
+
+    if (filters.memory !== undefined) {
+
+        params.set(
+            'memory',
+            String(filters.memory),
+        )
+
+    }
+
+    /* ------------------------------------------------------------------------
+    Storage
+    ------------------------------------------------------------------------ */
+
+    if (filters.storage !== undefined) {
+
+        params.set(
+            'storage',
+            String(filters.storage),
+        )
+
+    }
+
+    /* ------------------------------------------------------------------------
+    Endpoint
+    ------------------------------------------------------------------------ */
+
+    const query =
+        params.toString()
+
+    const endpoint =
+        buildEndpoint(
+            query
+                ? `${OPTIONS_ENDPOINT}?${query}`
+                : OPTIONS_ENDPOINT
+        )
+
+    console.log(
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
     )
 
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-    console.log('🔥 FETCH CATALOG OPTIONS')
-    console.log({ endpoint })
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+    console.log(
+        '🔥 FETCH CATALOG OPTIONS'
+    )
+
+    console.log({
+
+        endpoint,
+
+        filters,
+
+    })
+
+    console.log(
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+    )
+
+    /* ------------------------------------------------------------------------
+    Fetch
+    ------------------------------------------------------------------------ */
 
     const payload =
         await safeFetch<CatalogOptionsRuntimeContract>(
             endpoint
         )
 
-    console.log('🔥 OPTIONS RAW', payload)
+    console.log(
+        '🔥 OPTIONS RAW',
+        payload
+    )
+
+    /* ------------------------------------------------------------------------
+    Empty
+    ------------------------------------------------------------------------ */
 
     if (!payload) {
 
-        console.warn('⚠️ OPTIONS EMPTY')
+        console.warn(
+            '⚠️ OPTIONS EMPTY'
+        )
 
         return normalizeCatalogOptions()
 
     }
 
+    /* ------------------------------------------------------------------------
+    Normalize
+    ------------------------------------------------------------------------ */
+
     const options =
-        normalizeCatalogOptions(payload)
+        normalizeCatalogOptions(
+            payload
+        )
 
-    console.log('🔥 OPTIONS CONTRACT', {
+    /* ------------------------------------------------------------------------
+    Contract Observability
+    ------------------------------------------------------------------------ */
 
-        maker:
-            options.options.maker.length,
+    console.log(
+        '🔥 OPTIONS CONTRACT',
+        {
 
-        cpu:
-            options.options.cpu.length,
+            maker:
+                options.options.maker.length,
 
-        gpu:
-            options.options.gpu.length,
+            brand:
+                options.options.brand.length,
 
-        memory:
-            options.options.memory.length,
+            series:
+                options.options.series.length,
 
-        storage:
-            options.options.storage.length,
+            cpu:
+                options.options.cpu.length,
 
-        semantic_schema_version:
-            options.semantic_schema_version,
+            gpu:
+                options.options.gpu.length,
 
-        authority_version:
-            options.authority_version,
+            memory:
+                options.options.memory.length,
 
-        semantic_authority:
-            options.semantic_authority,
+            storage:
+                options.options.storage.length,
 
-        ready:
-            options.ready,
+            semantic_schema_version:
+                options.semantic_schema_version,
 
-    })
+            authority_version:
+                options.authority_version,
 
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+            semantic_authority:
+                options.semantic_authority,
+
+            ready:
+                options.ready,
+
+        }
+    )
+
+    console.log(
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+    )
 
     return options
 

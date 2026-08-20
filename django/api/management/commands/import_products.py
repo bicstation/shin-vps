@@ -110,6 +110,11 @@ REALITY_RUNTIMES = {
         "acquisition.sources.scraping.asus.run",
     ),
 
+    "sofmap": (
+        "SOFMAP",
+        "acquisition.sources.scraping.sofmap.run",
+    ),
+
 }
 
 

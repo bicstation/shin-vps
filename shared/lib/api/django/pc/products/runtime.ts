@@ -36,7 +36,10 @@
  * ============================================================================
  */
 
-import { fetchProducts } from './products'
+import {
+    fetchProducts,
+    type ProductFilters,
+} from './products'
 
 import {
     projectProducts,
@@ -50,16 +53,19 @@ import {
 export async function getProductsRuntime(
     page = 1,
     pageSize = 20,
-    sort = 'new',
+    filters: ProductFilters = {},
 ): Promise<ProjectedProductsRuntime> {
 
-    const runtime = await fetchProducts(
-        page,
-        pageSize,
-        sort,
-    )
+    const runtime =
+        await fetchProducts(
+            page,
+            pageSize,
+            filters,
+        )
 
-    return projectProducts(runtime)
+    return projectProducts(
+        runtime
+    )
 
 }
 

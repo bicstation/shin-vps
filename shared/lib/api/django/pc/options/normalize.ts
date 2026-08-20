@@ -41,6 +41,10 @@
  *
  * Reality Authority
  *
+ * Adapter remains:
+ *
+ * Translation Authority
+ *
  * ============================================================================
  */
 
@@ -64,25 +68,33 @@ export function normalizeCatalogOptions(
         Meaning
         -------------------------------------------------------------------- */
 
-        meaning: runtime?.meaning,
+        meaning:
+            runtime?.meaning,
 
         /* --------------------------------------------------------------------
         Options
         -------------------------------------------------------------------- */
 
-        options: normalizeOptions(runtime?.options),
+        options:
+            normalizeOptions(
+                runtime?.options
+            ),
 
         /* --------------------------------------------------------------------
         Authority
         -------------------------------------------------------------------- */
 
-        semantic_schema_version: runtime?.semantic_schema_version,
+        semantic_schema_version:
+            runtime?.semantic_schema_version,
 
-        authority_version: runtime?.authority_version,
+        authority_version:
+            runtime?.authority_version,
 
-        semantic_authority: runtime?.semantic_authority,
+        semantic_authority:
+            runtime?.semantic_authority,
 
-        ready: runtime?.ready ?? false,
+        ready:
+            runtime?.ready ?? false,
 
     }
 
@@ -98,15 +110,33 @@ function normalizeOptions(
 
     return {
 
-        maker: (options?.maker ?? []).map(normalizeOption),
+        maker:
+            (options?.maker ?? [])
+                .map(normalizeOption),
 
-        cpu: (options?.cpu ?? []).map(normalizeOption),
+        brand:
+            (options?.brand ?? [])
+                .map(normalizeOption),
 
-        gpu: (options?.gpu ?? []).map(normalizeOption),
+        series:
+            (options?.series ?? [])
+                .map(normalizeOption),
 
-        memory: (options?.memory ?? []).map(normalizeOption),
+        cpu:
+            (options?.cpu ?? [])
+                .map(normalizeOption),
 
-        storage: (options?.storage ?? []).map(normalizeOption),
+        gpu:
+            (options?.gpu ?? [])
+                .map(normalizeOption),
+
+        memory:
+            (options?.memory ?? [])
+                .map(normalizeOption),
+
+        storage:
+            (options?.storage ?? [])
+                .map(normalizeOption),
 
     }
 
@@ -122,11 +152,14 @@ function normalizeOption(
 
     return {
 
-        value: option.value,
+        value:
+            option.value,
 
-        label: option.label,
+        label:
+            option.label,
 
-        count: option.count,
+        count:
+            option.count,
 
     }
 

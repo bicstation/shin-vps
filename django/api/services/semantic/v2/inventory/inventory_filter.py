@@ -13,7 +13,7 @@ Notes:
 
 from __future__ import annotations
 
-from django.db.models import QuerySet
+from django.db.models import Q, QuerySet
 
 
 # ---------------------------------------------------------
@@ -23,12 +23,13 @@ from django.db.models import QuerySet
 EXACT_FILTERS = {
     "site_prefix": "site_prefix",
     "maker": "maker",
+    "brand": "brand",
     "category": "category",
     "series": "series",
-    "cpu": "cpu",
-    "gpu": "gpu",
-    "memory": "memory",
-    "storage": "storage",
+    "cpu": "cpu_model",
+    "gpu": "gpu_model",
+    "memory": "memory_gb",
+    "storage": "storage_gb",
     "storage_type": "storage_type",
     "display_size": "display_size",
     "resolution": "resolution",
@@ -79,7 +80,11 @@ def _normalize_values(value):
         return []
 
     if isinstance(value, (list, tuple)):
-        return [str(v).strip() for v in value if str(v).strip()]
+        return [
+            str(v).strip()
+            for v in value
+            if str(v).strip()
+        ]
 
     values = [
         item.strip()
@@ -107,24 +112,56 @@ def apply_inventory_filter(
     #
     for key, field in EXACT_FILTERS.items():
 
-        values = _normalize_values(filters.get(key))
+        values = _normalize_values(
+            filters.get(key)
+        )
 
         if not values:
             continue
 
-        print(f"[FILTER] {key} = {values}")
-        print(f"[COUNT] before = {queryset.count()}")
+        print(
+            f"[FILTER] {key} = {values}"
+        )
 
+        print(
+            f"[COUNT] before = {queryset.count()}"
+        )
+
+        #
+        # Single Value
+        #
         if len(values) == 1:
+
             queryset = queryset.filter(
-                **{field: values[0]}
-            )
-        else:
-            queryset = queryset.filter(
-                **{f"{field}__in": values}
+                **{
+                    f"{field}__iexact":
+                        values[0]
+                }
             )
 
-        print(f"[COUNT] after  = {queryset.count()}")
+        #
+        # Multiple Values
+        #
+        else:
+
+            condition = Q()
+
+            for value in values:
+
+                condition |= Q(
+                    **{
+                        f"{field}__iexact":
+                            value
+                    }
+                )
+
+            queryset = queryset.filter(
+                condition
+            )
+
+        print(
+            f"[COUNT] after  = {queryset.count()}"
+        )
 
     #
     # Range
@@ -136,14 +173,23 @@ def apply_inventory_filter(
         if value in (None, ""):
             continue
 
-        print(f"[FILTER] {key} = {value}")
-        print(f"[COUNT] before = {queryset.count()}")
-
-        queryset = queryset.filter(
-            **{f"{field}__{operator}": value}
+        print(
+            f"[FILTER] {key} = {value}"
         )
 
-        print(f"[COUNT] after  = {queryset.count()}")
+        print(
+            f"[COUNT] before = {queryset.count()}"
+        )
+
+        queryset = queryset.filter(
+            **{
+                f"{field}__{operator}":
+                    value
+            }
+        )
+
+        print(
+            f"[COUNT] after  = {queryset.count()}"
+        )
 
     return queryset
-

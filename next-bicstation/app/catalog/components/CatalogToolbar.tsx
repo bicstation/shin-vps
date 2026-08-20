@@ -21,55 +21,180 @@ import CatalogFilter from './CatalogFilter'
 
 import styles from '../styles/catalog.module.css'
 
+
+/* ============================================================================
+🔥 Props
+============================================================================ */
+
 type CatalogToolbarProps = {
-    count: number
-    sort: string
-    options?: CatalogOptionsData
+
+    count:
+        number
+
+    sort:
+        string
+
+    options?:
+        CatalogOptionsData
+
 }
 
+
+/* ============================================================================
+🔥 Component
+============================================================================ */
+
 export default function CatalogToolbar({
+
     count,
+
     sort,
+
     options,
+
 }: CatalogToolbarProps) {
 
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-    console.log('📦 CATALOG TOOLBAR')
-    console.log('options:', options)
 
-    console.log('Maker:', options?.maker)
-    console.log('Maker length:', options?.maker?.length)
+    /* ========================================================================
+    🔥 Debug
+    ======================================================================== */
 
-    console.log('CPU:', options?.cpu)
-    console.log('CPU length:', options?.cpu?.length)
+    console.log(
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+    )
 
-    console.log('GPU:', options?.gpu)
-    console.log('GPU length:', options?.gpu?.length)
+    console.log(
+        '📦 CATALOG TOOLBAR'
+    )
 
-    console.log('Memory:', options?.memory)
-    console.log('Memory length:', options?.memory?.length)
+    console.log(
+        'options:',
+        options
+    )
 
-    console.log('Storage:', options?.storage)
-    console.log('Storage length:', options?.storage?.length)
+    console.log(
+        'Maker:',
+        options?.maker
+    )
 
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+    console.log(
+        'Maker length:',
+        options?.maker?.length
+    )
 
-    const router = useRouter()
-    const pathname = usePathname()
-    const searchParams = useSearchParams()
+    console.log(
+        'Brand:',
+        options?.brand
+    )
+
+    console.log(
+        'Brand length:',
+        options?.brand?.length
+    )
+
+    console.log(
+        'Series:',
+        options?.series
+    )
+
+    console.log(
+        'Series length:',
+        options?.series?.length
+    )
+
+    console.log(
+        'CPU:',
+        options?.cpu
+    )
+
+    console.log(
+        'CPU length:',
+        options?.cpu?.length
+    )
+
+    console.log(
+        'GPU:',
+        options?.gpu
+    )
+
+    console.log(
+        'GPU length:',
+        options?.gpu?.length
+    )
+
+    console.log(
+        'Memory:',
+        options?.memory
+    )
+
+    console.log(
+        'Memory length:',
+        options?.memory?.length
+    )
+
+    console.log(
+        'Storage:',
+        options?.storage
+    )
+
+    console.log(
+        'Storage length:',
+        options?.storage?.length
+    )
+
+    console.log(
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+    )
+
+
+    /* ========================================================================
+    🔥 Router
+    ======================================================================== */
+
+    const router =
+        useRouter()
+
+    const pathname =
+        usePathname()
+
+    const searchParams =
+        useSearchParams()
+
+
+    /* ========================================================================
+    🔥 Sort
+    ======================================================================== */
 
     function handleSortChange(
-        event: ChangeEvent<HTMLSelectElement>,
+
+        event:
+            ChangeEvent<HTMLSelectElement>,
+
     ) {
 
-        const { value } = event.target
+        const {
+            value,
+        } =
+            event.target
 
-        const params = new URLSearchParams(
-            searchParams.toString(),
+
+        const params =
+            new URLSearchParams(
+                searchParams.toString(),
+            )
+
+
+        params.set(
+            'sort',
+            value,
         )
 
-        params.set('sort', value)
-        params.set('page', '1')
+
+        params.set(
+            'page',
+            '1',
+        )
+
 
         router.push(
             `${pathname}?${params.toString()}`
@@ -77,54 +202,142 @@ export default function CatalogToolbar({
 
     }
 
+
+    /* ========================================================================
+    🔥 Render
+    ======================================================================== */
+
     return (
 
-        <section className={styles.catalogHeader}>
+        <section
+            className={
+                styles.catalogHeader
+            }
+        >
 
-            <div className={styles.catalogHeaderTop}>
+            {/* ==================================================================
+            HEADER
+            ================================================================== */}
 
-                <div className={styles.catalogStatus}>
+            <div
+                className={
+                    styles.catalogHeaderTop
+                }
+            >
 
-                    <span className={styles.catalogCount}>
-                        {count.toLocaleString()} Products
+                {/* ==============================================================
+                STATUS
+                ============================================================== */}
+
+                <div
+                    className={
+                        styles.catalogStatus
+                    }
+                >
+
+                    <span
+                        className={
+                            styles.catalogCount
+                        }
+                    >
+
+                        {
+                            count.toLocaleString()
+                        }
+
+                        {' '}
+
+                        Products
+
                     </span>
 
-                    <span className={styles.catalogCaption}>
+
+                    <span
+                        className={
+                            styles.catalogCaption
+                        }
+                    >
+
                         Browse the complete catalog
+
                     </span>
 
                 </div>
 
-                <div className={styles.catalogCommands}>
+
+                {/* ==============================================================
+                SORT
+                ============================================================== */}
+
+                <div
+                    className={
+                        styles.catalogCommands
+                    }
+                >
 
                     <label
                         htmlFor="catalog-sort"
-                        className={styles.catalogSortLabel}
+                        className={
+                            styles.catalogSortLabel
+                        }
                     >
+
                         Sort
+
                     </label>
 
+
                     <select
+
                         id="catalog-sort"
-                        className={styles.catalogSort}
-                        value={sort}
-                        onChange={handleSortChange}
+
+                        className={
+                            styles.catalogSort
+                        }
+
+                        value={
+                            sort
+                        }
+
+                        onChange={
+                            handleSortChange
+                        }
+
                     >
 
-                        <option value="maker">
+                        <option
+                            value="maker"
+                        >
+
                             メーカー順
+
                         </option>
 
-                        <option value="price_low">
+
+                        <option
+                            value="price_low"
+                        >
+
                             価格が安い順
+
                         </option>
 
-                        <option value="price_high">
+
+                        <option
+                            value="price_high"
+                        >
+
                             価格が高い順
+
                         </option>
 
-                        <option value="new">
+
+                        <option
+                            value="new"
+                        >
+
                             新着順
+
                         </option>
 
                     </select>
@@ -133,36 +346,133 @@ export default function CatalogToolbar({
 
             </div>
 
-            <div className={styles.catalogFilters}>
+
+            {/* ==================================================================
+            FILTERS
+            ================================================================== */}
+
+            <div
+                className={
+                    styles.catalogFilters
+                }
+            >
+
+                {/* ==============================================================
+                01 — PROVIDER
+                ============================================================== */}
 
                 <CatalogFilter
-                    title="Maker"
+
+                    title="提供元"
+
                     queryKey="maker"
-                    items={options?.maker ?? []}
+
+                    items={
+                        options?.maker ?? []
+                    }
+
                 />
 
+
+                {/* ==============================================================
+                02 — BRAND
+                ============================================================== */}
+
                 <CatalogFilter
+
+                    title="ブランド"
+
+                    queryKey="brand"
+
+                    items={
+                        options?.brand ?? []
+                    }
+
+                />
+
+
+                {/* ==============================================================
+                03 — SERIES
+                ============================================================== */}
+
+                <CatalogFilter
+
+                    title="シリーズ"
+
+                    queryKey="series"
+
+                    items={
+                        options?.series ?? []
+                    }
+
+                />
+
+
+                {/* ==============================================================
+                04 — CPU
+                ============================================================== */}
+
+                <CatalogFilter
+
                     title="CPU"
+
                     queryKey="cpu"
-                    items={options?.cpu ?? []}
+
+                    items={
+                        options?.cpu ?? []
+                    }
+
                 />
 
+
+                {/* ==============================================================
+                05 — GPU
+                ============================================================== */}
+
                 <CatalogFilter
+
                     title="GPU"
+
                     queryKey="gpu"
-                    items={options?.gpu ?? []}
+
+                    items={
+                        options?.gpu ?? []
+                    }
+
                 />
 
+
+                {/* ==============================================================
+                06 — MEMORY
+                ============================================================== */}
+
                 <CatalogFilter
-                    title="Memory"
+
+                    title="メモリ"
+
                     queryKey="memory"
-                    items={options?.memory ?? []}
+
+                    items={
+                        options?.memory ?? []
+                    }
+
                 />
 
+
+                {/* ==============================================================
+                07 — STORAGE
+                ============================================================== */}
+
                 <CatalogFilter
-                    title="Storage"
+
+                    title="ストレージ"
+
                     queryKey="storage"
-                    items={options?.storage ?? []}
+
+                    items={
+                        options?.storage ?? []
+                    }
+
                 />
 
             </div>

@@ -13,9 +13,15 @@ Responsibility:
 from .option_builder import build_options
 
 
-def build_options_runtime():
+def build_options_runtime(
+    filters=None,
+):
     """
     Build Catalog Options Runtime.
+
+    filters:
+        Current catalog filters used to derive
+        the available options from Product Reality.
     """
 
     return {
@@ -23,7 +29,9 @@ def build_options_runtime():
             "identity": "Catalog Options Runtime",
             "mission": "Catalog Toolbar が利用する選択肢を提供する",
         },
-        "options": build_options(),
+        "options": build_options(
+            filters=filters,
+        ),
         "semantic_schema_version": 3,
         "authority_version": "2.0",
         "semantic_authority": "backend",

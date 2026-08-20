@@ -1,5 +1,3 @@
-// /home/maya/shin-dev/shin-vps/shared/lib/api/django/pc/options/contracts.ts
-
 // ============================================================================
 // FILE:
 // /shared/lib/api/django/pc/options/contracts.ts
@@ -71,6 +69,10 @@ export interface CatalogOptionsMeaning {
 export interface CatalogOptionsData {
 
     maker: CatalogOptionItem[]
+
+    brand: CatalogOptionItem[]
+
+    series: CatalogOptionItem[]
 
     cpu: CatalogOptionItem[]
 

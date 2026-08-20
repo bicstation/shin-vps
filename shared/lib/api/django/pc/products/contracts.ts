@@ -76,6 +76,10 @@ export interface PCProductItem {
 
     maker?: string
 
+    brand?: string
+
+    series?: string
+
     description?: string
 
     /* ------------------------------------------------------------------------

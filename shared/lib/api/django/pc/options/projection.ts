@@ -1,4 +1,5 @@
 // /home/maya/shin-dev/shin-vps/shared/lib/api/django/pc/options/projection.ts
+
 // ============================================================================
 // FILE:
 // /shared/lib/api/django/pc/options/projection.ts
@@ -75,6 +76,10 @@ export interface ProjectedCatalogOptionsData {
 
     maker: ProjectedCatalogOption[]
 
+    brand: ProjectedCatalogOption[]
+
+    series: ProjectedCatalogOption[]
+
     cpu: ProjectedCatalogOption[]
 
     gpu: ProjectedCatalogOption[]
@@ -109,7 +114,10 @@ export function projectCatalogOptions(
 
     return {
 
-        options: projectOptions(contract.options),
+        options:
+            projectOptions(
+                contract.options
+            ),
 
     }
 
@@ -125,15 +133,40 @@ function projectOptions(
 
     return {
 
-        maker: options.maker.map(projectOption),
+        maker:
+            options.maker.map(
+                projectOption
+            ),
 
-        cpu: options.cpu.map(projectOption),
+        brand:
+            options.brand.map(
+                projectOption
+            ),
 
-        gpu: options.gpu.map(projectOption),
+        series:
+            options.series.map(
+                projectOption
+            ),
 
-        memory: options.memory.map(projectOption),
+        cpu:
+            options.cpu.map(
+                projectOption
+            ),
 
-        storage: options.storage.map(projectOption),
+        gpu:
+            options.gpu.map(
+                projectOption
+            ),
+
+        memory:
+            options.memory.map(
+                projectOption
+            ),
+
+        storage:
+            options.storage.map(
+                projectOption
+            ),
 
     }
 
@@ -149,11 +182,14 @@ function projectOption(
 
     return {
 
-        value: option.value,
+        value:
+            option.value,
 
-        label: option.label,
+        label:
+            option.label,
 
-        count: option.count,
+        count:
+            option.count,
 
     }
 

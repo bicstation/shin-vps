@@ -10,14 +10,33 @@ import { normalizeProducts } from './normalize'
 
 const PRODUCTS_ENDPOINT = '/pc/products/'
 
+/* ============================================================================
+🔥 Product Filters
+============================================================================ */
+
 export type ProductFilters = {
+
     sort?: string
+
     maker?: string
+
+    brand?: string
+
+    series?: string
+
     cpu?: string
+
     gpu?: string
+
     memory?: string
+
     storage?: string
+
 }
+
+/* ============================================================================
+🔥 Fetch Products
+============================================================================ */
 
 export async function fetchProducts(
     page = 1,
@@ -26,6 +45,10 @@ export async function fetchProducts(
 ): Promise<ProductsRuntimeContract> {
 
     const params = new URLSearchParams()
+
+    /* ------------------------------------------------------------------------
+    Pagination
+    ------------------------------------------------------------------------ */
 
     params.set(
         'page',
@@ -37,64 +60,151 @@ export async function fetchProducts(
         String(pageSize),
     )
 
+    /* ------------------------------------------------------------------------
+    Sort
+    ------------------------------------------------------------------------ */
+
     params.set(
         'sort',
         filters.sort ?? 'new',
     )
 
+    /* ------------------------------------------------------------------------
+    Maker
+    ------------------------------------------------------------------------ */
+
     if (filters.maker) {
+
         params.set(
             'maker',
             filters.maker,
         )
+
     }
 
+    /* ------------------------------------------------------------------------
+    Brand
+    ------------------------------------------------------------------------ */
+
+    if (filters.brand) {
+
+        params.set(
+            'brand',
+            filters.brand,
+        )
+
+    }
+
+    /* ------------------------------------------------------------------------
+    Series
+    ------------------------------------------------------------------------ */
+
+    if (filters.series) {
+
+        params.set(
+            'series',
+            filters.series,
+        )
+
+    }
+
+    /* ------------------------------------------------------------------------
+    CPU
+    ------------------------------------------------------------------------ */
+
     if (filters.cpu) {
+
         params.set(
             'cpu',
             filters.cpu,
         )
+
     }
 
+    /* ------------------------------------------------------------------------
+    GPU
+    ------------------------------------------------------------------------ */
+
     if (filters.gpu) {
+
         params.set(
             'gpu',
             filters.gpu,
         )
+
     }
 
+    /* ------------------------------------------------------------------------
+    Memory
+    ------------------------------------------------------------------------ */
+
     if (filters.memory) {
+
         params.set(
             'memory',
             filters.memory,
         )
+
     }
 
+    /* ------------------------------------------------------------------------
+    Storage
+    ------------------------------------------------------------------------ */
+
     if (filters.storage) {
+
         params.set(
             'storage',
             filters.storage,
         )
+
     }
 
-    const endpoint = buildEndpoint(
-        `${PRODUCTS_ENDPOINT}?${params.toString()}`
+    /* ------------------------------------------------------------------------
+    Endpoint
+    ------------------------------------------------------------------------ */
+
+    const endpoint =
+        buildEndpoint(
+            `${PRODUCTS_ENDPOINT}?${params.toString()}`
+        )
+
+    console.log(
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
     )
 
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-    console.log('🔥 FETCH PRODUCTS')
+    console.log(
+        '🔥 FETCH PRODUCTS'
+    )
+
     console.log({
+
         endpoint,
+
         page,
+
         pageSize,
+
         filters,
+
     })
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+
+    console.log(
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+    )
+
+    /* ------------------------------------------------------------------------
+    Fetch
+    ------------------------------------------------------------------------ */
 
     const payload =
         await safeFetch<ProductsRuntimeContract>(
             endpoint
         )
+
+    /* ------------------------------------------------------------------------
+    Empty
+    ------------------------------------------------------------------------ */
 
     if (!payload) {
 
@@ -106,14 +216,23 @@ export async function fetchProducts(
 
     }
 
+    /* ------------------------------------------------------------------------
+    Normalize
+    ------------------------------------------------------------------------ */
+
     const products =
         normalizeProducts(
             payload
         )
 
+    /* ------------------------------------------------------------------------
+    Contract Observability
+    ------------------------------------------------------------------------ */
+
     console.log(
         '🔥 PRODUCTS CONTRACT',
         {
+
             count:
                 products.data.count,
 
@@ -125,6 +244,9 @@ export async function fetchProducts(
 
             sort:
                 products.data.sort,
+
+            search:
+                products.data.search,
 
             has_next:
                 products.data.has_next,
@@ -140,16 +262,27 @@ export async function fetchProducts(
 
             ready:
                 products.ready,
+
         }
     )
 
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+    console.log(
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+    )
 
     return products
 
 }
 
+/* ============================================================================
+🔥 Legacy Compatibility
+============================================================================ */
+
 export const fetchProductsRuntime =
     fetchProducts
+
+/* ============================================================================
+🔥 Default Export
+============================================================================ */
 
 export default fetchProducts

@@ -162,7 +162,7 @@ def build_inventory_runtime(
     products = []
 
     for product in queryset[start:end]:
-
+        
         products.append({
 
             "unique_id":
@@ -174,15 +174,37 @@ def build_inventory_runtime(
             "maker":
                 product.maker,
 
+            "brand":
+                product.brand,
+
+            "series":
+                product.series,
+
+            "cpu_model":
+                product.cpu_model,
+
+            "gpu_model":
+                product.gpu_model,
+
+            "memory_gb":
+                product.memory_gb,
+
+            "storage_gb":
+                product.storage_gb,
+
             "price":
                 product.price,
 
             "image_url":
                 product.image_url,
 
+            "url":
+                product.url,
+
             "updated_at":
                 product.updated_at,
         })
+
 
     # ------------------------------------------------------
     # SEO

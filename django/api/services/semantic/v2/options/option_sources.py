@@ -9,16 +9,16 @@ Responsibility:
 - QuerySet を Option Contract へ変換する
 """
 
-from django.db.models import Count
-
-from api.models import PCProduct
+from django.db.models import Count, QuerySet
 
 
-def get_maker_options():
+def get_maker_options(
+    queryset: QuerySet,
+):
     """Build Maker Options."""
 
     queryset = (
-        PCProduct.objects
+        queryset
         .exclude(maker__isnull=True)
         .exclude(maker="")
         .values("maker")
@@ -36,11 +36,61 @@ def get_maker_options():
     ]
 
 
-def get_cpu_options():
+def get_brand_options(
+    queryset: QuerySet,
+):
+    """Build Brand Options."""
+
+    queryset = (
+        queryset
+        .exclude(brand__isnull=True)
+        .exclude(brand="")
+        .values("brand")
+        .annotate(count=Count("id"))
+        .order_by("brand")
+    )
+
+    return [
+        {
+            "value": item["brand"],
+            "label": item["brand"],
+            "count": item["count"],
+        }
+        for item in queryset
+    ]
+
+
+def get_series_options(
+    queryset: QuerySet,
+):
+    """Build Series Options."""
+
+    queryset = (
+        queryset
+        .exclude(series__isnull=True)
+        .exclude(series="")
+        .values("series")
+        .annotate(count=Count("id"))
+        .order_by("series")
+    )
+
+    return [
+        {
+            "value": item["series"],
+            "label": item["series"],
+            "count": item["count"],
+        }
+        for item in queryset
+    ]
+
+
+def get_cpu_options(
+    queryset: QuerySet,
+):
     """Build CPU Options."""
 
     queryset = (
-        PCProduct.objects
+        queryset
         .exclude(cpu_model__isnull=True)
         .exclude(cpu_model="")
         .values("cpu_model")
@@ -58,11 +108,13 @@ def get_cpu_options():
     ]
 
 
-def get_gpu_options():
+def get_gpu_options(
+    queryset: QuerySet,
+):
     """Build GPU Options."""
 
     queryset = (
-        PCProduct.objects
+        queryset
         .exclude(gpu_model__isnull=True)
         .exclude(gpu_model="")
         .values("gpu_model")
@@ -80,11 +132,13 @@ def get_gpu_options():
     ]
 
 
-def get_memory_options():
+def get_memory_options(
+    queryset: QuerySet,
+):
     """Build Memory Options."""
 
     queryset = (
-        PCProduct.objects
+        queryset
         .exclude(memory_gb__isnull=True)
         .exclude(memory_gb=0)
         .values("memory_gb")
@@ -102,11 +156,13 @@ def get_memory_options():
     ]
 
 
-def get_storage_options():
+def get_storage_options(
+    queryset: QuerySet,
+):
     """Build Storage Options."""
 
     queryset = (
-        PCProduct.objects
+        queryset
         .exclude(storage_gb__isnull=True)
         .exclude(storage_gb=0)
         .values("storage_gb")

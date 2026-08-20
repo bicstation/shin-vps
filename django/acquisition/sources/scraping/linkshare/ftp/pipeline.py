@@ -15,6 +15,7 @@ from .acquire import main as acquire
 from .formatter import main as formatter
 from .observe import main as observe
 from .mapper import main as mapper
+from .pc_filter import is_pc_target
 from .integration import main as integration
 
 
@@ -70,9 +71,22 @@ def main(
         )
 
         # ------------------------------------------------------
+        # PC Filter
+        # ------------------------------------------------------
+
+        pc_documents = [
+            document
+            for document in import_documents
+            if is_pc_target(
+                document,
+                mid=mid,
+            )
+        ]
+
+        # ------------------------------------------------------
         # Integration
         # ------------------------------------------------------
 
         integration(
-            documents=import_documents,
+            documents=pc_documents,
         )
