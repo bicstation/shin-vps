@@ -69,9 +69,13 @@ export interface IntentRuntime {
    * usage-ai
    * usage-creator
    * usage-mobile
+   *
+   * Unknown:
+   *
+   * null
    */
 
-  intent: string
+  intent: string | null
 
   /**
    * Classification Confidence
@@ -108,7 +112,7 @@ export interface IntentResult {
    * Semantic Intent
    */
 
-  intent: string
+  intent: string | null
 
   /**
    * Confidence

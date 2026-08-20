@@ -108,12 +108,19 @@ export async function resolveIntent(
     )
 
     return normalizeIntentRuntime({
+
       message: '',
-      intent: '',
+
+      intent: null,
+
       confidence: 0,
+
       matched_groups: [],
+
       unknown_terms: [],
+
       ready: false,
+
     })
   }
 
@@ -143,6 +150,7 @@ export async function resolveIntent(
         body: JSON.stringify({
 
           message,
+
         }),
       }
     )
@@ -170,6 +178,7 @@ export async function resolveIntent(
 
       ready:
         runtime.ready,
+
     }
   )
 

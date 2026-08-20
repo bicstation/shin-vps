@@ -61,10 +61,8 @@ export function normalizeIntentRuntime(
 
     payload?.data
     ??
-
     payload
     ??
-
     {}
 
   console.log(
@@ -79,6 +77,7 @@ export function normalizeIntentRuntime(
 
       ready:
         source?.ready,
+
     }
   )
 
@@ -88,7 +87,7 @@ export function normalizeIntentRuntime(
 
       source?.message
 
-      ||
+      ??
 
       '',
 
@@ -96,9 +95,9 @@ export function normalizeIntentRuntime(
 
       source?.intent
 
-      ||
+      ??
 
-      '',
+      null,
 
     confidence:
 
@@ -131,7 +130,9 @@ export function normalizeIntentRuntime(
     ready:
 
       source?.ready === true,
+
   }
+
 }
 
 /* ============================================================================

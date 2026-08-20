@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 # api/services/semantic/v2/intent/intent_resolver.py
 
-from api.services.semantic.v2.authority.authority_runtime import (
-    build_authority_runtime,
+from api.services.semantic.v2.intent.intent_sources import (
+    get_intent_aliases,
 )
 
 from api.services.semantic.v2.intent.unknown_logger import (
     log_unknown_term,
 )
+
 
 # ==========================================================
 # NORMALIZE
@@ -18,11 +19,9 @@ def normalize_message(
 ):
 
     return (
-
         message
         .lower()
         .strip()
-
     )
 
 
@@ -42,16 +41,8 @@ def resolve_intent(
         )
     )
 
-    authority = (
-        build_authority_runtime()
-    )
-
     aliases = (
-
-        authority.get(
-            "aliases",
-            []
-        )
+        get_intent_aliases()
     )
 
     matched_groups = []
@@ -59,18 +50,14 @@ def resolve_intent(
     # ------------------------------------------------------
     # Alias Match
     # ------------------------------------------------------
-    
+
     for alias in aliases:
 
-        slug = alias.get("slug")
+        slug = alias.get(
+            "slug"
+        )
 
         if not slug:
-            continue
-
-        # Intent Runtime は usage のみ対象
-        if not slug.startswith(
-            "usage-"
-        ):
             continue
 
         keyword = (
@@ -93,6 +80,7 @@ def resolve_intent(
                 matched_groups.append(
                     slug
                 )
+
     # ------------------------------------------------------
     # Resolve
     # ------------------------------------------------------
@@ -113,7 +101,6 @@ def resolve_intent(
             "unknown_terms":
                 [],
         }
-
 
     # ------------------------------------------------------
     # Unknown
@@ -146,8 +133,7 @@ def resolve_intent(
 
             f"「{normalized}」を"
             "解釈できませんでした。"
-            "Semantic Authorityへの"
+            "Intent Dictionaryへの"
             "登録候補として記録しました。"
         ),
     }
-    

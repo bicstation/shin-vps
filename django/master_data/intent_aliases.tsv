@@ -1,0 +1,52 @@
+slug	alias	alias_type	is_adult	match_strength
+usage-ai	npu hardware	hardware	0	0.95
+usage-ai	neural processing unit	hardware	0	0.95
+usage-ai	cuda	hardware_feature	0	0.74
+usage-ai	tensor core	hardware_feature	0	0.7
+usage-ai	core ultra	cpu	0	0.99
+usage-ai	core ultra 9	cpu	0	0.99
+usage-ai	core ultra 7	cpu	0	0.98
+usage-ai	core ultra 5	cpu	0	0.97
+usage-ai	ryzen ai	cpu	0	0.99
+usage-ai	ryzen ai max	cpu	0	0.99
+usage-ai	ryzen ai 9	cpu	0	0.98
+usage-ai	ryzen ai 7	cpu	0	0.97
+usage-ai	threadripper	cpu	0	0.97
+usage-ai	threadripper pro	cpu	0	0.98
+usage-ai	xeon	cpu	0	0.96
+usage-ai	ai pc	category	0	0.82
+usage-ai	copilot+	pc	0	0.98
+usage-ai	copilot+ pc	category	0	0.98
+usage-budget	安い	category	0	0.92
+usage-budget	コスパ	category	0	0.96
+usage-budget	格安	category	0	0.9
+usage-budget	エントリー	category	0	0.82
+usage-budget	低価格	category	0	0.88
+usage-budget	best value	category	0	0.74
+usage-budget	budget pc	category	0	0.88
+usage-business	ビジネス	canonical	0	1
+usage-business	事務	category	0	0.84
+usage-business	法人	category	0	0.88
+usage-business	office搭載	software	0	0.82
+usage-business	vpro	feature	0	0.74
+usage-business	office pc	category	0	0.88
+usage-business	business laptop	category	0	0.86
+usage-creator	cad	category	0	0.76
+usage-creator	クリエイター	canonical	0	1
+usage-creator	動画編集	category	0	0.94
+usage-creator	raw現像	category	0	0.88
+usage-creator	adobe	software	0	0.82
+usage-creator	blender	software	0	0.84
+usage-creator	davinci resolve	software	0	0.84
+usage-creator	premiere pro	software	0	0.88
+usage-creator	after effects	software	0	0.82
+usage-gaming	ゲーミング	canonical	0	1
+usage-gaming	ゲーム	canonical	0	0.94
+usage-gaming	fps	category	0	0.82
+usage-gaming	esports	category	0	0.8
+usage-gaming	high fps	category	0	0.78
+usage-gaming	gaming pc	category	0	0.92
+usage-gaming	rtx	hardware	0	0.74
+usage-gaming	rgb	feature	0	0.6
+usage-gaming	dlss	hardware_feature	0	0.68
+usage-gaming	ray tracing	hardware_feature	0	0.72
