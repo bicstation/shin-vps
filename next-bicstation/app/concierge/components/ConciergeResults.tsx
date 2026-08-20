@@ -320,7 +320,7 @@ export default function ConciergeResults({
                                 }
 
                                 href={
-                                    `/pc/products/${encodeURIComponent(
+                                    `/product/${encodeURIComponent(
                                         product.unique_id,
                                     )}/`
                                 }
