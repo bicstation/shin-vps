@@ -97,6 +97,26 @@ export interface ProjectedProduct {
 
     image: string
 
+    /* ------------------------------------------------------------------------
+    🔥 Product Reality Specification
+    ------------------------------------------------------------------------ */
+
+    cpuModel?: string | null
+
+    gpuModel?: string | null
+
+    memoryGb?: number | null
+
+    storageGb?: number | null
+
+    displayInfo?: string | null
+
+    isAiPc?: boolean | null
+
+    /* ------------------------------------------------------------------------
+    Semantic Presentation
+    ------------------------------------------------------------------------ */
+
     badges: string[]
 
     tags: string[]
@@ -120,7 +140,6 @@ export interface ProjectedProduct {
     }
 
 }
-
 
 /* ============================================================================
 🔥 Projection
@@ -384,6 +403,38 @@ function projectProduct(
 
             product.image_url,
 
+        /* --------------------------------------------------------------------
+        Product Reality Specification
+        -------------------------------------------------------------------- */
+
+        cpuModel:
+
+            product.cpu_model,
+
+        gpuModel:
+
+            product.gpu_model,
+
+        memoryGb:
+
+            product.memory_gb,
+
+        storageGb:
+
+            product.storage_gb,
+
+        displayInfo:
+
+            product.display_info,
+
+        isAiPc:
+
+            product.is_ai_pc,
+
+        /* --------------------------------------------------------------------
+        Semantic Presentation
+        -------------------------------------------------------------------- */
+
         badges,
 
         tags,
@@ -413,7 +464,6 @@ function projectProduct(
         },
 
     }
-
 
 }
 

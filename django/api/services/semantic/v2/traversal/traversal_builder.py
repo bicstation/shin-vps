@@ -76,6 +76,56 @@ def build_product_traversal(
         # Reality
         # --------------------------------------------------
 
+        # --------------------------------------------------
+        # Product Specification Reality
+        # --------------------------------------------------
+
+        "cpu_model":
+            getattr(
+                product,
+                "cpu_model",
+                None
+            ),
+
+        "gpu_model":
+            getattr(
+                product,
+                "gpu_model",
+                None
+            ),
+
+        "memory_gb":
+            getattr(
+                product,
+                "memory_gb",
+                None
+            ),
+
+        "storage_gb":
+            getattr(
+                product,
+                "storage_gb",
+                None
+            ),
+
+        "display_info":
+            getattr(
+                product,
+                "display_info",
+                None
+            ),
+
+        "is_ai_pc":
+            getattr(
+                product,
+                "is_ai_pc",
+                False
+            ),
+
+        # --------------------------------------------------
+        # Semantic Reality
+        # --------------------------------------------------
+
         "semantic_attributes":
 
             runtime.get(

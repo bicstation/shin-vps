@@ -1,6 +1,12 @@
 'use client'
 
 /* ============================================================================
+🔥 Next
+============================================================================ */
+
+import Link from 'next/link'
+
+/* ============================================================================
 🔥 Intent Runtime
 ============================================================================ */
 
@@ -17,17 +23,22 @@ import type {
 } from '@/shared/lib/api/django/pc/finder/projection'
 
 /* ============================================================================
+🔥 Styles
+============================================================================ */
+
+import styles from './ConciergeResults.module.css'
+
+/* ============================================================================
 🔥 Props
 ============================================================================ */
 
 interface ConciergeResultsProps {
 
     intent:
-        IntentRuntime | null
+    IntentRuntime | null
 
     finder:
-        ProjectedFinderRuntime | null
-
+    ProjectedFinderRuntime | null
 }
 
 /* ============================================================================
@@ -60,16 +71,39 @@ export default function ConciergeResults({
 
         return (
 
-            <section>
+            <section
+                className={
+                    styles.unknown
+                }
+            >
 
-                <h2>
-                    もう少し詳しく教えてください
-                </h2>
+                <div
+                    className={
+                        styles.statusIcon
+                    }
+                >
+                    ?
+                </div>
 
-                <p>
-                    お探しのPCの用途を教えていただければ、
-                    条件に合うPCを探します。
-                </p>
+                <div>
+
+                    <span
+                        className={
+                            styles.eyebrow
+                        }
+                    >
+                        AI CONCIERGE
+                    </span>
+
+                    <h2>
+                        もう少し詳しく教えてください
+                    </h2>
+
+                    <p>
+                        どんな用途でPCをお探しですか？
+                    </p>
+
+                </div>
 
             </section>
 
@@ -85,11 +119,37 @@ export default function ConciergeResults({
 
         return (
 
-            <section>
+            <section
+                className={
+                    styles.loading
+                }
+            >
 
-                <h2>
-                    PCを探しています
-                </h2>
+                <div
+                    className={
+                        styles.loadingIndicator
+                    }
+                />
+
+                <div>
+
+                    <span
+                        className={
+                            styles.eyebrow
+                        }
+                    >
+                        AI CONCIERGE
+                    </span>
+
+                    <h2>
+                        PCを探しています
+                    </h2>
+
+                    <p>
+                        条件に合うPCを確認しています…
+                    </p>
+
+                </div>
 
             </section>
 
@@ -105,15 +165,39 @@ export default function ConciergeResults({
 
         return (
 
-            <section>
+            <section
+                className={
+                    styles.empty
+                }
+            >
 
-                <h2>
-                    条件に合うPCが見つかりませんでした
-                </h2>
+                <div
+                    className={
+                        styles.statusIcon
+                    }
+                >
+                    0
+                </div>
 
-                <p>
-                    条件を少し変えて、もう一度お試しください。
-                </p>
+                <div>
+
+                    <span
+                        className={
+                            styles.eyebrow
+                        }
+                    >
+                        SEARCH RESULT
+                    </span>
+
+                    <h2>
+                        条件に合うPCが見つかりませんでした
+                    </h2>
+
+                    <p>
+                        条件を少し変えて、もう一度お試しください。
+                    </p>
+
+                </div>
 
             </section>
 
@@ -127,33 +211,101 @@ export default function ConciergeResults({
 
     return (
 
-        <section>
+        <section
+            className={
+                styles.results
+            }
+        >
 
-            <header>
+            {/* ==================================================================
+            Result Header
+            ================================================================== */}
 
-                <h2>
-                    {finder.header.title}
-                </h2>
-
-                {
-
-                    finder.header.description && (
-
-                        <p>
-                            {finder.header.description}
-                        </p>
-
-                    )
-
+            <header
+                className={
+                    styles.header
                 }
+            >
 
-                <p>
-                    {finder.stats.result_count}件
-                </p>
+                <div
+                    className={
+                        styles.headerMain
+                    }
+                >
+
+                    <span
+                        className={
+                            styles.eyebrow
+                        }
+                    >
+                        AI CONCIERGE
+                    </span>
+
+                    <h2>
+                        「{intent.intent}」のPCをお探しですね。
+                    </h2>
+
+                    {
+
+                        finder.header.description && (
+
+                            <p
+                                className={
+                                    styles.description
+                                }
+                            >
+                                {
+                                    finder.header.description
+                                }
+                            </p>
+
+                        )
+
+                    }
+
+                </div>
+
+                <div
+                    className={
+                        styles.resultCount
+                    }
+                >
+
+                    <strong>
+                        {
+                            finder.stats.result_count
+                        }
+                    </strong>
+
+                    <span>
+                        RESULTS
+                    </span>
+
+                </div>
 
             </header>
 
-            <div>
+
+            {/* ==================================================================
+            Divider
+            ================================================================== */}
+
+            <div
+                className={
+                    styles.divider
+                }
+            />
+
+
+            {/* ==================================================================
+            Product Grid
+            ================================================================== */}
+
+            <div
+                className={
+                    styles.grid
+                }
+            >
 
                 {
 
@@ -161,54 +313,370 @@ export default function ConciergeResults({
 
                         product => (
 
-                            <article
+                            <Link
+
                                 key={
                                     product.unique_id
                                 }
-                            >
 
-                                {
-
-                                    product.image && (
-
-                                        <img
-
-                                            src={
-                                                product.image
-                                            }
-
-                                            alt={
-                                                product.name
-                                            }
-
-                                        />
-
-                                    )
-
+                                href={
+                                    `/pc/products/${encodeURIComponent(
+                                        product.unique_id,
+                                    )}/`
                                 }
 
-                                <div>
+                                className={
+                                    styles.card
+                                }
 
-                                    <p>
-                                        {product.maker}
-                                    </p>
+                            >
 
-                                    <h3>
-                                        {product.name}
-                                    </h3>
+                                {/* =================================================
+                                Product Image
+                                ================================================= */}
 
-                                    <p>
-                                        ¥
-                                        {
-                                            product.price.toLocaleString(
-                                                'ja-JP'
-                                            )
-                                        }
-                                    </p>
+                                <div
+                                    className={
+                                        styles.imageWrap
+                                    }
+                                >
+
+                                    {
+
+                                        product.image ? (
+
+                                            <img
+
+                                                src={
+                                                    product.image
+                                                }
+
+                                                alt={
+                                                    product.name
+                                                }
+
+                                                className={
+                                                    styles.image
+                                                }
+
+                                            />
+
+                                        ) : (
+
+                                            <div
+                                                className={
+                                                    styles.imagePlaceholder
+                                                }
+                                            >
+                                                NO IMAGE
+                                            </div>
+
+                                        )
+
+                                    }
 
                                 </div>
 
-                            </article>
+
+                                {/* =================================================
+                                Product Information
+                                ================================================= */}
+
+                                <div
+                                    className={
+                                        styles.productInfo
+                                    }
+                                >
+
+                                    <p
+                                        className={
+                                            styles.maker
+                                        }
+                                    >
+                                        {
+                                            product.maker
+                                        }
+                                    </p>
+
+                                    <h3
+                                        className={
+                                            styles.productName
+                                        }
+                                    >
+                                        {
+                                            product.name
+                                        }
+                                    </h3>
+
+
+                                    {/* =============================================
+                                    Specifications
+                                    ============================================= */}
+
+                                    <div
+                                        className={
+                                            styles.specs
+                                        }
+                                    >
+
+                                        {
+
+                                            product.cpuModel && (
+
+                                                <div
+                                                    className={
+                                                        styles.spec
+                                                    }
+                                                >
+
+                                                    <span>
+                                                        CPU
+                                                    </span>
+
+                                                    <strong>
+                                                        {
+                                                            product.cpuModel
+                                                        }
+                                                    </strong>
+
+                                                </div>
+
+                                            )
+
+                                        }
+
+
+                                        {
+
+                                            product.gpuModel && (
+
+                                                <div
+                                                    className={
+                                                        styles.spec
+                                                    }
+                                                >
+
+                                                    <span>
+                                                        GPU
+                                                    </span>
+
+                                                    <strong>
+                                                        {
+                                                            product.gpuModel
+                                                        }
+                                                    </strong>
+
+                                                </div>
+
+                                            )
+
+                                        }
+
+
+                                        {
+
+                                            product.memoryGb && (
+
+                                                <div
+                                                    className={
+                                                        styles.spec
+                                                    }
+                                                >
+
+                                                    <span>
+                                                        MEMORY
+                                                    </span>
+
+                                                    <strong>
+                                                        {
+                                                            product.memoryGb
+                                                        }
+                                                        GB
+                                                    </strong>
+
+                                                </div>
+
+                                            )
+
+                                        }
+
+
+                                        {
+
+                                            product.storageGb && (
+
+                                                <div
+                                                    className={
+                                                        styles.spec
+                                                    }
+                                                >
+
+                                                    <span>
+                                                        STORAGE
+                                                    </span>
+
+                                                    <strong>
+                                                        {
+                                                            product.storageGb
+                                                        }
+                                                        GB
+                                                    </strong>
+
+                                                </div>
+
+                                            )
+
+                                        }
+
+
+                                        {
+
+                                            product.displayInfo && (
+
+                                                <div
+                                                    className={
+                                                        styles.spec
+                                                    }
+                                                >
+
+                                                    <span>
+                                                        DISPLAY
+                                                    </span>
+
+                                                    <strong>
+                                                        {
+                                                            product.displayInfo
+                                                        }
+                                                    </strong>
+
+                                                </div>
+
+                                            )
+
+                                        }
+
+
+                                        {/* =============================================
+                                        AI PC
+                                        ============================================= */}
+
+                                        {
+
+                                            product.isAiPc && (
+
+                                                <div
+                                                    className={
+                                                        styles.spec
+                                                    }
+                                                >
+
+                                                    <span>
+                                                        AI PC
+                                                    </span>
+
+                                                    <strong>
+                                                        AI PC
+                                                    </strong>
+
+                                                </div>
+
+                                            )
+
+                                        }
+
+                                    </div>
+
+
+                                    {/* =============================================
+                                    Price / Score
+                                    ============================================= */}
+
+                                    <div
+                                        className={
+                                            styles.cardBottom
+                                        }
+                                    >
+
+                                        <div>
+
+                                            <span
+                                                className={
+                                                    styles.priceLabel
+                                                }
+                                            >
+                                                PRICE
+                                            </span>
+
+                                            <p
+                                                className={
+                                                    styles.price
+                                                }
+                                            >
+                                                ¥
+                                                {
+                                                    product.price.toLocaleString(
+                                                        'ja-JP',
+                                                    )
+                                                }
+                                            </p>
+
+                                        </div>
+
+
+                                        {
+
+                                            product.score > 0 && (
+
+                                                <div
+                                                    className={
+                                                        styles.score
+                                                    }
+                                                >
+
+                                                    <span>
+                                                        SCORE
+                                                    </span>
+
+                                                    <strong>
+                                                        {
+                                                            product.score
+                                                        }
+                                                    </strong>
+
+                                                </div>
+
+                                            )
+
+                                        }
+
+                                    </div>
+
+
+                                    {/* =============================================
+                                    Detail Link Hint
+                                    ============================================= */}
+
+                                    <div
+                                        className={
+                                            styles.detailHint
+                                        }
+                                    >
+
+                                        <span>
+                                            商品詳細を見る
+                                        </span>
+
+                                        <span
+                                            aria-hidden="true"
+                                        >
+                                            →
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+                            </Link>
 
                         )
 

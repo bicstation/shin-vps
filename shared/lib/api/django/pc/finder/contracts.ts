@@ -1,78 +1,153 @@
+// ============================================================================
+// FILE:
+// /shared/lib/api/django/pc/finder/contracts.ts
+// Copyright (c) 2026 Shin Corporation.
+// All rights reserved.
+// ============================================================================
+
+/**
+ * ============================================================================
+ * SHIN CORE LINX
+ * Finder Runtime Contracts
+ * ============================================================================
+ *
+ * IMPORTANT
+ *
+ * Backend remains:
+ *
+ * semantic authority
+ *
+ * intent authority
+ *
+ * This contract represents:
+ *
+ * Runtime Reality
+ *
+ * NOT:
+ *
+ * UI Projection
+ *
+ * ============================================================================
+ */
+
+/* ============================================================================
+🔥 Finder Runtime Contract
+============================================================================ */
+
 export interface FinderRuntimeContract {
 
     // =========================
     // STATUS
     // =========================
+
     success?: boolean
 
     // =========================
     // MEANING LAYER
     // =========================
+
     meaning?: {
+
         identity?: string
+
         mission?: string
+
         user_intent?: string
+
         meaning_statement?: string
+
         existence_reason?: string
+
     }
 
     // =========================
     // PRESENTATION LAYER
     // =========================
+
     presentation?: {
+
         title?: string
+
         subtitle?: string
+
         description?: string
+
     }
 
     // =========================
     // SEO LAYER
     // =========================
+
     seo?: {
+
         title?: string
+
         description?: string
+
         keywords?: string[]
+
         canonical?: string
+
         schema_jsonld?: any
+
     }
 
     // =========================
     // QUERY LAYER（重要：ここが拡張ポイント）
     // =========================
+
     data: {
 
         query: {
+
             selected_groups: string[]
+
             selected_attributes: string[]
+
             filters: string[]
+
             max_price?: number | null
 
             // 🔥 将来拡張領域（破壊しない設計）
+
             [key: string]: any
+
         }
 
         summary: {
+
             group_count: number
+
             attribute_count: number
+
             filter_count: number
+
             result_count: number
+
             has_result: boolean
+
         }
 
         products: FinderProductContract[]
+
     }
 
     // =========================
     // AUTHORITY
     // =========================
+
     semantic_schema_version?: number
+
     authority_version?: string
+
     semantic_authority?: string
+
     ready?: boolean
 
     // =========================
     // RAW BACKUP（絶対保持）
     // =========================
+
     raw?: any
 }
 
@@ -95,6 +170,26 @@ export interface FinderProductContract {
     price: number
 
     image_url: string
+
+    /* ------------------------------------------------------------------------
+    🔥 Product Reality Specification
+    ------------------------------------------------------------------------ */
+
+    cpu_model?: string | null
+
+    gpu_model?: string | null
+
+    memory_gb?: number | null
+
+    storage_gb?: number | null
+
+    display_info?: string | null
+
+    is_ai_pc?: boolean | null
+
+    /* ------------------------------------------------------------------------
+    Semantic Runtime
+    ------------------------------------------------------------------------ */
 
     semantic_attributes: string[]
 

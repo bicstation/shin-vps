@@ -10,6 +10,12 @@ import {
 } from 'react'
 
 /* ============================================================================
+🔥 Styles
+============================================================================ */
+
+import styles from './ConciergeInput.module.css'
+
+/* ============================================================================
 🔥 Props
 ============================================================================ */
 
@@ -77,61 +83,115 @@ export default function ConciergeInput({
     return (
 
         <form
+            className={
+                styles.form
+            }
+
             onSubmit={
                 handleSubmit
             }
         >
 
-            <textarea
-
-                value={
-                    message
+            <div
+                className={
+                    styles.inputWrap
                 }
-
-                onChange={
-                    event =>
-                        setMessage(
-                            event.target.value,
-                        )
-                }
-
-                placeholder={
-                    'どんなPCをお探しですか？'
-                }
-
-                disabled={
-                    loading
-                }
-
-                rows={
-                    4
-                }
-
-                aria-label={
-                    'PCについて相談する'
-                }
-
-            />
-
-            <button
-
-                type="submit"
-
-                disabled={
-                    loading
-                    ||
-                    !message.trim()
-                }
-
             >
 
-                {
-                    loading
-                        ? '検索中…'
-                        : '探す'
-                }
+                <textarea
 
-            </button>
+                    className={
+                        styles.textarea
+                    }
+
+                    value={
+                        message
+                    }
+
+                    onChange={
+                        event =>
+                            setMessage(
+                                event.target.value,
+                            )
+                    }
+
+                    placeholder={
+                        'どんなPCをお探しですか？'
+                    }
+
+                    disabled={
+                        loading
+                    }
+
+                    rows={
+                        4
+                    }
+
+                    aria-label={
+                        'PCについて相談する'
+                    }
+
+                />
+
+                <div
+                    className={
+                        styles.inputFooter
+                    }
+                >
+
+                    <span
+                        className={
+                            styles.hint
+                        }
+                    >
+                        日本語で自由に相談できます
+                    </span>
+
+                    <button
+
+                        type="submit"
+
+                        className={
+                            styles.button
+                        }
+
+                        disabled={
+                            loading
+                            ||
+                            !message.trim()
+                        }
+
+                    >
+
+                        <span>
+                            {
+                                loading
+                                    ? '検索中…'
+                                    : '探す'
+                            }
+                        </span>
+
+                        {
+
+                            !loading && (
+
+                                <span
+                                    className={
+                                        styles.arrow
+                                    }
+                                >
+                                    →
+                                </span>
+
+                            )
+
+                        }
+
+                    </button>
+
+                </div>
+
+            </div>
 
         </form>
 

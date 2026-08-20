@@ -31,6 +31,13 @@ import ConciergeResults
     from './ConciergeResults'
 
 /* ============================================================================
+🔥 Styles
+============================================================================ */
+
+import styles
+    from './ConciergeChat.module.css'
+
+/* ============================================================================
 🔥 Concierge Chat
 ============================================================================ */
 
@@ -55,6 +62,10 @@ export default function ConciergeChat() {
         null,
     )
 
+    /* ========================================================================
+    Submit
+    ======================================================================== */
+
     const handleSubmit = async (
         message: string,
     ) => {
@@ -73,6 +84,11 @@ export default function ConciergeChat() {
                 await executeConcierge(
                     message,
                 )
+
+            console.log(
+                '🔥 CONCIERGE RESULT',
+                result,
+            )
 
             setRuntime(
                 result,
@@ -107,21 +123,55 @@ export default function ConciergeChat() {
 
     }
 
+    /* ========================================================================
+    Render
+    ======================================================================== */
+
     return (
 
-        <main>
+        <main
+            className={
+                styles.main
+            }
+        >
 
-            <section>
+            {/* ==================================================================
+            Hero
+            ================================================================== */}
+
+            <section
+                className={
+                    styles.hero
+                }
+            >
+
+                <span
+                    className={
+                        styles.eyebrow
+                    }
+                >
+                    BIC STATION
+                    <span>
+                        AI CONCIERGE
+                    </span>
+                </span>
 
                 <h1>
-                    BIC STATION AI Concierge
+                    あなたに合うPCを、
+                    <br />
+                    一緒に探します。
                 </h1>
 
                 <p>
-                    欲しいPCについて、日本語で相談してください。
+                    欲しいPCについて、日本語で自由に相談してください。
                 </p>
 
             </section>
+
+
+            {/* ==================================================================
+            Input
+            ================================================================== */}
 
             <ConciergeInput
 
@@ -135,21 +185,47 @@ export default function ConciergeChat() {
 
             />
 
+
+            {/* ==================================================================
+            Error
+            ================================================================== */}
+
             {
 
                 error && (
 
-                    <p
+                    <div
+                        className={
+                            styles.error
+                        }
+
                         role="alert"
                     >
-                        {error}
-                    </p>
+
+                        <span>
+                            !
+                        </span>
+
+                        <p>
+                            {error}
+                        </p>
+
+                    </div>
 
                 )
 
             }
 
+
+            {/* ==================================================================
+            Results
+            ================================================================== */}
+
             <ConciergeResults
+
+                intent={
+                    runtime?.intent ?? null
+                }
 
                 finder={
                     runtime?.finder ?? null
