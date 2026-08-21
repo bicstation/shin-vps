@@ -1,46 +1,16 @@
-// ============================================================================
-// FILE:
-// /app/concierge/lib/conciergeActions.tsx
-// Copyright (c) 2026 Shin Corporation.
-// ============================================================================
-
 'use client'
 
 /* ============================================================================
-🔥 Intent Adapter
+🔥 Consultation Runtime
 ============================================================================ */
 
 import {
-    resolveIntent,
-} from '@/shared/lib/api/django/pc/intent'
+    getConsultationRuntime,
+} from '@/shared/lib/api/django/pc/consultation'
 
 import type {
-    IntentRuntime,
-} from '@/shared/lib/api/django/pc/intent'
-
-/* ============================================================================
-🔥 Finder Runtime
-============================================================================ */
-
-import {
-    getFinderRuntime,
-} from '@/shared/lib/api/django/pc/finder'
-
-/* ============================================================================
-🔥 Finder Request
-============================================================================ */
-
-import type {
-    FinderRequest,
-} from '@/shared/lib/api/django/pc/finder/contracts'
-
-/* ============================================================================
-🔥 Finder Projection
-============================================================================ */
-
-import type {
-    ProjectedFinderRuntime,
-} from '@/shared/lib/api/django/pc/finder/projection'
+    ProjectedConsultationRuntime,
+} from '@/shared/lib/api/django/pc/consultation/projection'
 
 /* ============================================================================
 🔥 Concierge Runtime Contract
@@ -48,15 +18,15 @@ import type {
 
 export interface ConciergeRuntimeContract {
 
-    intent:
-        IntentRuntime
+    message:
+    string
 
-    finder:
-        ProjectedFinderRuntime
-        | null
+    consultation:
+    ProjectedConsultationRuntime
 
     ready:
-        boolean
+    boolean
+
 }
 
 /* ============================================================================
@@ -75,80 +45,35 @@ export async function executeConcierge(
         throw new Error(
             'Concierge message is empty.',
         )
-    }
-
-    /* ========================================================================
-    STEP 1
-    Japanese Text
-        ↓
-    Intent Adapter
-        ↓
-    Backend Intent Runtime
-    ======================================================================== */
-
-    const intent =
-        await resolveIntent(
-            normalizedMessage,
-        )
-
-    /* ========================================================================
-    STEP 2
-    Unknown Intent
-    ======================================================================== */
-
-    if (!intent.intent) {
-
-        return {
-
-            intent,
-
-            finder:
-                null,
-
-            ready:
-                true,
-
-        }
-    }
-
-    /* ========================================================================
-    STEP 3
-    Backend Resolved Intent
-        ↓
-    Finder Request
-    ======================================================================== */
-
-    const request:
-        FinderRequest = {
-
-        groups:
-            intent.matched_groups,
 
     }
 
     /* ========================================================================
-    STEP 4
-    Existing Finder Runtime
+    Consultation Request
     ======================================================================== */
 
-    const finder =
-        await getFinderRuntime(
-            request,
-        )
+    const consultation =
+        await getConsultationRuntime({
+
+            message:
+                normalizedMessage,
+
+        })
 
     /* ========================================================================
-    STEP 5
     Concierge Runtime
     ======================================================================== */
 
     return {
 
-        intent,
+        message:
+            normalizedMessage,
 
-        finder,
+        consultation,
 
         ready:
-            true,
+            consultation.ready,
 
     }
+
 }

@@ -237,6 +237,8 @@ class GeminiClient:
                     .get("error", {})
                     .get("message", "")
                 )
+                
+                print("🔥 GEMINI 429 BODY:", body)
 
                 m = re.search(
                     r"Please retry in ([0-9.]+)(ms|s)",

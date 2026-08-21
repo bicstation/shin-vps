@@ -7,20 +7,12 @@
 import Link from 'next/link'
 
 /* ============================================================================
-🔥 Intent Runtime
+🔥 Consultation Projection
 ============================================================================ */
 
 import type {
-    IntentRuntime,
-} from '@/shared/lib/api/django/pc/intent'
-
-/* ============================================================================
-🔥 Finder Projection
-============================================================================ */
-
-import type {
-    ProjectedFinderRuntime,
-} from '@/shared/lib/api/django/pc/finder/projection'
+    ProjectedConsultationRuntime,
+} from '@/shared/lib/api/django/pc/consultation/projection'
 
 /* ============================================================================
 🔥 Styles
@@ -34,11 +26,9 @@ import styles from './ConciergeResults.module.css'
 
 interface ConciergeResultsProps {
 
-    intent:
-    IntentRuntime | null
+    consultation:
+    ProjectedConsultationRuntime | null
 
-    finder:
-    ProjectedFinderRuntime | null
 }
 
 /* ============================================================================
@@ -47,9 +37,7 @@ interface ConciergeResultsProps {
 
 export default function ConciergeResults({
 
-    intent,
-
-    finder,
+    consultation,
 
 }: ConciergeResultsProps) {
 
@@ -57,111 +45,38 @@ export default function ConciergeResults({
     Initial
     ======================================================================== */
 
-    if (!intent) {
+    if (!consultation) {
 
         return null
 
     }
 
     /* ========================================================================
-    Unknown Intent
+    Presentation
     ======================================================================== */
 
-    if (!intent.intent) {
-
-        return (
-
-            <section
-                className={
-                    styles.unknown
-                }
-            >
-
-                <div
-                    className={
-                        styles.statusIcon
-                    }
-                >
-                    ?
-                </div>
-
-                <div>
-
-                    <span
-                        className={
-                            styles.eyebrow
-                        }
-                    >
-                        AI CONCIERGE
-                    </span>
-
-                    <h2>
-                        もう少し詳しく教えてください
-                    </h2>
-
-                    <p>
-                        どんな用途でPCをお探しですか？
-                    </p>
-
-                </div>
-
-            </section>
-
-        )
-
-    }
+    const presentation =
+        consultation.presentation
 
     /* ========================================================================
-    Finder Not Ready
+    Summary
     ======================================================================== */
 
-    if (!finder) {
+    const summary =
+        consultation.summary
 
-        return (
+    /* ========================================================================
+    Products
+    ======================================================================== */
 
-            <section
-                className={
-                    styles.loading
-                }
-            >
-
-                <div
-                    className={
-                        styles.loadingIndicator
-                    }
-                />
-
-                <div>
-
-                    <span
-                        className={
-                            styles.eyebrow
-                        }
-                    >
-                        AI CONCIERGE
-                    </span>
-
-                    <h2>
-                        PCを探しています
-                    </h2>
-
-                    <p>
-                        条件に合うPCを確認しています…
-                    </p>
-
-                </div>
-
-            </section>
-
-        )
-
-    }
+    const products =
+        consultation.products
 
     /* ========================================================================
     No Results
     ======================================================================== */
 
-    if (!finder.products.length) {
+    if (!summary.hasResult || !products.length) {
 
         return (
 
@@ -186,7 +101,7 @@ export default function ConciergeResults({
                             styles.eyebrow
                         }
                     >
-                        SEARCH RESULT
+                        AI CONCIERGE
                     </span>
 
                     <h2>
@@ -229,7 +144,7 @@ export default function ConciergeResults({
 
                 <div
                     className={
-                        styles.headerMain
+                        styles.headerCopy
                     }
                 >
 
@@ -242,12 +157,34 @@ export default function ConciergeResults({
                     </span>
 
                     <h2>
-                        「{intent.intent}」のPCをお探しですね。
+                        {
+                            presentation?.title
+                            ??
+                            'おすすめのPC'
+                        }
                     </h2>
 
                     {
 
-                        finder.header.description && (
+                        presentation?.subtitle && (
+
+                            <p
+                                className={
+                                    styles.subtitle
+                                }
+                            >
+                                {
+                                    presentation.subtitle
+                                }
+                            </p>
+
+                        )
+
+                    }
+
+                    {
+
+                        presentation?.description && (
 
                             <p
                                 className={
@@ -255,7 +192,7 @@ export default function ConciergeResults({
                                 }
                             >
                                 {
-                                    finder.header.description
+                                    presentation.description
                                 }
                             </p>
 
@@ -273,7 +210,7 @@ export default function ConciergeResults({
 
                     <strong>
                         {
-                            finder.stats.result_count
+                            summary.resultCount
                         }
                     </strong>
 
@@ -309,19 +246,19 @@ export default function ConciergeResults({
 
                 {
 
-                    finder.products.map(
+                    products.map(
 
                         product => (
 
                             <Link
 
                                 key={
-                                    product.unique_id
+                                    product.uniqueId
                                 }
 
                                 href={
                                     `/product/${encodeURIComponent(
-                                        product.unique_id,
+                                        product.uniqueId,
                                     )}/`
                                 }
 
@@ -343,12 +280,12 @@ export default function ConciergeResults({
 
                                     {
 
-                                        product.image ? (
+                                        product.imageUrl ? (
 
                                             <img
 
                                                 src={
-                                                    product.image
+                                                    product.imageUrl
                                                 }
 
                                                 alt={
@@ -475,7 +412,10 @@ export default function ConciergeResults({
 
                                         {
 
-                                            product.memoryGb && (
+                                            product.memoryGb != null
+                                            &&
+                                            product.memoryGb > 0
+                                            && (
 
                                                 <div
                                                     className={
@@ -503,7 +443,10 @@ export default function ConciergeResults({
 
                                         {
 
-                                            product.storageGb && (
+                                            product.storageGb != null
+                                            &&
+                                            product.storageGb > 0
+                                            && (
 
                                                 <div
                                                     className={
@@ -555,10 +498,6 @@ export default function ConciergeResults({
 
                                         }
 
-
-                                        {/* =============================================
-                                        AI PC
-                                        ============================================= */}
 
                                         {
 
@@ -621,7 +560,6 @@ export default function ConciergeResults({
                                             </p>
 
                                         </div>
-
 
                                         {
 

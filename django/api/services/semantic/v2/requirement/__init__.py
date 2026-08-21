@@ -1,0 +1,1 @@
+# /home/maya/shin-vps/django/api/services/semantic/v2/requirement

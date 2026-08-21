@@ -34,8 +34,23 @@ import ConciergeResults
 🔥 Styles
 ============================================================================ */
 
-import styles
-    from './ConciergeChat.module.css'
+import styles from './ConciergeChat.module.css'
+
+/* ============================================================================
+🔥 Conversation Message
+============================================================================ */
+
+interface ConciergeMessage {
+
+    id: string
+
+    role:
+    | 'user'
+    | 'assistant'
+
+    content: string
+
+}
 
 /* ============================================================================
 🔥 Concierge Chat
@@ -48,6 +63,13 @@ export default function ConciergeChat() {
         setRuntime,
     ] = useState<ConciergeRuntimeContract | null>(
         null,
+    )
+
+    const [
+        messages,
+        setMessages,
+    ] = useState<ConciergeMessage[]>(
+        [],
     )
 
     const [
@@ -70,6 +92,42 @@ export default function ConciergeChat() {
         message: string,
     ) => {
 
+        const normalizedMessage =
+            message.trim()
+
+        if (!normalizedMessage) {
+
+            return
+
+        }
+
+        /* ====================================================================
+        User Message
+        ==================================================================== */
+
+        const userMessage: ConciergeMessage = {
+
+            id:
+                `${Date.now()}-user`,
+
+            role:
+                'user',
+
+            content:
+                normalizedMessage,
+
+        }
+
+        setMessages(
+            current => [
+
+                ...current,
+
+                userMessage,
+
+            ],
+        )
+
         setLoading(
             true,
         )
@@ -80,9 +138,13 @@ export default function ConciergeChat() {
 
         try {
 
+            /* ==================================================================
+            Consultation Runtime
+            ================================================================== */
+
             const result =
                 await executeConcierge(
-                    message,
+                    normalizedMessage,
                 )
 
             console.log(
@@ -92,6 +154,46 @@ export default function ConciergeChat() {
 
             setRuntime(
                 result,
+            )
+
+            /* ==================================================================
+            Backend Presentation
+            ================================================================== */
+
+            const presentation =
+                result.consultation?.presentation
+
+            const assistantContent =
+                buildAssistantMessage(
+                    presentation,
+                    result.consultation?.summary.resultCount ?? 0,
+                )
+
+            /* ==================================================================
+            Assistant Message
+            ================================================================== */
+
+            const assistantMessage: ConciergeMessage = {
+
+                id:
+                    `${Date.now()}-assistant`,
+
+                role:
+                    'assistant',
+
+                content:
+                    assistantContent,
+
+            }
+
+            setMessages(
+                current => [
+
+                    ...current,
+
+                    assistantMessage,
+
+                ],
             )
 
         }
@@ -109,6 +211,33 @@ export default function ConciergeChat() {
 
             setError(
                 '検索中にエラーが発生しました。もう一度お試しください。',
+            )
+
+            /* ==================================================================
+            Error Message
+            ================================================================== */
+
+            const errorMessage: ConciergeMessage = {
+
+                id:
+                    `${Date.now()}-error`,
+
+                role:
+                    'assistant',
+
+                content:
+                    '検索中にエラーが発生しました。もう一度お試しください。',
+
+            }
+
+            setMessages(
+                current => [
+
+                    ...current,
+
+                    errorMessage,
+
+                ],
             )
 
         }
@@ -151,9 +280,11 @@ export default function ConciergeChat() {
                     }
                 >
                     BIC STATION
+
                     <span>
                         AI CONCIERGE
                     </span>
+
                 </span>
 
                 <h1>
@@ -167,6 +298,79 @@ export default function ConciergeChat() {
                 </p>
 
             </section>
+
+
+            {/* ==================================================================
+            Conversation
+            ================================================================== */}
+
+            {
+
+                messages.length > 0 && (
+
+                    <section
+                        className={
+                            styles.conversation
+                        }
+
+                        aria-label="AI Concierge conversation"
+                    >
+
+                        {
+
+                            messages.map(
+                                message => (
+
+                                    <div
+
+                                        key={
+                                            message.id
+                                        }
+
+                                        className={
+                                            message.role === 'user'
+                                                ? styles.userMessage
+                                                : styles.assistantMessage
+                                        }
+
+                                    >
+
+                                        <span
+                                            className={
+                                                styles.messageLabel
+                                            }
+                                        >
+
+                                            {
+                                                message.role === 'user'
+                                                    ? 'YOU'
+                                                    : 'AI CONCIERGE'
+                                            }
+
+                                        </span>
+
+                                        <p
+                                            className={
+                                                styles.messageContent
+                                            }
+                                        >
+                                            {
+                                                message.content
+                                            }
+                                        </p>
+
+                                    </div>
+
+                                ),
+                            )
+
+                        }
+
+                    </section>
+
+                )
+
+            }
 
 
             {/* ==================================================================
@@ -207,7 +411,9 @@ export default function ConciergeChat() {
                         </span>
 
                         <p>
-                            {error}
+                            {
+                                error
+                            }
                         </p>
 
                     </div>
@@ -218,23 +424,90 @@ export default function ConciergeChat() {
 
 
             {/* ==================================================================
-            Results
+            Latest Consultation Results
             ================================================================== */}
 
             <ConciergeResults
 
-                intent={
-                    runtime?.intent ?? null
-                }
-
-                finder={
-                    runtime?.finder ?? null
+                consultation={
+                    runtime?.consultation ?? null
                 }
 
             />
 
         </main>
 
+    )
+
+}
+
+/* ============================================================================
+🔥 Assistant Message Builder
+============================================================================ */
+
+function buildAssistantMessage(
+
+    presentation:
+        ConciergeRuntimeContract['consultation']['presentation']
+        | undefined,
+
+    resultCount:
+        number,
+
+): string {
+
+    const title =
+        presentation?.title
+
+    const subtitle =
+        presentation?.subtitle
+
+    const description =
+        presentation?.description
+
+    const lines: string[] = []
+
+    if (title) {
+
+        lines.push(
+            `${title}を探してみます。`,
+        )
+
+    }
+    else {
+
+        lines.push(
+            'ご希望に合うPCを探してみます。',
+        )
+
+    }
+
+    if (subtitle) {
+
+        lines.push(
+            subtitle,
+        )
+
+    }
+
+    if (description) {
+
+        lines.push(
+            description,
+        )
+
+    }
+
+    if (resultCount > 0) {
+
+        lines.push(
+            `${resultCount}台見つかりました。`,
+        )
+
+    }
+
+    return lines.join(
+        '\n',
     )
 
 }
