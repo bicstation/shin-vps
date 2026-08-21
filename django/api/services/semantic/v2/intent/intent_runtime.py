@@ -29,12 +29,19 @@ def build_intent_runtime(
     return {
 
         "message":
+
             message,
 
         "intent":
 
             result.get(
                 "intent"
+            ),
+
+        "intent_metadata":
+
+            result.get(
+                "intent_metadata"
             ),
 
         "confidence":

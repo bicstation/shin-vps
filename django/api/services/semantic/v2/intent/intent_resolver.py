@@ -3,6 +3,7 @@
 
 from api.services.semantic.v2.intent.intent_sources import (
     get_intent_aliases,
+    get_intent_slug_metadata,
 )
 
 from api.services.semantic.v2.intent.unknown_logger import (
@@ -26,6 +27,27 @@ def normalize_message(
 
 
 # ==========================================================
+# INTENT METADATA LOOKUP
+# ==========================================================
+
+def find_intent_metadata(
+    slug,
+    metadata_rows,
+):
+
+    for row in metadata_rows:
+
+        if (
+            row.get("slug")
+            == slug
+        ):
+
+            return row
+
+    return None
+
+
+# ==========================================================
 # RESOLVE
 # ==========================================================
 
@@ -43,6 +65,10 @@ def resolve_intent(
 
     aliases = (
         get_intent_aliases()
+    )
+
+    slug_metadata = (
+        get_intent_slug_metadata()
     )
 
     matched_groups = []
@@ -87,10 +113,24 @@ def resolve_intent(
 
     if matched_groups:
 
+        intent = (
+            matched_groups[0]
+        )
+
+        intent_metadata = (
+            find_intent_metadata(
+                slug=intent,
+                metadata_rows=slug_metadata,
+            )
+        )
+
         return {
 
             "intent":
-                matched_groups[0],
+                intent,
+
+            "intent_metadata":
+                intent_metadata,
 
             "confidence":
                 1.0,
@@ -117,6 +157,9 @@ def resolve_intent(
     return {
 
         "intent":
+            None,
+
+        "intent_metadata":
             None,
 
         "confidence":

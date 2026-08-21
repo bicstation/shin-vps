@@ -2,11 +2,11 @@
 # api/services/semantic/v2/intent/intent_sources.py
 
 """
-Intent Alias Source
+Intent Source
 
 Responsibility:
-- intent_aliases.tsv をIntent Runtimeへ提供する
-- Semantic Authorityとは独立したIntent Dictionary Source
+- intent_aliases.tsv を Intent Runtime へ提供する
+- semantic_slug_metadata.tsv を Intent Runtime へ提供する
 
 No semantic interpretation.
 No matching logic.
@@ -30,5 +30,21 @@ def get_intent_aliases():
 
     return registry.get(
         "intent_aliases",
+        []
+    )
+
+
+# ==========================================================
+# INTENT SLUG METADATA
+# ==========================================================
+
+def get_intent_slug_metadata():
+
+    registry = (
+        load_all_tsvs()
+    )
+
+    return registry.get(
+        "semantic_slug_metadata",
         []
     )

@@ -72,6 +72,9 @@ export function normalizeIntentRuntime(
       intent:
         source?.intent,
 
+      intent_metadata:
+        source?.intent_metadata,
+
       confidence:
         source?.confidence,
 
@@ -94,6 +97,14 @@ export function normalizeIntentRuntime(
     intent:
 
       source?.intent
+
+      ??
+
+      null,
+
+    intent_metadata:
+
+      source?.intent_metadata
 
       ??
 

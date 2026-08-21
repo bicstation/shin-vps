@@ -113,6 +113,8 @@ export async function resolveIntent(
 
       intent: null,
 
+      intent_metadata: null,
+
       confidence: 0,
 
       matched_groups: [],
@@ -172,6 +174,9 @@ export async function resolveIntent(
 
       intent:
         runtime.intent,
+
+      intent_metadata:
+        runtime.intent_metadata,
 
       confidence:
         runtime.confidence,
