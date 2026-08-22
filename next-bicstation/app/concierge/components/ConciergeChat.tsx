@@ -81,21 +81,6 @@ export default function ConciergeChat() {
 
     /* ========================================================================
     Conversation State
-    ========================================================================
-
-    Backend Requirement Authority
-
-    Concierge stores the latest Backend Requirement
-    and passes it to the next Consultation request.
-
-    Concierge does NOT:
-
-    ✗ modify groups
-    ✗ merge groups
-    ✗ remove groups
-    ✗ interpret Semantic Meaning
-    ✗ generate Semantic Groups
-
     ======================================================================== */
 
     const [
@@ -193,24 +178,6 @@ export default function ConciergeChat() {
 
             /* ==================================================================
             Consultation Runtime
-            ==================================================================
-
-            First message:
-
-                message
-                    ↓
-                Backend
-
-            Subsequent message:
-
-                previousRequirement
-                    +
-                message
-                    ↓
-                Backend
-
-            Concierge does not interpret
-            or modify previousRequirement.
             ================================================================== */
 
             const result =
@@ -236,14 +203,7 @@ export default function ConciergeChat() {
             )
 
             /* ==================================================================
-            Update Conversation State
-            ==================================================================
-
-            Backend remains the Requirement Authority.
-
-            The latest Requirement completely replaces
-            the previous Conversation State.
-
+            Conversation Requirement
             ================================================================== */
 
             setPreviousRequirement(
@@ -253,18 +213,6 @@ export default function ConciergeChat() {
 
             /* ==================================================================
             Backend Concierge Response
-            ==================================================================
-
-            Backend Consultation Runtime
-                ↓
-            Adapter Projection
-                ↓
-            ProjectedConsultationRuntime.response
-                ↓
-            Concierge Conversation
-
-            Frontend does NOT generate
-            or reinterpret the response.
             ================================================================== */
 
             const assistantContent =
@@ -433,37 +381,77 @@ export default function ConciergeChat() {
 
                                         className={
                                             message.role === 'user'
-                                                ? styles.userMessage
-                                                : styles.assistantMessage
+                                                ? styles.userRow
+                                                : styles.assistantRow
                                         }
 
                                     >
 
-                                        <span
-                                            className={
-                                                styles.messageLabel
-                                            }
-                                        >
+                                        {/* ==================================================
+                                        Avatar
+                                        ================================================== */}
 
-                                            {
+                                        <img
+
+                                            src={
                                                 message.role === 'user'
-                                                    ? 'YOU'
-                                                    : 'AI CONCIERGE'
+                                                    ? '/images/concierge/you-conciarge.png'
+                                                    : '/images/concierge/ai-conciarge.png'
                                             }
 
-                                        </span>
+                                            alt={
+                                                message.role === 'user'
+                                                    ? 'You'
+                                                    : 'AI Concierge'
+                                            }
 
-                                        <p
                                             className={
-                                                styles.messageContent
+                                                styles.avatar
                                             }
+
+                                        />
+
+                                        {/* ==================================================
+                                        Message
+                                        ================================================== */}
+
+                                        <div
+
+                                            className={
+                                                message.role === 'user'
+                                                    ? styles.userMessage
+                                                    : styles.assistantMessage
+                                            }
+
                                         >
 
-                                            {
-                                                message.content
-                                            }
+                                            <span
+                                                className={
+                                                    styles.messageLabel
+                                                }
+                                            >
 
-                                        </p>
+                                                {
+                                                    message.role === 'user'
+                                                        ? 'YOU'
+                                                        : 'AI CONCIERGE'
+                                                }
+
+                                            </span>
+
+                                            <p
+                                                className={
+                                                    styles.messageContent
+                                                }
+                                            >
+
+                                                {
+                                                    message.content
+                                                }
+
+                                            </p>
+
+                                        </div>
 
                                     </div>
 
@@ -480,21 +468,224 @@ export default function ConciergeChat() {
 
 
             {/* ==================================================================
-            Latest Consultation Results
+            AI Concierge Guide
             ================================================================== */}
 
-            <ConciergeResults
+            {
 
-                consultation={
-                    runtime?.consultation ?? null
-                }
+                messages.length === 0 && (
 
-            />
+                    <section
+                        className={
+                            styles.conciergeGuide
+                        }
+
+                        aria-label="AI Concierge guide"
+                    >
+
+                        <img
+                            src="/images/concierge/ai-conciarge.png"
+                            alt="AI Concierge"
+                            className={
+                                styles.guideImage
+                            }
+                        />
+
+                        <p
+                            className={
+                                styles.guideMessage
+                            }
+                        >
+                            こんなPCを探しています、と気軽に話しかけてください。
+                        </p>
+
+                        <div
+                            className={
+                                styles.sampleMessages
+                            }
+                        >
+
+                            <button
+                                type="button"
+                                disabled={
+                                    loading
+                                }
+                                onClick={() =>
+                                    handleSubmit(
+                                        '動画編集用のPCを探しています。'
+                                    )
+                                }
+                            >
+                                動画編集用のPCを探しています
+                            </button>
+
+                            <button
+                                type="button"
+                                disabled={
+                                    loading
+                                }
+                                onClick={() =>
+                                    handleSubmit(
+                                        '仕事で使うPCを探しています。'
+                                    )
+                                }
+                            >
+                                仕事で使うPCを探しています
+                            </button>
+
+                            <button
+                                type="button"
+                                disabled={
+                                    loading
+                                }
+                                onClick={() =>
+                                    handleSubmit(
+                                        'ゲーム用のPCを探しています。'
+                                    )
+                                }
+                            >
+                                ゲーム用のPCを探しています
+                            </button>
+
+                        </div>
+
+                    </section>
+
+                )
+
+            }
 
 
-            {/* ==================================================================
+            {/* ==========================================================================
+            🔥 Concierge Loading
+            ========================================================================== */}
+
+            {
+
+                loading && (
+
+                    <div
+                        className={
+                            styles.loadingState
+                        }
+
+                        role="status"
+                        aria-live="polite"
+                    >
+
+                        <img
+                            src="/images/concierge/ai-conciarge.png"
+                            alt=""
+                            className={
+                                styles.loadingAvatar
+                            }
+                        />
+
+                        <div
+                            className={
+                                styles.loadingContent
+                            }
+                        >
+
+                            <span
+                                className={
+                                    styles.loadingLabel
+                                }
+                            >
+                                AI CONCIERGE
+                            </span>
+
+                            <div
+                                className={
+                                    styles.loadingMessage
+                                }
+                            >
+
+                                <span>
+                                    条件を整理しています
+                                </span>
+
+                                <span
+                                    className={
+                                        styles.loadingDots
+                                    }
+                                >
+                                    <i />
+                                    <i />
+                                    <i />
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                )
+
+            }
+
+
+            {/* ==========================================================================
+            🔥 Result Count
+            ========================================================================== */}
+
+            {
+
+                !loading &&
+                runtime?.consultation &&
+                runtime.consultation.summary && (
+
+                    <div
+                        className={
+                            styles.resultCount
+                        }
+
+                        aria-live="polite"
+                    >
+
+                        {
+
+                            runtime.consultation.summary.resultCount > 0
+
+                                ? (
+
+                                    <>
+
+                                        <strong>
+                                            {
+                                                runtime.consultation.summary.resultCount
+                                            }
+                                        </strong>
+
+                                        <span>
+                                            件見つかりました
+                                        </span>
+
+                                    </>
+
+                                )
+
+                                : (
+
+                                    <span>
+                                        条件に合うPCが見つかりませんでした
+                                    </span>
+
+                                )
+
+                        }
+
+                    </div>
+
+                )
+
+            }
+
+
+            {/* ==========================================================================
             Input
-            ================================================================== */}
+            ========================================================================== */}
 
             <ConciergeInput
 
@@ -509,9 +700,22 @@ export default function ConciergeChat() {
             />
 
 
-            {/* ==================================================================
+            {/* ==========================================================================
+            Latest Consultation Results
+            ========================================================================== */}
+
+            <ConciergeResults
+
+                consultation={
+                    runtime?.consultation ?? null
+                }
+
+            />
+
+
+            {/* ==========================================================================
             Error
-            ================================================================== */}
+            ========================================================================== */}
 
             {
 

@@ -264,7 +264,7 @@ export default function Header() {
                   },
                   {
                       label: '🔥 セール情報',
-                      href: '/guide/bto',
+                      href: '/sale',
                   },
                   {
                       label: '📊 コスパ比較',
