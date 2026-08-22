@@ -210,3 +210,12 @@ __pycache__/
 !requirements-satellite.txt
 !requirements-satellite-min.txt
 !requirements-satellite-runtime.txt
+# Gmail Acquisition credentials
+django/acquisition/sources/scraping/gmail/credentials.json
+django/acquisition/sources/scraping/gmail/token.json
+
+
+scripts/gmail-summarizer/credentials.json
+scripts/gmail-summarizer/token.json
+scripts/gmail-summarizer/mail_observations/
+django/acquisition/sources/scraping/gmail/lenovo/output/
