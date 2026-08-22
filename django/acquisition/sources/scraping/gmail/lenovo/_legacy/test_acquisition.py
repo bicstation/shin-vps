@@ -9,12 +9,22 @@ from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 
 
+# BASE_DIR = Path(__file__).resolve().parent
+
+# TOKEN_PATH = (
+#     Path("/usr/src/app/acquisition/sources/scraping/gmail")
+#     / "token.json"
+# )
+
 BASE_DIR = Path(__file__).resolve().parent
 
 TOKEN_PATH = (
-    Path("/usr/src/app/acquisition/sources/scraping/gmail")
+    BASE_DIR.parent
     / "token.json"
 )
+
+OUTPUT_DIR = BASE_DIR / "output"
+
 
 OUTPUT_DIR = BASE_DIR / "output"
 
@@ -28,12 +38,8 @@ SCOPES = [
 # =========================================================
 
 TARGET_MARKERS = [
-    "アフィリエイター様限定",
-    "FIFAモデル割引クーポン",
-    "39FIFA2026",
-    "ThinkBook 14 Gen 9 IPL FIFA World Cup 26 Edition",
+    "FIFA",
 ]
-
 
 # =========================================================
 # HTML PARSER

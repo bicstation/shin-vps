@@ -6,7 +6,7 @@ docker exec \
   -v ON_ERROR_STOP=1 \
   -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public; GRANT ALL ON SCHEMA public TO tiper_user; GRANT ALL ON SCHEMA public TO public;"
 
-  cat /home/maya/shin-vps/shin-vps-tiper-latest.sql | \
+cat /home/maya/shin-vps/shin-vps-tiper-latest.sql | \
 docker exec -i \
   shin-local-postgres-db-v3-1 \
   psql \
@@ -20,3 +20,14 @@ docker exec -i \
   -U tiper_user \
   -d shin_core_local \
   -c "SELECT COUNT(*) FROM api_pcproduct;"
+
+
+  /home/maya/shin-vps/shin-vps-tiper-latest.sqls
+
+cat /home/maya/shin-vps/shin-vps-tiper-latest.sql | \
+docker exec -i \
+  shin-local-postgres-db-v3-1 \
+  psql \
+  -U tiper_user \
+  -d shin_core_local \
+  -v ON_ERROR_STOP=1

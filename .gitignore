@@ -219,3 +219,9 @@ scripts/gmail-summarizer/credentials.json
 scripts/gmail-summarizer/token.json
 scripts/gmail-summarizer/mail_observations/
 django/acquisition/sources/scraping/gmail/lenovo/output/
+
+/home/maya/shin-vps/django/acquisition/sources/scraping/gmail/credentials.json
+/home/maya/shin-vps/django/acquisition/sources/scraping/gmail/token.json
+
+/home/maya/shin-vps/scripts/gmail-summarizer/credentials.json
+/home/maya/shin-vps/scripts/gmail-summarizer/token.json

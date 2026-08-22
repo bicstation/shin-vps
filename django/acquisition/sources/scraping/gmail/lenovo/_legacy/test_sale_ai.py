@@ -1,5 +1,3 @@
-# /home/maya/shin-dev/shin-vps/django/acquisition/sources/scraping/gmail/lenovo/test_sale_ai.py
-
 import json
 import sys
 from pathlib import Path
@@ -12,10 +10,7 @@ BASE_DIR = Path(__file__).resolve().parent
 
 OUTPUT_DIR = BASE_DIR / "output"
 
-TARGET_PRODUCT = (
-    "ThinkBook 14 Gen 9 "
-    "IPL FIFA World Cup 26 Edition"
-)
+TARGET_PRODUCT = "ThinkBook 14 Gen 9"
 
 
 # =========================================================
@@ -63,48 +58,26 @@ def resolve_observation_path():
 # =========================================================
 # TARGET PRODUCT TEXT
 # =========================================================
-
 def extract_product_text(text):
+    start = text.find(TARGET_PRODUCT)
 
-    index = text.find(
-        TARGET_PRODUCT
+    if start == -1:
+        raise RuntimeError(
+            f"Target product not found: {TARGET_PRODUCT}"
+        )
+
+    end = text.find(
+        "ご購入はこちら",
+        start,
     )
 
-    if index == -1:
+    if end == -1:
+        end = len(text)
+    else:
+        end += len("ご購入はこちら")
 
-        raise RuntimeError(
-            "Target product not found: "
-            f"{TARGET_PRODUCT}"
-        )
+    return text[start:end].strip()
 
-    next_product_markers = [
-
-        "ThinkBook 16 Gen 9 "
-        "IPL FIFA World Cup 26 Edition",
-
-        "ThinkPad X1 Carbon Gen 14 "
-        "Aura Edition FIFA World Cup 26 Edition",
-    ]
-
-    end = len(text)
-
-    for marker in next_product_markers:
-
-        marker_index = text.find(
-            marker,
-            index + len(TARGET_PRODUCT),
-        )
-
-        if marker_index != -1:
-
-            end = min(
-                end,
-                marker_index,
-            )
-
-    return text[
-        index:end
-    ].strip()
 
 
 # =========================================================
@@ -203,45 +176,6 @@ def extract_product_links(observation):
 
 
 # =========================================================
-# IMAGE EVIDENCE
-# =========================================================
-
-def extract_image_evidence(observation):
-
-    images = []
-
-    for image in observation.get(
-        "images",
-        [],
-    ):
-
-        src = image.get(
-            "src",
-            "",
-        )
-
-        if not src:
-
-            continue
-
-        images.append(
-            {
-                "order": image.get(
-                    "order",
-                    0,
-                ),
-                "src": src,
-                "attributes": image.get(
-                    "attributes",
-                    {},
-                ),
-            }
-        )
-
-    return images
-
-
-# =========================================================
 # BUILD REALITY EVIDENCE
 # =========================================================
 
@@ -279,12 +213,6 @@ def build_reality_evidence(observation):
         )
     )
 
-    image_evidence = (
-        extract_image_evidence(
-            observation
-        )
-    )
-
     return {
         "target_product": TARGET_PRODUCT,
 
@@ -293,8 +221,6 @@ def build_reality_evidence(observation):
         "product_text": product_text,
 
         "product_links": product_links,
-
-        "image_evidence": image_evidence,
     }
 
 
@@ -358,17 +284,20 @@ href のみ使用してください。
 
 hrefを加工してはいけません。
 
-image_url は、
-REALITY EVIDENCE の image_evidence に存在する
-src のみ使用してください。
-
-srcを生成してはいけません。
+URLを生成してはいけません。
 
 対象商品と明確に対応していることを
-Evidenceから確認できない画像は採用しないでください。
+Evidenceから確認できない場合は
+product_url を "" にしてください。
 
-確認できない場合は
-image_url を "" にしてください。
+image_url についても、
+Evidenceに存在しないURLを生成してはいけません。
+
+今回のReality Evidenceには
+画像Evidenceを含めていません。
+
+したがって、
+image_url は "" を返してください。
 
 ========================================================
 値が確認できない場合
@@ -609,11 +538,6 @@ def main():
     print(
         f"    links   : "
         f"{len(evidence['product_links'])}"
-    )
-
-    print(
-        f"    images  : "
-        f"{len(evidence['image_evidence'])}"
     )
 
     print()
