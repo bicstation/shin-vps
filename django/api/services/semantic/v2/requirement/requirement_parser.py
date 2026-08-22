@@ -1,5 +1,3 @@
-# /home/maya/shin-vps/django/api/services/semantic/v2/requirement/requirement_parser.py
-
 # -*- coding: utf-8 -*-
 # api/services/semantic/v2/requirement/requirement_parser.py
 
@@ -9,6 +7,7 @@ Requirement Parser
 Responsibility:
 - Gemini ResponseからJSONを取得する
 - groups配列を取り出す
+- constraintsを取り出す
 - Runtimeで扱える形式へ変換する
 
 No semantic interpretation.
@@ -39,7 +38,10 @@ def parse_requirement_response(
     if not candidates:
 
         return {
-            "groups": []
+            "groups": [],
+            "constraints": {
+                "max_price": None,
+            },
         }
 
     content = (
@@ -112,10 +114,46 @@ def parse_requirement_response(
 
             groups = []
 
+        # --------------------------------------------------
+        # Constraints
+        # --------------------------------------------------
+
+        constraints = (
+            data.get(
+                "constraints",
+                {}
+            )
+        )
+
+        if not isinstance(
+            constraints,
+            dict,
+        ):
+
+            constraints = {}
+
+        max_price = (
+            constraints.get(
+                "max_price",
+                None
+            )
+        )
+
+        # --------------------------------------------------
+        # Result
+        # --------------------------------------------------
+
         return {
 
             "groups":
                 groups,
+
+            "constraints": {
+
+                "max_price":
+                    max_price,
+
+            },
 
         }
 
@@ -125,6 +163,12 @@ def parse_requirement_response(
 
     return {
 
-        "groups": []
+        "groups": [],
+
+        "constraints": {
+
+            "max_price": None,
+
+        },
 
     }

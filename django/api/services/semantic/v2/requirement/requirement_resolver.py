@@ -28,6 +28,7 @@ from api.services.semantic.v2.requirement.requirement_parser import (
 
 def resolve_requirements(
     message,
+    previous_requirement=None,
 ):
 
     # ------------------------------------------------------
@@ -46,6 +47,7 @@ def resolve_requirements(
         build_requirement_prompt(
             message=message,
             groups=groups,
+            previous_requirement=previous_requirement,
         )
     )
 
@@ -93,6 +95,20 @@ def resolve_requirements(
             []
         )
     )
+
+    constraints = (
+        parsed.get(
+            "constraints",
+            {}
+        )
+    )
+
+    if not isinstance(
+        constraints,
+        dict,
+    ):
+
+        constraints = {}
 
     # ------------------------------------------------------
     # Authority Validation
@@ -148,6 +164,9 @@ def resolve_requirements(
 
         "groups":
             resolved_groups,
+
+        "constraints":
+            constraints,
 
         "ready":
             True,

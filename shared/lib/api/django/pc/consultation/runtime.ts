@@ -11,33 +11,67 @@
  * PC Consultation Runtime Facade
  * ============================================================================
  *
- * Responsibilities
+ * PURPOSE
  *
+ * Adapter-side Consultation Runtime orchestration.
+ *
+ * Pipeline
+ *
+ * Frontend / Concierge
+ *      ↓
+ * ConsultationRequest
+ *      ↓
  * Gateway
+ *      ↓
+ * Backend Consultation Runtime
  *      ↓
  * Normalize
  *      ↓
  * Projection
+ *      ↓
+ * ProjectedConsultationRuntime
+ *      ↓
+ * Frontend / Concierge
  *
- * Consultation Runtime is an Adapter-side orchestration facade.
+ * Responsibilities
  *
- * It does NOT:
+ * ✓ Runtime Orchestration
+ * ✓ Gateway Invocation
+ * ✓ Runtime Normalization
+ * ✓ Runtime Projection
+ * ✓ Observability
+ *
+ * This facade does NOT:
  *
  * ✗ Resolve semantic requirements
  * ✗ Generate Semantic Groups
+ * ✗ Interpret natural language
+ * ✗ Merge Requirements
+ * ✗ Modify previousRequirement
  * ✗ Rebuild Finder
  * ✗ Optimize Candidates
+ * ✗ Generate UI Meaning
  *
  * Backend remains:
  *
- * Semantic / Reality Authority
+ * Semantic Authority
+ * Reality Authority
+ * Requirement Authority
  *
  * Adapter remains:
  *
  * Translation Authority
  *
+ * Concierge remains:
+ *
+ * Experience Authority
+ *
  * ============================================================================
  */
+
+/* ============================================================================
+🔥 Gateway
+============================================================================ */
 
 import {
 
@@ -45,11 +79,19 @@ import {
 
 } from './gateway'
 
+/* ============================================================================
+🔥 Normalize
+============================================================================ */
+
 import {
 
     normalizeConsultationRuntime,
 
 } from './normalize'
+
+/* ============================================================================
+🔥 Projection
+============================================================================ */
 
 import {
 
@@ -58,6 +100,10 @@ import {
     type ProjectedConsultationRuntime,
 
 } from './projection'
+
+/* ============================================================================
+🔥 Contracts
+============================================================================ */
 
 import type {
 
@@ -87,10 +133,16 @@ export async function getConsultationRuntime(
 
         )
 
+    /* ------------------------------------------------------------------------
+    Empty Runtime Protection
+    ------------------------------------------------------------------------ */
+
     if (!runtime) {
 
         console.warn(
+
             '⚠️ CONSULTATION RUNTIME EMPTY'
+
         )
 
         return projectConsultationRuntime(
@@ -130,27 +182,52 @@ export async function getConsultationRuntime(
     ------------------------------------------------------------------------ */
 
     console.log(
+
         '🔥 CONSULTATION RUNTIME READY'
+
     )
 
     console.log({
 
         resultCount:
+
             projected.summary.resultCount,
 
         groupCount:
+
             projected.summary.groupCount,
 
         attributeCount:
+
             projected.summary.attributeCount,
 
         filterCount:
+
             projected.summary.filterCount,
 
         hasResult:
+
             projected.summary.hasResult,
 
+        requirement:
+
+            projected.requirement
+                ? {
+
+                    groups:
+                        projected.requirement.groups,
+
+                    constraints:
+                        projected.requirement.constraints,
+
+                    ready:
+                        projected.requirement.ready,
+
+                }
+                : null,
+
         ready:
+
             projected.ready,
 
     })

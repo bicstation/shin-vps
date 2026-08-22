@@ -1,6 +1,6 @@
 // ============================================================================
 // FILE:
-// /shared/lib/api/django/pc/consultation/normalize.ts
+// /home/maya/shin-dev/shin-vps/shared/lib/api/django/pc/consultation/normalize.ts
 // Copyright (c) 2026 Shin Corporation.
 // All rights reserved.
 // ============================================================================
@@ -29,6 +29,7 @@
  * ✗ Generate Meaning
  * ✗ Generate Requirements
  * ✗ Modify Semantic Groups
+ * ✗ Modify Requirement Constraints
  * ✗ Rebuild Finder
  * ✗ Optimize Products
  *
@@ -42,6 +43,7 @@ import type {
     ConsultationQuery,
     ConsultationSummary,
     ConsultationProduct,
+    ConsultationRequirement,
 
 } from './contracts'
 
@@ -57,19 +59,55 @@ export function normalizeConsultationRuntime(
 
     return {
 
+        /* --------------------------------------------------------------------
+        Backend Response
+        -------------------------------------------------------------------- */
+
+        response:
+            runtime?.response ?? '',
+
+        /* --------------------------------------------------------------------
+        Backend Requirement
+        -------------------------------------------------------------------- */
+
+        requirement:
+            normalizeRequirement(
+                runtime?.requirement
+            ),
+
+        /* --------------------------------------------------------------------
+        Meaning
+        -------------------------------------------------------------------- */
+
         meaning:
             runtime?.meaning,
+
+        /* --------------------------------------------------------------------
+        Presentation
+        -------------------------------------------------------------------- */
 
         presentation:
             runtime?.presentation,
 
+        /* --------------------------------------------------------------------
+        SEO
+        -------------------------------------------------------------------- */
+
         seo:
             runtime?.seo,
+
+        /* --------------------------------------------------------------------
+        Data
+        -------------------------------------------------------------------- */
 
         data:
             normalizeData(
                 runtime?.data
             ),
+
+        /* --------------------------------------------------------------------
+        Authority
+        -------------------------------------------------------------------- */
 
         semantic_schema_version:
             runtime?.semantic_schema_version,
@@ -82,6 +120,65 @@ export function normalizeConsultationRuntime(
 
         ready:
             runtime?.ready ?? false,
+
+    }
+
+}
+
+/* ============================================================================
+🔥 Normalize Requirement
+============================================================================ */
+
+function normalizeRequirement(
+
+    requirement?: Partial<ConsultationRequirement>,
+
+): ConsultationRequirement | undefined {
+
+    if (!requirement) {
+
+        return undefined
+
+    }
+
+    return {
+
+        /* --------------------------------------------------------------------
+        Original User Message
+        -------------------------------------------------------------------- */
+
+        message:
+            requirement.message ?? '',
+
+        /* --------------------------------------------------------------------
+        Backend Resolved Semantic Groups
+        -------------------------------------------------------------------- */
+
+        groups:
+
+            Array.isArray(
+                requirement.groups
+            )
+
+                ? requirement.groups
+
+                : [],
+
+        /* --------------------------------------------------------------------
+        Backend Resolved Constraints
+        -------------------------------------------------------------------- */
+
+        constraints:
+
+            requirement.constraints
+            ?? {},
+
+        /* --------------------------------------------------------------------
+        Backend Requirement Runtime State
+        -------------------------------------------------------------------- */
+
+        ready:
+            requirement.ready === true,
 
     }
 
@@ -170,7 +267,6 @@ function normalizeQuery(
                 : [],
 
         max_price:
-
             query?.max_price ?? null,
 
     }
@@ -281,7 +377,6 @@ function normalizeProduct(
 ============================================================================ */
 
 export const normalizeConsultation =
-
     normalizeConsultationRuntime
 
 /* ============================================================================

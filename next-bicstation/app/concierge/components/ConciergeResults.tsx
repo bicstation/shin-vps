@@ -73,10 +73,35 @@ export default function ConciergeResults({
         consultation.products
 
     /* ========================================================================
+    Backend Response
+    ========================================================================
+
+    Backend Consultation Runtime
+
+        response
+            ↓
+        Adapter Projection
+            ↓
+        ProjectedConsultationRuntime.response
+            ↓
+        AI Concierge
+
+    Concierge does NOT generate
+    or reinterpret this response.
+    ======================================================================== */
+
+    const response =
+        consultation.response
+
+    /* ========================================================================
     No Results
     ======================================================================== */
 
-    if (!summary.hasResult || !products.length) {
+    if (
+        !summary.hasResult
+        ||
+        !products.length
+    ) {
 
         return (
 
@@ -85,6 +110,45 @@ export default function ConciergeResults({
                     styles.empty
                 }
             >
+
+                {/* =============================================================
+                Backend Response
+                ============================================================= */}
+
+                {
+
+                    response && (
+
+                        <div
+                            className={
+                                styles.response
+                            }
+                        >
+
+                            <span
+                                className={
+                                    styles.responseLabel
+                                }
+                            >
+                                AI CONCIERGE
+                            </span>
+
+                            <p
+                                className={
+                                    styles.responseContent
+                                }
+                            >
+                                {
+                                    response
+                                }
+                            </p>
+
+                        </div>
+
+                    )
+
+                }
+
 
                 <div
                     className={
@@ -109,7 +173,7 @@ export default function ConciergeResults({
                     </h2>
 
                     <p>
-                        条件を少し変えて、もう一度お試しください。
+                        条件を少し変えて、もう一度相談してみてください。
                     </p>
 
                 </div>
@@ -133,7 +197,46 @@ export default function ConciergeResults({
         >
 
             {/* ==================================================================
-            Result Header
+            Backend Response
+            ================================================================== */}
+
+            {
+
+                response && (
+
+                    <div
+                        className={
+                            styles.response
+                        }
+                    >
+
+                        <span
+                            className={
+                                styles.responseLabel
+                            }
+                        >
+                            AI CONCIERGE
+                        </span>
+
+                        <p
+                            className={
+                                styles.responseContent
+                            }
+                        >
+                            {
+                                response
+                            }
+                        </p>
+
+                    </div>
+
+                )
+
+            }
+
+
+            {/* ==================================================================
+            Consultation Result Header
             ================================================================== */}
 
             <header
@@ -160,7 +263,7 @@ export default function ConciergeResults({
                         {
                             presentation?.title
                             ??
-                            'おすすめのPC'
+                            'あなたに合うPC'
                         }
                     </h2>
 
@@ -202,6 +305,10 @@ export default function ConciergeResults({
 
                 </div>
 
+                {/* ==============================================================
+                Result Count
+                ============================================================== */}
+
                 <div
                     className={
                         styles.resultCount
@@ -215,7 +322,7 @@ export default function ConciergeResults({
                     </strong>
 
                     <span>
-                        RESULTS
+                        PC CANDIDATES
                     </span>
 
                 </div>
@@ -230,8 +337,7 @@ export default function ConciergeResults({
             <div
                 className={
                     styles.divider
-                }
-            />
+                } />
 
 
             {/* ==================================================================
@@ -347,7 +453,7 @@ export default function ConciergeResults({
 
 
                                     {/* =============================================
-                                    Specifications
+                                    Reality Specifications
                                     ============================================= */}
 
                                     <div
@@ -591,7 +697,7 @@ export default function ConciergeResults({
 
 
                                     {/* =============================================
-                                    Detail Link Hint
+                                    Detail Link
                                     ============================================= */}
 
                                     <div

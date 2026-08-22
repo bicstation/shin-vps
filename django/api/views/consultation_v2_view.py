@@ -19,8 +19,14 @@ def semantic_consultation_v2(request):
         "",
     )
 
+    previous_requirement = request.data.get(
+        "previous_requirement",
+        None,
+    )
+
     payload = build_consultation_runtime(
-        message
+        message,
+        previous_requirement=previous_requirement,
     )
 
     return Response(

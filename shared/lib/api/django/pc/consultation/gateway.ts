@@ -1,6 +1,6 @@
 // ============================================================================
 // FILE:
-// /shared/lib/api/django/pc/consultation/gateway.ts
+// /home/maya/shin-dev/shin-vps/shared/lib/api/django/pc/consultation/gateway.ts
 // Copyright (c) 2026 Shin Corporation.
 // All rights reserved.
 // ============================================================================
@@ -24,6 +24,7 @@
  * Gateway Responsibilities
  *
  * ✓ Transport
+ * ✓ HTTP Contract Translation
  * ✓ Observability
  *
  * Gateway SHALL NOT
@@ -32,6 +33,8 @@
  * ✗ Resolve Semantic Requirements
  * ✗ Rebuild Finder
  * ✗ Optimize Candidates
+ * ✗ Merge Requirements
+ * ✗ Interpret Semantic Groups
  * ✗ Project Runtime
  *
  * ============================================================================
@@ -65,6 +68,35 @@ const CONSULTATION_ENDPOINT =
     '/pc/consultation/'
 
 /* ============================================================================
+🔥 Backend Request Contract
+============================================================================ */
+
+/**
+ * Translate the Adapter Request Contract into the
+ * Backend HTTP Request Contract.
+ *
+ * Frontend / Adapter:
+ *
+ * previousRequirement
+ *
+ * Backend:
+ *
+ * previous_requirement
+ *
+ * No semantic transformation is performed here.
+ */
+
+interface ConsultationBackendRequest {
+
+    message: string
+
+    previous_requirement?:
+
+        ConsultationRequest['previousRequirement']
+
+}
+
+/* ============================================================================
 🔥 Fetch Consultation Runtime
 ============================================================================ */
 
@@ -82,6 +114,34 @@ export async function fetchConsultationRuntime(
 
         )
 
+    /* ------------------------------------------------------------------------
+    Backend HTTP Request
+    ------------------------------------------------------------------------ */
+
+    const backendRequest:
+
+        ConsultationBackendRequest = {
+
+            message:
+                request.message,
+
+            ...(request.previousRequirement !== undefined
+
+                ? {
+
+                    previous_requirement:
+                        request.previousRequirement,
+
+                }
+
+                : {}),
+
+        }
+
+    /* ------------------------------------------------------------------------
+    Observability
+    ------------------------------------------------------------------------ */
+
     console.log(
         '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
     )
@@ -98,7 +158,7 @@ export async function fetchConsultationRuntime(
     console.log(
         'REQUEST',
         JSON.stringify(
-            request,
+            backendRequest,
             null,
             2
         )
@@ -107,6 +167,10 @@ export async function fetchConsultationRuntime(
     console.log(
         '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
     )
+
+    /* ------------------------------------------------------------------------
+    Transport
+    ------------------------------------------------------------------------ */
 
     const payload =
 
@@ -126,13 +190,18 @@ export async function fetchConsultationRuntime(
                 },
 
                 body:
+
                     JSON.stringify(
-                        request
+                        backendRequest
                     ),
 
             }
 
         )
+
+    /* ------------------------------------------------------------------------
+    RAW Backend Runtime
+    ------------------------------------------------------------------------ */
 
     console.log(
         '🔥 CONSULTATION RAW PAYLOAD',

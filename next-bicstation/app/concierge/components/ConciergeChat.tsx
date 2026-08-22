@@ -21,6 +21,14 @@ import type {
 } from '../lib/conciergeActions'
 
 /* ============================================================================
+🔥 Consultation Requirement
+============================================================================ */
+
+import type {
+    ConsultationRequirement,
+} from '@/shared/lib/api/django/pc/consultation/contracts'
+
+/* ============================================================================
 🔥 Components
 ============================================================================ */
 
@@ -42,13 +50,15 @@ import styles from './ConciergeChat.module.css'
 
 interface ConciergeMessage {
 
-    id: string
+    id:
+    string
 
     role:
     | 'user'
     | 'assistant'
 
-    content: string
+    content:
+    string
 
 }
 
@@ -58,12 +68,46 @@ interface ConciergeMessage {
 
 export default function ConciergeChat() {
 
+    /* ========================================================================
+    Concierge Runtime
+    ======================================================================== */
+
     const [
         runtime,
         setRuntime,
     ] = useState<ConciergeRuntimeContract | null>(
         null,
     )
+
+    /* ========================================================================
+    Conversation State
+    ========================================================================
+
+    Backend Requirement Authority
+
+    Concierge stores the latest Backend Requirement
+    and passes it to the next Consultation request.
+
+    Concierge does NOT:
+
+    ✗ modify groups
+    ✗ merge groups
+    ✗ remove groups
+    ✗ interpret Semantic Meaning
+    ✗ generate Semantic Groups
+
+    ======================================================================== */
+
+    const [
+        previousRequirement,
+        setPreviousRequirement,
+    ] = useState<ConsultationRequirement | null>(
+        null,
+    )
+
+    /* ========================================================================
+    Conversation Messages
+    ======================================================================== */
 
     const [
         messages,
@@ -72,10 +116,18 @@ export default function ConciergeChat() {
         [],
     )
 
+    /* ========================================================================
+    Loading
+    ======================================================================== */
+
     const [
         loading,
         setLoading,
     ] = useState(false)
+
+    /* ========================================================================
+    Error
+    ======================================================================== */
 
     const [
         error,
@@ -105,7 +157,8 @@ export default function ConciergeChat() {
         User Message
         ==================================================================== */
 
-        const userMessage: ConciergeMessage = {
+        const userMessage:
+            ConciergeMessage = {
 
             id:
                 `${Date.now()}-user`,
@@ -140,11 +193,33 @@ export default function ConciergeChat() {
 
             /* ==================================================================
             Consultation Runtime
+            ==================================================================
+
+            First message:
+
+                message
+                    ↓
+                Backend
+
+            Subsequent message:
+
+                previousRequirement
+                    +
+                message
+                    ↓
+                Backend
+
+            Concierge does not interpret
+            or modify previousRequirement.
             ================================================================== */
 
             const result =
                 await executeConcierge(
+
                     normalizedMessage,
+
+                    previousRequirement,
+
                 )
 
             console.log(
@@ -152,28 +227,55 @@ export default function ConciergeChat() {
                 result,
             )
 
+            /* ==================================================================
+            Runtime
+            ================================================================== */
+
             setRuntime(
                 result,
             )
 
             /* ==================================================================
-            Backend Presentation
+            Update Conversation State
+            ==================================================================
+
+            Backend remains the Requirement Authority.
+
+            The latest Requirement completely replaces
+            the previous Conversation State.
+
             ================================================================== */
 
-            const presentation =
-                result.consultation?.presentation
+            setPreviousRequirement(
+                result.consultation.requirement
+                    ?? null,
+            )
+
+            /* ==================================================================
+            Backend Concierge Response
+            ==================================================================
+
+            Backend Consultation Runtime
+                ↓
+            Adapter Projection
+                ↓
+            ProjectedConsultationRuntime.response
+                ↓
+            Concierge Conversation
+
+            Frontend does NOT generate
+            or reinterpret the response.
+            ================================================================== */
 
             const assistantContent =
-                buildAssistantMessage(
-                    presentation,
-                    result.consultation?.summary.resultCount ?? 0,
-                )
+                result.consultation.response
 
             /* ==================================================================
             Assistant Message
             ================================================================== */
 
-            const assistantMessage: ConciergeMessage = {
+            const assistantMessage:
+                ConciergeMessage = {
 
                 id:
                     `${Date.now()}-assistant`,
@@ -217,7 +319,8 @@ export default function ConciergeChat() {
             Error Message
             ================================================================== */
 
-            const errorMessage: ConciergeMessage = {
+            const errorMessage:
+                ConciergeMessage = {
 
                 id:
                     `${Date.now()}-error`,
@@ -279,6 +382,7 @@ export default function ConciergeChat() {
                         styles.eyebrow
                     }
                 >
+
                     BIC STATION
 
                     <span>
@@ -354,9 +458,11 @@ export default function ConciergeChat() {
                                                 styles.messageContent
                                             }
                                         >
+
                                             {
                                                 message.content
                                             }
+
                                         </p>
 
                                     </div>
@@ -371,6 +477,19 @@ export default function ConciergeChat() {
                 )
 
             }
+
+
+            {/* ==================================================================
+            Latest Consultation Results
+            ================================================================== */}
+
+            <ConciergeResults
+
+                consultation={
+                    runtime?.consultation ?? null
+                }
+
+            />
 
 
             {/* ==================================================================
@@ -422,92 +541,8 @@ export default function ConciergeChat() {
 
             }
 
-
-            {/* ==================================================================
-            Latest Consultation Results
-            ================================================================== */}
-
-            <ConciergeResults
-
-                consultation={
-                    runtime?.consultation ?? null
-                }
-
-            />
-
         </main>
 
-    )
-
-}
-
-/* ============================================================================
-🔥 Assistant Message Builder
-============================================================================ */
-
-function buildAssistantMessage(
-
-    presentation:
-        ConciergeRuntimeContract['consultation']['presentation']
-        | undefined,
-
-    resultCount:
-        number,
-
-): string {
-
-    const title =
-        presentation?.title
-
-    const subtitle =
-        presentation?.subtitle
-
-    const description =
-        presentation?.description
-
-    const lines: string[] = []
-
-    if (title) {
-
-        lines.push(
-            `${title}を探してみます。`,
-        )
-
-    }
-    else {
-
-        lines.push(
-            'ご希望に合うPCを探してみます。',
-        )
-
-    }
-
-    if (subtitle) {
-
-        lines.push(
-            subtitle,
-        )
-
-    }
-
-    if (description) {
-
-        lines.push(
-            description,
-        )
-
-    }
-
-    if (resultCount > 0) {
-
-        lines.push(
-            `${resultCount}台見つかりました。`,
-        )
-
-    }
-
-    return lines.join(
-        '\n',
     )
 
 }

@@ -1,6 +1,6 @@
 // ============================================================================
 // FILE:
-// /shared/lib/api/django/pc/consultation/projection.ts
+// /home/maya/shin-dev/shin-vps/shared/lib/api/django/pc/consultation/projection.ts
 // Copyright (c) 2026 Shin Corporation.
 // All rights reserved.
 // ============================================================================
@@ -33,6 +33,16 @@
  * ✗ Rebuild Finder
  * ✗ Optimize Candidates
  * ✗ Invent Product Data
+ * ✗ Modify Requirement Groups
+ *
+ * Backend remains:
+ *
+ * Semantic Authority
+ * Reality Authority
+ *
+ * Adapter remains:
+ *
+ * Translation Authority
  *
  * ============================================================================
  */
@@ -50,11 +60,76 @@ import type {
 
 export interface ProjectedConsultationRuntime {
 
-    meaning?: ConsultationRuntimeContract['meaning']
+    /* ------------------------------------------------------------------------
+    Backend Response
+    ------------------------------------------------------------------------ */
 
-    presentation?: ConsultationRuntimeContract['presentation']
+    response: string
 
-    seo?: ConsultationRuntimeContract['seo']
+    /* ------------------------------------------------------------------------
+    Backend Requirement
+    ------------------------------------------------------------------------ */
+
+    /**
+     * Backend-resolved Conversation Requirement.
+     *
+     * This value can be retained by the Frontend as
+     * Conversation Context and supplied on the next request
+     * through `previousRequirement`.
+     *
+     * Adapter SHALL NOT:
+     *
+     * ✗ interpret
+     * ✗ merge
+     * ✗ modify
+     * ✗ regenerate
+     *
+     * the semantic content.
+     */
+
+    requirement?: {
+
+        message: string
+
+        groups: string[]
+
+        /**
+         * Backend-resolved Requirement Constraints.
+         *
+         * Adapter SHALL preserve these values without
+         * interpreting or regenerating them.
+         */
+
+        constraints: Record<string, any>
+
+        ready: boolean
+
+    }
+
+    /* ------------------------------------------------------------------------
+    Meaning
+    ------------------------------------------------------------------------ */
+
+    meaning?:
+        ConsultationRuntimeContract['meaning']
+
+    /* ------------------------------------------------------------------------
+    Presentation
+    ------------------------------------------------------------------------ */
+
+    presentation?:
+        ConsultationRuntimeContract['presentation']
+
+    /* ------------------------------------------------------------------------
+    SEO
+    ------------------------------------------------------------------------ */
+
+    seo?:
+        ConsultationRuntimeContract['seo']
+
+    /* ------------------------------------------------------------------------
+    Query
+    ------------------------------------------------------------------------ */
 
     query: {
 
@@ -67,6 +142,10 @@ export interface ProjectedConsultationRuntime {
         maxPrice: number | null
 
     }
+
+    /* ------------------------------------------------------------------------
+    Summary
+    ------------------------------------------------------------------------ */
 
     summary: {
 
@@ -82,7 +161,16 @@ export interface ProjectedConsultationRuntime {
 
     }
 
-    products: ProjectedConsultationProduct[]
+    /* ------------------------------------------------------------------------
+    Products
+    ------------------------------------------------------------------------ */
+
+    products:
+        ProjectedConsultationProduct[]
+
+    /* ------------------------------------------------------------------------
+    Authority
+    ------------------------------------------------------------------------ */
 
     semanticSchemaVersion?: number
 
@@ -168,14 +256,63 @@ export function projectConsultationRuntime(
 
     return {
 
+        /* --------------------------------------------------------------------
+        Backend Response
+        -------------------------------------------------------------------- */
+
+        response:
+            runtime.response ?? '',
+
+        /* --------------------------------------------------------------------
+        Backend Requirement
+        -------------------------------------------------------------------- */
+
+        requirement:
+
+            runtime.requirement
+
+                ? {
+
+                    message:
+                        runtime.requirement.message,
+
+                    groups:
+                        runtime.requirement.groups,
+
+                    constraints:
+                        runtime.requirement.constraints ?? {},
+
+                    ready:
+                        runtime.requirement.ready,
+
+                }
+
+                : undefined,
+
+        /* --------------------------------------------------------------------
+        Meaning
+        -------------------------------------------------------------------- */
+
         meaning:
             runtime.meaning,
+
+        /* --------------------------------------------------------------------
+        Presentation
+        -------------------------------------------------------------------- */
 
         presentation:
             runtime.presentation,
 
+        /* --------------------------------------------------------------------
+        SEO
+        -------------------------------------------------------------------- */
+
         seo:
             runtime.seo,
+
+        /* --------------------------------------------------------------------
+        Query
+        -------------------------------------------------------------------- */
 
         query: {
 
@@ -192,6 +329,10 @@ export function projectConsultationRuntime(
                 runtime.data.query.max_price ?? null,
 
         },
+
+        /* --------------------------------------------------------------------
+        Summary
+        -------------------------------------------------------------------- */
 
         summary: {
 
@@ -212,11 +353,19 @@ export function projectConsultationRuntime(
 
         },
 
+        /* --------------------------------------------------------------------
+        Products
+        -------------------------------------------------------------------- */
+
         products:
 
             runtime.data.products.map(
                 projectProduct
             ),
+
+        /* --------------------------------------------------------------------
+        Authority
+        -------------------------------------------------------------------- */
 
         semanticSchemaVersion:
             runtime.semantic_schema_version,
@@ -336,7 +485,6 @@ function projectProduct(
 ============================================================================ */
 
 export const projectConsultation =
-
     projectConsultationRuntime
 
 /* ============================================================================

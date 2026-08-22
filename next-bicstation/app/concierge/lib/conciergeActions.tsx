@@ -9,6 +9,10 @@ import {
 } from '@/shared/lib/api/django/pc/consultation'
 
 import type {
+    ConsultationRequirement,
+} from '@/shared/lib/api/django/pc/consultation/contracts'
+
+import type {
     ProjectedConsultationRuntime,
 } from '@/shared/lib/api/django/pc/consultation/projection'
 
@@ -34,7 +38,13 @@ export interface ConciergeRuntimeContract {
 ============================================================================ */
 
 export async function executeConcierge(
+
     message: string,
+
+    previousRequirement:
+        ConsultationRequirement
+        | null = null,
+
 ): Promise<ConciergeRuntimeContract> {
 
     const normalizedMessage =
@@ -50,6 +60,20 @@ export async function executeConcierge(
 
     /* ========================================================================
     Consultation Request
+    ========================================================================
+
+    Conversation
+
+        Previous Requirement
+                ↓
+        Current User Message
+                ↓
+        Consultation Adapter
+                ↓
+        Backend Consultation Runtime
+
+    Concierge does NOT interpret
+    or modify the Requirement.
     ======================================================================== */
 
     const consultation =
@@ -57,6 +81,8 @@ export async function executeConcierge(
 
             message:
                 normalizedMessage,
+
+            previousRequirement,
 
         })
 
@@ -77,3 +103,9 @@ export async function executeConcierge(
     }
 
 }
+
+/* ============================================================================
+🔥 Default Export
+============================================================================ */
+
+export default executeConcierge

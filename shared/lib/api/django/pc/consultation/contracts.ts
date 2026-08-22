@@ -1,6 +1,6 @@
 // ============================================================================
 // FILE:
-// /shared/lib/api/django/pc/consultation/contracts.ts
+// /home/maya/shin-dev/shin-vps/shared/lib/api/django/pc/consultation/contracts.ts
 // Copyright (c) 2026 Shin Corporation.
 // All rights reserved.
 // ============================================================================
@@ -46,13 +46,86 @@ export interface ConsultationRequest {
 
     /**
      * Natural Language User Input
-     *
-     * Example:
-     *
-     * 持ち運べるノートPCでゲームもしたい
      */
 
     message: string
+
+    /**
+     * Previous Backend Requirement
+     *
+     * Conversation Context.
+     *
+     * This value represents the Requirement previously
+     * resolved by Backend.
+     *
+     * Adapter SHALL NOT:
+     *
+     * ✗ interpret
+     * ✗ merge
+     * ✗ modify
+     * ✗ regenerate
+     *
+     * the semantic content.
+     *
+     * Adapter only transports this value to Backend
+     * as `previous_requirement`.
+     */
+
+    previousRequirement?:
+        ConsultationRequirement | null
+
+}
+
+/* ============================================================================
+🔥 Consultation Requirement
+============================================================================ */
+
+export interface ConsultationRequirement {
+
+    /**
+     * Original User Message
+     */
+
+    message: string
+
+    /**
+     * Backend Resolved Semantic Groups
+     *
+     * Adapter SHALL NOT interpret or regenerate these values.
+     */
+
+    groups: string[]
+
+    /**
+     * Backend Resolved Constraints
+     *
+     * Conversation Requirement constraints resolved by Backend.
+     *
+     * Adapter SHALL NOT:
+     *
+     * ✗ interpret
+     * ✗ merge
+     * ✗ modify
+     * ✗ regenerate
+     *
+     * these values.
+     *
+     * Unknown future constraint fields are preserved.
+     */
+
+    constraints?: {
+
+        max_price?: number | null
+
+        [key: string]: any
+
+    }
+
+    /**
+     * Backend Requirement Runtime State
+     */
+
+    ready: boolean
 
 }
 
@@ -233,6 +306,18 @@ export interface ConsultationData {
 ============================================================================ */
 
 export interface ConsultationRuntimeContract {
+
+    /* ------------------------------------------------------------------------
+    Backend Response
+    ------------------------------------------------------------------------ */
+
+    response?: string
+
+    /* ------------------------------------------------------------------------
+    Backend Requirement
+    ------------------------------------------------------------------------ */
+
+    requirement?: ConsultationRequirement
 
     /* ------------------------------------------------------------------------
     Backend Meaning
