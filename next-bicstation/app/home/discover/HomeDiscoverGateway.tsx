@@ -106,6 +106,7 @@ export default function HomeDiscoverGateway({
           <Link
             key={item.slug}
             href={`/discover/${item.slug}`}
+            prefetch={false}
             className={styles.card}
           >
 

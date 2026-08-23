@@ -64,10 +64,9 @@ export default function HomeRealityMap({
       <section
         className={`
           ${styles.universe}
-          ${
-            variant === 'usage'
-              ? styles.usageUniverse
-              : styles.deviceUniverse
+          ${variant === 'usage'
+            ? styles.usageUniverse
+            : styles.deviceUniverse
           }
         `}
       >
@@ -103,6 +102,7 @@ export default function HomeRealityMap({
             <Link
               key={group.group_slug}
               href={`/discover/${group.group_slug}`}
+              prefetch={false}
               className={styles.chip}
             >
 

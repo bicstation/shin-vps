@@ -4,8 +4,7 @@ import Link
   from 'next/link'
 
 import SemanticIcon
- from '@/shared/lib/ui/semantic/SemanticIcon'
-
+  from '@/shared/lib/ui/semantic/SemanticIcon'
 
 import styles
   from '../styles/v2/hero.module.css'
@@ -17,12 +16,12 @@ type Props = {
   groups?: any
 }
 
-
 export default function HomeHero({
 
   meaning,
   stats,
   featuredGroups,
+
 }: Props) {
 
   console.log(
@@ -70,7 +69,22 @@ export default function HomeHero({
 
             <Link
               key={group.group_slug}
+
               href={`/discover/${group.group_slug}`}
+
+              /*
+               * TOP表示時のDiscover Route Prefetchを停止。
+               *
+               * このLinkは実際にクリックされたときだけ
+               * /discover/{group_slug} へ遷移する。
+               *
+               * Debugger検証：
+               * prefetch=true相当の現状と比較し、
+               * TOP初期表示時のRSC requestおよび
+               * 初期表示時間への影響を確認する。
+               */
+              prefetch={false}
+
               className={
                 styles.heroFeaturedGroup
               }
@@ -96,11 +110,9 @@ export default function HomeHero({
 
             </Link>
 
-        ))}
+          ))}
 
       </div>
-
-
 
       {/* =====================================
       LABEL
@@ -133,11 +145,10 @@ export default function HomeHero({
           styles.heroDescription
         }
       >
-          AI・ゲーム・動画編集・普段使いまで。
+        AI・ゲーム・動画編集・普段使いまで。
 
-          やりたいことから、
-          あなたに合ったPCを見つけられます。
-
+        やりたいことから、
+        あなたに合ったPCを見つけられます。
       </p>
 
       {/* =====================================
@@ -196,7 +207,6 @@ export default function HomeHero({
 
         <Link
           href="/ranking/"
-
           className={
             styles.heroPrimaryButton
           }
@@ -206,7 +216,6 @@ export default function HomeHero({
 
         <Link
           href="/pc-finder"
-
           className={
             styles.heroSecondaryButton
           }
@@ -216,7 +225,6 @@ export default function HomeHero({
 
         <Link
           href="/concierge"
-
           className={
             styles.heroConciergeButton
           }
