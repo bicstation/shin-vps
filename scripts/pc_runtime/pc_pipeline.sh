@@ -76,7 +76,7 @@ source "$SCRIPT_DIR/tsv.sh"
 
 source "$SCRIPT_DIR/authority.sh"
 
-# source "$SCRIPT_DIR/unified.sh"
+source "$SCRIPT_DIR/unified.sh"
 
 # ==========================================================
 # ARGUMENTS
