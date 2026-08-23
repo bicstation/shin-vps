@@ -1,31 +1,44 @@
 // ============================================================================
 // FILE:
 // /home/maya/shin-vps/shared/lib/api/django/pc/top/index.ts
-// Copyright (c) 2024 Shin Corporation.
+// Copyright (c) 2026 Shin Corporation.
 // All rights reserved.
 // ============================================================================
 
 /**
  * ============================================================================
  * SHIN CORE LINX
- * Semantic Top Runtime
+ * Semantic Top Runtime Adapter
  * ============================================================================
  *
  * PURPOSE
  *
- * Semantic Top Runtime Public Surface
+ * Public Surface for the Top Adapter.
  *
- * IMPORTANT
+ * Backend
+ *      ↓
+ * Gateway
+ *      ↓
+ * Normalize
+ *      ↓
+ * Projection
+ *      ↓
+ * Runtime
+ *      ↓
+ * Frontend Experience
  *
  * Backend remains:
  *
- * semantic authority
+ * Semantic Authority
+ * Reality Authority
  *
- * This layer exposes:
+ * Adapter remains:
  *
- * Top Runtime Contracts
- * Top Runtime Fetch
- * Top Runtime Normalize
+ * Translation Authority
+ *
+ * Frontend remains:
+ *
+ * Experience Authority
  *
  * ============================================================================
  */
@@ -34,59 +47,82 @@
 🔥 Contracts
 ============================================================================ */
 
-export * from './contracts'
+export {
+
+  type TopRuntimeContract,
+
+  type TopMeaning,
+
+  type TopPresentation,
+
+  type TopSEO,
+
+  type TopStats,
+
+  type TopFeaturedGroup,
+
+  type TopFeaturedProduct,
+
+  type TopData,
+
+  type TopRuntime,
+
+  type TopRuntimeResponse,
+
+} from './contracts'
+
+/* ============================================================================
+🔥 Gateway
+============================================================================ */
+
+export {
+
+  fetchTopRuntime,
+
+  fetchTop,
+
+} from './gateway'
 
 /* ============================================================================
 🔥 Normalize
 ============================================================================ */
 
-export * from './normalize'
+export {
+
+  normalizeTopRuntime,
+
+} from './normalize'
 
 /* ============================================================================
-🔥 Fetch
+🔥 Projection
 ============================================================================ */
 
-export * from './top'
+export {
+
+  projectTopRuntime,
+
+  projectTop,
+
+} from './projection'
+
+export type {
+
+  ProjectedTopRuntime,
+
+  ProjectedTopFeaturedGroup,
+
+  ProjectedTopFeaturedProduct,
+
+} from './projection'
 
 /* ============================================================================
-🔥 Runtime Observatory
+🔥 Runtime
 ============================================================================ */
 
-console.log(
-  '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
-)
+export {
 
-console.log(
-  '🔥 TOP RUNTIME INITIALIZED'
-)
+  getTopRuntime,
 
-console.log({
+  fetchProjectedTopRuntime,
 
-  runtime:
-    'semantic-top-runtime',
-
-  authority:
-    'backend',
-
-  meaning:
-    true,
-
-  seo:
-    true,
-
-  stats:
-    true,
-
-  featured_groups:
-    true,
-
-  featured_products:
-    true,
-
-  continuity:
-    'healthy',
-})
-
-console.log(
-  '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
-)
+} from './runtime'

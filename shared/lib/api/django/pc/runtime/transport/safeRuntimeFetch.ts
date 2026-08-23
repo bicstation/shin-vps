@@ -19,8 +19,30 @@ export async function safeRuntimeFetch<T>(
   url: string,
   options?: RequestInit,
 ): Promise<RuntimeResponse<T>> {
+
+  const transportStart =
+    performance.now()
+
+  console.log(
+    '⏱️ RUNTIME TRANSPORT START',
+    {
+      url,
+      method:
+        options?.method || 'GET',
+    }
+  )
+
   try {
+
+    /* ========================================================================
+    🔥 HTTP Fetch
+    ======================================================================== */
+
+    const fetchStart =
+      performance.now()
+
     const response = await fetch(url, {
+
       ...options,
 
       headers: {
@@ -33,21 +55,77 @@ export async function safeRuntimeFetch<T>(
        * Runtime payloads should remain fresh.
        */
       cache: 'no-store',
+
     })
 
-    /**
-     * Runtime transport failure
-     */
+    const fetchElapsed =
+      performance.now() - fetchStart
+
+    console.log(
+      '⏱️ RUNTIME FETCH RESPONSE',
+      {
+        url,
+        status:
+          response.status,
+        ok:
+          response.ok,
+        elapsed:
+          `${fetchElapsed.toFixed(2)}ms`,
+      }
+    )
+
+    /* ========================================================================
+    🔥 Runtime Transport Failure
+    ======================================================================== */
+
     if (!response.ok) {
+
+      console.error(
+        '🔥 RUNTIME FETCH FAILED',
+        {
+          url,
+          status:
+            response.status,
+          elapsed:
+            `${fetchElapsed.toFixed(2)}ms`,
+        }
+      )
+
       return {
         success: false,
         data: null,
-        error: `Runtime fetch failed: ${response.status}`,
-        status: response.status,
+        error:
+          `Runtime fetch failed: ${response.status}`,
+        status:
+          response.status,
       }
     }
 
-    const json = await response.json()
+    /* ========================================================================
+    🔥 JSON Parse
+    ======================================================================== */
+
+    const jsonStart =
+      performance.now()
+
+    const json =
+      await response.json()
+
+    const jsonElapsed =
+      performance.now() - jsonStart
+
+    console.log(
+      '⏱️ RUNTIME JSON PARSE COMPLETE',
+      {
+        url,
+        elapsed:
+          `${jsonElapsed.toFixed(2)}ms`,
+      }
+    )
+
+    /* ========================================================================
+    🔥 Payload Validation
+    ======================================================================== */
 
     /**
      * IMPORTANT:
@@ -62,20 +140,81 @@ export async function safeRuntimeFetch<T>(
      */
 
     if (json == null) {
+
+      const totalElapsed =
+        performance.now() - transportStart
+
+      console.warn(
+        '⚠️ RUNTIME PAYLOAD NULL',
+        {
+          url,
+          elapsed:
+            `${totalElapsed.toFixed(2)}ms`,
+        }
+      )
+
       return {
         success: false,
         data: null,
-        error: 'Runtime payload is null',
-        status: response.status,
+        error:
+          'Runtime payload is null',
+        status:
+          response.status,
       }
     }
 
+    /* ========================================================================
+    🔥 Transport Complete
+    ======================================================================== */
+
+    const totalElapsed =
+      performance.now() - transportStart
+
+    console.log(
+      '⏱️ RUNTIME TRANSPORT COMPLETE',
+      {
+        url,
+        status:
+          response.status,
+        fetch:
+          `${fetchElapsed.toFixed(2)}ms`,
+        json:
+          `${jsonElapsed.toFixed(2)}ms`,
+        total:
+          `${totalElapsed.toFixed(2)}ms`,
+      }
+    )
+
+    /* ========================================================================
+    🔥 Success
+    ======================================================================== */
+
     return {
       success: true,
-      data: json as T,
-      status: response.status,
+      data:
+        json as T,
+      status:
+        response.status,
     }
+
   } catch (error) {
+
+    const totalElapsed =
+      performance.now() - transportStart
+
+    console.error(
+      '🔥 RUNTIME TRANSPORT ERROR',
+      {
+        url,
+        elapsed:
+          `${totalElapsed.toFixed(2)}ms`,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Unknown semantic runtime transport error',
+      }
+    )
+
     return {
       success: false,
       data: null,

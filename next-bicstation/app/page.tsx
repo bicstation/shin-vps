@@ -1,6 +1,7 @@
 // ============================================================================
 // FILE:
 // /app/page.tsx
+// Copyright (c) 2026 Shin Corporation.
 // ============================================================================
 
 import type {
@@ -72,7 +73,7 @@ import HomeRuntimeOrchestrator
 
 export async function generateMetadata():
 
-Promise<Metadata> {
+    Promise<Metadata> {
 
     return toNextMetadata(
 
@@ -93,9 +94,84 @@ Promise<Metadata> {
 
 export default async function Page() {
 
-    // ========================================================================
-    // Runtime Fetch
-    // ========================================================================
+    /* ========================================================================
+    🔥 Runtime Measurement Helper
+
+    Purpose:
+        Measure actual Runtime completion time.
+
+    Important:
+        - No Runtime behavior change
+        - No sequential execution
+        - Promise.all remains
+        - Only observability is added
+    ======================================================================== */
+
+    async function measureRuntime<T>(
+
+        name: string,
+
+        runtimePromise: Promise<T>,
+
+    ): Promise<T> {
+
+        const startedAt =
+            performance.now()
+
+        console.log(
+            `⏱️ TOP RUNTIME START: ${name}`
+        )
+
+        try {
+
+            const result =
+                await runtimePromise
+
+            const elapsed =
+                performance.now()
+                -
+                startedAt
+
+            console.log(
+                `⏱️ TOP RUNTIME COMPLETE: ${name} = ${elapsed.toFixed(0)}ms`
+            )
+
+            return result
+
+        } catch (error) {
+
+            const elapsed =
+                performance.now()
+                -
+                startedAt
+
+            console.error(
+                `⏱️ TOP RUNTIME ERROR: ${name} = ${elapsed.toFixed(0)}ms`,
+                error,
+            )
+
+            throw error
+
+        }
+
+    }
+
+
+    /* ========================================================================
+    🔥 Runtime Fetch
+    ======================================================================== */
+
+    console.log(
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+    )
+
+    console.log(
+        '🔥 TOP RUNTIME FETCH START'
+    )
+
+    const topRuntimeStartedAt =
+        performance.now()
+
 
     const [
 
@@ -109,19 +185,47 @@ export default async function Page() {
 
     ] = await Promise.all([
 
-        fetchSidebar(),
+        measureRuntime(
+            'sidebar',
+            fetchSidebar(),
+        ),
 
-        getRankingRuntime('all'),
+        measureRuntime(
+            'ranking',
+            getRankingRuntime('all'),
+        ),
 
-        fetchNavigationRuntime(),
+        measureRuntime(
+            'navigation',
+            fetchNavigationRuntime(),
+        ),
 
-        fetchTopRuntime(),
+        measureRuntime(
+            'top',
+            fetchTopRuntime(),
+        ),
 
     ])
 
-    // ========================================================================
-    // Runtime
-    // ========================================================================
+
+    const topRuntimeElapsed =
+        performance.now()
+        -
+        topRuntimeStartedAt
+
+
+    console.log(
+        `🔥 TOP RUNTIME FETCH COMPLETE = ${topRuntimeElapsed.toFixed(0)}ms`
+    )
+
+    console.log(
+        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+    )
+
+
+    /* ========================================================================
+    🔥 Runtime
+    ======================================================================== */
 
     const runtime = {
 
@@ -145,11 +249,18 @@ export default async function Page() {
 
                 : null,
 
-        semantic_runtime: true,
+        semantic_runtime:
+            true,
 
-        adaptive_runtime: true,
+        adaptive_runtime:
+            true,
 
     }
+
+
+    /* ========================================================================
+    🔥 Navigation Observability
+    ======================================================================== */
 
     console.log(
 
@@ -159,9 +270,10 @@ export default async function Page() {
 
     )
 
-    // ========================================================================
-    // Render
-    // ========================================================================
+
+    /* ========================================================================
+    🔥 Render
+    ======================================================================== */
 
     return (
 

@@ -1,7 +1,7 @@
 // ============================================================================
 // FILE:
 // /home/maya/shin-vps/shared/lib/api/django/pc/top/contracts.ts
-// Copyright (c) 2024 Shin Corporation.
+// Copyright (c) 2026 Shin Corporation.
 // All rights reserved.
 // ============================================================================
 
@@ -11,25 +11,38 @@
  * Semantic Top Runtime Contracts
  * ============================================================================
  *
- * IMPORTANT
+ * PURPOSE
+ *
+ * Defines the canonical TypeScript contract that represents the
+ * Backend Top Runtime JSON.
  *
  * Backend remains:
  *
- * semantic authority
+ * Semantic Authority
+ * Reality Authority
  *
- * This contract represents:
+ * Adapter remains:
  *
- * Runtime Reality
+ * Translation Authority
  *
- * NOT:
+ * This contract mirrors Backend Runtime Reality.
  *
- * UI Projection
+ * It does NOT:
+ *
+ * ✗ Generate Semantic Meaning
+ * ✗ Generate SEO
+ * ✗ Generate Presentation
+ * ✗ Generate Statistics
+ * ✗ Re-rank Featured Groups
+ * ✗ Re-rank Featured Products
+ * ✗ Generate UI Meaning
+ * ✗ Define Frontend UI
  *
  * ============================================================================
  */
 
 /* ============================================================================
-🔥 Meaning
+🔥 Top Meaning
 ============================================================================ */
 
 export interface TopMeaning {
@@ -43,10 +56,25 @@ export interface TopMeaning {
   meaning_statement: string
 
   existence_reason: string
+
 }
 
 /* ============================================================================
-🔥 SEO
+🔥 Top Presentation
+============================================================================ */
+
+export interface TopPresentation {
+
+  title?: string
+
+  subtitle?: string
+
+  description?: string
+
+}
+
+/* ============================================================================
+🔥 Top SEO
 ============================================================================ */
 
 export interface TopSEO {
@@ -60,10 +88,15 @@ export interface TopSEO {
   canonical?: string
 
   schema_jsonld?: Record<string, any>
+
+  open_graph?: Record<string, any>
+
+  twitter?: Record<string, any>
+
 }
 
 /* ============================================================================
-🔥 Stats
+🔥 Top Stats
 ============================================================================ */
 
 export interface TopStats {
@@ -73,10 +106,11 @@ export interface TopStats {
   group_count: number
 
   attribute_count: number
+
 }
 
 /* ============================================================================
-🔥 Featured Group
+🔥 Top Featured Group
 ============================================================================ */
 
 export interface TopFeaturedGroup {
@@ -84,6 +118,10 @@ export interface TopFeaturedGroup {
   group_slug: string
 
   group_name: string
+
+  presentation_name?: string
+
+  presentation_description?: string
 
   parent_group?: string
 
@@ -95,13 +133,16 @@ export interface TopFeaturedGroup {
 
   sort_order?: string
 
+  discovery_priority?: string
+
   is_active?: string
 
   product_count?: number
+
 }
 
 /* ============================================================================
-🔥 Featured Product
+🔥 Top Featured Product
 ============================================================================ */
 
 export interface TopFeaturedProduct {
@@ -118,30 +159,95 @@ export interface TopFeaturedProduct {
 
   image_url?: string
 
+  cpu_model?: string | null
+
+  gpu_model?: string | null
+
+  memory_gb?: number | null
+
+  storage_gb?: number | null
+
+  display_info?: string | null
+
+  is_ai_pc?: boolean
+
   semantic_attributes?: string[]
 
   matched_groups?: string[]
 
+  reality_scores?: Record<string, number>
+
+  product_type?: string | null
+
+  primary_workflow?: string | null
+
+  workflow_score?: number
+
+  semantic_score?: number
+
   workflow_tags?: string[]
 
+  workflows?: any[]
+
   semantic_labels?: string[]
+
+  adaptive_runtime?: Record<string, any>
+
+  semantic_version?: string | null
+
+  semantic_authority?: string | null
+
+  runtime_valid?: boolean
+
 }
 
 /* ============================================================================
-🔥 Runtime
+🔥 Top Data
 ============================================================================ */
 
-export interface TopRuntime {
-
-  meaning: TopMeaning
-
-  seo: TopSEO
+export interface TopData {
 
   stats: TopStats
 
   featured_groups: TopFeaturedGroup[]
 
   featured_products: TopFeaturedProduct[]
+
+}
+
+/* ============================================================================
+🔥 Top Runtime Contract
+============================================================================ */
+
+export interface TopRuntimeContract {
+
+  /* ------------------------------------------------------------------------
+  Backend Meaning
+  ------------------------------------------------------------------------ */
+
+  meaning: TopMeaning
+
+  /* ------------------------------------------------------------------------
+  Backend Presentation
+  ------------------------------------------------------------------------ */
+
+  presentation?: TopPresentation
+
+  /* ------------------------------------------------------------------------
+  Backend SEO
+  ------------------------------------------------------------------------ */
+
+  seo: TopSEO
+
+  /* ------------------------------------------------------------------------
+  Backend Data
+  ------------------------------------------------------------------------ */
+
+  data: TopData
+
+  /* ------------------------------------------------------------------------
+  Backend Authority
+  ------------------------------------------------------------------------ */
 
   semantic_schema_version?: number
 
@@ -151,5 +257,22 @@ export interface TopRuntime {
 
   ready?: boolean
 
+  /* ------------------------------------------------------------------------
+  Raw Backend Payload
+  ------------------------------------------------------------------------ */
+
   raw?: any
+
 }
+
+/* ============================================================================
+🔥 Legacy Compatibility
+============================================================================ */
+
+export type TopRuntime =
+
+  TopRuntimeContract
+
+export type TopRuntimeResponse =
+
+  TopRuntimeContract
