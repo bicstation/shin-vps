@@ -1,6 +1,6 @@
 // ============================================================================
 // FILE:
-// /home/maya/shin-dev/shin-vps/next-bicstation/app/product/runtime/fetchShelfProducts.ts
+// /home/maya/shin-dev/shin-vps/next-bicstation/app/shelves/runtime/fetchShelfProducts.ts
 // ============================================================================
 
 /**

@@ -1,6 +1,6 @@
 // ============================================================================
 // FILE:
-// /home/maya/shin-dev/shin-vps/next-bicstation/app/product/orchestration/runtimeLayout.ts
+// /home/maya/shin-dev/shin-vps/next-bicstation/app/shelves/orchestration/runtimeLayout.ts
 // ============================================================================
 
 /**
