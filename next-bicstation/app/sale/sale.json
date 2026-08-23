@@ -1,0 +1,78 @@
+{
+  "source": {
+    "type": "gmail",
+    "message_id": "1a023f1a724a5948"
+  },
+  "brand": "Lenovo",
+  "coupon_code": "39FIFA2026",
+  "valid_period": "2026/8/10 18:00 ～ 2026/8/23 23:59",
+  "products": [
+    {
+      "name": "ThinkBook 14 Gen 9 IPL FIFA World Cup 26 Edition",
+      "product_no": "",
+      "cpu": "インテル Core Ultra 7 プロセッサー 355",
+      "memory": "32 GB",
+      "storage": "1 TB SSD M.2",
+      "display": "14\" WUXGA液晶 (1920 x 1200) IPS",
+      "gpu": "CPU内蔵",
+      "regular_price": 205480,
+      "sale_price": 198000,
+      "url": "https://www.lenovo.com/jp/ja/p/laptops/thinkbook/thinkbook-series/lenovo-thinkbook-14-gen-9-14-inch-intel/21ux0017jp?cid=jp:affiliate:60fwz2&",
+      "affiliate_url": "https://ck.jp.ap.valuecommerce.com/servlet/referral?sid=3697471&pid=892455531&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fp%2Flaptops%2Fthinkbook%2Fthinkbook-series%2Flenovo-thinkbook-14-gen-9-14-inch-intel%2F21ux0017jp%3Fcid%3Djp%3Aaffiliate%3A60fwz2%26",
+      "identifier": "21ux0017jp",
+      "match": true,
+      "pc_product": {
+        "id": 3432,
+        "unique_id": "lenovo_21UX0017JP",
+        "name": "NBLN TB 14 G9 IPL U7 32G 1T 11H",
+        "url": "https://www.lenovo.com/jp/ja/p/laptops/thinkbook/thinkbook-series/lenovo-thinkbook-14-gen-9-14-inch-intel/21ux0017jp",
+        "image_url": "https://p2-ofp.static.pub/ShareResource/optimized/pdp/thinkbook/thinkbook-series/len101b0063/lenovo-thinkbook-14-gen-9-14-intel-pdp-hero.png"
+      }
+    },
+    {
+      "name": "ThinkBook 16 Gen 9 IPL FIFA World Cup 26 Edition",
+      "product_no": "",
+      "cpu": "インテル Core Ultra 7 プロセッサー 355",
+      "memory": "32 GB",
+      "storage": "1 TB SSD M.2",
+      "display": "16\" WUXGA液晶 (1920 x 1200) IPS",
+      "gpu": "CPU内蔵",
+      "regular_price": 205480,
+      "sale_price": 198000,
+      "url": "https://www.lenovo.com/jp/ja/p/laptops/thinkbook/thinkbook-series/lenovo-thinkbook-16-gen-9-16-inch-intel/21ur000ujp?cid=jp:affiliate:60fwz2&",
+      "affiliate_url": "https://ck.jp.ap.valuecommerce.com/servlet/referral?sid=3697471&pid=892455531&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fp%2Flaptops%2Fthinkbook%2Fthinkbook-series%2Flenovo-thinkbook-16-gen-9-16-inch-intel%2F21ur000ujp%3Fcid%3Djp%3Aaffiliate%3A60fwz2%26",
+      "identifier": "21ur000ujp",
+      "match": true,
+      "pc_product": {
+        "id": 3427,
+        "unique_id": "lenovo_21UR000UJP",
+        "name": "NBLN TB 16 G9 IPL U7 32G 1T 11H",
+        "url": "https://www.lenovo.com/jp/ja/p/laptops/thinkbook/thinkbook-series/lenovo-thinkbook-16-gen-9-16-inch-intel/21ur000ujp",
+        "image_url": "https://p2-ofp.static.pub/ShareResource/optimized/pdp/thinkbook/thinkbook-series/len101b0062/lenovo-thinkbook-16-gen-9-16-intel-pdp-hero.png"
+      }
+    },
+    {
+      "name": "ThinkPad X1 Carbon Gen 14 Aura Edition FIFA World Cup 26 Edition",
+      "product_no": "",
+      "cpu": "インテル Core Ultra 7 プロセッサー 356H",
+      "memory": "32 GB",
+      "storage": "1 TB SSD M.2",
+      "display": "14\" 2.8K OLED(有機ELディスプレイ) (2880 x 1800) 反射防止/汚れ防止",
+      "gpu": "CPU内蔵",
+      "regular_price": 438900,
+      "sale_price": 429000,
+      "url": "https://www.lenovo.com/jp/ja/p/laptops/thinkpad/thinkpadx1/lenovo-thinkpad-x1-carbon-gen-14-aura-edition-14-inch-intel/21v70000jp?cid=jp:affiliate:60fwz2&",
+      "affiliate_url": "https://ck.jp.ap.valuecommerce.com/servlet/referral?sid=3697471&pid=892455531&vc_url=https%3A%2F%2Fwww.lenovo.com%2Fjp%2Fja%2Fp%2Flaptops%2Fthinkpad%2Fthinkpadx1%2Flenovo-thinkpad-x1-carbon-gen-14-aura-edition-14-inch-intel%2F21v70000jp%3Fcid%3Djp%3Aaffiliate%3A60fwz2%26",
+      "identifier": "21v70000jp",
+      "match": true,
+      "pc_product": {
+        "id": 3311,
+        "unique_id": "lenovo_21V70000JP",
+        "name": "NB TP X1 Carbon G14 U7 32G 1T 11H",
+        "url": "https://www.lenovo.com/jp/ja/p/laptops/thinkpad/thinkpadx1/lenovo-thinkpad-x1-carbon-gen-14-aura-edition-14-inch-intel/21v70000jp",
+        "image_url": "https://p4-ofp.static.pub//fes/cms/2026/07/17/791ukx2nz9nzb62xh3o6q9wr1f90h3850690.png"
+      }
+    }
+  ],
+  "product_url": ""
+}

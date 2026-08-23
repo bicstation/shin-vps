@@ -1,5 +1,3 @@
-# /home/maya/shin-vps/django/acquisition/sources/scraping/gmail/lenovo/lenovo_sale_parser.py
-
 import json
 import re
 
@@ -13,24 +11,6 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent
 
 OUTPUT_DIR = BASE_DIR / "output"
-
-
-# =========================================================
-# TARGET
-# =========================================================
-
-TARGET_PRODUCT = (
-    "ThinkBook 14 Gen 9 IPL FIFA World Cup 26 Edition"
-)
-
-
-PRODUCT_END_MARKERS = (
-
-    "ThinkBook 16 Gen 9 IPL FIFA World Cup 26 Edition",
-
-    "ThinkPad X1 Carbon Gen 14 Aura Edition FIFA World Cup 26 Edition",
-
-)
 
 
 # =========================================================
@@ -67,7 +47,6 @@ def resolve_observation_path():
     return candidates[0]
 
 
-
 def load_observation(
     path,
 ):
@@ -78,7 +57,6 @@ def load_observation(
     ) as f:
 
         return json.load(f)
-
 
 
 # =========================================================
@@ -122,7 +100,6 @@ def get_content(
     )
 
 
-
 # =========================================================
 # HTML NORMALIZATION
 # =========================================================
@@ -130,12 +107,6 @@ def get_content(
 def normalize_content(
     content,
 ):
-
-    # HTMLの場合でも検索用には
-    # タグを単純に除去する。
-    #
-    # URL自体は text 側に存在する場合があるため、
-    # URLの取得は後段で行う。
 
     content = re.sub(
         r"<br\s*/?>",
@@ -154,63 +125,234 @@ def normalize_content(
 
 
     content = re.sub(
+        r"</div\s*>",
+        "\n",
+        content,
+        flags=re.IGNORECASE,
+    )
+
+
+    content = re.sub(
         r"<[^>]+>",
         "",
         content,
     )
 
 
-    return content
-
-
-
-# =========================================================
-# PRODUCT BLOCK
-# =========================================================
-
-def extract_product_block(
-    content,
-):
-
-    start = content.find(
-        TARGET_PRODUCT
+    content = (
+        content
+        .replace(
+            "\r\n",
+            "\n",
+        )
+        .replace(
+            "\r",
+            "\n",
+        )
     )
 
 
-    if start == -1:
-
-        raise RuntimeError(
-            "Target product not found: "
-            f"{TARGET_PRODUCT}"
-        )
+    return content
 
 
-    end = len(content)
+# =========================================================
+# PRODUCT BLOCKS
+# =========================================================
+
+def find_processor_lines(
+    lines,
+):
+
+    positions = []
 
 
-    for marker in PRODUCT_END_MARKERS:
+    for index, line in enumerate(
+        lines
+    ):
 
-        index = content.find(
-            marker,
-            start + len(TARGET_PRODUCT),
-        )
+        if re.match(
+            r"^\s*・?プロセッサー[：:]",
+            line,
+        ):
 
-
-        if index != -1:
-
-            end = min(
-                end,
-                index,
+            positions.append(
+                index
             )
 
 
-    block = content[
-        start:end
-    ].strip()
+    return positions
 
 
-    return block
+def find_product_name(
+    lines,
+    processor_index,
+):
 
+    index = (
+        processor_index - 1
+    )
+
+
+    while (
+        index >= 0
+        and
+        not lines[index].strip()
+    ):
+
+        index -= 1
+
+
+    if index < 0:
+
+        return (
+            "",
+            -1,
+        )
+
+
+    name = (
+        lines[index]
+        .strip()
+    )
+
+
+    # -----------------------------------------------------
+    # 装飾引用符だけ除去
+    # -----------------------------------------------------
+
+    name = name.strip(
+        "「」"
+    )
+
+
+    return (
+        name,
+        index,
+    )
+
+
+def extract_product_blocks(
+    content,
+):
+
+    lines = content.splitlines()
+
+
+    processor_positions = (
+        find_processor_lines(
+            lines
+        )
+    )
+
+
+    if not processor_positions:
+
+        raise RuntimeError(
+            "No product blocks found"
+        )
+
+
+    products = []
+
+
+    for index, processor_index in enumerate(
+        processor_positions
+    ):
+
+        # -------------------------------------------------
+        # 商品名
+        # -------------------------------------------------
+
+        product_name, name_index = (
+            find_product_name(
+                lines,
+                processor_index,
+            )
+        )
+
+
+        if not product_name:
+
+            continue
+
+
+        # -------------------------------------------------
+        # 商品ブロック開始
+        # -------------------------------------------------
+
+        start_index = (
+            name_index
+        )
+
+
+        # -------------------------------------------------
+        # 商品ブロック終了
+        #
+        # 次の商品名の直前まで
+        # -------------------------------------------------
+
+        if (
+            index + 1
+            <
+            len(processor_positions)
+        ):
+
+            next_processor_index = (
+                processor_positions[
+                    index + 1
+                ]
+            )
+
+
+            _, next_name_index = (
+                find_product_name(
+                    lines,
+                    next_processor_index,
+                )
+            )
+
+
+            if next_name_index >= 0:
+
+                end_index = (
+                    next_name_index
+                )
+
+            else:
+
+                end_index = (
+                    next_processor_index
+                )
+
+        else:
+
+            end_index = len(
+                lines
+            )
+
+
+        block = "\n".join(
+            lines[
+                start_index:end_index
+            ]
+        ).strip()
+
+
+        if block:
+
+            products.append(
+                block
+            )
+
+
+    if not products:
+
+        raise RuntimeError(
+            "Product blocks could not be extracted"
+        )
+
+
+    return products
 
 
 # =========================================================
@@ -221,21 +363,37 @@ def extract_product_name(
     block,
 ):
 
-    match = re.search(
-        re.escape(
-            TARGET_PRODUCT
-        ),
-        block,
-    )
+    for line in block.splitlines():
+
+        line = line.strip()
 
 
-    if not match:
+        if not line:
 
-        return ""
+            continue
 
 
-    return match.group(0)
+        line = line.strip(
+            "「」"
+        )
 
+
+        # -------------------------------------------------
+        # 商品名としてプロセッサー行を返さない
+        # -------------------------------------------------
+
+        if re.match(
+            r"^・?プロセッサー[：:]",
+            line,
+        ):
+
+            continue
+
+
+        return line
+
+
+    return ""
 
 
 # =========================================================
@@ -246,22 +404,29 @@ def extract_product_no(
     block,
 ):
 
-    match = re.search(
+    patterns = (
 
-        r"製品型番[：:]\s*([A-Za-z0-9]+)",
+        r"製品型番[：:]\s*([A-Za-z0-9_-]+)",
 
-        block,
+        r"型番[：:]\s*([A-Za-z0-9_-]+)",
 
     )
 
 
-    if not match:
+    for pattern in patterns:
 
-        return ""
+        match = re.search(
+            pattern,
+            block,
+        )
 
 
-    return match.group(1)
+        if match:
 
+            return match.group(1)
+
+
+    return ""
 
 
 # =========================================================
@@ -287,8 +452,10 @@ def extract_spec(
         return ""
 
 
-    return match.group(1).strip()
-
+    return (
+        match.group(1)
+        .strip()
+    )
 
 
 # =========================================================
@@ -315,15 +482,12 @@ def extract_price(
 
 
     return int(
-
         match.group(1)
         .replace(
             ",",
             "",
         )
-
     )
-
 
 
 # =========================================================
@@ -334,37 +498,42 @@ def extract_sale_price(
     block,
 ):
 
-    match = re.search(
+    patterns = (
 
         r"クーポン適応価格[：:]\s*[￥¥]\s*([\d,]+)",
 
-        block,
+        r"クーポン適用価格[：:]\s*[￥¥]\s*([\d,]+)",
 
     )
 
 
-    if match:
+    for pattern in patterns:
 
-        return int(
-
-            match.group(1)
-            .replace(
-                ",",
-                "",
-            )
-
+        match = re.search(
+            pattern,
+            block,
         )
+
+
+        if match:
+
+            return int(
+                match.group(1)
+                .replace(
+                    ",",
+                    "",
+                )
+            )
 
 
     return 0
 
 
-
 # =========================================================
-# AFFILIATE URL
+# URL
 # =========================================================
 
-def extract_affiliate_url(
+def extract_url(
     block,
 ):
 
@@ -382,10 +551,12 @@ def extract_affiliate_url(
         return ""
 
 
-    return urls[0].rstrip(
-        ".,"
+    return (
+        urls[0]
+        .rstrip(
+            ".,"
+        )
     )
-
 
 
 # =========================================================
@@ -398,9 +569,9 @@ def extract_coupon_code(
 
     patterns = (
 
-        r"クーポンコード[：:]\s*([A-Za-z0-9_-]+)",
+        r"特別クーポンコード.*?([A-Za-z0-9_-]{6,})",
 
-        r"クーポン[：:]\s*([A-Za-z0-9_-]+)",
+        r"クーポンコード.*?([A-Za-z0-9_-]{6,})",
 
     )
 
@@ -410,6 +581,7 @@ def extract_coupon_code(
         match = re.search(
             pattern,
             content,
+            flags=re.DOTALL,
         )
 
 
@@ -419,7 +591,6 @@ def extract_coupon_code(
 
 
     return ""
-
 
 
 # =========================================================
@@ -451,47 +622,24 @@ def extract_valid_period(
 
         if match:
 
-            return match.group(1).strip()
+            return (
+                match.group(1)
+                .strip()
+            )
 
 
     return ""
 
 
-
 # =========================================================
-# SALE REALITY
+# PRODUCT REALITY
 # =========================================================
 
-def build_sale_reality(
-    observation,
+def build_product_reality(
+    product_block,
 ):
 
-    content = get_content(
-        observation
-    )
-
-
-    normalized = normalize_content(
-        content
-    )
-
-
-    # -----------------------------------------------------
-    # 最初に対象商品範囲を確定
-    # -----------------------------------------------------
-
-    product_block = (
-        extract_product_block(
-            normalized
-        )
-    )
-
-
-    # -----------------------------------------------------
-    # 商品範囲から商品Realityを取得
-    # -----------------------------------------------------
-
-    product = {
+    return {
 
         "name":
             extract_product_name(
@@ -544,12 +692,74 @@ def build_sale_reality(
                 product_block
             ),
 
-        "affiliate_url":
-            extract_affiliate_url(
+        "url":
+            extract_url(
                 product_block
             ),
 
     }
+
+
+# =========================================================
+# SALE REALITY
+# =========================================================
+
+def build_sale_reality(
+    observation,
+):
+
+    content = get_content(
+        observation
+    )
+
+
+    normalized = normalize_content(
+        content
+    )
+
+
+    # -----------------------------------------------------
+    # メール内の商品ブロックをすべて抽出
+    # -----------------------------------------------------
+
+    product_blocks = (
+        extract_product_blocks(
+            normalized
+        )
+    )
+
+
+    # -----------------------------------------------------
+    # 商品Realityをすべて構築
+    # -----------------------------------------------------
+
+    products = []
+
+
+    for product_block in product_blocks:
+
+        product = (
+            build_product_reality(
+                product_block
+            )
+        )
+
+
+        if not product["name"]:
+
+            continue
+
+
+        products.append(
+            product
+        )
+
+
+    if not products:
+
+        raise RuntimeError(
+            "No product reality found"
+        )
 
 
     # -----------------------------------------------------
@@ -593,15 +803,10 @@ def build_sale_reality(
             ),
 
 
-        "product":
-            product,
-
-
-        "raw_text":
-            product_block,
+        "products":
+            products,
 
     }
-
 
 
 # =========================================================
@@ -635,7 +840,6 @@ def persist_sale_reality(
 
 
     return output_path
-
 
 
 # =========================================================
@@ -687,7 +891,7 @@ def run():
     print()
 
     print(
-        "[2] PRODUCT BLOCK"
+        "[2] PRODUCT BLOCKS"
     )
 
 
@@ -699,8 +903,27 @@ def run():
     print()
 
     print(
-        sale["raw_text"]
+        "PRODUCT COUNT:",
+        len(
+            sale["products"]
+        ),
     )
+
+
+    for index, product in enumerate(
+        sale["products"],
+        start=1,
+    ):
+
+        print()
+
+        print(
+            f"[PRODUCT {index}]"
+        )
+
+        print(
+            product["name"]
+        )
 
 
     # -----------------------------------------------------
@@ -764,7 +987,6 @@ def run():
 
 
     return sale
-
 
 
 # =========================================================

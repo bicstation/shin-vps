@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import json
 import base64
 
@@ -13,9 +15,25 @@ from googleapiclient.discovery import build
 
 BASE_DIR = Path(__file__).resolve().parent
 
-OUTPUT_DIR = BASE_DIR / "output"
+GMAIL_DIR = BASE_DIR.parent
 
-TOKEN_PATH = BASE_DIR.parent / "token.json"
+OUTPUT_DIR = (
+    BASE_DIR
+    /
+    "output"
+)
+
+TOKEN_PATH = (
+    GMAIL_DIR
+    /
+    "token.json"
+)
+
+CREDENTIALS_PATH = (
+    GMAIL_DIR
+    /
+    "credentials.json"
+)
 
 
 # =========================================================
@@ -28,13 +46,9 @@ SCOPES = [
 
 
 SENDER = (
-    "lenovo@ecomm.lenovo.com"
+    "support@valuecommerce.ne.jp"
 )
 
-
-# =========================================================
-# TARGET SUBJECT
-# =========================================================
 
 TARGET_SUBJECT_MARKER = (
     "アフィリエイター様限定"
@@ -64,71 +78,6 @@ def build_service():
 
 
 # =========================================================
-# FIND TARGET MAIL
-# =========================================================
-
-def find_target_mail(
-    service,
-):
-
-    query = (
-        f'from:{SENDER} '
-        f'subject:"{TARGET_SUBJECT_MARKER}"'
-    )
-
-
-    result = (
-        service
-        .users()
-        .messages()
-        .list(
-            userId="me",
-            q=query,
-            maxResults=1,
-        )
-        .execute()
-    )
-
-
-    messages = result.get(
-        "messages",
-        [],
-    )
-
-
-    if not messages:
-
-        raise RuntimeError(
-            "Lenovo target mail not found"
-        )
-
-
-    return messages[0]
-
-
-# =========================================================
-# FETCH FULL MAIL
-# =========================================================
-
-def fetch_message(
-    service,
-    message_id,
-):
-
-    return (
-        service
-        .users()
-        .messages()
-        .get(
-            userId="me",
-            id=message_id,
-            format="full",
-        )
-        .execute()
-    )
-
-
-# =========================================================
 # HEADER
 # =========================================================
 
@@ -150,6 +99,102 @@ def extract_headers(
 
 
     return headers
+
+
+# =========================================================
+# SEARCH
+# =========================================================
+
+def search_target_mail(
+    service,
+):
+
+    result = (
+        service
+        .users()
+        .messages()
+        .list(
+            userId="me",
+            q=f"from:{SENDER}",
+            maxResults=100,
+        )
+        .execute()
+    )
+
+
+    messages = result.get(
+        "messages",
+        [],
+    )
+
+
+    for message in messages:
+
+        metadata = (
+            service
+            .users()
+            .messages()
+            .get(
+                userId="me",
+                id=message[
+                    "id"
+                ],
+                format="metadata",
+                metadataHeaders=[
+                    "Subject",
+                ],
+            )
+            .execute()
+        )
+
+
+        headers = extract_headers(
+            metadata.get(
+                "payload",
+                {},
+            )
+        )
+
+
+        subject = headers.get(
+            "Subject",
+            "",
+        )
+
+
+        if (
+            TARGET_SUBJECT_MARKER
+            in subject
+        ):
+
+            return message
+
+
+    raise RuntimeError(
+        "Lenovo affiliate mail not found"
+    )
+
+
+# =========================================================
+# FETCH
+# =========================================================
+
+def fetch_message(
+    service,
+    message_id,
+):
+
+    return (
+        service
+        .users()
+        .messages()
+        .get(
+            userId="me",
+            id=message_id,
+            format="full",
+        )
+        .execute()
+    )
 
 
 # =========================================================
@@ -183,7 +228,6 @@ def decode_body(
     )
 
 
-
 def extract_content(
     payload,
 ):
@@ -197,7 +241,9 @@ def extract_content(
         "parts"
     ):
 
-        for part in payload["parts"]:
+        for part in payload[
+            "parts"
+        ]:
 
             child_text, child_html = (
                 extract_content(
@@ -248,13 +294,17 @@ def save_observation(
 ):
 
     headers = extract_headers(
-        raw["payload"]
+        raw[
+            "payload"
+        ]
     )
 
 
     text, html = (
         extract_content(
-            raw["payload"]
+            raw[
+                "payload"
+            ]
         )
     )
 
@@ -262,7 +312,9 @@ def save_observation(
     output_dir = (
         OUTPUT_DIR
         /
-        message["id"]
+        message[
+            "id"
+        ]
     )
 
 
@@ -302,14 +354,14 @@ def save_observation(
         "identity": {
 
             "message_id":
-                message["id"],
+                message[
+                    "id"
+                ],
 
         },
 
-
         "headers":
             headers,
-
 
         "content": {
 
@@ -324,8 +376,15 @@ def save_observation(
     }
 
 
+    observation_path = (
+        output_dir
+        /
+        "observation.json"
+    )
+
+
     with open(
-        output_dir / "observation.json",
+        observation_path,
         "w",
         encoding="utf-8",
     ) as f:
@@ -341,7 +400,6 @@ def save_observation(
     return output_dir
 
 
-
 # =========================================================
 # RUNTIME
 # =========================================================
@@ -353,7 +411,7 @@ def run():
     print("=" * 80)
 
     print(
-        "LENOVO MAIL OBSERVER"
+        "LENOVO GMAIL ACQUIRE"
     )
 
     print("=" * 80)
@@ -362,14 +420,29 @@ def run():
     service = build_service()
 
 
-    message = find_target_mail(
+    message = search_target_mail(
         service
     )
 
 
     raw = fetch_message(
         service,
-        message["id"],
+        message[
+            "id"
+        ],
+    )
+
+
+    headers = extract_headers(
+        raw[
+            "payload"
+        ]
+    )
+
+
+    subject = headers.get(
+        "Subject",
+        "",
     )
 
 
@@ -382,7 +455,21 @@ def run():
     print()
 
     print(
-        "TARGET FOUND"
+        "○ TARGET FOUND"
+    )
+
+
+    print(
+        "SUBJECT:",
+        subject,
+    )
+
+
+    print(
+        "MESSAGE:",
+        message[
+            "id"
+        ],
     )
 
 
@@ -395,6 +482,9 @@ def run():
     return output_dir
 
 
+# =========================================================
+# MAIN
+# =========================================================
 
 if __name__ == "__main__":
 

@@ -114,6 +114,11 @@ REALITY_RUNTIMES = {
         "SOFMAP",
         "acquisition.sources.scraping.sofmap.run",
     ),
+    
+    "gmail": (
+        "GMAIL",
+        "acquisition.sources.scraping.gmail.run",
+    ),
 
 }
 

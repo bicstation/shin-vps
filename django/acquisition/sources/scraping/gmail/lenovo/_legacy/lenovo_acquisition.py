@@ -3,19 +3,19 @@ import json
 from pathlib import Path
 
 
-from lenovo_mail_observer import (
+from django.acquisition.sources.scraping.gmail.lenovo._legacy.lenovo_mail_observer import (
     run as observe_mail,
 )
 
-from lenovo_sale_parser import (
+
+from django.acquisition.sources.scraping.gmail.lenovo._legacy.lenovo_sale_parser import (
     build_sale_reality,
 )
 
 
-from lenovo_url_resolver import (
-    resolve_url,
+from django.acquisition.sources.scraping.gmail.lenovo._legacy.lenovo_sale_product_matcher import (
+    build_match_reality,
 )
-
 
 
 # =========================================================
@@ -25,13 +25,11 @@ from lenovo_url_resolver import (
 BASE_DIR = Path(__file__).resolve().parent
 
 
-
 # =========================================================
 # ACQUISITION RUNTIME
 # =========================================================
 
 def run():
-
 
     print()
 
@@ -42,7 +40,6 @@ def run():
     )
 
     print("=" * 80)
-
 
 
     # =====================================================
@@ -73,7 +70,6 @@ def run():
     )
 
 
-
     with open(
         observation_path,
         encoding="utf-8",
@@ -82,7 +78,6 @@ def run():
         observation = json.load(
             f
         )
-
 
 
     # =====================================================
@@ -110,42 +105,125 @@ def run():
     )
 
 
-
     # =====================================================
-    # 3. URL RESOLVER
+    # 3. SALE PRODUCT MATCHER
     # =====================================================
 
     print()
 
     print(
-        "[3] URL RESOLVER"
+        "[3] SALE PRODUCT MATCHER"
     )
 
 
-    product_url = resolve_url(
-        sale.get(
-            "affiliate_url",
-            "",
+    match_reality = (
+        build_match_reality(
+            sale
         )
     )
 
 
-    sale["product_url"] = (
-        product_url
+    total = len(
+        match_reality[
+            "matches"
+        ]
+    )
+
+
+    matched = sum(
+
+        1
+
+        for item
+        in match_reality[
+            "matches"
+        ]
+
+        if item["match"]
+
+    )
+
+
+    print()
+
+    print(
+        "PRODUCT COUNT:",
+        total,
     )
 
 
     print(
-        product_url
+        "MATCHED:",
+        matched,
     )
 
+
+    print(
+        "NOT MATCHED:",
+        total - matched,
+    )
+
+
+    for index, item in enumerate(
+
+        match_reality[
+            "matches"
+        ],
+
+        start=1,
+
+    ):
+
+        print()
+
+        if item["match"]:
+
+            print(
+                f"[{index}] ○ MATCH"
+            )
+
+        else:
+
+            print(
+                f"[{index}] × NOT MATCH"
+            )
+
+
+        print(
+            "SALE:",
+            item[
+                "sale_product"
+            ][
+                "name"
+            ],
+        )
+
+
+        print(
+            "IDENTIFIER:",
+            item[
+                "identifier"
+            ],
+        )
+
+
+        if item["pc_product"]:
+
+            print(
+                "PCProduct:",
+                item[
+                    "pc_product"
+                ][
+                    "unique_id"
+                ],
+            )
 
 
     # =====================================================
     # 4. PERSIST
     # =====================================================
 
-    output_path = (
+    sale_output_path = (
         observation_path.parent
         /
         "sale.json"
@@ -153,7 +231,7 @@ def run():
 
 
     with open(
-        output_path,
+        sale_output_path,
         "w",
         encoding="utf-8",
     ) as f:
@@ -166,16 +244,44 @@ def run():
         )
 
 
+    match_output_path = (
+        observation_path.parent
+        /
+        "sale_product_matches.json"
+    )
+
+
+    with open(
+        match_output_path,
+        "w",
+        encoding="utf-8",
+    ) as f:
+
+        json.dump(
+            match_reality,
+            f,
+            ensure_ascii=False,
+            indent=2,
+        )
+
+
     print()
 
     print(
         "[4] PERSIST"
     )
 
+
     print(
-        output_path
+        "SALE:",
+        sale_output_path,
     )
 
+
+    print(
+        "MATCHES:",
+        match_output_path,
+    )
 
 
     print()
@@ -189,10 +295,12 @@ def run():
     print("=" * 80)
 
 
+    return match_reality
 
-    return sale
 
-
+# =========================================================
+# MAIN
+# =========================================================
 
 if __name__ == "__main__":
 
