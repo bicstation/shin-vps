@@ -23,23 +23,15 @@ from api.services.semantic.v2.navigation.navigation_rules import (
 # ==========================================================
 
 def calculate_product_count(
-
     products,
-
     group_slug,
 ):
-
     return len([
-
         product
-
         for product in products
-
-        if group_slug in
-
-        product.get(
+        if group_slug in product.get(
             "matched_groups",
-            []
+            [],
         )
     ])
 
@@ -48,26 +40,21 @@ def calculate_product_count(
 # SIDEBAR
 # ==========================================================
 
-def build_sidebar_runtime():
+def build_sidebar_runtime(
+    traversal=None,
+):
 
-    authority = (
-        build_authority_runtime()
-    )
-
-    topology = (
-        build_topology_runtime()
-    )
+    authority = build_authority_runtime()
+    topology = build_topology_runtime()
 
     traversal = (
-        build_traversal_runtime()
+        traversal
+        or build_traversal_runtime()
     )
 
-    products = (
-
-        traversal.get(
-            "products",
-            []
-        )
+    products = traversal.get(
+        "products",
+        []
     )
 
     filters = []
@@ -81,151 +68,68 @@ def build_sidebar_runtime():
         []
     ):
 
-        group_slug = (
-            group.get(
-                "slug"
-            )
+        group_slug = group.get(
+            "slug"
         )
 
-        parent_group = (
-            group.get(
-                "parent_group"
-            )
+        parent_group = group.get(
+            "parent_group"
         )
-
-        # --------------------------------------------------
-        # Sidebar Policy
-        # --------------------------------------------------
 
         if not is_secondary_group(
             parent_group
         ):
             continue
 
-        # --------------------------------------------------
-        # Reality Count
-        # --------------------------------------------------
-
-        product_count = (
-
-            calculate_product_count(
-
-                products,
-
-                group_slug,
-            )
-        )
-
-        # --------------------------------------------------
-        # Runtime
-        # --------------------------------------------------
-
         filters.append({
-
-            "slug":
-                group_slug,
-
-            "name":
+            "slug": group_slug,
+            "name": group.get("name"),
+            "type": group.get("type"),
+            "icon": group.get("icon"),
+            "color": group.get("color"),
+            "parent_group": parent_group,
+            "attribute_count": len(
                 group.get(
-                    "name"
-                ),
-
-            "type":
-                group.get(
-                    "type"
-                ),
-
-            "icon":
-                group.get(
-                    "icon"
-                ),
-
-            "color":
-                group.get(
-                    "color"
-                ),
-
-            "parent_group":
-                parent_group,
-
-            "attribute_count":
-
-                len(
-                    group.get(
-                        "attributes",
-                        []
-                    )
-                ),
-
+                    "attributes",
+                    [],
+                )
+            ),
             "product_count":
-                product_count,
+                calculate_product_count(
+                    products,
+                    group_slug,
+                ),
         })
 
     # ======================================================
     # SORT
     # ======================================================
 
-    filters = sorted(
-
-        filters,
-
+    filters.sort(
         key=lambda x: (
-
-            x.get(
-                "parent_group",
-                ""
-            ),
-
-            -x.get(
-                "product_count",
-                0
-            ),
-
-            x.get(
-                "name",
-                ""
-            ),
+            x.get("parent_group", ""),
+            -x.get("product_count", 0),
+            x.get("name", ""),
         )
     )
-
-    # ======================================================
-    # DEBUG
-    # ======================================================
-
-    if filters:
-
-        print(
-            "🔥 SIDEBAR SAMPLE",
-            filters[0]
-        )
 
     # ======================================================
     # PAYLOAD
     # ======================================================
 
     return {
-
-        "filters":
-            filters,
-
+        "filters": filters,
         "semantic_schema_version":
-
             authority.get(
                 "semantic_schema_version"
             ),
-
         "authority_version":
-
             authority.get(
                 "authority_version"
             ),
-
         "semantic_authority":
-
             authority.get(
                 "semantic_authority"
             ),
-
-        "ready":
-            True,
+        "ready": True,
     }

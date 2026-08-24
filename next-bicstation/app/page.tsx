@@ -35,6 +35,11 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function Page() {
 
+  console.log(
+    '🔥 HOME PAGE EXECUTE',
+    new Date().toISOString(),
+  )
+
   const [
     navigation,
     top,
@@ -42,18 +47,6 @@ export default async function Page() {
     fetchNavigationRuntime(),
     getTopRuntime(),
   ])
-
-  // ========================================================================
-  // Observability
-  // ========================================================================
-
-  console.log(
-    '🔥 TOP PAGE RUNTIME',
-    {
-      top: !!top,
-      navigation: !!navigation,
-    }
-  )
 
   // ========================================================================
   // Runtime

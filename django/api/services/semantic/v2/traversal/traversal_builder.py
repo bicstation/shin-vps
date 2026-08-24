@@ -176,8 +176,24 @@ def build_traversal_runtime():
     query_started_at = time.perf_counter()
 
     products = (
-        PCProduct.objects.filter(
+        PCProduct.objects
+        .filter(
             is_active=True
+        )
+        .only(
+            "id",
+            "unique_id",
+            "name",
+            "maker",
+            "price",
+            "image_url",
+            "cpu_model",
+            "gpu_model",
+            "memory_gb",
+            "storage_gb",
+            "display_info",
+            "is_ai_pc",
+            "semantic_runtime",
         )
     )
 

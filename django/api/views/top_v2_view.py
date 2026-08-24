@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import time
+
 from rest_framework.decorators import (
     api_view,
     permission_classes,
@@ -24,12 +26,18 @@ from api.services.semantic.v2.top.top_runtime import (
 
 @api_view(["GET"])
 @permission_classes([AllowAny])
-def semantic_top_v2(
-    request
-):
+def semantic_top_v2(request):
 
-    payload = (
-        build_top_runtime()
+    started_at = time.perf_counter()
+
+    payload = build_top_runtime()
+
+    elapsed = (
+        time.perf_counter() - started_at
+    ) * 1000
+
+    print(
+        f"⏱️ TOP API RUNTIME: {elapsed:.2f}ms"
     )
 
     return Response(
