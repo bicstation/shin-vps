@@ -77,11 +77,6 @@ export const metadata: Metadata = {
 
   category:
     APPLICATION.CATEGORY,
-
-  other: {
-    'google-adsense-account':
-      'ca-pub-9068876333048216',
-  },
 }
 
 
@@ -113,16 +108,6 @@ export default function RootLayout({
       lang="ja"
       suppressHydrationWarning
     >
-
-      <head>
-
-        <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9068876333048216"
-          crossOrigin="anonymous"
-        />
-
-      </head>
 
       <body
         className={`
@@ -205,7 +190,7 @@ export default function RootLayout({
               window.dataLayer || [];
 
             function gtag() {
-              dataLayer.push(arguments);
+              dataLayer.push(dataLayer);
             }
 
             gtag(
