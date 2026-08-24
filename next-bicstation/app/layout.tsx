@@ -5,9 +5,7 @@ import type {
   Viewport,
 } from 'next'
 
-import {
-  Inter,
-} from 'next/font/google'
+import { Inter } from 'next/font/google'
 
 import {
   APPLICATION,
@@ -16,12 +14,9 @@ import {
   createDefaultJsonLd,
 } from '@/shared/publishing'
 
-import {
-  toNextMetadata,
-} from './publishing/next'
+import { toNextMetadata } from './publishing/next'
 
-import JsonLd
-  from './publishing/JsonLd'
+import JsonLd from './publishing/JsonLd'
 
 import '@shared/styles/globals.css'
 import '@shared/styles/markdown.css'
@@ -34,134 +29,86 @@ import Header
 import Footer
   from '@/shared/components/organisms/common/Footer'
 
-// import ChatBotLoader from '@/shared/components/organisms/common/ChatBotLoader';
-
 import styles
   from './layout.module.css'
 
-/**
- * =====================================================================
- * 🌐 Font
- * =====================================================================
- */
+
+/* =====================================================================
+🌐 Font
+===================================================================== */
 
 const inter = Inter({
-
-  subsets: [
-    'latin',
-  ],
-
-  display:
-    'swap',
-
+  subsets: ['latin'],
+  display: 'swap',
 })
 
-/**
- * =====================================================================
- * 🛰️ Publishing
- * =====================================================================
- */
 
-const publishingMetadata =
+/* =====================================================================
+🛰️ Publishing
+===================================================================== */
 
-  createMetadata({
+const publishingMetadata = createMetadata({
+  canonical: SITE.URL,
+})
 
-    canonical:
-      SITE.URL,
 
-  })
+/* =====================================================================
+📄 JSON-LD
+===================================================================== */
 
-/**
- * ============================================================================
- * JSON-LD
- * ============================================================================
- */
+const jsonLd = createDefaultJsonLd()
 
-const jsonLd =
 
-  createDefaultJsonLd()
-
-/**
- * =====================================================================
- * 🛰️ Metadata
- * =====================================================================
- */
+/* =====================================================================
+🛰️ Metadata
+===================================================================== */
 
 export const metadata: Metadata = {
-
   ...toNextMetadata(
-
     publishingMetadata,
-
   ),
 
-  metadataBase:
-
-    new URL(
-
-      SITE.URL,
-
-    ),
+  metadataBase: new URL(
+    SITE.URL,
+  ),
 
   applicationName:
-
     APPLICATION.NAME,
 
   category:
-
     APPLICATION.CATEGORY,
 
   other: {
-
     'google-adsense-account':
-
       'ca-pub-9068876333048216',
-
   },
-
 }
 
-/**
- * =====================================================================
- * 📱 Viewport
- * =====================================================================
- */
+
+/* =====================================================================
+📱 Viewport
+===================================================================== */
 
 export const viewport: Viewport = {
-
-  width:
-    'device-width',
-
-  initialScale:
-    1,
-
+  width: 'device-width',
+  initialScale: 1,
 }
 
-/**
- * =====================================================================
- * 🚀 Root Layout
- * =====================================================================
- */
+
+/* =====================================================================
+🚀 Root Layout
+===================================================================== */
 
 export default function RootLayout({
-
   children,
-
 }: {
-
-  children:
-  React.ReactNode
-
+  children: React.ReactNode
 }) {
 
-  const isAdminPage =
-    false
-
-  const isAdult =
-    false
+  const isAdminPage = false
+  const isAdult = false
 
   return (
-
     <html
       lang="ja"
       suppressHydrationWarning
@@ -178,92 +125,71 @@ export default function RootLayout({
       </head>
 
       <body
-
         className={`
           ${inter.className}
           ${styles.bodyWrapper}
-          ${isAdult ? 'is-adult-theme' : 'is-general-theme'}
+          ${isAdult
+            ? 'is-adult-theme'
+            : 'is-general-theme'
+          }
         `}
-
         suppressHydrationWarning
-
       >
 
         <JsonLd
-
           id="jsonld-default"
-
           jsonLd={jsonLd}
-
         />
 
+
         {/* =========================================================
-           🔹 Header
+        🔹 Header
         ========================================================= */}
 
         <Header />
 
+
         {/* =========================================================
-           🔹 Main
+        🔹 Main Container
         ========================================================= */}
 
-        <main
-
-          className={
-            styles.main
-          }
-
+        <div
+          className={styles.main}
         >
-
           {children}
+        </div>
 
-        </main>
 
         {/* =========================================================
-           🔹 Affiliate
+        🔹 Affiliate
         ========================================================= */}
 
         {!isAdminPage && (
-
           <div
-
             style={{
-
-              fontSize:
-                '11px',
-
-              textAlign:
-                'center',
-
-              color:
-                '#888',
-
-              marginTop:
-                '24px',
-
+              fontSize: '11px',
+              textAlign: 'center',
+              color: '#888',
+              marginTop: '24px',
             }}
-
           >
-
             ※本サイトはアフィリエイト広告を利用しています
-
           </div>
-
         )}
 
+
         {/* =========================================================
-           🔹 Footer
+        🔹 Footer
         ========================================================= */}
 
         {!isAdminPage && (
-
           <Footer />
-
         )}
 
-        {/*
-        <ChatBotLoader />
-        */}
+
+        {/* =========================================================
+        🔹 Google Analytics
+        ========================================================= */}
 
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-MF6X0SE2Q5"
@@ -275,17 +201,27 @@ export default function RootLayout({
           strategy="afterInteractive"
         >
           {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-MF6X0SE2Q5');
+            window.dataLayer =
+              window.dataLayer || [];
+
+            function gtag() {
+              dataLayer.push(arguments);
+            }
+
+            gtag(
+              'js',
+              new Date()
+            );
+
+            gtag(
+              'config',
+              'G-MF6X0SE2Q5'
+            );
           `}
         </Script>
 
       </body>
 
     </html>
-
   )
-
 }

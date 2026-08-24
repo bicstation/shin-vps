@@ -24,8 +24,6 @@ export default function HomeRuntimeOrchestrator({
   runtime,
   observatory = false,
 }: Props) {
-  console.log('🔥 HOME ORCHESTRATOR RUNTIME', runtime)
-
   const top = runtime?.top || {}
   const navigation = runtime?.navigation || {}
 
@@ -40,34 +38,6 @@ export default function HomeRuntimeOrchestrator({
 
   const meaning =
     top?.meaning ?? {}
-
-  console.log('🔥 TOP HOME PROJECTION', {
-    featuredProducts: featuredProducts.length,
-    featuredGroups: featuredGroups.length,
-    productCount: stats?.productCount,
-    groupCount: stats?.groupCount,
-    attributeCount: stats?.attributeCount,
-    ready: top?.ready,
-    authorityVersion: top?.authorityVersion,
-    semanticAuthority: top?.semanticAuthority,
-  })
-
-  const sections = [
-    { type: 'hero', visible: true },
-    { type: 'intent', visible: true },
-    { type: 'ranking', visible: featuredProducts.length > 0 },
-    { type: 'recommendation', visible: true },
-    { type: 'capability', visible: true },
-    { type: 'guide', visible: true },
-    { type: 'trust', visible: true },
-    { type: 'finder_cta', visible: true },
-    { type: 'bottom_cta', visible: true },
-  ]
-
-  const visibleSections =
-    sections.filter(
-      section => section.visible
-    )
 
   if (!top?.ready) {
     return <HomeEmpty />
@@ -88,7 +58,6 @@ export default function HomeRuntimeOrchestrator({
 
           <HomeTopologyInspector
             runtime={runtime}
-
           />
         </>
       )}

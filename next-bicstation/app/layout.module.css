@@ -2,15 +2,12 @@
  * 🏗️ BIC STATION LAYOUT SYSTEM
  * ===================================================================== */
 
- .main {
+.main {
   width: 100%;
-
   max-width: 1200px;
 
   margin: 0 auto;
-
-  padding:
-    96px 24px 48px;
+  padding: 96px 24px 48px;
 
   box-sizing: border-box;
 }
@@ -21,13 +18,13 @@
  * ===================================================== */
 
 .bodyWrapper {
-  margin: 0;
-  padding: 0;
+  display: flex;
+  flex-direction: column;
 
   min-height: 100vh;
 
-  display: flex;
-  flex-direction: column;
+  margin: 0;
+  padding: 0;
 
   overflow-x: hidden;
 
@@ -41,63 +38,6 @@
   color: #e2e8f0;
 }
 
-/* =====================================================
- * Main Container
- * ===================================================== */
-
-.main {
-  width: 100%;
-
-  max-width: 1200px;
-
-  margin: 0 auto;
-
-  padding:
-    96px 24px 48px;
-
-  box-sizing: border-box;
-}
-
-/* =====================================================
- * Affiliate Notice
- * ===================================================== */
-
-.adDisclosure {
-  width: 100%;
-
-  padding: 6px 0;
-
-  text-align: center;
-
-  font-size: 11px;
-
-  color: #94a3b8;
-
-  background:
-    rgba(
-      255,
-      255,
-      255,
-      0.9
-    );
-
-  border-bottom:
-    1px solid rgba(
-      0,
-      0,
-      0,
-      0.05
-    );
-
-  position: sticky;
-
-  top: var(--header-height);
-
-  z-index: 900;
-
-  backdrop-filter:
-    blur(10px);
-}
 
 /* =====================================================
  * Mobile
@@ -106,19 +46,16 @@
 @media (max-width: 768px) {
 
   .main {
-
-    padding:
-      80px 16px 32px;
+    padding: 80px 16px 32px;
   }
 
 }
 
+
 @media (max-width: 640px) {
 
   .main {
-
-    padding:
-      72px 12px 24px;
+    padding: 72px 12px 24px;
   }
 
 }
