@@ -2,51 +2,25 @@
 
 'use client'
 
-import Link
-  from 'next/link'
-
-import styles
-  from '../styles/cta.module.css'
+import Link from 'next/link'
+import styles from '../styles/cta.module.css'
 
 export default function HomeStickyCTA() {
-
   return (
-
-    <div
-      className={
-        styles.stickyCTA
-      }
-    >
-
-      {/* ====================================
-      PRIMARY CTA
-      ==================================== */}
-
+    <div className={styles.stickyCTA}>
       <Link
-        href="/ranking/all"
-
-        className={
-          styles.stickyPrimary
-        }
+        href="/ranking"
+        className={styles.stickyPrimary}
       >
         🔥 人気ランキングを見る
       </Link>
 
-      {/* ====================================
-      SECONDARY CTA
-      ==================================== */}
-
       <Link
         href="/pc-finder"
-
-        className={
-          styles.stickySecondary
-        }
+        className={styles.stickySecondary}
       >
         🎯 用途からPCを探す
       </Link>
-
     </div>
-
   )
 }

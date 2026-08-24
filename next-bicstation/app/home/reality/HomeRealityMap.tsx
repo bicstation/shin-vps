@@ -1,27 +1,17 @@
 // /app/home/reality/HomeRealityMap.tsx
 
-import Link
-  from 'next/link'
-
-import styles
-  from '../styles/v2/reality-map.module.css'
-
-import SemanticIcon
-  from '@/shared/lib/ui/semantic/SemanticIcon'
+import Link from 'next/link'
+import styles from '../styles/v2/reality-map.module.css'
+import SemanticIcon from '@/shared/lib/ui/semantic/SemanticIcon'
 
 type FeaturedGroup = {
-  group_slug: string
-  group_name: string
-
+  groupSlug: string
+  groupName: string
   type?: string
   icon?: string
   color?: string
-
-  parent_group?: string
-  description?: string
-  title?: string
-
-  product_count?: number
+  parentGroup?: string
+  productCount?: number
 }
 
 type Props = {
@@ -31,21 +21,18 @@ type Props = {
 export default function HomeRealityMap({
   groups = [],
 }: Props) {
-
   if (!groups.length) {
     return null
   }
 
   const usageGroups =
     groups.filter(
-      group =>
-        group.type === 'usage'
+      group => group.type === 'usage'
     )
 
   const deviceGroups =
     groups.filter(
-      group =>
-        group.type === 'device'
+      group => group.type === 'device'
     )
 
   const renderUniverse = (
@@ -54,143 +41,78 @@ export default function HomeRealityMap({
     universe: FeaturedGroup[],
     variant: 'usage' | 'device',
   ) => {
-
     if (!universe.length) {
       return null
     }
 
     return (
-
       <section
-        className={`
-          ${styles.universe}
-          ${variant === 'usage'
+        className={`${styles.universe} ${
+          variant === 'usage'
             ? styles.usageUniverse
             : styles.deviceUniverse
-          }
-        `}
+        }`}
       >
-
-        <div
-          className={styles.universeHeader}
-        >
-
-          <h3
-            className={
-              styles.universeTitle
-            }
-          >
+        <div className={styles.universeHeader}>
+          <h3 className={styles.universeTitle}>
             {title}
           </h3>
 
-          <p
-            className={
-              styles.universeDescription
-            }
-          >
+          <p className={styles.universeDescription}>
             {description}
           </p>
-
         </div>
 
-        <div
-          className={styles.chipGrid}
-        >
-
+        <div className={styles.chipGrid}>
           {universe.map(group => (
-
             <Link
-              key={group.group_slug}
-              href={`/discover/${group.group_slug}`}
+              key={group.groupSlug}
+              href={`/discover/${group.groupSlug}`}
               prefetch={false}
               className={styles.chip}
             >
-
-              <div
-                className={
-                  styles.chipLeft
-                }
-              >
-
-                <div
-                  className={
-                    styles.chipIcon
-                  }
-                >
-
+              <div className={styles.chipLeft}>
+                <div className={styles.chipIcon}>
                   <SemanticIcon
                     icon={group.icon}
                     color={group.color}
                     size={16}
                   />
-
                 </div>
 
-                <span
-                  className={
-                    styles.chipName
-                  }
-                >
-                  {group.group_name}
+                <span className={styles.chipName}>
+                  {group.groupName}
                 </span>
-
               </div>
 
-              <span
-                className={
-                  styles.chipCount
-                }
-              >
-                {group.product_count ?? 0}
+              <span className={styles.chipCount}>
+                {group.productCount ?? 0}
               </span>
-
             </Link>
-
           ))}
-
         </div>
-
       </section>
-
     )
-
   }
 
   return (
-
-    <section
-      className={styles.section}
-    >
-
-      <div
-        className={styles.header}
-      >
-
-        <div
-          className={styles.eyebrow}
-        >
+    <section className={styles.section}>
+      <div className={styles.header}>
+        <div className={styles.eyebrow}>
           PCの探し方
         </div>
 
-        <h2
-          className={styles.title}
-        >
+        <h2 className={styles.title}>
           用途や種類から探す
         </h2>
 
-        <p
-          className={styles.description}
-        >
+        <p className={styles.description}>
           やりたいことやPCの種類から、
           あなたに合ったPCを見つけられます。
         </p>
-
       </div>
 
-      <div
-        className={styles.universeGrid}
-      >
-
+      <div className={styles.universeGrid}>
         {renderUniverse(
           '用途から探す',
           'AI・ゲーム・仕事など目的から探せます',
@@ -204,11 +126,7 @@ export default function HomeRealityMap({
           deviceGroups,
           'device',
         )}
-
       </div>
-
     </section>
-
   )
-
 }

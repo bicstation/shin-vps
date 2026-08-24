@@ -1,13 +1,8 @@
 // /app/home/reality/HomeRealityExamples.tsx
 
-import Link
-  from 'next/link'
-
-import styles
-  from '../styles/v2/reality-examples.module.css'
-
-import SemanticIcon
-  from '@/shared/lib/ui/semantic/SemanticIcon'
+import Link from 'next/link'
+import styles from '../styles/v2/reality-examples.module.css'
+import SemanticIcon from '@/shared/lib/ui/semantic/SemanticIcon'
 
 type NavigationItem = {
   slug: string
@@ -21,19 +16,16 @@ type NavigationItem = {
   product_count?: number
 }
 
-
 type Props = {
   navigation?: {
-    navigation?: NavigationItem[]
+    intents?: NavigationItem[]
   }
 }
 
 export default function HomeRealityExamples({
   navigation,
 }: Props) {
-
-  const items =
-    navigation?.navigation ?? []
+  const items = navigation?.intents ?? []
 
   if (!items.length) {
     return null
@@ -41,14 +33,12 @@ export default function HomeRealityExamples({
 
   const usageExamples =
     items.filter(
-      item =>
-        item.type === 'usage'
+      item => item.type === 'usage'
     )
 
   const deviceExamples =
     items.filter(
-      item =>
-        item.type === 'device'
+      item => item.type === 'device'
     )
 
   const renderSection = (
@@ -57,167 +47,93 @@ export default function HomeRealityExamples({
     examples: NavigationItem[],
     badge: string,
   ) => {
-
     if (!examples.length) {
       return null
     }
 
     return (
-
       <section
-        className={`
-          ${styles.group}
-          ${
-            badge === '用途'
-              ? styles.usageGroup
-              : styles.deviceGroup
-          }
-        `}
+        className={`${styles.group} ${
+          badge === '用途'
+            ? styles.usageGroup
+            : styles.deviceGroup
+        }`}
       >
-
-        <div
-          className={styles.groupHeader}
-        >
-
-          <h3
-            className={styles.groupTitle}
-          >
+        <div className={styles.groupHeader}>
+          <h3 className={styles.groupTitle}>
             {title}
           </h3>
 
-          <p
-            className={
-              styles.groupDescription
-            }
-          >
+          <p className={styles.groupDescription}>
             {description}
           </p>
-
         </div>
 
-        <div
-          className={styles.examples}
-        >
-
+        <div className={styles.examples}>
           {examples.map(example => (
-
             <Link
               key={example.slug}
               href={`/discover/${example.slug}`}
+              prefetch={false}
               className={styles.item}
             >
-
-              <div
-                className={styles.content}
-              >
-
-                <div
-                  className={styles.top}
-                >
-
-                  <span
-                    className={styles.type}
-                  >
+              <div className={styles.content}>
+                <div className={styles.top}>
+                  <span className={styles.type}>
                     {badge}
                   </span>
 
-                  <span
-                    className={styles.count}
-                  >
-                    {example.product_count ?? 0}
-                    製品
+                  <span className={styles.count}>
+                    {example.product_count ?? 0}製品
                   </span>
-
                 </div>
 
-                <div
-                  className={styles.nameRow}
-                >
-
-                  <div
-                    className={styles.icon}
-                  >
-
+                <div className={styles.nameRow}>
+                  <div className={styles.icon}>
                     <SemanticIcon
                       icon={example.icon}
                       color={example.color}
                       size={18}
                     />
-
                   </div>
 
-                  <h3
-                    className={styles.name}
-                  >
-                    {example.title ||
-                    example.name}
+                  <h3 className={styles.name}>
+                    {example.title || example.name}
                   </h3>
-
                 </div>
 
                 {example.description && (
-
-                  <p
-                    className={
-                      styles.text
-                    }
-                  >
+                  <p className={styles.text}>
                     {example.description}
                   </p>
-
                 )}
-
               </div>
 
-              <div
-                className={styles.arrow}
-              >
+              <div className={styles.arrow}>
                 →
               </div>
-
             </Link>
-
           ))}
-
         </div>
-
       </section>
-
     )
-
   }
 
   return (
-
-    <section
-      className={styles.section}
-    >
-
-      <div
-        className={styles.header}
-      >
-
-        <div
-          className={styles.eyebrow}
-        >
+    <section className={styles.section}>
+      <div className={styles.header}>
+        <div className={styles.eyebrow}>
           PC選びの入口
         </div>
 
-        <h2
-          className={styles.title}
-        >
+        <h2 className={styles.title}>
           用途や種類から探す
         </h2>
 
-        <p
-          className={styles.description}
-        >
+        <p className={styles.description}>
           AI・ゲーム・動画編集・仕事用など、
-
-          やりたいことや
-          PCの種類から探せます。
+          やりたいことやPCの種類から探せます。
         </p>
-
       </div>
 
       {renderSection(
@@ -233,9 +149,6 @@ export default function HomeRealityExamples({
         deviceExamples,
         '種類',
       )}
-
     </section>
-
   )
-
 }
