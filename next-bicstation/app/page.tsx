@@ -9,7 +9,6 @@ import type { Metadata } from 'next'
 import { createMetadata } from '@/shared/publishing'
 import { toNextMetadata } from './publishing/next'
 
-import { fetchNavigationRuntime } from '@/shared/lib/api/django/pc/navigation'
 import { getTopRuntime } from '@/shared/lib/api/django/pc/top'
 
 import HomeRuntimeOrchestrator
@@ -40,22 +39,28 @@ export default async function Page() {
     new Date().toISOString(),
   )
 
-  const [
-    navigation,
-    top,
-  ] = await Promise.all([
-    fetchNavigationRuntime(),
-    getTopRuntime(),
-  ])
+  // ========================================================================
+  // TOP ONLY — Navigation Runtime disabled for verification
+  // ========================================================================
+
+  const top = await getTopRuntime()
 
   // ========================================================================
   // Runtime
   // ========================================================================
 
   const runtime = {
-    navigation,
+    navigation: null,
     top,
   }
+
+  console.log(
+    '🔥 HOME TOP ONLY',
+    {
+      top: !!top,
+      navigation: false,
+    }
+  )
 
   return (
     <HomeRuntimeOrchestrator
