@@ -15,12 +15,10 @@ export default function HomeHero({
   stats,
   featuredGroups,
 }: Props) {
-  console.log('TOP_MEANING', meaning)
-  console.log('TOP_STATS', stats)
-  console.log('FEATURED_GROUPS', featuredGroups)
 
   return (
     <section className={styles.hero}>
+
       <div className={styles.heroRuntimeMeaning}>
         {meaning?.identity}
       </div>
@@ -44,9 +42,11 @@ export default function HomeHero({
               color={group.color}
               size={14}
             />
+
             <span>
               {group.groupName}
             </span>
+
             <span className={styles.heroFeaturedCount}>
               {group.productCount ?? 0}
             </span>
@@ -55,7 +55,7 @@ export default function HomeHero({
       </div>
 
       <div className={styles.heroLabel}>
-        AI対応・ゲーミングPC比較
+        用途から選べるPC比較
       </div>
 
       <h1 className={styles.heroTitle}>
@@ -70,21 +70,27 @@ export default function HomeHero({
       </p>
 
       <div className={styles.heroPoints}>
+
         <div className={styles.heroPoint}>
           🎮 FPS ゲーム向け
         </div>
+
         <div className={styles.heroPoint}>
           🤖 AI画像生成対応
         </div>
+
         <div className={styles.heroPoint}>
           🎬 動画編集も快適
         </div>
+
         <div className={styles.heroPoint}>
           🛡 初心者でも選びやすい
         </div>
+
       </div>
 
       <div className={styles.heroActions}>
+
         <Link
           href="/ranking/"
           className={styles.heroPrimaryButton}
@@ -105,11 +111,13 @@ export default function HomeHero({
         >
           AIコンシェルジュに相談する
         </Link>
+
       </div>
 
       <div className={styles.heroNotice}>
         スペック知識がなくても、クリック一つで探索可能。
       </div>
+
     </section>
   )
 }

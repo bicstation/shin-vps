@@ -1,14 +1,19 @@
+/* =========================================================
+🔥 REALITY MAP
+========================================================= */
+
 .section {
-  margin-top: 96px;
+  margin-top: 48px;
 }
 
-/* ===================================================== */
-/* Header */
-/* ===================================================== */
+
+/* =========================================================
+🔥 HEADER
+========================================================= */
 
 .header {
+  margin-bottom: 40px;
   text-align: center;
-  margin-bottom: 56px;
 }
 
 .eyebrow {
@@ -21,22 +26,26 @@
 
 .title {
   margin-top: 12px;
+
   font-size: 2.5rem;
   font-weight: 800;
 }
 
 .description {
-  margin-top: 16px;
-  opacity: 0.75;
-  line-height: 1.8;
   max-width: 720px;
-  margin-left: auto;
-  margin-right: auto;
+
+  margin:
+    16px auto 0;
+
+  opacity: 0.75;
+
+  line-height: 1.8;
 }
 
-/* ===================================================== */
-/* Universe Layout */
-/* ===================================================== */
+
+/* =========================================================
+🔥 UNIVERSE LAYOUT
+========================================================= */
 
 .universeGrid {
   display: grid;
@@ -50,21 +59,26 @@
   gap: 32px;
 }
 
-/* ===================================================== */
-/* Universe Card */
-/* ===================================================== */
+
+/* =========================================================
+🔥 UNIVERSE CARD
+========================================================= */
 
 .universe {
-  border: 1px solid rgba(
-    255,
-    255,
-    255,
-    0.08
-  );
-
-  border-radius: 20px;
+  position: relative;
+  overflow: hidden;
 
   padding: 28px;
+
+  border:
+    1px solid rgba(
+      255,
+      255,
+      255,
+      0.08
+    );
+
+  border-radius: 20px;
 
   background:
     rgba(
@@ -92,7 +106,15 @@
     );
 }
 
+
+/* =========================================================
+🔥 UNIVERSE HEADER
+========================================================= */
+
 .universeHeader {
+  position: relative;
+  z-index: 1;
+
   margin-bottom: 24px;
 }
 
@@ -103,148 +125,22 @@
 
 .universeDescription {
   margin-top: 8px;
+
   font-size: 0.95rem;
+
   opacity: 0.7;
+
   line-height: 1.6;
 }
 
-/* ===================================================== */
-/* Universe Items */
-/* ===================================================== */
 
-.universeList {
-  display: flex;
-  flex-direction: column;
-}
-
-.row {
-  display: flex;
-
-  align-items: center;
-
-  justify-content: space-between;
-
-  gap: 20px;
-
-  padding: 18px 0;
-
-  text-decoration: none;
-
-  color: inherit;
-
-  border-bottom:
-    1px solid rgba(
-      255,
-      255,
-      255,
-      0.06
-    );
-
-  transition:
-    all 0.2s ease;
-}
-
-.row:last-child {
-  border-bottom: none;
-}
-
-.row:hover {
-  padding-left: 8px;
-}
-
-.left {
-  flex: 1;
-}
-
-.name {
-  font-size: 1rem;
-  font-weight: 700;
-}
-
-.rowDescription {
-  margin-top: 4px;
-
-  font-size: 0.875rem;
-
-  opacity: 0.65;
-
-  line-height: 1.5;
-}
-
-/* ===================================================== */
-/* Right */
-/* ===================================================== */
-
-.right {
-  display: flex;
-
-  align-items: center;
-
-  gap: 12px;
-}
-
-.count {
-  min-width: 110px;
-
-  text-align: right;
-
-  font-size: 0.95rem;
-
-  font-weight: 700;
-
-  opacity: 0.8;
-}
-
-.arrow {
-  font-size: 1rem;
-
-  opacity: 0.45;
-
-  transition:
-    transform 0.2s ease,
-    opacity 0.2s ease;
-}
-
-.row:hover .arrow {
-  opacity: 1;
-
-  transform:
-    translateX(4px);
-}
-
-/* ===================================================== */
-/* Mobile */
-/* ===================================================== */
-
-@media (max-width: 768px) {
-
-  .section {
-    margin-top: 72px;
-  }
-
-  .title {
-    font-size: 2rem;
-  }
-
-  .universeGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .universe {
-    padding: 20px;
-  }
-
-  .count {
-    min-width: auto;
-  }
-
-}
-
-/* ===================================================== */
-/* Chip Layout */
-/* ===================================================== */
+/* =========================================================
+🔥 CHIP GRID
+========================================================= */
 
 .chipGrid {
+  position: relative;
+  z-index: 1;
 
   display: flex;
 
@@ -253,22 +149,19 @@
   gap: 12px;
 }
 
+
+/* =========================================================
+🔥 CHIP
+========================================================= */
+
 .chip {
-
   display: inline-flex;
-
   align-items: center;
 
   gap: 10px;
 
   padding:
     12px 18px;
-
-  border-radius: 999px;
-
-  text-decoration: none;
-
-  color: inherit;
 
   border:
     1px solid rgba(
@@ -278,6 +171,10 @@
       0.08
     );
 
+  border-radius: 999px;
+
+  color: inherit;
+
   background:
     rgba(
       255,
@@ -286,12 +183,15 @@
       0.03
     );
 
+  text-decoration: none;
+
   transition:
-    all 0.2s ease;
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease;
 }
 
 .chip:hover {
-
   transform:
     translateY(-2px);
 
@@ -312,19 +212,30 @@
     );
 }
 
+
+/* =========================================================
+🔥 CHIP CONTENT
+========================================================= */
+
+.chipLeft {
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+}
+
+.chipIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .chipName {
-
   font-size: 0.95rem;
-
   font-weight: 600;
 }
 
 .chipCount {
-
-  font-size: 0.8rem;
-
-  opacity: 0.7;
-
   padding:
     2px 8px;
 
@@ -337,45 +248,25 @@
       255,
       0.08
     );
+
+  font-size: 0.8rem;
+
+  opacity: 0.7;
 }
 
 
-.chipLeft {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.chipIcon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-
-/* =====================================================
-🔥 Universe Background
-===================================================== */
-
-.universe {
-
-  position: relative;
-
-  overflow: hidden;
-}
+/* =========================================================
+🔥 UNIVERSE BACKGROUND
+========================================================= */
 
 .universe::before {
-
   content: '';
 
   position: absolute;
-
   inset: 0;
 
   background-size: cover;
-
   background-position: center;
-
   background-repeat: no-repeat;
 
   opacity: 0.12;
@@ -383,28 +274,37 @@
   pointer-events: none;
 }
 
-/* 用途 Universe */
-
 .usageUniverse::before {
-
   background-image:
     url('/images/universe/usage.webp');
 }
 
-/* Device Universe */
-
 .deviceUniverse::before {
-
   background-image:
     url('/images/universe/device.webp');
 }
 
-/* コンテンツを前面へ */
 
-.universeHeader,
-.chipGrid {
+/* =========================================================
+📱 MOBILE
+========================================================= */
 
-  position: relative;
+@media (max-width: 768px) {
 
-  z-index: 1;
+  .section {
+    margin-top: 40px;
+  }
+
+  .title {
+    font-size: 2rem;
+  }
+
+  .universeGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .universe {
+    padding: 20px;
+  }
+
 }

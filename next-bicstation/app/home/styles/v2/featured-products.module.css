@@ -1,11 +1,60 @@
-.grid {
+/* =========================================================
+🔥 FEATURED PRODUCTS
+========================================================= */
 
+.section {
+  margin-top: 64px;
+}
+
+
+/* =========================================================
+🔥 HEADER
+========================================================= */
+
+.header {
+  margin-bottom: 12px;
+
+  text-align: center;
+}
+
+.eyebrow {
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.65;
+}
+
+.title {
+  margin-top: 10px;
+
+  font-size: 2.2rem;
+  font-weight: 800;
+}
+
+.description {
+  max-width: 680px;
+
+  margin:
+    14px auto 0;
+
+  opacity: 0.72;
+
+  line-height: 1.8;
+}
+
+
+/* =========================================================
+🔥 PRODUCT GRID
+========================================================= */
+
+.grid {
   display: grid;
 
   grid-template-columns:
     repeat(
       auto-fit,
-      minmax(320px,1fr)
+      minmax(320px, 1fr)
     );
 
   gap: 24px;
@@ -14,4 +63,28 @@
     24px
     24px
     64px;
+}
+
+
+/* =========================================================
+📱 MOBILE
+========================================================= */
+
+@media (max-width: 640px) {
+
+  .section {
+    margin-top: 48px;
+  }
+
+  .title {
+    font-size: 1.9rem;
+  }
+
+  .grid {
+    padding:
+      16px
+      16px
+      48px;
+  }
+
 }

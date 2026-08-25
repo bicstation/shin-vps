@@ -20,9 +20,35 @@ import HomeRuntimeOrchestrator
 // ============================================================================
 
 export async function generateMetadata(): Promise<Metadata> {
+
+  const top = await getTopRuntime()
+
+  const seo =
+    top?.seo ?? {}
+
   return toNextMetadata(
     createMetadata({
-      canonical: 'https://bicstation.com',
+      title:
+        seo?.title,
+
+      description:
+        seo?.description,
+
+      keywords:
+        seo?.keywords,
+
+      canonical:
+        seo?.canonical ||
+        'https://bicstation.com',
+
+      openGraph:
+        seo?.open_graph,
+
+      twitter:
+        seo?.twitter,
+
+      jsonLd:
+        seo?.schema_jsonld,
     })
   )
 }
@@ -39,18 +65,9 @@ export default async function Page() {
     new Date().toISOString(),
   )
 
-  // ========================================================================
-  // TOP ONLY — Navigation Runtime disabled for verification
-  // ========================================================================
-
   const top = await getTopRuntime()
 
-  // ========================================================================
-  // Runtime
-  // ========================================================================
-
   const runtime = {
-    navigation: null,
     top,
   }
 
@@ -58,7 +75,6 @@ export default async function Page() {
     '🔥 HOME TOP ONLY',
     {
       top: !!top,
-      navigation: false,
     }
   )
 
