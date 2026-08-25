@@ -85,9 +85,6 @@ export default function Header() {
      * --------------------------------------------------------------------------
      * Route Change
      * --------------------------------------------------------------------------
-     *
-     * Mobile menu is always closed after navigation.
-     *
      */
 
     useEffect(() => {
@@ -99,9 +96,6 @@ export default function Header() {
      * --------------------------------------------------------------------------
      * Body Scroll Lock
      * --------------------------------------------------------------------------
-     *
-     * Prevent background scrolling while mobile navigation is open.
-     *
      */
 
     useEffect(() => {
@@ -423,12 +417,6 @@ export default function Header() {
      * --------------------------------------------------------------------------
      * Mobile Primary Discovery
      * --------------------------------------------------------------------------
-     *
-     * BIC STATION:
-     *
-     * Header is not only navigation.
-     * It is the primary Discovery Gateway.
-     *
      */
 
     const primaryDiscovery =
@@ -506,6 +494,7 @@ export default function Header() {
 
                 <Link
                     href="/"
+                    aria-label={`${siteNameRaw || 'BIC STATION'} ホーム`}
                     style={{
                         textDecoration: 'none',
                     }}
@@ -626,8 +615,6 @@ export default function Header() {
                         borderColor: themeColor,
                     }}
                 >
-                    {/* Mobile Menu Button */}
-
                     <button
                         type="button"
                         className={styles.mobileMenuButton}
@@ -649,8 +636,6 @@ export default function Header() {
                                 : '☰'}
                         </span>
                     </button>
-
-                    {/* Mobile Brand */}
 
                     <Link
                         href="/"
@@ -678,8 +663,6 @@ export default function Header() {
                             {siteNameRaw.toUpperCase()}
                         </span>
                     </Link>
-
-                    {/* Mobile Search / Discovery */}
 
                     <Link
                         href={
@@ -714,8 +697,6 @@ export default function Header() {
                             styles.mobileMenuPanel
                         }
                     >
-                        {/* Mobile Menu Header */}
-
                         <div
                             className={
                                 styles.mobileMenuPanelHeader
@@ -738,10 +719,6 @@ export default function Header() {
                                 ✕
                             </button>
                         </div>
-
-                        {/* ====================================================
-                            Primary Discovery
-                           ==================================================== */}
 
                         {primaryDiscovery && (
                             <div
@@ -773,10 +750,6 @@ export default function Header() {
                                 </Link>
                             </div>
                         )}
-
-                        {/* ====================================================
-                            Menu Sections
-                           ==================================================== */}
 
                         <nav
                             className={
@@ -825,10 +798,6 @@ export default function Header() {
                                 )
                             )}
                         </nav>
-
-                        {/* ====================================================
-                            Authentication
-                           ==================================================== */}
 
                         <section
                             className={
@@ -901,10 +870,6 @@ export default function Header() {
                                 </div>
                             )}
                         </section>
-
-                        {/* ====================================================
-                            Close
-                           ==================================================== */}
 
                         <button
                             type="button"
