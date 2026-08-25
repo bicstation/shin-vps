@@ -1,67 +1,39 @@
 // ============================================================================
 // FILE:
 // /app/ranking/components/hero/RankingHero.tsx
-// Copyright (c) 2024 Shin Corporation.
+// Copyright (c) 2026 Shin Corporation.
 // All rights reserved.
 // ============================================================================
 
 'use client'
 
-/* ============================================================================
-🔥 Types
-============================================================================ */
-
-// import type {
-
-//     RankingRuntime,
-
-// } from '../../types/ranking'
-
-/* ============================================================================
+/* ============================================================================ 
 🔥 Styles
 ============================================================================ */
 
 import styles
     from '../../styles/hero/hero.module.css'
 
-/* ============================================================================
-🔥 Props
-============================================================================ */
-
-type Props = {
-
-    runtime: RankingRuntime
-
-}
-
-/* ============================================================================
+/* ============================================================================ 
 🔥 Ranking Hero
 ============================================================================ */
 
-export default function RankingHero({
-
-    runtime,
-
-}: Props) {
+export default function RankingHero() {
 
     /* =========================================================================
     🔥 Presentation
     ========================================================================= */
 
     const label =
-
         'RANKING EXPERIENCE'
 
     const title =
-
         'PCランキングから探す'
 
     const subtitle =
-
         '用途・性能・価格・メーカーなど、あなたに合ったランキングから最適なPCを見つけましょう。'
 
     const description =
-
         '公開中のランキングを用途別・デバイス別・CPU・GPU・モニターなどのカテゴリから比較し、自分に合った一台をスムーズに見つけられます。'
 
     /* =========================================================================
@@ -71,15 +43,11 @@ export default function RankingHero({
     return (
 
         <section
-            className={
-                styles.rankingHero
-            }
+            className={styles.rankingHero}
         >
 
             <div
-                className={
-                    styles.rankingHeroContent
-                }
+                className={styles.rankingHeroContent}
             >
 
                 {/* ==========================================================
@@ -87,9 +55,7 @@ export default function RankingHero({
                 ========================================================== */}
 
                 <span
-                    className={
-                        styles.rankingHeroLabel
-                    }
+                    className={styles.rankingHeroLabel}
                 >
 
                     {label}
@@ -101,9 +67,7 @@ export default function RankingHero({
                 ========================================================== */}
 
                 <h1
-                    className={
-                        styles.rankingHeroTitle
-                    }
+                    className={styles.rankingHeroTitle}
                 >
 
                     {title}
@@ -115,9 +79,7 @@ export default function RankingHero({
                 ========================================================== */}
 
                 <p
-                    className={
-                        styles.rankingHeroSubtitle
-                    }
+                    className={styles.rankingHeroSubtitle}
                 >
 
                     {subtitle}
@@ -129,9 +91,7 @@ export default function RankingHero({
                 ========================================================== */}
 
                 <p
-                    className={
-                        styles.rankingHeroDescription
-                    }
+                    className={styles.rankingHeroDescription}
                 >
 
                     {description}

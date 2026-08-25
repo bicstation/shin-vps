@@ -1,7 +1,7 @@
 // ============================================================================
 // FILE:
 // /app/ranking/components/sections/RankingGroupSection.tsx
-// Copyright (c) 2024 Shin Corporation.
+// Copyright (c) 2026 Shin Corporation.
 // All rights reserved.
 // ============================================================================
 
@@ -19,10 +19,8 @@ import RankingCardGrid
 ============================================================================ */
 
 import type {
-
-    NavigationRuntimeItem,
-
-} from '@/shared/lib/api/django/pc/navigation/contracts'
+    ProjectedRankingCategory,
+} from '@/shared/lib/api/django/pc/ranking/projection'
 
 /* ============================================================================
 🔥 Styles
@@ -37,11 +35,7 @@ import styles
 
 type Props = {
 
-    title: string
-
-    description?: string
-
-    items: NavigationRuntimeItem[]
+    category: ProjectedRankingCategory
 
     actionLabel?: string
 
@@ -55,11 +49,7 @@ type Props = {
 
 export default function RankingGroupSection({
 
-    title,
-
-    description,
-
-    items,
+    category,
 
     actionLabel = 'すべて見る',
 
@@ -68,18 +58,30 @@ export default function RankingGroupSection({
 }: Props) {
 
     /* =========================================================================
+    🔥 Category Groups
+    ========================================================================= */
+
+    const items =
+        category.groups ?? []
+
+    /* =========================================================================
     🔥 Empty
     ========================================================================= */
 
-    if (
-
-        items.length === 0
-
-    ) {
+    if (!items.length) {
 
         return null
 
     }
+
+    /* =========================================================================
+    🔥 Presentation
+    ========================================================================= */
+
+    const title =
+        category.presentationName
+        ||
+        category.parentGroup
 
     /* =========================================================================
     🔥 Render
@@ -92,7 +94,7 @@ export default function RankingGroupSection({
         >
 
             {/* ==========================================================
-            Background Layer
+            Background
             ========================================================== */}
 
             <div
@@ -126,17 +128,13 @@ export default function RankingGroupSection({
                             <span
                                 className={styles.icon}
                             >
-
                                 {icon}
-
                             </span>
 
                             <span
                                 className={styles.badgeLabel}
                             >
-
                                 CATEGORY
-
                             </span>
 
                         </div>
@@ -148,22 +146,6 @@ export default function RankingGroupSection({
                             {title}
 
                         </h2>
-
-                        {
-
-                            description && (
-
-                                <p
-                                    className={styles.description}
-                                >
-
-                                    {description}
-
-                                </p>
-
-                            )
-
-                        }
 
                     </div>
 
@@ -185,9 +167,7 @@ export default function RankingGroupSection({
                 ====================================================== */}
 
                 <RankingCardGrid
-
                     items={items}
-
                 />
 
             </div>

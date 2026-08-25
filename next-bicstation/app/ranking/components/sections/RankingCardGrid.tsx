@@ -1,7 +1,7 @@
 // ============================================================================
 // FILE:
 // /app/ranking/components/sections/RankingCardGrid.tsx
-// Copyright (c) 2024 Shin Corporation.
+// Copyright (c) 2026 Shin Corporation.
 // All rights reserved.
 // ============================================================================
 
@@ -20,9 +20,9 @@ import RankingCard
 
 import type {
 
-    NavigationRuntimeItem,
+    RankingCategoryGroup,
 
-} from '@/shared/lib/api/django/pc/navigation/contracts'
+} from '@/shared/lib/api/django/pc/ranking/contracts'
 
 /* ============================================================================
 🔥 Styles
@@ -37,7 +37,7 @@ import styles
 
 type Props = {
 
-    items: NavigationRuntimeItem[]
+    items: RankingCategoryGroup[]
 
 }
 
@@ -51,59 +51,33 @@ export default function RankingCardGrid({
 
 }: Props) {
 
-    /* =========================================================================
-    🔥 Empty
-    ========================================================================= */
-
-    if (
-
-        items.length === 0
-
-    ) {
+    if (!items.length) {
 
         return null
 
     }
 
-    /* =========================================================================
-    🔥 Render
-    ========================================================================= */
-
     return (
 
         <div
-            className={
-                styles.rankingGrid
-            }
+            className={styles.rankingGrid}
         >
 
-            {
+            {items.map(
 
-                items.map(
+                item => (
 
-                    item => (
+                    <RankingCard
 
-                        <RankingCard
+                        key={item.group_slug}
 
-                            key={
+                        item={item}
 
-                                item.slug
-
-                            }
-
-                            item={
-
-                                item
-
-                            }
-
-                        />
-
-                    )
+                    />
 
                 )
 
-            }
+            )}
 
         </div>
 

@@ -1,7 +1,7 @@
 // ============================================================================
 // FILE:
 // /app/ranking/components/sections/RankingCard.tsx
-// Copyright (c) 2024 Shin Corporation.
+// Copyright (c) 2026 Shin Corporation.
 // All rights reserved.
 // ============================================================================
 
@@ -26,10 +26,8 @@ import SemanticIcon
 ============================================================================ */
 
 import type {
-
-    NavigationRuntimeItem,
-
-} from '@/shared/lib/api/django/pc/navigation/contracts'
+    RankingCategoryGroup,
+} from '@/shared/lib/api/django/pc/ranking/contracts'
 
 /* ============================================================================
 🔥 Styles
@@ -44,7 +42,7 @@ import styles
 
 type Props = {
 
-    item: NavigationRuntimeItem
+    item: RankingCategoryGroup
 
 }
 
@@ -63,22 +61,19 @@ export default function RankingCard({
     ========================================================================= */
 
     const href =
-
-        `/ranking/${item.slug}`
+        `/ranking/${item.group_slug}`
 
     const backgroundImage =
-
-        `/images/ranking/${item.slug}.webp`
+        `/images/ranking/${item.group_slug}.webp`
 
     const title =
-
-        item.name
+        item.presentation_name
+        ||
+        item.group_name
 
     const description =
-
-        item.description
+        item.presentation_description
         ||
-
         'おすすめランキングをご覧いただけます。'
 
     /* =========================================================================
@@ -106,7 +101,6 @@ export default function RankingCard({
                 style={{
 
                     backgroundImage:
-
                         `url(${backgroundImage})`,
 
                 }}
@@ -139,17 +133,9 @@ export default function RankingCard({
 
                     <SemanticIcon
 
-                        icon={
+                        icon={item.icon}
 
-                            item.icon
-
-                        }
-
-                        color={
-
-                            item.color
-
-                        }
+                        color={item.color}
 
                         size={30}
 
@@ -191,41 +177,19 @@ export default function RankingCard({
                     className={styles.meta}
                 >
 
-                    {
+                    {item.product_count !== undefined && (
 
-                        item.product_count !== undefined && (
+                        <span
+                            className={styles.count}
+                        >
 
-                            <span
-                                className={styles.count}
-                            >
+                            {item.product_count.toLocaleString()}
 
-                                {item.product_count.toLocaleString()}
+                            件の商品
 
-                                件の商品
+                        </span>
 
-                            </span>
-
-                        )
-
-                    }
-
-                    {
-
-                        item.attribute_count !== undefined && (
-
-                            <span
-                                className={styles.count}
-                            >
-
-                                {item.attribute_count}
-
-                                カテゴリ
-
-                            </span>
-
-                        )
-
-                    }
+                    )}
 
                 </div>
 

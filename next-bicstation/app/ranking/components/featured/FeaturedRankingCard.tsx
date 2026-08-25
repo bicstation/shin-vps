@@ -1,7 +1,7 @@
 // ============================================================================
 // FILE:
 // /app/ranking/components/featured/FeaturedRankingCard.tsx
-// Copyright (c) 2024 Shin Corporation.
+// Copyright (c) 2026 Shin Corporation.
 // All rights reserved.
 // ============================================================================
 
@@ -16,11 +16,12 @@
  * Responsibilities
  *
  * - Display one Featured Ranking Product
+ * - Create lightweight Hero presentation title
  *
  * This component SHALL NOT:
  *
  * - fetch Runtime
- * - modify Runtime
+ * - modify Backend Reality
  * - calculate rankings
  * - filter products
  *
@@ -80,22 +81,76 @@ function getMedal(
     switch (rank) {
 
         case 1:
-
             return '🥇'
 
         case 2:
-
             return '🥈'
 
         case 3:
-
             return '🥉'
 
         default:
-
             return `#${rank}`
 
     }
+
+}
+
+/* ============================================================================
+🔥 Hero Title
+============================================================================ */
+
+function getFeaturedTitle(
+
+    name: string,
+
+) {
+
+    let title = name
+
+        /* --------------------------------------------------------------------
+        Remove specification blocks
+        -------------------------------------------------------------------- */
+
+        .replace(
+            /\s*[\[【（(].*$/,
+            ''
+        )
+
+        .trim()
+
+        /* --------------------------------------------------------------------
+        Remove leading model / SKU code
+        -------------------------------------------------------------------- */
+
+        .replace(
+            /^[A-Z0-9][A-Z0-9._-]{5,}\s+(?=[A-Za-z])/,
+            ''
+        )
+
+        .trim()
+
+    /* ------------------------------------------------------------------------
+    Safety
+    ------------------------------------------------------------------------ */
+
+    if (!title) {
+
+        title = name
+
+    }
+
+    /* ------------------------------------------------------------------------
+    Final length limit
+    ------------------------------------------------------------------------ */
+
+    if (title.length > 48) {
+
+        return `${title.slice(0, 48).trim()}…`
+
+    }
+
+    return title
 
 }
 
@@ -116,23 +171,18 @@ export default function FeaturedRankingCard({
     ========================================================================= */
 
     const medal =
-
         getMedal(rank)
 
     const title =
-
-        product.name
+        getFeaturedTitle(product.name)
 
     const image =
-
         product.image_url
 
     const href =
-
         `/product/${product.unique_id}`
 
     const price =
-
         product.price
 
     /* =========================================================================

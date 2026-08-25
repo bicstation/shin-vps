@@ -1,6 +1,6 @@
 // ============================================================================
 // FILE:
-// /shared/lib/api/django/pc/ranking/runtime.ts
+// shared/lib/api/django/pc/ranking-detail/runtime.ts
 // Copyright (c) 2026 Shin Corporation.
 // All rights reserved.
 // ============================================================================
@@ -8,28 +8,24 @@
 /**
  * ============================================================================
  * SHIN CORE LINX
- * Ranking Universe Runtime
+ * Ranking Runtime Facade
  * ============================================================================
  *
  * PURPOSE
  *
- * Provide the Runtime Facade for the Ranking Universe.
+ * Temporary compatibility facade.
  *
- * Pipeline
+ * Ranking no longer requires Runtime Composition.
  *
- * Backend
- *      ↓
+ * This facade simply connects:
+ *
  * Gateway
  *      ↓
  * Normalize
  *      ↓
  * Projection
- *      ↓
- * Runtime
  *
- * Endpoint
- *
- *      /api/pc/ranking/all/
+ * This file exists only for migration compatibility.
  *
  * Backend remains:
  *
@@ -43,20 +39,29 @@
  */
 
 import type {
+
     SemanticRankingRuntime,
+
 } from './contracts'
 
 import {
+
     fetchRanking,
+
 } from './ranking'
 
 import {
+
     normalizeRankingRuntime,
+
 } from './normalize'
 
 import {
+
     projectRankingRuntime,
+
     type ProjectedRankingRuntime,
+
 } from './projection'
 
 /* ============================================================================
@@ -64,34 +69,80 @@ import {
 ============================================================================ */
 
 export interface RankingRuntimeResult {
+
     runtime: SemanticRankingRuntime
+
     projection: ProjectedRankingRuntime
+
 }
 
 /* ============================================================================
 🔥 Runtime Facade
 ============================================================================ */
 
-export async function getRankingRuntime(): Promise<RankingRuntimeResult> {
+export async function getRankingRuntime(
+
+    slug: string,
+
+): Promise<RankingRuntimeResult> {
+
+    /* ------------------------------------------------------------------------
+    Gateway
+    ------------------------------------------------------------------------ */
 
     const payload =
-        await fetchRanking()
+
+        await fetchRanking(
+
+            slug
+
+        )
+
+    /* ------------------------------------------------------------------------
+    Normalize
+    ------------------------------------------------------------------------ */
 
     const runtime =
+
         normalizeRankingRuntime(
-            payload ?? undefined,
+
+            payload ?? undefined
+
         )
+
+    /* ------------------------------------------------------------------------
+    Projection
+    ------------------------------------------------------------------------ */
 
     const projection =
+
         projectRankingRuntime(
-            runtime,
+
+            runtime
+
         )
 
+    /* ------------------------------------------------------------------------
+    Return
+    ------------------------------------------------------------------------ */
+
     return {
+
         runtime,
+
         projection,
+
     }
+
 }
+
+/* ============================================================================
+🔥 Legacy Compatibility
+============================================================================ */
+
+export const fetchProjectedRankingRuntime =
+
+    getRankingRuntime
 
 /* ============================================================================
 🔥 Default Export

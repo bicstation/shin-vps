@@ -1,92 +1,96 @@
 // ============================================================================
 // FILE:
-// /app/ranking/components/featured/FeaturedOverall.tsx
-// Copyright (c) 2024 Shin Corporation.
+// /shared/lib/api/django/pc/ranking-detail/index.ts
+// Copyright (c) 2026 Shin Corporation.
 // All rights reserved.
 // ============================================================================
-
-'use client'
 
 /**
  * ============================================================================
  * SHIN CORE LINX
- * Featured Overall Experience
+ * Ranking Detail Runtime Layer
  * ============================================================================
  *
- * Responsibilities
+ * Pipeline
  *
- * - Compose Featured Overall Experience
- * - Pass Runtime data to child components
- *
- * This component SHALL NOT:
- *
- * - Fetch Runtime
- * - Modify Runtime
- * - Calculate rankings
- * - Perform sorting
- *
- * Runtime Authority:
- *
- * Parent Ranking Runtime Orchestrator
+ * Backend
+ *      ↓
+ * Gateway
+ *      ↓
+ * Normalize
+ *      ↓
+ * Projection
+ *      ↓
+ * Runtime Facade
  *
  * ============================================================================
  */
 
 /* ============================================================================
-🔥 Components
+🔥 Contracts
 ============================================================================ */
 
-import FeaturedHero
-    from './FeaturedHero'
-
-import FeaturedRankingGrid
-    from './FeaturedRankingGrid'
+export * from './contracts'
 
 /* ============================================================================
-🔥 Types
+🔥 Gateway
 ============================================================================ */
 
-import type {
-    SemanticRankingRuntime,
-} from '@/shared/lib/api/django/pc/ranking/contracts'
+export * from './ranking'
 
 /* ============================================================================
-🔥 Styles
+🔥 Normalize
 ============================================================================ */
 
-import styles
-    from '../../styles/featured/featured-overall.module.css'
+export * from './normalize'
 
 /* ============================================================================
-🔥 Props
+🔥 Projection
 ============================================================================ */
 
-type Props = {
-    runtime: SemanticRankingRuntime
-}
+export * from './projection'
 
 /* ============================================================================
-🔥 Featured Overall Experience
+🔥 Runtime Facade
 ============================================================================ */
 
-export default function FeaturedOverall({
-    runtime,
-}: Props) {
+export * from './runtime'
 
-    const products =
-        runtime.data.products ?? []
+/* ============================================================================
+🔥 Observatory
+============================================================================ */
 
-    return (
-        <section
-            className={styles.featuredOverall}
-        >
+console.log(
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+)
 
-            <FeaturedHero />
+console.log(
+    '🔥 RANKING DETAIL RUNTIME INITIALIZED',
+)
 
-            <FeaturedRankingGrid
-                items={products}
-            />
+console.log({
+    runtime:
+        'ranking-detail-runtime',
 
-        </section>
-    )
-}
+    authority:
+        'backend',
+
+    transport:
+        true,
+
+    normalize:
+        true,
+
+    projection:
+        true,
+
+    observability:
+        true,
+
+    continuity:
+        'healthy',
+})
+
+console.log(
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+)

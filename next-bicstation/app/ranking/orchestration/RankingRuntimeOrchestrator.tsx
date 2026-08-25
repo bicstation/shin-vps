@@ -1,7 +1,7 @@
 // ============================================================================
 // FILE:
 // /app/ranking/orchestration/RankingRuntimeOrchestrator.tsx
-// Copyright (c) 2024 Shin Corporation.
+// Copyright (c) 2026 Shin Corporation.
 // All rights reserved.
 // ============================================================================
 
@@ -12,9 +12,7 @@
 ============================================================================ */
 
 import {
-
   useState,
-
 } from 'react'
 
 /* ============================================================================
@@ -54,8 +52,6 @@ interface RankingRuntimeOrchestratorProps {
 
   runtime: {
 
-    navigationRuntime: any
-
     rankingRuntime: any
 
     rankingCategories: any[]
@@ -72,23 +68,17 @@ interface RankingRuntimeOrchestratorProps {
 🔥 Ranking Runtime Orchestrator
 ============================================================================ */
 
-export default function RankingRuntimeOrchestrator(
+export default function RankingRuntimeOrchestrator({
 
-  {
+  runtime,
 
-    runtime,
-
-  }: RankingRuntimeOrchestratorProps,
-
-) {
+}: RankingRuntimeOrchestratorProps) {
 
   /* --------------------------------------------------------------------------
   Runtime
   -------------------------------------------------------------------------- */
 
   const {
-
-    navigationRuntime,
 
     rankingRuntime,
 
@@ -109,66 +99,36 @@ export default function RankingRuntimeOrchestrator(
   ] = useState('all')
 
   /* --------------------------------------------------------------------------
-  Navigation
+  Ranking Categories
   -------------------------------------------------------------------------- */
-
-  const items =
-
-    navigationRuntime?.intents ?? []
 
   const categories =
 
     rankingCategories ?? []
 
   /* --------------------------------------------------------------------------
-  Filter
+  Active Categories
   -------------------------------------------------------------------------- */
 
-  const filteredItems =
+  const filteredCategories =
 
     activeGroup === 'all'
 
-      ? items
+      ? categories
 
-      : items.filter(
+      : categories.filter(
 
-          (item: any) =>
+        (category: any) =>
 
-            item.parent_group === activeGroup,
+          category.parentGroup === activeGroup,
 
-        )
-
-  /* --------------------------------------------------------------------------
-  Presentation
-  -------------------------------------------------------------------------- */
-
-  const sectionTitle =
-
-    activeGroup === 'all'
-
-      ? 'すべてのランキング'
-
-      : 'ランキング'
-
-  const sectionDescription =
-
-    activeGroup === 'all'
-
-      ? '公開中のランキング一覧です。'
-
-      : '選択したカテゴリのランキングです。'
+      )
 
   /* --------------------------------------------------------------------------
   Runtime Error
   -------------------------------------------------------------------------- */
 
-  if (
-
-    !navigationRuntime ||
-
-    !rankingRuntime
-
-  ) {
+  if (!rankingRuntime) {
 
     return (
 
@@ -192,11 +152,7 @@ export default function RankingRuntimeOrchestrator(
 
       <Breadcrumb />
 
-      <RankingHero
-
-        runtime={navigationRuntime}
-
-      />
+      <RankingHero />
 
       <FeaturedOverall
 
@@ -206,8 +162,6 @@ export default function RankingRuntimeOrchestrator(
 
       <RankingNavigation
 
-        items={items}
-
         categories={categories}
 
         activeGroup={activeGroup}
@@ -216,33 +170,43 @@ export default function RankingRuntimeOrchestrator(
 
       />
 
+      {/* ======================================================================
+      Ranking Category Sections
+      ====================================================================== */}
+
       {
 
-        filteredItems.length > 0
+        filteredCategories.length > 0
 
           ? (
 
-              <RankingGroupSection
+            filteredCategories.map(
 
-                icon="🎮"
+              (category: any) => (
 
-                title={sectionTitle}
+                <RankingGroupSection
 
-                description={sectionDescription}
+                  key={category.parentGroup}
 
-                items={filteredItems}
+                  category={category}
 
-                actionLabel="ランキングを見る"
+                  icon="✨"
 
-              />
+                  actionLabel="すべて見る"
+
+                />
+
+              )
 
             )
+
+          )
 
           : (
 
-              <EmptyRanking />
+            <EmptyRanking />
 
-            )
+          )
 
       }
 

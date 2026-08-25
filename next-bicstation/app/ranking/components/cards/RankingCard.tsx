@@ -1,7 +1,7 @@
 // ============================================================================
 // FILE:
-// /app/ranking/components/RankingCard.tsx
-// Copyright (c) 2024 Shin Corporation.
+// /app/ranking/components/sections/RankingCard.tsx
+// Copyright (c) 2026 Shin Corporation.
 // All rights reserved.
 // ============================================================================
 
@@ -26,17 +26,15 @@ import SemanticIcon
 ============================================================================ */
 
 import type {
-
-    RankingItem,
-
-} from '../../types/ranking'
+    RankingCategoryGroup,
+} from '@/shared/lib/api/django/pc/ranking/contracts'
 
 /* ============================================================================
 🔥 Styles
 ============================================================================ */
 
 import styles
-    from '../../styles/ranking.module.css'
+    from '../../styles/sections/card-section.module.css'
 
 /* ============================================================================
 🔥 Props
@@ -44,7 +42,7 @@ import styles
 
 type Props = {
 
-    item: RankingItem
+    item: RankingCategoryGroup
 
 }
 
@@ -58,201 +56,101 @@ export default function RankingCard({
 
 }: Props) {
 
-    /* =========================================================================
-    🔥 Presentation Assets
-    ========================================================================= */
+    const href =
+        `/ranking/${item.group_slug}`
 
     const backgroundImage =
-
-        `/images/discover/${item.slug}.webp`
+        `/images/ranking/${item.group_slug}.webp`
 
     const title =
-
-        item.title
-
-        ||
-
-        item.name
+        item.presentation_name ||
+        item.group_name
 
     const description =
-
-        item.description
-
-        ||
-
+        item.presentation_description ||
         'おすすめランキングをご覧いただけます。'
-
-    /* =========================================================================
-    🔥 Render
-    ========================================================================= */
 
     return (
 
         <Link
-
-            href={`/ranking/${item.slug}`}
-
-            className={
-                styles.rankingCard
-            }
-
-            style={{
-
-                backgroundImage:
-
-                    `url(${backgroundImage})`,
-
-                backgroundSize:
-
-                    'cover',
-
-                backgroundPosition:
-
-                    'center',
-
-            }}
-
+            href={href}
+            className={styles.card}
         >
 
-            {/* ==========================================================
-            Overlay
-            ========================================================== */}
-
             <div
-                className={
-                    styles.rankingCardOverlay
-                }
+                className={styles.background}
+                style={{
+                    backgroundImage:
+                        `url(${backgroundImage})`,
+                }}
             />
 
-            {/* ==========================================================
-            Icon
-            ========================================================== */}
+            <div
+                className={styles.overlay}
+            />
 
             <div
-                className={
-                    styles.rankingCardIcon
-                }
+                className={styles.content}
             >
-
-                <SemanticIcon
-
-                    icon={
-                        item.icon
-                    }
-
-                    color={
-                        item.color
-                    }
-
-                    size={28}
-
-                />
-
-            </div>
-
-            {/* ==========================================================
-            Content
-            ========================================================== */}
-
-            <div
-                className={
-                    styles.rankingCardContent
-                }
-            >
-
-                {/* ======================================================
-                Title
-                ====================================================== */}
-
-                <h3
-                    className={
-                        styles.rankingCardTitle
-                    }
-                >
-
-                    {title}
-
-                </h3>
-
-                {/* ======================================================
-                Description
-                ====================================================== */}
-
-                <p
-                    className={
-                        styles.rankingCardDescription
-                    }
-                >
-
-                    {description}
-
-                </p>
-
-                {/* ======================================================
-                Meta
-                ====================================================== */}
 
                 <div
-                    className={
-                        styles.rankingCardMeta
-                    }
+                    className={styles.icon}
                 >
 
-                    {
-
-                        item.product_count !== undefined && (
-
-                            <span>
-
-                                {item.product_count.toLocaleString()}
-
-                                件の商品
-
-                            </span>
-
-                        )
-
-                    }
-
-                    {
-
-                        item.attribute_count !== undefined && (
-
-                            <span>
-
-                                {item.attribute_count}
-
-                                カテゴリ
-
-                            </span>
-
-                        )
-
-                    }
+                    <SemanticIcon
+                        icon={item.icon}
+                        color={item.color}
+                        size={30}
+                    />
 
                 </div>
 
-            </div>
-
-            {/* ==========================================================
-            Footer
-            ========================================================== */}
-
-            <div
-                className={
-                    styles.rankingCardFooter
-                }
-            >
-
-                <span
-                    className={
-                        styles.rankingCardLink
-                    }
+                <div
+                    className={styles.body}
                 >
 
-                    ランキングを見る →
+                    <h3
+                        className={styles.title}
+                    >
+                        {title}
+                    </h3>
 
-                </span>
+                    <p
+                        className={styles.description}
+                    >
+                        {description}
+                    </p>
+
+                </div>
+
+                <div
+                    className={styles.meta}
+                >
+
+                    {item.product_count !== undefined && (
+
+                        <span
+                            className={styles.count}
+                        >
+                            {item.product_count.toLocaleString()}
+                            件の商品
+                        </span>
+
+                    )}
+
+                </div>
+
+                <div
+                    className={styles.footer}
+                >
+
+                    <span
+                        className={styles.link}
+                    >
+                        ランキングを見る →
+                    </span>
+
+                </div>
 
             </div>
 
