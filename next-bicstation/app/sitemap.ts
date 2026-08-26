@@ -19,8 +19,7 @@
  * This file delegates all Runtime responsibilities to the
  * Platform Runtime.
  *
- * ============================================================================
- */
+ * ============================================================================ */
 
 import type {
   MetadataRoute,
@@ -30,9 +29,20 @@ import {
   generateSitemap,
 } from '@/app/platform/sitemap'
 
+/* ============================================================================
+🔥 Sitemap Cache
+============================================================================ */
+
+export const revalidate =
+  3600
+
+/* ============================================================================
+🔥 Sitemap
+============================================================================ */
+
 export default async function sitemap(
 ): Promise<MetadataRoute.Sitemap> {
 
-  return await generateSitemap()
+  return generateSitemap()
 
 }
