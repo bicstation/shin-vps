@@ -5,82 +5,24 @@
 // All rights reserved.
 // ============================================================================
 
-/**
- * ============================================================================
- * SHIN CORE LINX
- * Platform Runtime
- * Sitemap Runtime
- * ============================================================================
- *
- * PURPOSE
- *
- * Semantic Reality
- *
- * ↓
- *
- * Adapter Runtime
- *
- * ↓
- *
- * Platform Runtime
- *
- * ↓
- *
- * Sitemap Generator
- *
- * ============================================================================
- *
- * Platform Runtime SHALL:
- *
- * ✓ Consume canonical Adapter Runtime
- * ✓ Aggregate public Runtime
- * ✓ Delegate URL generation
- *
- * Platform Runtime SHALL NOT:
- *
- * ✗ Generate Semantic Meaning
- * ✗ Generate Presentation
- * ✗ Modify Runtime
- *
- * ============================================================================
- */
-
 import type {
   MetadataRoute,
 } from 'next'
-
-/* ============================================================================
-🔥 Navigation Runtime
-============================================================================ */
 
 import {
   fetchNavigationRuntime,
 } from '@/shared/lib/api/django/pc/navigation'
 
-/* ============================================================================
-🔥 Product Runtime
-============================================================================ */
-
 import {
   fetchProducts,
 } from '@/shared/lib/api/django/pc/products'
 
-/* ============================================================================
-🔥 Generator
-============================================================================ */
-
 import {
-
   generateStaticUrls,
-
   generateDiscoverUrls,
-
   generateRankingUrls,
-
   generateProductUrls,
-
   deduplicateUrls,
-
 } from './generator'
 
 /* ============================================================================
@@ -95,11 +37,7 @@ export async function generateSitemap(
 
   let urls:
     MetadataRoute.Sitemap = [
-
-      ...generateStaticUrls(
-        now
-      ),
-
+      ...generateStaticUrls(now),
     ]
 
   /* ==========================================================================
@@ -115,30 +53,24 @@ export async function generateSitemap(
       navigationRuntime.intents ?? []
 
     urls.push(
-
       ...generateDiscoverUrls(
         intents,
         now,
       )
-
     )
 
     urls.push(
-
       ...generateRankingUrls(
         intents,
         now,
       )
-
     )
 
     console.log(
       '🔥 PLATFORM SITEMAP NAVIGATION',
       {
-
         intents:
           intents.length,
-
       }
     )
 
@@ -147,11 +79,8 @@ export async function generateSitemap(
   catch (error) {
 
     console.error(
-
       'PLATFORM SITEMAP NAVIGATION ERROR',
-
       error,
-
     )
 
   }
@@ -162,35 +91,66 @@ export async function generateSitemap(
 
   try {
 
-    const runtime =
+    const firstRuntime =
       await fetchProducts()
 
-    const products =
-      runtime.products ?? []
+    const firstData =
+      firstRuntime.data
 
-    urls.push(
+    const allProducts = [
+      ...(firstData?.products ?? []),
+    ]
 
-      ...generateProductUrls(
+    let page =
+      firstData?.page ?? 1
 
-        products,
+    let hasNext =
+      firstData?.has_next ?? false
 
-        now,
+    const pageSize =
+      firstData?.page_size ?? 20
 
+    while (hasNext) {
+
+      page += 1
+
+      const runtime =
+        await fetchProducts(
+          page,
+          pageSize,
+        )
+
+      const data =
+        runtime.data
+
+      allProducts.push(
+        ...(data?.products ?? [])
       )
 
+      hasNext =
+        data?.has_next ?? false
+
+    }
+
+    urls.push(
+      ...generateProductUrls(
+        allProducts,
+        now,
+      )
     )
 
     console.log(
-
       '🔥 PLATFORM SITEMAP PRODUCTS',
-
       {
-
         products:
-          products.length,
+          allProducts.length,
 
+        pages:
+          page,
+
+        expected:
+          firstData?.count ?? 0,
       }
-
     )
 
   }
@@ -198,11 +158,8 @@ export async function generateSitemap(
   catch (error) {
 
     console.error(
-
       'PLATFORM SITEMAP PRODUCT ERROR',
-
       error,
-
     )
 
   }
