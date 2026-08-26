@@ -137,7 +137,7 @@ export default function RankingRuntime({
                 comparisonProducts.length > 0 && (
                     <ComparisonGrid
                         products={comparisonProducts}
-                        runtime={runtime}
+                        // runtime={runtime}
                     />
                 )
             }

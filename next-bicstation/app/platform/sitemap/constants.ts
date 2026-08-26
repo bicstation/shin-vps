@@ -80,7 +80,7 @@ export const STATIC_ROUTES = [
  * /ranking/gaming
  */
 export const ENABLE_RANKING_DETAIL =
-  false
+  true
 
 /* ============================================================================
 🔥 Priorities
