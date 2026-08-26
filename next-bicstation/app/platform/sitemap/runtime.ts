@@ -10,6 +10,10 @@ import type {
 } from 'next'
 
 import {
+  unstable_cache,
+} from 'next/cache'
+
+import {
   fetchNavigationRuntime,
 } from '@/shared/lib/api/django/pc/navigation'
 
@@ -26,10 +30,10 @@ import {
 } from './generator'
 
 /* ============================================================================
-🔥 Generate Sitemap
+🔥 Sitemap Generation
 ============================================================================ */
 
-export async function generateSitemap(
+async function buildSitemap(
 ): Promise<MetadataRoute.Sitemap> {
 
   const now =
@@ -37,8 +41,12 @@ export async function generateSitemap(
 
   let urls:
     MetadataRoute.Sitemap = [
-      ...generateStaticUrls(now),
-    ]
+
+    ...generateStaticUrls(
+      now
+    ),
+
+  ]
 
   /* ==========================================================================
   Navigation Runtime
@@ -53,17 +61,21 @@ export async function generateSitemap(
       navigationRuntime.intents ?? []
 
     urls.push(
+
       ...generateDiscoverUrls(
         intents,
         now,
       )
+
     )
 
     urls.push(
+
       ...generateRankingUrls(
         intents,
         now,
       )
+
     )
 
     console.log(
@@ -98,7 +110,9 @@ export async function generateSitemap(
       firstRuntime.data
 
     const allProducts = [
+
       ...(firstData?.products ?? []),
+
     ]
 
     let page =
@@ -110,21 +124,34 @@ export async function generateSitemap(
     const pageSize =
       firstData?.page_size ?? 20
 
+    /* ------------------------------------------------------------------------
+    Remaining Pages
+    ------------------------------------------------------------------------ */
+
     while (hasNext) {
 
       page += 1
 
       const runtime =
         await fetchProducts(
+
           page,
+
           pageSize,
+
+          {
+            sort: 'new',
+          }
+
         )
 
       const data =
         runtime.data
 
       allProducts.push(
+
         ...(data?.products ?? [])
+
       )
 
       hasNext =
@@ -132,11 +159,20 @@ export async function generateSitemap(
 
     }
 
+    /* ------------------------------------------------------------------------
+    Generate Product URLs
+    ------------------------------------------------------------------------ */
+
     urls.push(
+
       ...generateProductUrls(
+
         allProducts,
+
         now,
+
       )
+
     )
 
     console.log(
@@ -171,5 +207,64 @@ export async function generateSitemap(
   return deduplicateUrls(
     urls
   )
+
+}
+
+/* ============================================================================
+🔥 Cached Sitemap
+============================================================================ */
+
+const getCachedSitemap =
+  unstable_cache(
+
+    async () => {
+
+      console.log(
+        '🔥 SITEMAP CACHE MISS'
+      )
+
+      return buildSitemap()
+
+    },
+
+    [
+      'bicstation-sitemap',
+    ],
+
+    {
+      revalidate:
+        3600,
+
+      tags: [
+        'bicstation-sitemap',
+      ],
+
+    }
+
+  )
+
+/* ============================================================================
+🔥 Generate Sitemap
+============================================================================ */
+
+export async function generateSitemap(
+): Promise<MetadataRoute.Sitemap> {
+
+  console.log(
+    '🔥 PLATFORM SITEMAP REQUEST'
+  )
+
+  const sitemap =
+    await getCachedSitemap()
+
+  console.log(
+    '🔥 PLATFORM SITEMAP READY',
+    {
+      urls:
+        sitemap.length,
+    }
+  )
+
+  return sitemap
 
 }
