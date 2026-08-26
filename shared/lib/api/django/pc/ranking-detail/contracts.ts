@@ -41,17 +41,11 @@
 ============================================================================ */
 
 export interface RankingMeaning {
-
     identity?: string
-
     mission?: string
-
     user_intent?: string
-
     meaning_statement?: string
-
     existence_reason?: string
-
 }
 
 /* ============================================================================
@@ -59,17 +53,11 @@ export interface RankingMeaning {
 ============================================================================ */
 
 export interface RankingPresentation {
-
     slug?: string
-
     name?: string
-
     title?: string
-
     subtitle?: string
-
     description?: string
-
 }
 
 /* ============================================================================
@@ -77,17 +65,11 @@ export interface RankingPresentation {
 ============================================================================ */
 
 export interface RankingSEO {
-
     title?: string
-
     description?: string
-
     keywords?: string[]
-
     canonical?: string
-
     schema_jsonld?: any
-
 }
 
 /* ============================================================================
@@ -95,23 +77,14 @@ export interface RankingSEO {
 ============================================================================ */
 
 export interface RankingCategoryGroup {
-
     group_slug: string
-
     group_name: string
-
     presentation_name?: string
-
     presentation_description?: string
-
     icon?: string
-
     color?: string
-
     sort_order?: string | number
-
     product_count?: number
-
 }
 
 /* ============================================================================
@@ -119,15 +92,10 @@ export interface RankingCategoryGroup {
 ============================================================================ */
 
 export interface RankingCategory {
-
     parent_group: string
-
     presentation_name: string
-
     group_count: number
-
     groups: RankingCategoryGroup[]
-
 }
 
 /* ============================================================================
@@ -135,47 +103,32 @@ export interface RankingCategory {
 ============================================================================ */
 
 export interface RankingProduct {
-
     product_id: number
-
     unique_id: string
-
     name: string
-
     maker: string
-
+    brand?: string
     price: number
-
     image_url: string
-
+    cpu_model?: string
+    gpu_model?: string
+    memory_gb?: number
+    storage_gb?: number
+    display_info?: string
     semantic_attributes: string[]
-
     matched_groups: string[]
-
     reality_scores?: Record<string, number>
-
     product_type?: string
-
     primary_workflow?: string | null
-
     workflow_score?: number
-
     semantic_score?: number
-
     workflow_tags?: string[]
-
     workflows?: any[]
-
     semantic_labels?: string[]
-
     adaptive_runtime?: any
-
     semantic_version?: string
-
     semantic_authority?: string
-
     runtime_valid?: boolean
-
 }
 
 /* ============================================================================
@@ -183,15 +136,10 @@ export interface RankingProduct {
 ============================================================================ */
 
 export interface RankingData {
-
     group_slug: string
-
     group_name: string
-
     product_count: number
-
     products: RankingProduct[]
-
 }
 
 /* ============================================================================
@@ -199,11 +147,8 @@ export interface RankingData {
 ============================================================================ */
 
 export interface RankingSummary {
-
     category_count: number
-
     product_count: number
-
 }
 
 /* ============================================================================
@@ -223,15 +168,10 @@ export interface SemanticRankingRuntime {
     ------------------------------------------------------------------------ */
 
     meaning?: RankingMeaning
-
     presentation?: RankingPresentation
-
     seo?: RankingSEO
-
     categories?: RankingCategory[]
-
     data: RankingData
-
     summary?: RankingSummary
 
     /* ------------------------------------------------------------------------
@@ -239,11 +179,8 @@ export interface SemanticRankingRuntime {
     ------------------------------------------------------------------------ */
 
     semantic_schema_version?: number
-
     authority_version?: string
-
     semantic_authority?: string
-
     ready?: boolean
 
     /* ------------------------------------------------------------------------
@@ -251,7 +188,6 @@ export interface SemanticRankingRuntime {
     ------------------------------------------------------------------------ */
 
     raw?: any
-
 }
 
 /* ============================================================================
@@ -259,9 +195,7 @@ export interface SemanticRankingRuntime {
 ============================================================================ */
 
 export type RankingRuntime =
-
     SemanticRankingRuntime
 
 export type RankingRuntimeResponse =
-
     SemanticRankingRuntime

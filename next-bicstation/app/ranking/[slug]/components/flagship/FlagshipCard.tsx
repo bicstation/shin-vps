@@ -7,40 +7,20 @@
 
 'use client'
 
-/* ============================================================================
-🔥 Next
-============================================================================ */
-
 import Image from 'next/image'
 import Link from 'next/link'
-
-/* ============================================================================
-🔥 Contracts
-============================================================================ */
 
 import type {
     RankingProduct,
 } from '../../types/contracts'
 
-/* ============================================================================
-🔥 Styles
-============================================================================ */
-
 import styles
     from '../../styles/flagship/flagship.module.css'
-
-/* ============================================================================
-🔥 Props
-============================================================================ */
 
 type Props = {
     product: RankingProduct
     rank: number
 }
-
-/* ============================================================================
-🔥 Flagship Card
-============================================================================ */
 
 export default function FlagshipCard({
     product,
@@ -59,7 +39,6 @@ export default function FlagshipCard({
         memory_gb,
         storage_gb,
         display_info,
-        recommendation_reason,
         semantic_labels = [],
     } = product
 
@@ -70,7 +49,6 @@ export default function FlagshipCard({
 
     return (
         <section className={styles.flagship}>
-
             {/* ================================================================
             Header
             ================================================================ */}
@@ -105,12 +83,12 @@ export default function FlagshipCard({
                 <div className={styles.headerTitle}>
 
                     <h2 className={styles.title}>
-                        {name ?? 'Unknown Product'}
+                        {name || 'Unknown Product'}
                     </h2>
 
                     {(maker || brand) && (
                         <div className={styles.brand}>
-                            {maker ?? brand}
+                            {maker || brand}
                         </div>
                     )}
 
@@ -124,16 +102,12 @@ export default function FlagshipCard({
 
             <div className={styles.body}>
 
-                {/* ============================================================
-                Product Image
-                ============================================================ */}
-
                 <div className={styles.imageArea}>
 
                     {image_url ? (
                         <Image
                             src={image_url}
-                            alt={name ?? ''}
+                            alt={name || ''}
                             width={520}
                             height={520}
                             className={styles.image}
@@ -147,20 +121,11 @@ export default function FlagshipCard({
 
                 </div>
 
-                {/* ============================================================
-                Product Reality
-                ============================================================ */}
-
                 <div className={styles.content}>
-
-                    {recommendation_reason && (
-                        <p className={styles.description}>
-                            {recommendation_reason}
-                        </p>
-                    )}
 
                     {semantic_labels.length > 0 && (
                         <div className={styles.chips}>
+
                             {semantic_labels
                                 .slice(0, 3)
                                 .map((label, index) => (
@@ -171,6 +136,7 @@ export default function FlagshipCard({
                                         {label}
                                     </span>
                                 ))}
+
                         </div>
                     )}
 
@@ -190,19 +156,20 @@ export default function FlagshipCard({
                             </div>
                         )}
 
-                        {memory_gb > 0 && (
+                        {memory_gb !== undefined && memory_gb > 0 && (
                             <div className={styles.spec}>
                                 <span>Memory</span>
                                 <strong>{memory_gb}GB</strong>
                             </div>
                         )}
 
-                        {storage_gb > 0 && (
+                        {storage_gb !== undefined && storage_gb > 0 && (
                             <div className={styles.spec}>
                                 <span>Storage</span>
                                 <strong>{storage_gb}GB</strong>
                             </div>
                         )}
+
 
                         {display_info && (
                             <div className={styles.spec}>

@@ -56,4 +56,4 @@ export type {
 
     SemanticRankingRuntime,
 
-} from '@/shared/lib/api/django/pc/ranking/contracts'
+} from '@/shared/lib/api/django/pc/ranking-detail/contracts'
