@@ -28,7 +28,33 @@ jobs:
       # 📥 Checkout
       # ==========================================================
       - name: 📥 Checkout Repository
+
         uses: actions/checkout@v4
+
+        with:
+          fetch-depth: 0
+
+      # ==========================================================
+      # 🔎 Deployment Identity
+      # ==========================================================
+      - name: 🔎 Resolve Deployment Identity
+
+        id: deployment
+
+        shell: bash
+
+        run: |
+
+          set -e
+
+          DEPLOY_SHA="$(git rev-parse HEAD)"
+          DEPLOY_TAG="${GITHUB_REF_NAME}"
+
+          echo "DEPLOY_SHA=${DEPLOY_SHA}"
+          echo "DEPLOY_TAG=${DEPLOY_TAG}"
+
+          echo "deploy_sha=${DEPLOY_SHA}" >> "$GITHUB_OUTPUT"
+          echo "deploy_tag=${DEPLOY_TAG}" >> "$GITHUB_OUTPUT"
 
       # ==========================================================
       # 🧹 Cleanup Local Artifacts
@@ -63,11 +89,14 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          # passphrase: ${{ secrets.SSH_PASSPHRASE }}
           port: 2222
+
           source: "."
+
           target: "/home/maya/shin-vps"
+
           strip_components: 0
+
           overwrite: true
 
       # ==========================================================
@@ -82,8 +111,8 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          # passphrase: ${{ secrets.SSH_PASSPHRASE }}
           port: 2222
+
           command_timeout: 90m
 
           script: |
@@ -92,10 +121,61 @@ jobs:
 
             cd /home/maya/shin-vps
 
+            DEPLOY_SHA="${{ steps.deployment.outputs.deploy_sha }}"
+            DEPLOY_TAG="${{ steps.deployment.outputs.deploy_tag }}"
+
             echo ""
             echo "=================================================="
             echo "🚀 SHIN CORE LINX｜PRODUCTION DEPLOY"
             echo "=================================================="
+
+            echo ""
+            echo "📌 Deployment Identity"
+            echo "   TAG : ${DEPLOY_TAG}"
+            echo "   SHA : ${DEPLOY_SHA}"
+
+            # ==================================================
+            # 🔐 Git Repository State
+            # ==================================================
+
+            echo ""
+            echo "🔐 Checking VPS Git Repository..."
+
+            if [ ! -d ".git" ]; then
+
+              echo "⚠️ VPS Git repository missing"
+
+              git init
+
+              git remote add origin \
+                https://github.com/bicstation/shin-vps.git
+
+            fi
+
+            git remote set-url origin \
+              https://github.com/bicstation/shin-vps.git
+
+            echo "✅ VPS Git Repository Ready"
+
+            # ==================================================
+            # 🔎 Verify Source Deployment
+            # ==================================================
+
+            echo ""
+            echo "🔎 Recording Deployment Identity..."
+
+            mkdir -p .deployment
+
+            printf '%s\n' "${DEPLOY_SHA}" \
+              > .deployment/commit_sha
+
+            printf '%s\n' "${DEPLOY_TAG}" \
+              > .deployment/tag
+
+            printf '%s\n' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" \
+              > .deployment/deployed_at
+
+            echo "✅ Deployment Identity Recorded"
 
             # ==================================================
             # 🌐 Shared Docker Network
@@ -132,10 +212,10 @@ jobs:
             echo "📦 Building Containers..."
 
             docker compose \
-              -p shin-prod \
-              --env-file .env.production \
-              -f docker-compose.yml \
-              -f docker-compose.prod.yml \
+              -p "${PROJECT_NAME}" \
+              --env-file "${ENV_FILE}" \
+              -f "${BASE_COMPOSE}" \
+              -f "${PROD_COMPOSE}" \
               build \
               --parallel \
               --no-cache
@@ -150,10 +230,10 @@ jobs:
             echo "🚀 Starting Containers..."
 
             docker compose \
-              -p shin-prod \
-              --env-file .env.production \
-              -f docker-compose.yml \
-              -f docker-compose.prod.yml \
+              -p "${PROJECT_NAME}" \
+              --env-file "${ENV_FILE}" \
+              -f "${BASE_COMPOSE}" \
+              -f "${PROD_COMPOSE}" \
               up -d \
               --remove-orphans \
               --wait
@@ -168,10 +248,10 @@ jobs:
             echo "📦 Running Migrations..."
 
             docker compose \
-              -p shin-prod \
-              --env-file .env.production \
-              -f docker-compose.yml \
-              -f docker-compose.prod.yml \
+              -p "${PROJECT_NAME}" \
+              --env-file "${ENV_FILE}" \
+              -f "${BASE_COMPOSE}" \
+              -f "${PROD_COMPOSE}" \
               exec -T django-v3 \
               python manage.py migrate --noinput
 
@@ -185,10 +265,10 @@ jobs:
             echo "🎨 Collecting Static..."
 
             docker compose \
-              -p shin-prod \
-              --env-file .env.production \
-              -f docker-compose.yml \
-              -f docker-compose.prod.yml \
+              -p "${PROJECT_NAME}" \
+              --env-file "${ENV_FILE}" \
+              -f "${BASE_COMPOSE}" \
+              -f "${PROD_COMPOSE}" \
               exec -T django-v3 \
               python manage.py collectstatic --noinput
 
@@ -201,33 +281,35 @@ jobs:
             echo ""
             echo "🩺 Running Health Checks..."
 
-            curl -k -f https://api.bicstation.com/admin/ || exit 1
+            curl -k -f \
+              https://api.bicstation.com/admin/ \
+              > /dev/null
 
             echo "✅ Django Admin OK"
 
-            # ==================================================
-            # 🩺 Health Checks
-            # ==================================================
+            curl -fsS \
+              https://tiper.live/ \
+              > /dev/null
 
-            echo ""
-            echo "🩺 Running Health Checks..."
-
-            curl -fsS https://api.bicstation.com/admin/ > /dev/null
-            echo "✅ Django Admin OK"
-
-            curl -fsS https://tiper.live/ > /dev/null
             echo "✅ Tiper OK"
 
-            curl -fsS https://avflash.xyz/ > /dev/null
+            curl -fsS \
+              https://avflash.xyz/ \
+              > /dev/null
+
             echo "✅ AVFLASH OK"
 
-            curl -fsS https://bicstation.com/ > /dev/null
+            curl -fsS \
+              https://bicstation.com/ \
+              > /dev/null
+
             echo "✅ BICSTATION OK"
 
-            curl -fsS https://bic-saving.com/ > /dev/null
+            curl -fsS \
+              https://bic-saving.com/ \
+              > /dev/null
+
             echo "✅ BIC SAVING OK"
-
-
 
             # ==================================================
             # 📊 Container Status
@@ -237,63 +319,73 @@ jobs:
             echo "📊 Container Status"
 
             docker compose \
-              -p shin-prod \
-              --env-file .env.production \
-              -f docker-compose.yml \
-              -f docker-compose.prod.yml \
+              -p "${PROJECT_NAME}" \
+              --env-file "${ENV_FILE}" \
+              -f "${BASE_COMPOSE}" \
+              -f "${PROD_COMPOSE}" \
               ps
 
-
             # ==================================================
-            # 📄 Runtime Logs
+            # 📄 Django Logs
             # ==================================================
 
             echo ""
             echo "📄 Django Logs"
 
             docker compose \
-              -p shin-prod \
-              --env-file .env.production \
-              -f docker-compose.yml \
-              -f docker-compose.prod.yml \
+              -p "${PROJECT_NAME}" \
+              --env-file "${ENV_FILE}" \
+              -f "${BASE_COMPOSE}" \
+              -f "${PROD_COMPOSE}" \
               logs --tail=20 django-v3 || true
+
+            # ==================================================
+            # 📄 Next.js Logs
+            # ==================================================
 
             echo ""
             echo "📄 Next.js Logs"
 
             docker compose \
-              -p shin-prod \
-              --env-file .env.production \
-              -f docker-compose.yml \
-              -f docker-compose.prod.yml \
-              logs --tail=20 shoin-prod-next-bicstation-v3-1 || true
+              -p "${PROJECT_NAME}" \
+              --env-file "${ENV_FILE}" \
+              -f "${BASE_COMPOSE}" \
+              -f "${PROD_COMPOSE}" \
+              logs --tail=20 next-bicstation-v3 || true
+
+            # ==================================================
+            # 📄 Traefik Logs
+            # ==================================================
 
             echo ""
             echo "📄 Traefik Logs"
 
             docker compose \
-              -p shin-prod \
-              --env-file .env.production \
-              -f docker-compose.yml \
-              -f docker-compose.prod.yml \
+              -p "${PROJECT_NAME}" \
+              --env-file "${ENV_FILE}" \
+              -f "${BASE_COMPOSE}" \
+              -f "${PROD_COMPOSE}" \
               logs --tail=20 traefik || true
 
             # ==================================================
-            # 🧹 Docker Cleanup
+            # 🔎 Deployment Verification
             # ==================================================
 
-            # echo ""
-            # echo "🧹 Docker Cleanup"
-            # docker image prune -af || true
-            # docker builder prune -af || true
-            # docker container prune -f || true
-            # echo "✅ Cleanup Complete"
+            echo ""
+            echo "🔎 Deployment Verification"
 
-            # ==================================================
-            # 🎉 Done
-            # ==================================================
+            echo "TAG:"
+            cat .deployment/tag
+
+            echo ""
+            echo "SHA:"
+            cat .deployment/commit_sha
+
+            echo ""
+            echo "DEPLOYED:"
+            cat .deployment/deployed_at
 
             echo ""
             echo "=================================================="
             echo "✅ SHIN CORE LINX DEPLOY SUCCESS"
-            echo ""
+            echo "=================================================="
