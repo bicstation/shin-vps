@@ -13,20 +13,12 @@ jobs:
 
     timeout-minutes: 90
 
-    env:
-      PROJECT_NAME: shin-prod
-      DEPLOY_PATH: /home/maya/shin-vps
-
-      BASE_COMPOSE: docker-compose.yml
-      PROD_COMPOSE: docker-compose.prod.yml
-
-      ENV_FILE: .env.production
-
     steps:
 
       # ==========================================================
       # 📥 Checkout
       # ==========================================================
+
       - name: 📥 Checkout Repository
 
         uses: actions/checkout@v4
@@ -37,6 +29,7 @@ jobs:
       # ==========================================================
       # 🔎 Deployment Identity
       # ==========================================================
+
       - name: 🔎 Resolve Deployment Identity
 
         id: deployment
@@ -50,8 +43,13 @@ jobs:
           DEPLOY_SHA="$(git rev-parse HEAD)"
           DEPLOY_TAG="${GITHUB_REF_NAME}"
 
-          echo "DEPLOY_SHA=${DEPLOY_SHA}"
-          echo "DEPLOY_TAG=${DEPLOY_TAG}"
+          echo ""
+          echo "=================================================="
+          echo "🔎 DEPLOYMENT IDENTITY"
+          echo "=================================================="
+          echo "TAG : ${DEPLOY_TAG}"
+          echo "SHA : ${DEPLOY_SHA}"
+          echo "=================================================="
 
           echo "deploy_sha=${DEPLOY_SHA}" >> "$GITHUB_OUTPUT"
           echo "deploy_tag=${DEPLOY_TAG}" >> "$GITHUB_OUTPUT"
@@ -59,9 +57,14 @@ jobs:
       # ==========================================================
       # 🧹 Cleanup Local Artifacts
       # ==========================================================
+
       - name: 🧹 Cleanup Unnecessary Files
 
+        shell: bash
+
         run: |
+
+          set -e
 
           rm -rf \
             .git \
@@ -75,20 +78,25 @@ jobs:
             */dist \
             */build
 
+          echo ""
           echo "✅ Cleanup Complete"
 
       # ==========================================================
-      # 🚀 Upload Source
+      # 🚀 Upload Source to VPS
       # ==========================================================
-      - name: 🚀 Upload Files to VPS
+
+      - name: 🚀 Upload Source to VPS
 
         uses: appleboy/scp-action@v0.1.7
 
         with:
 
           host: ${{ secrets.SSH_HOST }}
+
           username: ${{ secrets.SSH_USER }}
+
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+
           port: 2222
 
           source: "."
@@ -102,6 +110,7 @@ jobs:
       # ==========================================================
       # 🚀 Production Deploy
       # ==========================================================
+
       - name: 🚀 Deploy to Production
 
         uses: appleboy/ssh-action@v1.0.3
@@ -109,8 +118,11 @@ jobs:
         with:
 
           host: ${{ secrets.SSH_HOST }}
+
           username: ${{ secrets.SSH_USER }}
+
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+
           port: 2222
 
           command_timeout: 90m
@@ -120,6 +132,10 @@ jobs:
             set -e
 
             cd /home/maya/shin-vps
+
+            # ==================================================
+            # 🔎 Deployment Identity
+            # ==================================================
 
             DEPLOY_SHA="${{ steps.deployment.outputs.deploy_sha }}"
             DEPLOY_TAG="${{ steps.deployment.outputs.deploy_tag }}"
@@ -135,34 +151,25 @@ jobs:
             echo "   SHA : ${DEPLOY_SHA}"
 
             # ==================================================
-            # 🔐 Git Repository State
+            # 🔎 Source Verification
             # ==================================================
 
             echo ""
-            echo "🔐 Checking VPS Git Repository..."
+            echo "🔎 Source Verification"
 
-            if [ ! -d ".git" ]; then
+            test -f docker-compose.yml
+            test -f docker-compose.prod.yml
+            test -f .env.production
 
-              echo "⚠️ VPS Git repository missing"
-
-              git init
-
-              git remote add origin \
-                https://github.com/bicstation/shin-vps.git
-
-            fi
-
-            git remote set-url origin \
-              https://github.com/bicstation/shin-vps.git
-
-            echo "✅ VPS Git Repository Ready"
+            echo "✅ Docker Compose Files OK"
+            echo "✅ Production Environment OK"
 
             # ==================================================
-            # 🔎 Verify Source Deployment
+            # 🔎 Deployment Record
             # ==================================================
 
             echo ""
-            echo "🔎 Recording Deployment Identity..."
+            echo "🔎 Recording Deployment Identity"
 
             mkdir -p .deployment
 
@@ -182,10 +189,11 @@ jobs:
             # ==================================================
 
             echo ""
-            echo "🌐 Preparing Shared Network..."
+            echo "🌐 Preparing Shared Network"
 
-            docker network inspect shared-proxy >/dev/null 2>&1 || \
-            docker network create shared-proxy
+            docker network inspect shared-proxy \
+              >/dev/null 2>&1 \
+              || docker network create shared-proxy
 
             echo "✅ Shared Network Ready"
 
@@ -194,32 +202,53 @@ jobs:
             # ==================================================
 
             echo ""
-            echo "🧹 Cleaning Runtime Cache..."
+            echo "🧹 Cleaning Runtime Cache"
 
-            find . -type d -name ".next" \
+            find . \
+              -type d \
+              -name ".next" \
               ! -path "./postgres_data/*" \
               ! -path "./vps-data/*" \
+              -prune \
               -exec rm -rf {} + \
               2>/dev/null || true
 
             echo "✅ Runtime Cache Cleaned"
 
             # ==================================================
-            # 📦 Docker Build
+            # 🔎 Docker Compose Validation
             # ==================================================
 
             echo ""
-            echo "📦 Building Containers..."
+            echo "🔎 Validating Docker Compose"
 
             docker compose \
-              -p "${PROJECT_NAME}" \
-              --env-file "${ENV_FILE}" \
-              -f "${BASE_COMPOSE}" \
-              -f "${PROD_COMPOSE}" \
+              -p shin-prod \
+              --env-file .env.production \
+              -f docker-compose.yml \
+              -f docker-compose.prod.yml \
+              config \
+              >/tmp/shin-prod-compose-config.txt
+
+            echo "✅ Docker Compose Configuration OK"
+
+            # ==================================================
+            # 📦 Docker Build
+            # ==========================================================
+
+            echo ""
+            echo "📦 Building Containers"
+
+            docker compose \
+              -p shin-prod \
+              --env-file .env.production \
+              -f docker-compose.yml \
+              -f docker-compose.prod.yml \
               build \
               --parallel \
               --no-cache
 
+            echo ""
             echo "✅ Container Build Complete"
 
             # ==================================================
@@ -227,17 +256,18 @@ jobs:
             # ==================================================
 
             echo ""
-            echo "🚀 Starting Containers..."
+            echo "🚀 Starting Containers"
 
             docker compose \
-              -p "${PROJECT_NAME}" \
-              --env-file "${ENV_FILE}" \
-              -f "${BASE_COMPOSE}" \
-              -f "${PROD_COMPOSE}" \
+              -p shin-prod \
+              --env-file .env.production \
+              -f docker-compose.yml \
+              -f docker-compose.prod.yml \
               up -d \
               --remove-orphans \
               --wait
 
+            echo ""
             echo "✅ Containers Started"
 
             # ==================================================
@@ -245,69 +275,93 @@ jobs:
             # ==================================================
 
             echo ""
-            echo "📦 Running Migrations..."
+            echo "📦 Running Django Migrations"
 
             docker compose \
-              -p "${PROJECT_NAME}" \
-              --env-file "${ENV_FILE}" \
-              -f "${BASE_COMPOSE}" \
-              -f "${PROD_COMPOSE}" \
+              -p shin-prod \
+              --env-file .env.production \
+              -f docker-compose.yml \
+              -f docker-compose.prod.yml \
               exec -T django-v3 \
               python manage.py migrate --noinput
 
+            echo ""
             echo "✅ Migration Complete"
 
             # ==================================================
-            # 🎨 Static Files
+            # 🎨 Django Static Files
             # ==================================================
 
             echo ""
-            echo "🎨 Collecting Static..."
+            echo "🎨 Collecting Static Files"
 
             docker compose \
-              -p "${PROJECT_NAME}" \
-              --env-file "${ENV_FILE}" \
-              -f "${BASE_COMPOSE}" \
-              -f "${PROD_COMPOSE}" \
+              -p shin-prod \
+              --env-file .env.production \
+              -f docker-compose.yml \
+              -f docker-compose.prod.yml \
               exec -T django-v3 \
               python manage.py collectstatic --noinput
 
+            echo ""
             echo "✅ Static Complete"
 
             # ==================================================
-            # 🩺 Health Check
+            # 🩺 Health Checks
             # ==================================================
 
             echo ""
-            echo "🩺 Running Health Checks..."
+            echo "=================================================="
+            echo "🩺 HEALTH CHECKS"
+            echo "=================================================="
 
-            curl -k -f \
+            # --------------------------------------------------
+            # Django
+            # --------------------------------------------------
+
+            curl -fsS \
               https://api.bicstation.com/admin/ \
-              > /dev/null
+              >/dev/null
 
             echo "✅ Django Admin OK"
 
+            # --------------------------------------------------
+            # Tiper
+            # --------------------------------------------------
+
             curl -fsS \
               https://tiper.live/ \
-              > /dev/null
+              >/dev/null
 
             echo "✅ Tiper OK"
 
+            # --------------------------------------------------
+            # AVFLASH
+            # --------------------------------------------------
+
             curl -fsS \
               https://avflash.xyz/ \
-              > /dev/null
+              >/dev/null
 
             echo "✅ AVFLASH OK"
 
+            # --------------------------------------------------
+            # BIC STATION
+            # --------------------------------------------------
+
             curl -fsS \
               https://bicstation.com/ \
-              > /dev/null
+              >/dev/null
 
             echo "✅ BICSTATION OK"
 
+            # --------------------------------------------------
+            # BIC SAVING
+            # --------------------------------------------------
+
             curl -fsS \
               https://bic-saving.com/ \
-              > /dev/null
+              >/dev/null
 
             echo "✅ BIC SAVING OK"
 
@@ -316,13 +370,15 @@ jobs:
             # ==================================================
 
             echo ""
-            echo "📊 Container Status"
+            echo "=================================================="
+            echo "📊 CONTAINER STATUS"
+            echo "=================================================="
 
             docker compose \
-              -p "${PROJECT_NAME}" \
-              --env-file "${ENV_FILE}" \
-              -f "${BASE_COMPOSE}" \
-              -f "${PROD_COMPOSE}" \
+              -p shin-prod \
+              --env-file .env.production \
+              -f docker-compose.yml \
+              -f docker-compose.prod.yml \
               ps
 
             # ==================================================
@@ -330,50 +386,62 @@ jobs:
             # ==================================================
 
             echo ""
-            echo "📄 Django Logs"
+            echo "=================================================="
+            echo "📄 DJANGO LOGS"
+            echo "=================================================="
 
             docker compose \
-              -p "${PROJECT_NAME}" \
-              --env-file "${ENV_FILE}" \
-              -f "${BASE_COMPOSE}" \
-              -f "${PROD_COMPOSE}" \
-              logs --tail=20 django-v3 || true
+              -p shin-prod \
+              --env-file .env.production \
+              -f docker-compose.yml \
+              -f docker-compose.prod.yml \
+              logs --tail=20 django-v3 \
+              || true
 
             # ==================================================
-            # 📄 Next.js Logs
+            # 📄 BIC STATION Logs
             # ==================================================
 
             echo ""
-            echo "📄 Next.js Logs"
+            echo "=================================================="
+            echo "📄 BIC STATION LOGS"
+            echo "=================================================="
 
             docker compose \
-              -p "${PROJECT_NAME}" \
-              --env-file "${ENV_FILE}" \
-              -f "${BASE_COMPOSE}" \
-              -f "${PROD_COMPOSE}" \
-              logs --tail=20 next-bicstation-v3 || true
+              -p shin-prod \
+              --env-file .env.production \
+              -f docker-compose.yml \
+              -f docker-compose.prod.yml \
+              logs --tail=20 next-bicstation-v3 \
+              || true
 
             # ==================================================
             # 📄 Traefik Logs
             # ==================================================
 
             echo ""
-            echo "📄 Traefik Logs"
+            echo "=================================================="
+            echo "📄 TRAEFIK LOGS"
+            echo "=================================================="
 
             docker compose \
-              -p "${PROJECT_NAME}" \
-              --env-file "${ENV_FILE}" \
-              -f "${BASE_COMPOSE}" \
-              -f "${PROD_COMPOSE}" \
-              logs --tail=20 traefik || true
+              -p shin-prod \
+              --env-file .env.production \
+              -f docker-compose.yml \
+              -f docker-compose.prod.yml \
+              logs --tail=20 traefik \
+              || true
 
             # ==================================================
             # 🔎 Deployment Verification
             # ==================================================
 
             echo ""
-            echo "🔎 Deployment Verification"
+            echo "=================================================="
+            echo "🔎 DEPLOYMENT VERIFICATION"
+            echo "=================================================="
 
+            echo ""
             echo "TAG:"
             cat .deployment/tag
 
@@ -384,6 +452,29 @@ jobs:
             echo ""
             echo "DEPLOYED:"
             cat .deployment/deployed_at
+
+            # ==================================================
+            # 🔎 Production Source Verification
+            # ==================================================
+
+            echo ""
+            echo "🔎 Production Source Verification"
+
+            if [ -f next-bicstation/generate-sitemap.js ]; then
+
+              echo "❌ Legacy sitemap generator still exists"
+
+              exit 1
+
+            else
+
+              echo "✅ Legacy sitemap generator removed"
+
+            fi
+
+            # ==================================================
+            # 🎉 Success
+            # ==================================================
 
             echo ""
             echo "=================================================="
