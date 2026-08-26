@@ -5,36 +5,6 @@
 // All rights reserved.
 // ============================================================================
 
-/**
- * ============================================================================
- * SHIN CORE LINX
- * Platform Runtime
- * Sitemap Generator
- * ============================================================================
- *
- * PURPOSE
- *
- * Platform Runtime
- *
- * ↓
- *
- * MetadataRoute.Sitemap
- *
- * This module SHALL:
- *
- * ✓ Generate public sitemap entries
- * ✓ Convert Runtime into public URLs
- * ✓ Deduplicate URLs
- *
- * This module SHALL NOT:
- *
- * ✗ Fetch Runtime
- * ✗ Generate Semantic Meaning
- * ✗ Generate Runtime
- *
- * ============================================================================
- */
-
 import type {
   MetadataRoute,
 } from 'next'
@@ -105,7 +75,7 @@ export function generateDiscoverUrls(
       intent => ({
 
         url:
-          `${BASE_URL}/discover/${intent.slug}`,
+          `${BASE_URL}/discover/${encodeURIComponent(intent.slug!)}`,
 
         lastModified:
           now,
@@ -151,7 +121,7 @@ export function generateRankingUrls(
       intent => ({
 
         url:
-          `${BASE_URL}/ranking/${intent.slug}`,
+          `${BASE_URL}/ranking/${encodeURIComponent(intent.slug!)}`,
 
         lastModified:
           now,
@@ -189,7 +159,7 @@ export function generateProductUrls(
       product => ({
 
         url:
-          `${BASE_URL}/product/${product.unique_id}`,
+          `${BASE_URL}/product/${encodeURIComponent(product.unique_id)}`,
 
         lastModified:
           product.updated_at
