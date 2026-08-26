@@ -20,6 +20,7 @@ import type {
 ============================================================================ */
 
 import {
+    RankingBreadcrumbs,
     RankingHero,
     FlagshipCard,
     ComparisonGrid,
@@ -32,9 +33,7 @@ import {
 ============================================================================ */
 
 type Props = {
-
     runtime: SemanticRankingRuntime
-
 }
 
 /* ============================================================================
@@ -42,9 +41,7 @@ type Props = {
 ============================================================================ */
 
 export default function RankingRuntime({
-
     runtime,
-
 }: Props) {
 
     console.log(runtime)
@@ -55,6 +52,33 @@ export default function RankingRuntime({
 
     const products =
         runtime.data.products
+
+    /* =========================================================================
+    🔥 Breadcrumb
+    ========================================================================= */
+
+    const breadcrumbTitle =
+        runtime.presentation?.title
+        ??
+        runtime.presentation?.name
+        ??
+        runtime.data.group_name
+        ??
+        'ランキング'
+
+    const breadcrumbs = [
+        {
+            title: 'ホーム',
+            href: '/',
+        },
+        {
+            title: 'ランキング',
+            href: '/ranking',
+        },
+        {
+            title: breadcrumbTitle,
+        },
+    ]
 
     /* =========================================================================
     🔥 Ranking Structure
@@ -74,19 +98,22 @@ export default function RankingRuntime({
     ========================================================================= */
 
     return (
-
         <main>
+            {/* ==========================================================
+            Breadcrumb
+            ========================================================== */}
+
+            <RankingBreadcrumbs
+                breadcrumbs={breadcrumbs}
+            />
 
             {/* ==========================================================
             Hero
             ========================================================== */}
 
             <RankingHero
-
                 runtime={runtime}
-
                 totalProducts={products.length}
-
             />
 
             {/* ==========================================================
@@ -94,19 +121,12 @@ export default function RankingRuntime({
             ========================================================== */}
 
             {
-
                 flagship && (
-
                     <FlagshipCard
-
                         product={flagship}
-
                         rank={1}
-
                     />
-
                 )
-
             }
 
             {/* ==========================================================
@@ -114,19 +134,12 @@ export default function RankingRuntime({
             ========================================================== */}
 
             {
-
                 comparisonProducts.length > 0 && (
-
                     <ComparisonGrid
-
                         products={comparisonProducts}
-
                         runtime={runtime}
-
                     />
-
                 )
-
             }
 
             {/* ==========================================================
@@ -134,19 +147,12 @@ export default function RankingRuntime({
             ========================================================== */}
 
             {
-
                 rankingProducts.length > 0 && (
-
                     <RankingList
-
                         products={rankingProducts}
-
                         startRank={5}
-
                     />
-
                 )
-
             }
 
             {/* ==========================================================
@@ -154,9 +160,6 @@ export default function RankingRuntime({
             ========================================================== */}
 
             <RankingContinuation />
-
         </main>
-
     )
-
 }

@@ -34,11 +34,8 @@ import styles
 ============================================================================ */
 
 type Props = {
-
     product: RankingProduct
-
     rank: number
-
 }
 
 /* ============================================================================
@@ -46,281 +43,173 @@ type Props = {
 ============================================================================ */
 
 export default function FlagshipCard({
-
     product,
-
     rank,
-
 }: Props) {
 
     const {
-
         unique_id,
-
         name,
-
         maker,
-
         brand,
-
         image_url,
-
         price,
-
+        cpu_model,
+        gpu_model,
+        memory_gb,
+        storage_gb,
+        display_info,
         recommendation_reason,
-
         semantic_labels = [],
-
     } = product
 
     const href =
-
         unique_id
             ? `/product/${unique_id}`
             : '#'
 
     return (
-
         <section className={styles.flagship}>
 
-            {/* ==========================================================
+            {/* ================================================================
             Header
-            ========================================================== */}
+            ================================================================ */}
+
             <header className={styles.header}>
 
-                <div className={styles.headerLeft}>
+                <div className={styles.headerTop}>
 
-                    <div className={styles.badge}>
+                    <div className={styles.headerLeft}>
 
-                        FEATURED PRODUCT
+                        <div className={styles.badge}>
+                            TOP PICK
+                        </div>
+
+                        <Image
+                            src="/images/ranking/ranking_core_1.png"
+                            alt="Ranking Core"
+                            width={64}
+                            height={64}
+                            className={styles.badgeCore}
+                            priority
+                        />
 
                     </div>
 
-                    <Image
-
-                        src="/images/ranking/ranking_core_1.png"
-
-                        alt="Ranking Core"
-
-                        width={64}
-
-                        height={64}
-
-                        className={styles.badgeCore}
-
-                        priority
-
-                    />
+                    <div className={styles.rank}>
+                        #{rank}
+                    </div>
 
                 </div>
 
-                <div className={styles.rank}>
+                <div className={styles.headerTitle}>
 
-                    #{rank}
+                    <h2 className={styles.title}>
+                        {name ?? 'Unknown Product'}
+                    </h2>
+
+                    {(maker || brand) && (
+                        <div className={styles.brand}>
+                            {maker ?? brand}
+                        </div>
+                    )}
 
                 </div>
 
             </header>
 
-
-            {/* ==========================================================
+            {/* ================================================================
             Body
-            ========================================================== */}
+            ================================================================ */}
 
-            <div
-                className={styles.body}
-            >
+            <div className={styles.body}>
 
-                {/* ======================================================
-                Visual
-                ====================================================== */}
+                {/* ============================================================
+                Product Image
+                ============================================================ */}
 
-                <div
-                    className={styles.imageArea}
-                >
-                    {
+                <div className={styles.imageArea}>
 
-                        image_url ? (
-
-                            <Image
-
-                                src={image_url}
-
-                                alt={name ?? ''}
-
-                                width={520}
-
-                                height={520}
-
-                                className={
-                                    styles.image
-                                }
-
-                                unoptimized
-
-                            />
-
-                        ) : (
-
-                            <div
-                                className={
-                                    styles.imagePlaceholder
-                                }
-                            >
-
-                                NO IMAGE
-
-                            </div>
-
-                        )
-
-                    }
+                    {image_url ? (
+                        <Image
+                            src={image_url}
+                            alt={name ?? ''}
+                            width={520}
+                            height={520}
+                            className={styles.image}
+                            unoptimized
+                        />
+                    ) : (
+                        <div className={styles.imagePlaceholder}>
+                            NO IMAGE
+                        </div>
+                    )}
 
                 </div>
 
-                {/* ======================================================
-                Content
-                ====================================================== */}
+                {/* ============================================================
+                Product Reality
+                ============================================================ */}
 
-                <div
-                    className={styles.content}
-                >
+                <div className={styles.content}>
 
-                    <h2
-                        className={styles.title}
-                    >
+                    {recommendation_reason && (
+                        <p className={styles.description}>
+                            {recommendation_reason}
+                        </p>
+                    )}
 
-                        {name ?? 'Unknown Product'}
+                    {semantic_labels.length > 0 && (
+                        <div className={styles.chips}>
+                            {semantic_labels
+                                .slice(0, 3)
+                                .map((label, index) => (
+                                    <span
+                                        key={index}
+                                        className={styles.chip}
+                                    >
+                                        {label}
+                                    </span>
+                                ))}
+                        </div>
+                    )}
 
-                    </h2>
+                    <div className={styles.specs}>
 
-                    {
-
-                        (maker || brand) && (
-
-                            <div
-                                className={styles.brand}
-                            >
-
-                                {maker ?? brand}
-
+                        {cpu_model && (
+                            <div className={styles.spec}>
+                                <span>CPU</span>
+                                <strong>{cpu_model}</strong>
                             </div>
+                        )}
 
-                        )
-
-                    }
-
-                    {
-
-                        recommendation_reason && (
-
-                            <p
-                                className={
-                                    styles.description
-                                }
-                            >
-
-                                {recommendation_reason}
-
-                            </p>
-
-                        )
-
-                    }
-
-                    {
-
-                        semantic_labels.length > 0 && (
-
-                            <div
-                                className={styles.chips}
-                            >
-
-                                {
-
-                                    semantic_labels.map(
-
-                                        (
-
-                                            label,
-
-                                            index,
-
-                                        ) => (
-
-                                            <span
-
-                                                key={index}
-
-                                                className={
-                                                    styles.chip
-                                                }
-
-                                            >
-
-                                                {label}
-
-                                            </span>
-
-                                        )
-
-                                    )
-
-                                }
-
+                        {gpu_model && (
+                            <div className={styles.spec}>
+                                <span>GPU</span>
+                                <strong>{gpu_model}</strong>
                             </div>
+                        )}
 
-                        )
+                        {memory_gb > 0 && (
+                            <div className={styles.spec}>
+                                <span>Memory</span>
+                                <strong>{memory_gb}GB</strong>
+                            </div>
+                        )}
 
-                    }
+                        {storage_gb > 0 && (
+                            <div className={styles.spec}>
+                                <span>Storage</span>
+                                <strong>{storage_gb}GB</strong>
+                            </div>
+                        )}
 
-                    {/* ==================================================
-                    Footer
-                    ================================================== */}
-
-                    <div
-                        className={styles.footer}
-                    >
-
-                        {
-
-                            typeof price === 'number' && (
-
-                                <div
-                                    className={
-                                        styles.price
-                                    }
-                                >
-
-                                    ¥{price.toLocaleString()}
-
-                                </div>
-
-                            )
-
-                        }
-
-                        {
-
-                            unique_id && (
-
-                                <Link
-
-                                    href={href}
-
-                                    className={
-                                        styles.button
-                                    }
-
-                                >
-
-                                    製品の詳細を見る
-
-                                </Link>
-
-                            )
-
-                        }
+                        {display_info && (
+                            <div className={styles.spec}>
+                                <span>Display</span>
+                                <strong>{display_info}</strong>
+                            </div>
+                        )}
 
                     </div>
 
@@ -328,8 +217,29 @@ export default function FlagshipCard({
 
             </div>
 
+            {/* ================================================================
+            Bottom
+            ================================================================ */}
+
+            <footer className={styles.footer}>
+
+                {typeof price === 'number' && (
+                    <div className={styles.price}>
+                        ¥{price.toLocaleString()}
+                    </div>
+                )}
+
+                {unique_id && (
+                    <Link
+                        href={href}
+                        className={styles.button}
+                    >
+                        製品の詳細を見る
+                    </Link>
+                )}
+
+            </footer>
+
         </section>
-
     )
-
 }

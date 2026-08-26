@@ -61,10 +61,8 @@ import {
 ============================================================================ */
 
 import {
-
   getRankingRuntime,
-
-} from '@/shared/lib/api/django/pc/ranking'
+} from '@/shared/lib/api/django/pc/ranking-detail'
 
 /* ============================================================================
 🔥 Frontend

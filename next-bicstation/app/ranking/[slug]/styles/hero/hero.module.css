@@ -3,31 +3,17 @@
 ============================================================================ */
 
 .runtimeHero {
-
     position: relative;
-
     overflow: hidden;
-
     isolation: isolate;
-
     display: flex;
-
     align-items: center;
-
     min-height: 580px;
-
     border-radius: 32px;
-
     background-color: #071320;
-
     background-size: cover;
-
     background-position: center;
-
-    box-shadow:
-
-        0 40px 100px rgba(0,0,0,.45);
-
+    box-shadow: 0 40px 100px rgba(0,0,0,.45);
 }
 
 /* ============================================================================
@@ -35,36 +21,27 @@
 ============================================================================ */
 
 .runtimeHeroOverlay {
-
     position: absolute;
-
     inset: 0;
-
     background:
-
         radial-gradient(
             circle at 78% 18%,
-            rgba(0,190,255,.20),
+            rgba(0,190,255,.18),
             transparent 34%
         ),
-
         radial-gradient(
             circle at 20% 80%,
-            rgba(0,120,255,.12),
+            rgba(0,120,255,.10),
             transparent 48%
         ),
-
         linear-gradient(
             90deg,
-            rgba(2,8,24,.98),
-            rgba(2,8,24,.90) 42%,
-            rgba(2,8,24,.60)
-            );
-
-    backdrop-filter: blur(2px);
-
+            rgba(2,8,24,.72),
+            rgba(2,8,24,.52) 42%,
+            rgba(2,8,24,.28) 100%
+        );
+    backdrop-filter: blur(1px);
     z-index: 1;
-
 }
 
 /* ============================================================================
@@ -72,27 +49,16 @@
 ============================================================================ */
 
 .runtimeHeroInner {
-
     position: relative;
-
     z-index: 2;
-
     width: 100%;
-
     max-width: 1440px;
-
     margin: auto;
-
     padding: 64px 72px;
-
     display: flex;
-
     align-items: center;
-
     justify-content: space-between;
-
     gap: 80px;
-
 }
 
 /* ============================================================================
@@ -100,15 +66,10 @@
 ============================================================================ */
 
 .runtimeHeroVisual {
-
     flex: 0 0 340px;
-
     display: flex;
-
     justify-content: center;
-
     align-items: center;
-
 }
 
 /* ============================================================================
@@ -116,23 +77,13 @@
 ============================================================================ */
 
 .runtimeHeroEmblem {
-
     width: 250px;
-
     max-width: 100%;
-
     object-fit: contain;
-
     animation:
-
         floating 6s ease-in-out infinite,
-
         glowPulse 4s ease-in-out infinite;
-
-    filter:
-
-        drop-shadow(0 0 60px rgba(0,180,255,.42));
-
+    filter: drop-shadow(0 0 60px rgba(0,180,255,.42));
 }
 
 /* ============================================================================
@@ -140,15 +91,10 @@
 ============================================================================ */
 
 .runtimeHeroContent {
-
     flex: 1;
-
     display: flex;
-
     flex-direction: column;
-
     justify-content: center;
-
 }
 
 /* ============================================================================
@@ -156,37 +102,19 @@
 ============================================================================ */
 
 .runtimeHeroBadge {
-
     display: inline-flex;
-
     align-items: center;
-
     width: fit-content;
-
     padding: 9px 22px;
-
     border-radius: 999px;
-
-    background:
-
-        rgba(255,255,255,.08);
-
-    border:
-
-        1px solid rgba(255,255,255,.18);
-
+    background: rgba(255,255,255,.08);
+    border: 1px solid rgba(255,255,255,.18);
     backdrop-filter: blur(22px);
-
     color: #fff;
-
     font-size: .82rem;
-
     font-weight: 700;
-
     letter-spacing: .14em;
-
     text-transform: uppercase;
-
 }
 
 /* ============================================================================
@@ -194,26 +122,13 @@
 ============================================================================ */
 
 .runtimeHeroTitle {
-
     margin-top: 20px;
-
     color: #fff;
-
-    font-size: 
-     clamp(
-            2.8rem,
-            4.8vw,
-            4.5rem
-        );
-
+    font-size: clamp(2.8rem,4.8vw,4.5rem);
     line-height: 1.05;
-
     font-weight: 800;
-
     max-width: 720px;
-
     text-wrap: balance;
-
 }
 
 /* ============================================================================
@@ -221,19 +136,12 @@
 ============================================================================ */
 
 .runtimeHeroSubtitle {
-
     margin-top: 12px;
-
     color: #7ee0ff;
-
     font-size: 1rem;
-
     font-weight: 700;
-
     letter-spacing: .10em;
-
     text-transform: uppercase;
-
 }
 
 /* ============================================================================
@@ -241,99 +149,54 @@
 ============================================================================ */
 
 .runtimeHeroDescription {
-
     margin-top: 18px;
-
     max-width: 640px;
-
     color: rgba(255,255,255,.84);
-
     font-size: 1.12rem;
-
     line-height: 1.8;
-
 }
 
 /* ============================================================================
 🔥 Metrics
 ============================================================================ */
+
 .runtimeHeroMetrics {
-
     display: grid;
-
-    grid-template-columns:
-
-        repeat(
-            3,
-            minmax(150px,1fr)
-        );
-
+    grid-template-columns: repeat(3,minmax(150px,1fr));
     gap: 18px;
-
     margin-top: 36px;
-
     max-width: 560px;
-
 }
 
 .runtimeHeroMetric {
-
     min-width: auto;
-
     padding: 20px;
-
     border-radius: 20px;
-
-    background:
-
-        rgba(255,255,255,.06);
-
-    border:
-
-        1px solid rgba(255,255,255,.12);
-
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.12);
     backdrop-filter: blur(24px);
-
     transition: .25s;
-
 }
 
 .runtimeHeroMetric:hover {
-
     transform: translateY(-4px);
-
-    border-color:
-
-        rgba(0,180,255,.35);
-
+    border-color: rgba(0,180,255,.35);
 }
 
 .runtimeHeroMetric span {
-
     display: block;
-
     color: rgba(255,255,255,.60);
-
     font-size: .78rem;
-
     text-transform: uppercase;
-
     letter-spacing: .08em;
-
 }
 
 .runtimeHeroMetric strong {
-
     display: block;
-
     margin-top: 12px;
-
     color: #fff;
-
     font-size: 2rem;
-
     font-weight: 800;
-
 }
 
 /* ============================================================================
@@ -341,210 +204,123 @@
 ============================================================================ */
 
 .runtimeHeroChips {
-
     display: flex;
-
     flex-wrap: wrap;
-
     gap: 12px;
-
     margin-top: 32px;
-
 }
 
 .runtimeHeroChip {
-
     padding: 10px 18px;
-
     border-radius: 999px;
-
-    background:
-
-        rgba(0,180,255,.10);
-
-    border:
-
-        1px solid rgba(0,180,255,.24);
-
+    background: rgba(0,180,255,.10);
+    border: 1px solid rgba(0,180,255,.24);
     color: #b9ebff;
-
     font-size: .88rem;
-
     font-weight: 600;
-
     transition: .25s;
-
 }
 
 .runtimeHeroChip:hover {
-
-    background:
-
-        rgba(0,180,255,.18);
-
+    background: rgba(0,180,255,.18);
 }
 
 /* ============================================================================
 🔥 Actions
 ============================================================================ */
 
-.runtimeHeroActions{
-
-    display:flex;
-
-    gap:18px;
-
-    margin-top:36px;
-
+.runtimeHeroActions {
+    display: flex;
+    gap: 18px;
+    margin-top: 36px;
 }
 
-.runtimeHeroPrimaryButton{
-
-    display:inline-flex;
-
-    align-items:center;
-
-    justify-content:center;
-
-    padding:16px 34px;
-
-    border-radius:999px;
-
-    background:#0aa8ff;
-
-    color:#fff;
-
-    font-weight:700;
-
-    text-decoration:none;
-
-    transition:.25s;
-
+.runtimeHeroPrimaryButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px 34px;
+    border-radius: 999px;
+    background: #0aa8ff;
+    color: #fff;
+    font-weight: 700;
+    text-decoration: none;
+    transition: .25s;
 }
 
-.runtimeHeroPrimaryButton:hover{
-
-    transform:translateY(-2px);
-
-    box-shadow:
-
-        0 0 30px rgba(0,170,255,.45);
-
+.runtimeHeroPrimaryButton:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 30px rgba(0,170,255,.45);
 }
 
 /* ============================================================================
 🔥 Animation
 ============================================================================ */
 
-@keyframes floating{
-
-    0%{transform:translateY(0);}
-
-    50%{transform:translateY(-10px);}
-
-    100%{transform:translateY(0);}
-
+@keyframes floating {
+    0% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+    100% {
+        transform: translateY(0);
+    }
 }
 
-@keyframes glowPulse{
-
-    0%{
-
-        filter:drop-shadow(0 0 40px rgba(0,180,255,.25));
-
+@keyframes glowPulse {
+    0% {
+        filter: drop-shadow(0 0 40px rgba(0,180,255,.25));
     }
-
-    50%{
-
-        filter:drop-shadow(0 0 70px rgba(0,180,255,.55));
-
+    50% {
+        filter: drop-shadow(0 0 70px rgba(0,180,255,.55));
     }
-
-    100%{
-
-        filter:drop-shadow(0 0 40px rgba(0,180,255,.25));
-
+    100% {
+        filter: drop-shadow(0 0 40px rgba(0,180,255,.25));
     }
-
 }
 
 /* ============================================================================
 🔥 Tablet
 ============================================================================ */
 
-@media (max-width:1024px){
-
-    .runtimeHeroInner{
-
-        padding:64px 40px;
-
-        gap:56px;
-
+@media (max-width:1024px) {
+    .runtimeHeroInner {
+        padding: 64px 40px;
+        gap: 56px;
     }
-
-    .runtimeHeroVisual{
-
-        flex:0 0 260px;
-
+    .runtimeHeroVisual {
+        flex: 0 0 260px;
     }
-
-    .runtimeHeroEmblem{
-
-        width:220px;
-
+    .runtimeHeroEmblem {
+        width: 220px;
     }
-
 }
 
 /* ============================================================================
 🔥 Mobile
 ============================================================================ */
 
-@media (max-width:768px){
-
-    .runtimeHero{
-
-        min-height:auto;
-
-        border-radius:24px;
-
+@media (max-width:768px) {
+    .runtimeHero {
+        min-height: auto;
+        border-radius: 24px;
     }
-
-    .runtimeHeroInner{
-
-        flex-direction:column;
-
-        text-align:center;
-
-        padding:52px 24px;
-
-        gap:36px;
-
+    .runtimeHeroInner {
+        flex-direction: column;
+        text-align: center;
+        padding: 52px 24px;
+        gap: 36px;
     }
-
-    .runtimeHeroContent{
-
-        align-items:center;
-
+    .runtimeHeroContent {
+        align-items: center;
     }
-
     .runtimeHeroMetrics {
-
-        grid-template-columns:
-
-            repeat(
-                2,
-                1fr
-            );
-
+        grid-template-columns: repeat(2,1fr);
     }
-
-    .runtimeHeroActions{
-
-        justify-content:center;
-
-        flex-wrap:wrap;
-
+    .runtimeHeroActions {
+        justify-content: center;
+        flex-wrap: wrap;
     }
-
 }
