@@ -68,7 +68,7 @@ Hero
             rgba(16, 34, 86, .50) 68%,
             rgba(16, 34, 86, .22) 100%
         ),
-        url('/images/catalog/catalog_hero.png');
+        url('/images/catalog/catalog_hero.webp');
 
     background-size: cover;
     background-position: right 20px center;
