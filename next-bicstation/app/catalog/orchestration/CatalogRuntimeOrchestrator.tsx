@@ -25,529 +25,159 @@ import styles from '../styles/catalog.module.css'
 ============================================================================ */
 
 export default function CatalogRuntimeOrchestrator() {
+    const searchParams = useSearchParams()
 
-    /* ==========================================================================
-    Search Params
-    ========================================================================== */
+    const page = Number(searchParams.get('page') ?? 1)
+    const pageSize = 20
+    const sort = searchParams.get('sort') ?? 'maker'
 
-    const searchParams =
-        useSearchParams()
+    const maker = searchParams.get('maker') ?? undefined
+    const brand = searchParams.get('brand') ?? undefined
+    const series = searchParams.get('series') ?? undefined
 
-
-    /* ==========================================================================
-    Pagination
-    ========================================================================== */
-
-    const page =
-        Number(
-            searchParams.get('page') ?? 1
-        )
-
-    const pageSize =
-        20
-
-
-    /* ==========================================================================
-    Sort
-    ========================================================================== */
-
-    const sort =
-        searchParams.get('sort') ?? 'maker'
-
-
-    /* ==========================================================================
-    Identity Filters
-    ========================================================================== */
-
-    const maker =
-        searchParams.get('maker') ?? undefined
-
-    const brand =
-        searchParams.get('brand') ?? undefined
-
-    const series =
-        searchParams.get('series') ?? undefined
-
-
-    /* ==========================================================================
-    Specification Filters
-    ========================================================================== */
-
-    const cpu =
-        searchParams.get('cpu') ?? undefined
-
-    const gpu =
-        searchParams.get('gpu') ?? undefined
-
-    const memory =
-        searchParams.get('memory') ?? undefined
-
-    const storage =
-        searchParams.get('storage') ?? undefined
-
-
-    /* ==========================================================================
-    🔥 Catalog Filters
-    ========================================================================== */
+    const cpu = searchParams.get('cpu') ?? undefined
+    const gpu = searchParams.get('gpu') ?? undefined
+    const memory = searchParams.get('memory') ?? undefined
+    const storage = searchParams.get('storage') ?? undefined
 
     const filters = {
-
         maker,
-
         brand,
-
         series,
-
         cpu,
-
         gpu,
-
         memory,
-
         storage,
-
     }
 
-
-    /* ==========================================================================
-    Debug — Search Params
-    ========================================================================== */
-
-    console.log(
-        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
-    )
-
-    console.log(
-        '🎼 CATALOG ORCHESTRATOR START'
-    )
-
-    console.log(
-        '🔍 Search Params'
-    )
-
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+    console.log('🎼 CATALOG ORCHESTRATOR START')
+    console.log('🔍 Search Params')
     console.log({
-
         page,
-
         pageSize,
-
         sort,
-
         maker,
-
         brand,
-
         series,
-
         cpu,
-
         gpu,
-
         memory,
-
         storage,
-
     })
 
+    const { runtime, loading, error } = useCatalog(
+        page,
+        pageSize,
+        { sort, ...filters },
+    )
 
-    /* ==========================================================================
-    Products Runtime
-    ========================================================================== */
+    console.log('📦 Products Runtime')
+    console.log(runtime)
+    console.log('📦 Products Data')
+    console.log(runtime?.data)
 
     const {
+        runtime: optionsRuntime,
+        loading: optionsLoading,
+        error: optionsError,
+    } = useCatalogOptions(filters)
 
-        runtime,
+    console.log('🧩 Options Loading')
+    console.log(optionsLoading)
+    console.log('🧩 Options Error')
+    console.log(optionsError)
+    console.log('🧩 Options Runtime')
+    console.log(optionsRuntime)
+    console.log('🧩 Options')
+    console.log(optionsRuntime?.options)
 
-        loading,
+    console.log('🧩 Maker')
+    console.log(optionsRuntime?.options?.maker)
+    console.log('🧩 Brand')
+    console.log(optionsRuntime?.options?.brand)
+    console.log('🧩 Series')
+    console.log(optionsRuntime?.options?.series)
 
-        error,
+    console.log('🧩 CPU')
+    console.log(optionsRuntime?.options?.cpu)
+    console.log('🧩 GPU')
+    console.log(optionsRuntime?.options?.gpu)
+    console.log('🧩 Memory')
+    console.log(optionsRuntime?.options?.memory)
+    console.log('🧩 Storage')
+    console.log(optionsRuntime?.options?.storage)
 
-    } =
-        useCatalog(
-
-            page,
-
-            pageSize,
-
-            {
-
-                sort,
-
-                ...filters,
-
-            },
-
-        )
-
-
-    /* ==========================================================================
-    Products Debug
-    ========================================================================== */
-
-    console.log(
-        '📦 Products Runtime'
-    )
-
-    console.log(
-        runtime
-    )
-
-    console.log(
-        '📦 Products Data'
-    )
-
-    console.log(
-        runtime?.data
-    )
-
-
-    /* ==========================================================================
-    Catalog Options Runtime
-    ========================================================================== */
-
-    const {
-
-        runtime:
-            optionsRuntime,
-
-        loading:
-            optionsLoading,
-
-        error:
-            optionsError,
-
-    } =
-        useCatalogOptions(
-
-            filters
-
-        )
-
-
-    /* ==========================================================================
-    Options Debug
-    ========================================================================== */
-
-    console.log(
-        '🧩 Options Loading'
-    )
-
-    console.log(
-        optionsLoading
-    )
-
-    console.log(
-        '🧩 Options Error'
-    )
-
-    console.log(
-        optionsError
-    )
-
-    console.log(
-        '🧩 Options Runtime'
-    )
-
-    console.log(
-        optionsRuntime
-    )
-
-    console.log(
-        '🧩 Options'
-    )
-
-    console.log(
-        optionsRuntime?.options
-    )
-
-
-    /* ==========================================================================
-    Options — Identity
-    ========================================================================== */
-
-    console.log(
-        '🧩 Maker'
-    )
-
-    console.log(
-        optionsRuntime?.options?.maker
-    )
-
-    console.log(
-        '🧩 Brand'
-    )
-
-    console.log(
-        optionsRuntime?.options?.brand
-    )
-
-    console.log(
-        '🧩 Series'
-    )
-
-    console.log(
-        optionsRuntime?.options?.series
-    )
-
-
-    /* ==========================================================================
-    Options — Specifications
-    ========================================================================== */
-
-    console.log(
-        '🧩 CPU'
-    )
-
-    console.log(
-        optionsRuntime?.options?.cpu
-    )
-
-    console.log(
-        '🧩 GPU'
-    )
-
-    console.log(
-        optionsRuntime?.options?.gpu
-    )
-
-    console.log(
-        '🧩 Memory'
-    )
-
-    console.log(
-        optionsRuntime?.options?.memory
-    )
-
-    console.log(
-        '🧩 Storage'
-    )
-
-    console.log(
-        optionsRuntime?.options?.storage
-    )
-
-
-    /* ==========================================================================
-    Render Summary
-    ========================================================================== */
-
-    console.log(
-        '🎯 Render Summary'
-    )
-
+    console.log('🎯 Render Summary')
     console.log({
-
         loading,
-
         error,
-
         optionsLoading,
-
         optionsError,
-
-        productCount:
-            runtime?.data?.products?.length,
-
-        totalCount:
-            runtime?.data?.count,
-
+        productCount: runtime?.data?.products?.length,
+        totalCount: runtime?.data?.count,
         filters,
-
-        options:
-            optionsRuntime?.options,
-
+        options: optionsRuntime?.options,
     })
 
-
-    console.log(
-        '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
-    )
-
-
-    /* ==========================================================================
-    Loading
-    ========================================================================== */
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
 
     if (loading) {
-
         return (
-
-            <main
-                className={
-                    styles.catalog
-                }
-            >
-
-                Loading...
-
+            <main className={styles.catalog}>
+                <div className={styles.catalogLoadingShell} aria-hidden="true">
+                    <div className={styles.catalogLoadingHero} />
+                    <div className={styles.catalogLoadingToolbar} />
+                    <div className={styles.catalogLoadingGrid} />
+                </div>
             </main>
-
         )
-
     }
 
-
-    /* ==========================================================================
-    Runtime Error
-    ========================================================================== */
-
-    if (
-        error ||
-        !runtime
-    ) {
-
+    if (error || !runtime) {
         return (
-
-            <main
-                className={
-                    styles.catalog
-                }
-            >
-
+            <main className={styles.catalog}>
                 Runtime Error
-
             </main>
-
         )
-
     }
-
-
-    /* ==========================================================================
-    Runtime Data
-    ========================================================================== */
 
     const {
-
         count,
-
         products,
-
-        page:
-            currentPage,
-
+        page: currentPage,
         page_size,
-
         has_next,
-
-    } =
-        runtime.data
-
-
-    /* ==========================================================================
-    Render
-    ========================================================================== */
+    } = runtime.data
 
     return (
-
-        <main
-            className={
-                styles.catalog
-            }
-        >
-
-            {/* ==================================================================
-            Breadcrumb
-            ================================================================== */}
-
+        <main className={styles.catalog}>
             <Breadcrumb />
 
-
-            {/* ==================================================================
-            Hero
-            ================================================================== */}
-
             <CatalogHero
-
-                runtime={
-                    runtime
-                }
-
-                filters={
-                    filters
-                }
-
-                options={
-                    optionsRuntime?.options
-                }
-
+                runtime={runtime}
+                filters={filters}
+                options={optionsRuntime?.options}
             />
-
-
-            {/* ==================================================================
-            Toolbar
-            ================================================================== */}
 
             <CatalogToolbar
-
-                count={
-                    count
-                }
-
-                sort={
-                    sort
-                }
-
-                options={
-                    optionsRuntime?.options
-                }
-
+                count={count}
+                sort={sort}
+                options={optionsRuntime?.options}
             />
 
-
-            {/* ==================================================================
-            Products
-            ================================================================== */}
-
-            {
-                products.length > 0
-
-                    ? (
-
-                        <ProductGrid
-
-                            products={
-                                products
-                            }
-
-                        />
-
-                    )
-
-                    : (
-
-                        <EmptyProducts />
-
-                    )
-            }
-
-
-            {/* ==================================================================
-            Pagination
-            ================================================================== */}
+            {products.length > 0 ? (
+                <ProductGrid products={products} />
+            ) : (
+                <EmptyProducts />
+            )}
 
             <Pagination
-
-                page={
-                    currentPage
-                }
-
-                page_size={
-                    page_size
-                }
-
-                count={
-                    count
-                }
-
-                has_next={
-                    has_next
-                }
-
+                page={currentPage}
+                page_size={page_size}
+                count={count}
+                has_next={has_next}
             />
-
         </main>
-
     )
-
 }

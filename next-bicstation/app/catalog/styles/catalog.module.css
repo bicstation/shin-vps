@@ -10,6 +10,39 @@ Layout
 
 
 /* ============================================================================
+Loading Shell
+============================================================================ */
+
+.catalogLoadingShell {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.catalogLoadingHero {
+    width: 100%;
+    min-height: 280px;
+    border-radius: 24px;
+    background: #e2e8f0;
+}
+
+.catalogLoadingToolbar {
+    width: 100%;
+    min-height: 120px;
+    border: 1px solid #e5e7eb;
+    border-radius: 18px;
+    background: #f8fafc;
+}
+
+.catalogLoadingGrid {
+    width: 100%;
+    min-height: 900px;
+    border-radius: 18px;
+    background: #f8fafc;
+}
+
+
+/* ============================================================================
 Breadcrumb
 ============================================================================ */
 
@@ -59,7 +92,6 @@ Hero
     overflow: hidden;
     color: #fff;
     box-shadow: 0 20px 50px rgba(15, 23, 42, .15);
-
     background:
         linear-gradient(
             90deg,
@@ -69,7 +101,6 @@ Hero
             rgba(16, 34, 86, .22) 100%
         ),
         url('/images/catalog/catalog_hero.webp');
-
     background-size: cover;
     background-position: right 20px center;
 }
@@ -242,10 +273,7 @@ Products
 
 .productGrid {
     display: grid;
-    grid-template-columns: repeat(
-        auto-fill,
-        minmax(280px, 1fr)
-    );
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 1.5rem;
 }
 
@@ -259,14 +287,11 @@ Product Card
     flex-direction: column;
     min-width: 0;
     overflow: hidden;
-
     border: 1px solid #e5e7eb;
     border-radius: 18px;
-
     background: #fff;
     color: inherit;
     text-decoration: none;
-
     transition:
         transform .25s ease,
         border-color .25s ease,
@@ -275,11 +300,8 @@ Product Card
 
 .productCard:hover {
     transform: translateY(-6px);
-
     border-color: rgba(37, 99, 235, .25);
-
-    box-shadow:
-        0 18px 40px rgba(15, 23, 42, .14);
+    box-shadow: 0 18px 40px rgba(15, 23, 42, .14);
 }
 
 
@@ -291,7 +313,6 @@ Product Image
     width: 100%;
     aspect-ratio: 16 / 10;
     object-fit: cover;
-
     background: #f8fafc;
 }
 
@@ -303,7 +324,6 @@ Product Content
 .productContent {
     display: flex;
     flex-direction: column;
-
     min-width: 0;
     padding: 1.1rem;
 }
@@ -317,9 +337,7 @@ Product Identity
     display: flex;
     flex-direction: column;
     gap: .15rem;
-
     margin-bottom: .7rem;
-
     min-width: 0;
 }
 
@@ -350,13 +368,10 @@ Product Name
 
 .productName {
     margin: 0;
-
     min-width: 0;
-
     font-size: 1rem;
     font-weight: 700;
     line-height: 1.5;
-
     color: #111827;
 }
 
@@ -368,14 +383,10 @@ Product Specifications
 .productSpecifications {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-
     margin-top: 1rem;
-
     border: 1px solid #e5e7eb;
     border-radius: 12px;
-
     overflow: hidden;
-
     background: #f8fafc;
 }
 
@@ -383,11 +394,8 @@ Product Specifications
     display: flex;
     flex-direction: column;
     gap: .25rem;
-
     min-width: 0;
-
     padding: .7rem .75rem;
-
     background: #fff;
 }
 
@@ -408,15 +416,11 @@ Product Specifications
 
 .productSpecificationValue {
     min-width: 0;
-
     overflow: hidden;
-
     font-size: .78rem;
     font-weight: 700;
     line-height: 1.45;
-
     color: #334155;
-
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
@@ -429,10 +433,8 @@ Product Price
 
 .productPrice {
     margin-top: 1rem;
-
     font-size: 1.25rem;
     font-weight: 700;
-
     color: #2563eb;
 }
 
@@ -446,28 +448,21 @@ Pagination
     justify-content: center;
     align-items: center;
     gap: .75rem;
-
     margin-top: 3rem;
     padding-top: 2rem;
-
     border-top: 1px solid #e5e7eb;
-
     flex-wrap: wrap;
 }
 
 .paginationButton {
     min-width: 44px;
     height: 44px;
-
     border: none;
     border-radius: 12px;
-
     background: #2563eb;
     color: #fff;
-
     font-weight: 700;
     cursor: pointer;
-
     transition: .2s;
 }
 
@@ -490,15 +485,11 @@ Pagination
 .paginationNumberActive {
     width: 44px;
     height: 44px;
-
     border: 1px solid #dbe2ea;
     border-radius: 12px;
-
     background: #fff;
-
     font-weight: 700;
     cursor: pointer;
-
     transition: .2s;
 }
 
@@ -520,16 +511,13 @@ Empty
 
 .emptyProducts {
     padding: 4rem 2rem;
-
     border: 2px dashed #d1d5db;
     border-radius: 20px;
-
     text-align: center;
 }
 
 .emptyProductsTitle {
     margin-bottom: 1rem;
-
     font-size: 1.5rem;
     font-weight: 700;
 }
@@ -545,73 +533,69 @@ Responsive
 ============================================================================ */
 
 @media (max-width: 768px) {
-
     .catalog {
         padding: 1rem;
     }
 
+    .catalogLoadingHero {
+        min-height: 240px;
+    }
+
+    .catalogLoadingToolbar {
+        min-height: 180px;
+    }
+
+    .catalogLoadingGrid {
+        min-height: 1200px;
+    }
 
     .catalogHero {
         flex-direction: column;
         padding: 2rem;
     }
 
-
     .catalogHeroTitle {
         font-size: 2rem;
     }
-
 
     .catalogHeroStats {
         flex-direction: column;
     }
 
-
     .catalogHeroStat {
         width: 100%;
     }
-
 
     .catalogHeaderTop {
         flex-direction: column;
         align-items: stretch;
     }
 
-
     .catalogCommands {
         flex-direction: column;
         align-items: stretch;
     }
 
-
     .catalogSort {
         width: 100%;
     }
-
 
     .catalogFilters {
         justify-content: center;
     }
 
-
     .productGrid {
         grid-template-columns: 1fr;
     }
 
-
     .productSpecifications {
-        grid-template-columns: repeat(
-            2,
-            minmax(0, 1fr)
-        );
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
-
 
     .pagination {
         flex-direction: column;
         gap: 1rem;
     }
-
 }
 
 
@@ -620,24 +604,31 @@ Small Mobile
 ============================================================================ */
 
 @media (max-width: 480px) {
+    .catalogLoadingHero {
+        min-height: 220px;
+    }
+
+    .catalogLoadingToolbar {
+        min-height: 220px;
+    }
+
+    .catalogLoadingGrid {
+        min-height: 2400px;
+    }
 
     .productContent {
         padding: 1rem;
     }
 
-
     .productSpecifications {
         grid-template-columns: 1fr;
     }
-
 
     .productSpecification:nth-child(odd) {
         border-right: none;
     }
 
-
     .productSpecification:nth-child(n + 2) {
         border-top: 1px solid #e5e7eb;
     }
-
 }
