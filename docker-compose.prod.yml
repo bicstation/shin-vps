@@ -93,6 +93,12 @@ services:
 
     restart: always
 
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+
     environment:
 
       DJANGO_ENV: production
@@ -173,6 +179,12 @@ services:
 
     restart: always
 
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+
     environment:
 
       NEXT_PUBLIC_RUNTIME_UNIVERSE: prod
@@ -208,6 +220,12 @@ services:
       - .env.production
 
     restart: always
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
 
     environment:
 
@@ -245,6 +263,12 @@ services:
 
     restart: always
 
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+
     environment:
 
       NEXT_PUBLIC_RUNTIME_UNIVERSE: prod
@@ -280,6 +304,12 @@ services:
       - .env.production
 
     restart: always
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
 
     environment:
 
