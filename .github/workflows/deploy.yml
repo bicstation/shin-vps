@@ -251,12 +251,14 @@ jobs:
             echo ""
             echo "✅ Container Build Complete"
 
+
+
             # ==================================================
             # 🚀 Startup
             # ==================================================
 
             echo ""
-            echo "🚀 Starting Containers"
+            echo "🚀 Starting Application Containers"
 
             docker compose \
               -p shin-prod \
@@ -264,11 +266,19 @@ jobs:
               -f docker-compose.yml \
               -f docker-compose.prod.yml \
               up -d \
+              --no-deps \
               --remove-orphans \
-              --wait
+              --wait \
+              traefik \
+              nginx-media \
+              django-v3 \
+              next-bicstation-v3 \
+              next-bic-saving-v3 \
+              next-tiper-v3 \
+              next-avflash-v3
 
             echo ""
-            echo "✅ Containers Started"
+            echo "✅ Application Containers Started"
 
             # ==================================================
             # 📦 Django Migration
