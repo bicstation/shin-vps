@@ -21,7 +21,8 @@ function buildCTAUrl(
 ) {
 
   return (
-    product?.affiliate_url
+    product?.affiliateUrl
+    || product?.affiliate_url
     || product?.url
     || '#'
   )
