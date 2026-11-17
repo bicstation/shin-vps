@@ -49,25 +49,21 @@ function buildPrice(
 
 }
 
+
+
 function buildCTAUrl(
   product: any
 ) {
 
   return (
-
-    product?.affiliate_url
-
-    ||
-
-    product?.url
-
-    ||
-
-    '#'
-
+    product?.affiliateUrl
+    || product?.affiliate_url
+    || product?.url
+    || '#'
   )
 
 }
+
 
 function getWorkflowLabel(
   tag: string
